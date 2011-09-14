@@ -970,7 +970,7 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com
 某些位仅同编译期相关，还有一些是运行期相关的。这是一种新机制，以后可能
 会修改其细节。
 
-=over
+=over 6
 
 =item $LAST_REGEXP_CODE_RESULT
 
@@ -1233,13 +1233,13 @@ C<__DIE__>/C<__WARN__> 处理器在一种情况下是很特殊的：
     die "Something wrong, but could not load Carp to give backtrace...
 PDF created with pdfFactory Pro trial version www.pdffactory.com         To see backtrace try starting Perl with -MCarp switch";
 
-=back
-
 这里的第一行只有在调用处理器的对象 I<不是>解析器时才会执行载入操作。第二行只有在
 Carp 可用时才打印
 出回溯信息并退出程序。第三行则仅在 Carp 不可用时才会运行。
 
 额外信息请见 L<perlfunc/die>、L<perlfunc/warn>、L<perlfunc/eval> 和 L<warnings>。
+
+=back
 
 =head2 错误指示器
 
