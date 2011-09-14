@@ -252,6 +252,7 @@ rather than beautiful (tiny, elegant, minimal)."』
  
 早在 1993 年(参见 L<perlhist>)的时候, Perl 5 几乎被完全重写了一次，经历了这 
 次版本更新以后，Perl 增加了一下几个重要特性： 
+
 =over 4 
 
 =item * 
