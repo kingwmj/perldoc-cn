@@ -144,7 +144,9 @@ head3 and head4 are recent additions, not supported in older Pod
 translators.)  The text in these heading commands can use
 formatting codes, as seen here:
 
-文本 "对象属性" 构成了标题 （注: head3 和 head4 最近才加入
+文本 "对象属性" 构成了标题 （注: head3 和 head4 最近才加入, 一些老旧的
+转换器并不支持). 在标题中的文本可以使用格式化代码，如：
+
   =head2 Possible Values for C<$/>
 
 Such commands are explained in the
@@ -168,6 +170,12 @@ to four.  (And some formatters may just ignore whatever I<indentlevel>
 you provide.)  In the I<stuff> in C<=item I<stuff...>>, you may
 use formatting codes, as seen here:
 
+Item, over, 和 back 需要做一些说明： "=over" 开始一个以 "=item" 的列表
+区域，或者对段落进行一个缩进。在列表的末尾，需要用 "=back" 结束。
+I<缩进水平> 选项，跟在 "=over" 后面，表明缩进多远。通常的单位是大写字母M
+的宽度或一个等宽字符的宽度。如果忽略这个参数，默认是 4 。(有一些翻译器
+会忽略这个参数), 在 =item 跟随的内容里，可以使用格式化代码。
+
   =item Using C<$|> to Control Buffering
 
 Such commands are explained in the
@@ -176,11 +184,15 @@ Such commands are explained in the
 Note also that there are some basic rules to using "=over" ...
 "=back" regions:
 
+有几条在 "=over" ... "=back" 之间的区域中要遵守的规则。
+
 =over
 
 =item *
 
 Don't use "=item"s outside of an "=over" ... "=back" region.
+
+不要在 "=over" ... "=back" 区域外使用 "=item"。
 
 =item *
 
@@ -188,9 +200,14 @@ The first thing after the "=over" command should be an "=item", unless
 there aren't going to be any items at all in this "=over" ... "=back"
 region.
 
+在 "=over" 命令后，紧接着就该是 "=item", 除非在 "=over" ... "=back" 
+之间什么也没有。
+
 =item *
 
 Don't put "=headI<n>" commands inside an "=over" ... "=back" region.
+
+不要在 an "=over" ... "=back" 之间放置 "=headI<n>"
 
 =item *
 
@@ -200,9 +217,16 @@ And perhaps most importantly, keep the items consistent: either use
 "=item bar", etc.--namely, things that look nothing like bullets or
 numbers.
 
+也许最重要的就是保持 item 的一致性；或者使用 "=item *" 在所有 item 
+项目中。或者使用 "=item 1.", "=item 2.",等等， 生成数字列表。或者
+使用 "=item foo", "=item bar", 从名字上看，就好像一致的项目符号或数字。
+
 If you start with bullets or numbers, stick with them, as
 formatters use the first "=item" type to decide how to format the
 list.
+
+如果你开始使用一个项目符号或数字，一直用吧，转换器使用第一个 "=item"
+后跟随的项目，来决定如何格式化列表。
 
 =back
 
@@ -214,6 +238,10 @@ then a line beginning with "=cut", and a blank
 line after it.  This lets Perl (and the Pod formatter) know that
 this is where Perl code is resuming.  (The blank line before the "=cut"
 is not technically necessary, but many older Pod processors require it.)
+
+结束一段 POD 文档，使用一个空行，然后一行 "=cut". 这让 Perl (或
+Pod 转换器) 知道 Perl 代码要重新开始了。（在 "=cut" 前的空行不是必须的，
+但在一些较早的翻译器中，这是必须的).
 
 =item C<=pod>
 X<=pod> X<pod>
