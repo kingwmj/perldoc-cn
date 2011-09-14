@@ -970,6 +970,8 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com
 某些位仅同编译期相关，还有一些是运行期相关的。这是一种新机制，以后可能
 会修改其细节。
 
+=over
+
 =item $LAST_REGEXP_CODE_RESULT
 
 =item $^R
