@@ -253,25 +253,34 @@ rather than beautiful (tiny, elegant, minimal)."』
 早在 1993 年(参见 L<perlhist>)的时候, Perl 5 几乎被完全重写了一次，经历了这 
 次版本更新以后，Perl 增加了一下几个重要特性： 
 =over 4 
+
 =item * 
+
 模块化和可重用的编程思想，以及无数的模块。 
 在 L<perlmod>、 L<perlmodlib> 和 L<perlmodinstall> 中有介绍。 
+
 =item * 
+
 嵌入和扩展 
 在 L<perlembed>, L<perlxstut>, L<perlxs>, L<perlcall>, 
 L<perlguts>, 和L<xsubpp> 中有介绍。 
+
 =item * 
+
 变量绑定(包含许多关联的 DBM 工具) 
 在L<perltie> 和 L<AnyDBM_File> 中介绍。 
+
 =item * 
+
 子程序可以被重载、自动加载、指定原型 
 在 L<perlsub> 中介绍。 
+
 =item * 
+
 任意嵌套的数据结构和匿名子程序 
  
 在 L<perlreftut>, L<perlref>, L<perldsc>, 和 L<perllol> 中介绍。 
  
-
 面向对象编程 
  
 在 L<perlobj>, L<perlboot>, L<perltoot>, L<perltooc>, 
@@ -313,7 +322,9 @@ POSIX 1003.1 兼容库
  
 参见 L<POSIX>。 
  
-=back 好了，有了以上这些宣传，我想I<肯定>已经足够了。 
+=back
+
+好了，有了以上这些宣传，我想I<肯定>已经足够了。 
  
 =head1 可用性 
  
