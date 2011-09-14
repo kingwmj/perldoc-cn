@@ -806,7 +806,8 @@ how to increment a number in a file safely:
 对于 PerlIO 的特性进行详尽讨论超出本指南的范围，这里是怎样应用 PerlIO 
 层的例子： 
  
-=over 4 
+=over 4
+
 =item * 
  
 可以使用三个（或者更多）参数形式的 C<open>，其中第二个参数除了常用的 

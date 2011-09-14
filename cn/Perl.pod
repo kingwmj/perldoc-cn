@@ -43,15 +43,15 @@ B<perl> S<[ B<-sTuU> ]> S<[ B<-hv> ] [ B<-V>[:I<configvar>] ]>
     perltrap            Perl 陷阱 
     perldebtut          Perl 调试教程 
     perlfaq             Perl 常见问题(FAQ) 
-      perlfaq1          普通问题 
-      perlfaq2          开始使用和学习 Perl 时碰到的问题 
-      perlfaq3          编程工具 
-      perlfaq4          数据操作 
-      perlfaq5          文件和格式 
-      perlfaq6          正则表达式 
-      perlfaq7          Perl 语言问题 
-      perlfaq8          系统交互 
-      perlfaq9          网络编程 
+    perlfaq1            普通问题 
+    perlfaq2            开始使用和学习 Perl 时碰到的问题 
+    perlfaq3            编程工具 
+    perlfaq4            数据操作 
+    perlfaq5            文件和格式 
+    perlfaq6            正则表达式 
+    perlfaq7            Perl 语言问题 
+    perlfaq8            系统交互 
+    perlfaq9            网络编程 
  
 =head2 参考手册 
  
@@ -60,8 +60,8 @@ B<perl> S<[ B<-sTuU> ]> S<[ B<-hv> ] [ B<-V>[:I<configvar>] ]>
     perlop              Perl 操作符和优先级 
     perlsub             Perl 子程序 
     perlfunc            Perl 内建函数 
-      perlopentut       Perl open() 教程 
-      perlpacktut       Perl pack() 和 unpack() 教程 
+    perlopentut         Perl open() 教程 
+    perlpacktut         Perl pack() 和 unpack() 教程 
     perlpod             Perl POD 文档 
     perlpodspec         Perl POD 文档格式说明 
     perlrun             Perl 运行和选项 
@@ -75,12 +75,12 @@ B<perl> S<[ B<-sTuU> ]> S<[ B<-hv> ] [ B<-V>[:I<configvar>] ]>
     perlform            Perl 格式 
     perlobj             Perl 对象 
     perltie             Perl 绑定(将对象隐藏在普通变量背后) 
-      perldbmfilter     Perl DBM 过滤器 
+    perldbmfilter       Perl DBM 过滤器 
     perlipc             Perl 进程间通信 
     perlfork            Perl fork() 说明 
     perlnumber          Perl 数字符号 
     perlthrtut          Perl 线程教程 
-      perlothrtut       以前的 Perl 线程教程 
+    perlothrtut         以前的 Perl 线程教程 
     perlport            Perl 移植手册 
     perllocale          Perl 区域支持 
     perluniintro        Perl Unicode 介绍 
@@ -276,7 +276,9 @@ L<perlguts>, 和L<xsubpp> 中有介绍。
  
 在 L<perlobj>, L<perlboot>, L<perltoot>, L<perltooc>, 
 和 L<perlbot> 中介绍。 
+
 =item * 
+
 支持“轻量级进程”(线程) 
  
 在 L<perlthrtut> 和 L<threads> 中介绍。 
@@ -311,8 +313,7 @@ POSIX 1003.1 兼容库
  
 参见 L<POSIX>。 
  
-=back 
-好了，有了以上这些宣传，我想I<肯定>已经足够了。 
+=back 好了，有了以上这些宣传，我想I<肯定>已经足够了。 
  
 =head1 可用性 
  
