@@ -42,7 +42,7 @@ IO::Handle 对象。)
 如果提供了该参数，则其指定了所涉及 IO::Handle 属性的新值。如果不提供该参数，
 大多数方法不改变当前值--除了 autoflush()，它会假定给定了参数 1，稍有不同。
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com载入 IO::Handle 类是一项代价高昂的操作，因此你该知道如何使用常规的内建变量。
+载入 IO::Handle 类是一项代价高昂的操作，因此你该知道如何使用常规的内建变量。
 
 这些变量中的少数几个是“只读的” 。这意味着如果直接或者通过引用间接向该变量赋值，
 就会引起一个运行时异常。
@@ -86,7 +86,7 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com载入 IO::Handl
     }
     sub nasty_break {
         $_ = 5;
-PDF created with pdfFactory Pro trial version www.pdffactory.com        # do something with $_
+        # do something with $_
     }
 
 你可能希望上述代码打印出：
@@ -129,8 +129,6 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com        # do som
 
 以下是几处即使没有写明 Perl 也会假定使用 $_ 的地方：
 
-=over 3
-
 =item *
 
 各种单目函数，包括像 ord() 和 int() 这样的函数以及除 C<-t> 以外所有的文件
@@ -157,13 +155,7 @@ grep() 和 map() 函数的隐含迭代变量。
 当 C<while> 仅有唯一条件，且该条件是对 C<< <FH> >> 操作的结果进行测试时，$_
 就是存放输入记录的默认位置。除了 C<while> 测试条件之外不会发生这种情况。
 
-=back
-
 (助记：下划线在特定操作中是可以省略的。)
-
-=back
-
-=over 8
 
 =item $a
 
@@ -174,10 +166,6 @@ grep() 和 map() 函数的隐含迭代变量。
 指示符以后也不需要声明(用 use vars 或者 our())。
 如果想要在 sort() 的比较块或者函数中使用它们，就不要用 C<my $a> 或
 C<my $b> 将其词法化。
-PDF created with pdfFactory Pro trial version www.pdffactory.com
-=back
-
-=over 8
 
 =item $<I<digits>>
 
@@ -218,7 +206,7 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com
     print "$`:$&:$'\n";    # prints abc:def:ghi
 
 该变量只读且对于当前块具有动态作用域。
-PDF created with pdfFactory Pro trial version www.pdffactory.com
+
 在程序中任何地方使用该变量都会使所有正则表达式匹配产生可观的效率降低。
 参见 L</BUGS>。
 
@@ -262,7 +250,7 @@ C<pos> 函数得到的值一样。该数组的第 I<n> 个元素保存了第 I<n
 
 =item $*
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com将其设为非零整数值就可以进行字符串内的多行匹配，设为 0(或未定义值)
+将其设为非零整数值就可以进行字符串内的多行匹配，设为 0(或未定义值)
 相当于告诉 Perl 可以假定字符串都是单行的，从而能进行模式匹配的优化。当
 C<$*> 为 0 或未定义值时，对含有多个换行符的字符串进行模式匹配会产生很难
 理解的结果。它默认为未定义值。(助记：* 匹配很多东西。) 该变量只影响对
@@ -306,7 +294,7 @@ I<局部化 C<$.> 不会使对应文件句柄的行计数器局部化>，而只�
 =item IO::Handle->input_record_separator(EXPR)
 
 =item $INPUT_RECORD_SEPARATOR
-PDF created with pdfFactory Pro trial version www.pdffactory.com
+
 =item $RS
 
 =item $/
@@ -350,7 +338,7 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com
 
 =item $OUTPUT_AUTOFLUSH
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com=item $|
+=item $|
 
 若将该变量设为非零值，就会立刻强制进行刷新，并且当前选中的输出通道在每次
 打印或写之后都会进行刷新。默认值为 0 (不管选中的通道实际上是否被系统所缓冲，
@@ -394,7 +382,7 @@ C<$/> 很像，但却是你从 Perl 那里拿“回”的东西。) (译注： �
 该变量同 C<$,> 类似，但应用于向双引号引起的字符串(或类似的内插字符串)
 中内插数组和切片值的场合。默认为一个空格。(助记：我觉得显而易见。)
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com=item $SUBSCRIPT_SEPARATOR
+=item $SUBSCRIPT_SEPARATOR
 
 =item $SUBSEP
 
@@ -438,7 +426,7 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com=item $SUBSCRIPT
 
 =item $FORMAT_PAGE_NUMBER
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com=item $%
+=item $%
 
 为当前选中的输出通道的当前页码。同格式配合使用。
 (助记：% 是 B<nroff> 中的页码。)
@@ -482,7 +470,9 @@ C<$-[0]> 是整个匹配在字符串中开始处的偏移量，数组中第 I<n>
 存有第 I<n> 个子匹配的偏移量，因此 C<$-[1]> 是 $1 开始处的位移，
 C<$-[2]> 是 $2 开始处的位移，以此类推。
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com在对某个变量 $var 进行匹配后：
+在对某个变量 $var 进行匹配后：
+
+=back
 
 =over 5
 
@@ -528,7 +518,7 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com在对某个变�
 
 是一组字符，字符串可以在这些字符后断行以填充格式中的连续域(以 ^ 开始)。
 默认为 S<" \n-">，使字符串能在空白或连字符处断开。
-PDF created with pdfFactory Pro trial version www.pdffactory.com(助记：诗中的“冒号”是一行的一部分。)
+com(助记：诗中的“冒号”是一行的一部分。)
 
 =item IO::Handle->format_formfeed EXPR
 
@@ -572,7 +562,6 @@ system() 操作符返回的状态信息。它就是由 wait() 系统调用返回
 
 在 VMS 系统下，指示符 C<use vmsish 'status'> 使得 C<$?> 反映实际的 VMS 退出
 状态，而不是默认的对 POSIX 状态的模拟；细节见 L<perlvms/$?>。
-PDF created with pdfFactory Pro trial version www.pdffactory.com
 另见 L<错误指示器>。
 
 =item ${^ENCODING}
@@ -616,8 +605,6 @@ went bang?)
 
 另见 L<错误指示器>。
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com=item %!
-
 当 C<$!> 设置为某个值时 C<%!> 的对应元素即为真值。例如，C<$!{ENOENT}>
 为真当且仅当 C<$!> 的当前值为 C<ENOENT>；也就是说，若最后的错误是
 "No such file or directory"(或其他等价的东西：并不是所有操作系统都给出
@@ -660,7 +647,7 @@ C<$!> 一样。
 若 $@ 是空字符串，则最近一次 eval() 进行了正确的解析和执行(
 但是你所进行的操作可能已经按照通常的形式失败了)。
 (助记：语法错误发生“在”哪里？)
-PDF created with pdfFactory Pro trial version www.pdffactory.com(译注：符号“@”为英文单词“at”简写，意为“在……”)
+(译注：符号“@”为英文单词“at”简写，意为“在……”)
 
 警告消息不会被收集在该变量中。但你可以像后面描述的那样，通过设置
 C<$SIG{__WARN__}> 自己建立一个例程来处理警告。
@@ -704,7 +691,6 @@ C<Linux::Pid>。
 
 可以用 POSIX::setuid() 同时改变有效 uid 和实际 uid。更改 $> 后需要
 检查 $! 以发现可能产生的错误。
-PDF created with pdfFactory Pro trial version www.pdffactory.com
 (助记：如果你用了 setuid，那么这是你要变成的 uid。)
 C<< $< >> 和 C<< $> >> 仅在支持 setreuid() 的机器上才能互换。
 
@@ -748,7 +734,7 @@ setgroups() 传入空列表，就要这么写：C< $) = "5 5" >。
 (助记：圆括号用来I<分组>事物。当使用 setgid 时，有效 gid 就是你需要的那个
 组)(译注：原文为“that's I<right> for you” ，难以表达“right”的含义。)
 
-PDF created with pdfFactory Pro trial version www.pdffactory.comC<< $< >>、C<< $> >>、C<$(> 和 C<$)> 只能在支持对应的 I<set[re][ug]id()>
+C<< $< >>、C<< $> >>、C<$(> 和 C<$)> 只能在支持对应的 I<set[re][ug]id()>
 例程的机器上进行设置。C<$(> 和 C<$)> 只能在支持 setregid() 的机器上互换。
 
 =item $PROGRAM_NAME
@@ -793,7 +779,6 @@ Perl 5 出现后，向 C<$[> 赋值被当作一个编译器指示符，因此不
 
 =item $]
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com
 Perl 解释器的版本 + 补丁级别 / 1000。该变量可用来判定一个脚本是否运行在恰当版本
 范围的 Perl 解释器上。(助记：该版本的 Perl 是否是正确的类别？)(译注：英文
 “right bracket”可以表示正确的类别，字面意思则是右方括号。) 例：
@@ -837,8 +822,6 @@ C<$^C = 1> 同调用 C<B::minus_c> 类似。
 文件描述符的 exec 时关闭状态是根据对应的文件、管道或套接字打开时的 C<$^F>
 值来决定的，而不是 exec() 时的 C<$^F> 值。
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com=item $^H
-
 警告：该变量应严格限制在内部使用。其存在性、行为以及内容可能不经提醒就被改
 变。
 
@@ -881,7 +864,7 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com=item $^H
 %^H 散列表提供与 $^H 相同的作用域语法。这使其在实现词法作用域内的指示符时非常
 有用。
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com=item $INPLACE_EDIT
+=item $INPLACE_EDIT
 
 =item $^I
 
@@ -924,10 +907,10 @@ Win32::GetOSVersion() (见 L<Win32> 及 L<perlport>) 区分这些变种。
 
 =back
 
-=over 6
+=over 4
 
 =item 0x01
-PDF created with pdfFactory Pro trial version www.pdffactory.com
+
 进入/退出调试子程序。
 
 =item 0x02
@@ -1016,7 +999,7 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com
 中对 C<-C> 开关的描述。该变量在 Perl 启动时被设置，然后就是只读的了。
 
 =item $PERL_VERSION
-PDF created with pdfFactory Pro trial version www.pdffactory.com
+
 =item $^V
 
 Perl 解释器的修订号、版本号以及子版本号，由具有这些序数的字符组成的字符串表示
@@ -1060,7 +1043,7 @@ Perl 解释器的修订号、版本号以及子版本号，由具有这些序数
 操作系统允许调用不在 PATH 环境变量中的程序，因此并不保证 $^X 的值一定
 在 PATH 中。对 VMS 来说，该值可能包含一个版本号。
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com通常可以用 $^X 的值再次产生和当前运行的 perl 相同的一个独立副本，例如，
+通常可以用 $^X 的值再次产生和当前运行的 perl 相同的一个独立副本，例如，
 
   @first_run = `$^X -le "print int rand 100 for 1..100"`;
 
@@ -1104,7 +1087,7 @@ C<< <> >> 中的空文件句柄。注意目前 C<ARGV> 仅在 C<< <> >> 操作�
 =item @ARGV
 
 数组 @ARGV 含有脚本的命令行参数。C<$#ARGV> 通常是参数数量减 1，因为 C<$ARGV[0]>
-PDF created with pdfFactory Pro trial version www.pdffactory.com是第一个参数，而I<不是>程序本身的命令名称。命令名称请见 C<$0>。
+是第一个参数，而I<不是>程序本身的命令名称。命令名称请见 C<$0>。
 
 =item ARGVOUT
 
@@ -1148,7 +1131,7 @@ lib>
 的一个
 文件。 散列键是包含处给定的文件名(模块名已转换为路径名)，散列值为找到该文件的位置。
 C<require> 运算符用这个散列表判断某个特定文件是否已经被包含过。
-PDF created with pdfFactory Pro trial version www.pdffactory.com
+
 若某个文件是由拦截点(例如一个函数引用，这些拦截点的说明参见 L<perlfunc/require>)
 载入的，
 那么默认插入 %INC 的是这个拦截点而不是文件名。但要注意的是，拦截点可能已经自行修
@@ -1192,7 +1175,7 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com
     $SIG{"PIPE"} = *Plumber;    # 有点儿深奥
     $SIG{"PIPE"} = Plumber();   # 啊！Plumber() 返回的是什么？
 
-PDF created with pdfFactory Pro trial version www.pdffactory.com请确保没有使用裸字作为一个信号处理器的名字，免得产生无意中的调用。
+请确保没有使用裸字作为一个信号处理器的名字，免得产生无意中的调用。
 
 如果系统有 sigaction() 函数， 就用它来安装信号处理器。这意味着你能得到可靠的信号处
 理方式。
@@ -1236,7 +1219,7 @@ C<__DIE__>/C<__WARN__> 处理器在一种情况下是很特殊的：
     require Carp if defined $^S;
     Carp::confess("Something wrong") if defined &Carp::confess;
     die "Something wrong, but could not load Carp to give backtrace...
-PDF created with pdfFactory Pro trial version www.pdffactory.com         To see backtrace try starting Perl with -MCarp switch";
+         To see backtrace try starting Perl with -MCarp switch";
 
 这里的第一行只有在调用处理器的对象 I<不是>解析器时才会执行载入操作。第二行只有在
 Carp 可用时才打印
@@ -1280,7 +1263,7 @@ Carp 可用时才打印
 
 最后， C<$?> 在外部程序 F</cdrom/install> 失败时设置为非 0 值。高 8 位反映出该程序
 遇到的特定错误
-PDF created with pdfFactory Pro trial version www.pdffactory.com条件(程序的 exit() 值)，低 8 位反映失败方式，例如信号致死或核心转储，细节参见
+条件(程序的 exit() 值)，低 8 位反映失败方式，例如信号致死或核心转储，细节参见
 wait(2)。对比
 仅在检测到错误条件时才设置的 C<$!> 和 C<$^E>，变量 C<$?> 在每个 C<wait> 或管道
 C<close> 时都会
@@ -1324,7 +1307,7 @@ Ctrl-C<F> 后跟两个 C<o> 的标量。这些变量被 Perl 保留作将来的�
   ARGV    STDERR
   ARGVOUT   _
   SIG
-PDF created with pdfFactory Pro trial version www.pdffactory.com
+
 特别地，不管当前作用域中的 C<package> 声明如何，新形式的特殊变量 C<${^_XYZ}> 总是
 被放置在 C<main>
 包里。
