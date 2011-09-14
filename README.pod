@@ -1,0 +1,8 @@
+=encoding utf8
+
+=head1 Perldoc 中文文档计划
+
+将最新的 Perldoc 核心文档翻译成中文。
+让大家免费使用。
+
+=cut
