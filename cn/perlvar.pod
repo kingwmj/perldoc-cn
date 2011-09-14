@@ -500,6 +500,8 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com在对某个变�
 
 =back
 
+=over 4
+
 =item HANDLE->format_name(EXPR)
 
 =item $FORMAT_NAME
@@ -790,6 +792,7 @@ Perl 5 出现后，向 C<$[> 赋值被当作一个编译器指示符，因此不
 块之内。
 
 =item $]
+
 PDF created with pdfFactory Pro trial version www.pdffactory.com
 Perl 解释器的版本 + 补丁级别 / 1000。该变量可用来判定一个脚本是否运行在恰当版本
 范围的 Perl 解释器上。(助记：该版本的 Perl 是否是正确的类别？)(译注：英文
@@ -919,6 +922,8 @@ Win32::GetOSVersion() (见 L<Win32> 及 L<perlport>) 区分这些变种。
 
 供调试支持用的内部变量。其不同位所代表的意义很可能改变，但目前表示的是：
 
+=back
+
 =over 6
 
 =item 0x01
@@ -965,10 +970,10 @@ PDF created with pdfFactory Pro trial version www.pdffactory.com
 
 进入/退出调试断言子程序。
 
-=back
-
 某些位仅同编译期相关，还有一些是运行期相关的。这是一种新机制，以后可能
 会修改其细节。
+
+=back
 
 =over 6
 
