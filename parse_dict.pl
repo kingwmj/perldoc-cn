@@ -2,43 +2,16 @@
 
 use strict;
 use warnings;
-use File::Find;
 use 5.010;
+use autodie;
+use File::Find qw< find >;
 
-# 解析指定文本文件,pod文件，将文本中所有涉及到的单词制作成字典
-# 将已认识字典中涉及的单词排除，将不认识的单词在不认识
-# 字典中找出，并将在字典中不存在的单词单独列出来。
-# 通过有道查询来完善字典。
+open(DEBUG, '>', 'debug.txt');
 
-my $find_dir = 'input/';
-say "Get the argument of $find_dir";
-
-my(@filelist, %wordlist, %dict_hash);
-my(%dict_all, %dict_known, %dict_study, %dict_code);
-# define dict filename
-my $dict_all   = 'dict/dict.txt';
-my $dict_known = 'dict/dict_know.txt';
-my $dict_study = 'dict/dict_study.txt';
-my $dict_code = 'dict/dict_code.txt';
-
-# load the %dict_hash from dict
-foreach my $dict ($dict_all, $dict_known, $dict_study, $dict_code) {
-	open(DICT, $dict) or die $!;
-	while(<DICT>) {
-		chomp;
-		if ($_ =~ /\|\|/) {
-			my($key, $value) = split(/\|\|/, $_);
-			$dict_all{$key}   = $value if ($dict eq $dict_all);
-            $dict_known{$key} = $value if ($dict eq $dict_known);
-            $dict_study{$key} = $value if ($dict eq $dict_study);
-            $dict_code{$key}  = $value if ($dict eq $dict_code);
-
-		}
-	}
-}
-
-# 测试这几个字典，生成测试脚本，
-# get all the file list would be parse
+# 扫描目录并获取所有文件列表
+my $find_dir = 'en';
+my @filelist; # 目录中所有的 pod && txt 文档
+# 获取文件列表
 find(\&wanted, $find_dir);
 sub wanted {
 	if ($_ =~ /\.(pod|txt)$/i) {
@@ -46,11 +19,40 @@ sub wanted {
 	}
 }
 
-# 解析文本
+# 定义基本字典变量
+my $dict_dir = 'dict';
+my $file_dict_common  = "$dict_dir/dict_common.txt";
+my $file_dict_rare    = "$dict_dir/dict_rare.txt";
+my $file_dict_code    = "$dict_dir/dict_code.txt";
+
+# 定义存储字典内部变量
+my(%dict_hash, %dict_common, %dict_rare, %dict_code);
+foreach my $file ($file_dict_common, $file_dict_rare, $file_dict_code) {
+	open(my $fh, '<', $file);
+	while (my $line = <$fh>) {
+        chomp $line;
+		if ($line =~ /\|\|/) {
+			my($key, $value) = split /\|\|/, $line;
+            $dict_hash{$key} = $value;
+            $dict_common{$key} = $value if ($file eq $file_dict_common);
+            $dict_rare{$key}   = $value if ($file eq $file_dict_rare);
+            $dict_code{$key}   = $value if ($file eq $file_dict_code);
+		}
+	}
+}
+
+# 对比三个字典看是否有重复
+foreach my $key (keys %dict_common) {
+    say DEBUG "$key in common also in rare" if ( exists $dict_rare{$key} );
+    say DEBUG "$key in common also in code" if ( exists $dict_code{$key} );
+}
+
+# 解析文本，生成单词列表
+my (%wordlist);
 foreach my $file ( @filelist ) {
 	say "Starting parse file $file ...";
-	open(FILE, $file) or warn "Can not open $file: $!\n";
-	while ( my $line = <FILE> ) {
+	open(my $fh, '<', $file);
+	while ( my $line = <$fh> ) {
 		chomp $line;
 		next if ($line =~ m/^\s+/); # 过滤注释
 		$line =~ s/\W|\d/ /g; # 将非字母和数字替换成空格
@@ -59,30 +61,42 @@ foreach my $file ( @filelist ) {
 		foreach my $word (@line) {
 			$word = lc($word);
 			my $length = length($word);
-			$wordlist{$word} = $word if ($length > 1);
+			$wordlist{$word} = '';
 		}
 	}
 }
-# 设置三个字典，一个是常用的，不需要翻译的，
-# 一个是需要翻译的，另外一个是忽略不需要翻译的。
-#
-# output waitting confirm dict
-my $wait_confm = 'dict/wait_confirm.txt';
-my $debug_file = 'dict/touched.txt';
-open(OUTPUT, ">", $wait_confm) or die $!;
-open(DEBUG, ">", $debug_file) or die $!;
-sub byword { $a cmp $b }
-foreach my $key (sort byword keys %wordlist) {
+
+# 匹配单词列表
+my (%dict_unknown, %dict_know);
+foreach my $key (sort keys %wordlist) {
 	if (exists $dict_hash{$key}) {
-		say DEBUG  "$key||$dict_hash{$key}";
+        # 如果匹配上，就加入匹配散列
+        $dict_know{$key} = $dict_hash{$key};
 	}
 	else {
-		say OUTPUT $key;
+        # 如果没有匹配上，就加入不匹配散列
+		$dict_unknown{$key} = '';
 	}
 }
+
+# 输出结果
+my $file_dict_know    = "$dict_dir/dict_know.txt";
+my $file_dict_unknown = "$dict_dir/dict_unknown.txt";
+
+open(my $fh_know,    '>', $file_dict_know);
+open(my $fh_unknown, '>', $file_dict_unknown);
+
+# 输出匹配结果
+foreach my $word (sort keys %dict_know) {
+    say {$fh_know} "$word||$dict_hash{$word}";
+}
+
+# 输出不匹配结果
+foreach my $word (sort keys %dict_unknown) {
+    say {$fh_unknown} $word;
+}
+
 say "Parsing Over!";
 
 # 去除下划线'_', 非单词字符，数字，和单字符单词
 # 加载完全的字典，加载不必翻译的字典系列
-# load dict_all and dict_know
-# compare the wordlist result is not touched two dict
