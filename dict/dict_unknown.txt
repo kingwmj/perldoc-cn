@@ -167,6 +167,7 @@ aia
 aimed
 aims
 aix
+aka
 akin
 al
 alan
@@ -290,8 +291,6 @@ answering
 answers
 antemillennial
 anticipated
-antilog
-antilogarithm
 antiquated
 antisocial
 anubis
@@ -301,7 +300,6 @@ anyoption
 anyplace
 anytime
 aoa
-aoh
 aos
 apache
 api
@@ -337,7 +335,6 @@ ar
 arbitrarily
 arcana
 arcane
-arccosine
 archaic
 architectures
 archive
@@ -347,7 +344,6 @@ archiving
 archlib
 archname
 arcs
-arcsine
 arctangent
 aref
 arenas
@@ -561,6 +557,8 @@ barack
 barebones
 barefoot
 barestmt
+bareword
+barewords
 bargaining
 barker
 barney
@@ -853,7 +851,6 @@ bytestream
 bytestring
 bytlm
 byzantine
-bz
 bzip
 c
 ca
@@ -1210,7 +1207,6 @@ commentary
 commenting
 comments
 commercially
-commify
 commitments
 commits
 committal
@@ -1274,8 +1270,6 @@ computes
 computing
 comspec
 con
-concat
-concatenate
 concatenated
 concatenates
 concatenating
@@ -1442,6 +1436,7 @@ covers
 cows
 cozens
 cp
+cpan
 cpane
 cpanp
 cpanplus
@@ -1830,7 +1825,6 @@ devising
 devoid
 devotees
 df
-dfa
 dfas
 dfff
 dfs
@@ -2207,6 +2201,7 @@ emulates
 emulating
 emulators
 emx
+en
 enables
 enabling
 ename
@@ -2464,7 +2459,6 @@ eyes
 eyesore
 eyestrain
 eyrie
-ez
 f
 fa
 faced
@@ -2620,7 +2614,6 @@ firing
 firstgrader
 firstkey
 firstly
-fischer
 fisher
 fits
 five
@@ -2814,7 +2807,6 @@ futile
 futimes
 fuzzy
 fwrite
-fz
 g
 gaa
 gadget
@@ -2866,7 +2858,6 @@ getall
 getarg
 getattr
 getc
-getchar
 getegid
 getenv
 getgid
@@ -3137,7 +3128,6 @@ harper
 hartmaier
 harvested
 hasargs
-hashbang
 hashdepth
 hashed
 hashing
@@ -3174,7 +3164,6 @@ helper
 helpfully
 henry
 hentsche
-heredoc
 heritage
 hermetic
 herrmann
@@ -3209,13 +3198,11 @@ hlagh
 hm
 hmmmm
 hn
-hoa
 hobbes
 hobbit
 hoc
 hoelz
 hog
-hoh
 holders
 holds
 holes
@@ -3274,6 +3261,7 @@ html
 htmlname
 htmlnamee
 htpasswd
+http
 httpd
 hu
 hubris
@@ -3327,6 +3315,7 @@ icelandic
 ick
 iconv
 icow
+id
 ide
 ideally
 ident
@@ -3452,7 +3441,6 @@ indexed
 indexers
 indexes
 indexing
-indexof
 indic
 indicator
 indicators
@@ -3517,6 +3505,7 @@ inplace
 inputs
 inputstream
 inputting
+ins
 inscription
 inscrutable
 insecure
@@ -3676,6 +3665,7 @@ irix
 irrelevant
 irreversible
 irrevocably
+isa
 isall
 isalnum
 isalpha
@@ -3715,7 +3705,6 @@ iterations
 iterative
 iteratively
 ith
-ithread
 ithreads
 itimer
 itty
@@ -3729,7 +3718,6 @@ ivx
 iwmm
 ix
 ixhash
-iz
 izable
 ization
 ize
@@ -3747,6 +3735,7 @@ japhs
 jargon
 jarkko
 jason
+java
 jay
 jdn
 jed
@@ -3766,7 +3755,6 @@ jim
 jirka
 jis
 jisx
-jmp
 jmpenv
 jobbie
 jobs
@@ -3875,7 +3863,6 @@ kong
 konovalov
 korean
 korn
-krause
 ksh
 kvale
 kwds
@@ -4053,7 +4040,6 @@ liz
 ljmoore
 llama
 ller
-ln
 lnm
 loadable
 loader
@@ -4084,7 +4070,6 @@ lockable
 locked
 locker
 lockf
-lockfile
 lockfiles
 locking
 locks
@@ -4110,7 +4095,6 @@ longstanding
 lookaheads
 lookalike
 lookalikes
-lookaround
 lookbehind
 looked
 lookmain
@@ -4164,7 +4148,6 @@ lx
 ly
 lynxos
 lyon
-lz
 lzma
 m
 mac
@@ -4390,6 +4373,7 @@ mgk
 mgvtbl
 mhcontext
 mhcontextfd
+mi
 mice
 michael
 micro
@@ -4507,6 +4491,7 @@ mnemonics
 mo
 moaning
 mockobject
+mod
 modelled
 modem
 modems
@@ -4860,7 +4845,6 @@ nontruncated
 nonwhitespace
 nonzero
 noop
-nop
 noprototypes
 norbert
 noremap
@@ -4950,6 +4934,7 @@ obeys
 obfuscated
 obfuscation
 obituary
+obj
 objc
 objectless
 objformat
@@ -5030,10 +5015,10 @@ onlinedat
 onlinepubs
 ontrol
 onwards
+oo
 oodles
 ook
 ooo
-oop
 oops
 oopsav
 oopshv
@@ -5266,6 +5251,7 @@ pcb
 pclose
 pcre
 pcs
+pdf
 pdl
 pdp
 pdt
@@ -5298,6 +5284,7 @@ perilous
 perils
 periodically
 periods
+perl
 perlaix
 perlamiga
 perlapi
@@ -5420,12 +5407,10 @@ perlqnx
 perlre
 perlreapi
 perlrebackslash
-perlrecapture
 perlrecharclass
 perlref
 perlreftut
 perlreguts
-perlremodifiers
 perlrepository
 perlrequick
 perlreref
@@ -5578,6 +5563,7 @@ plugin
 plugins
 plumbing
 pm
+pmc
 pmd
 pmf
 pmop
@@ -5633,6 +5619,7 @@ porting
 portions
 portmanteau
 ports
+pos
 posed
 posit
 positioning
@@ -5672,6 +5659,7 @@ ppp
 ppport
 pprivate
 practicing
+pragma
 pragmata
 pragmatic
 prctl
@@ -5941,7 +5929,6 @@ qq
 qr
 qre
 qsl
-qsort
 qt
 quacks
 quad
@@ -5986,6 +5973,7 @@ quotient
 quotish
 quser
 quux
+qw
 qx
 qxcm
 r
@@ -6013,7 +6001,6 @@ randomization
 randomized
 randomly
 randomness
-randseed
 randy
 ranges
 ranging
@@ -6252,7 +6239,6 @@ remotes
 removed
 removes
 removing
-ren
 rename
 renames
 renderable
@@ -6361,7 +6347,6 @@ retrying
 retval
 reusability
 reusable
-rev
 reval
 revamp
 revealed
@@ -6389,6 +6374,7 @@ rexc
 rexx
 rezic
 rf
+rfc
 rfi
 rfv
 rg
@@ -6408,6 +6394,7 @@ rightmost
 rights
 rigors
 rinaldo
+rindex
 rings
 rintel
 risc
@@ -6776,7 +6763,6 @@ shines
 shipped
 ships
 shirley
-shl
 shlock
 shlomi
 shm
@@ -6800,7 +6786,6 @@ showlist
 shown
 shows
 showtime
-shr
 shrinks
 shrunk
 shudder
@@ -7128,7 +7113,6 @@ stems
 stephen
 stephens
 stepping
-sterr
 steve
 steven
 stevens
@@ -7149,6 +7133,7 @@ stores
 storesize
 stories
 storing
+str
 straightaway
 strangeness
 strangers
@@ -7251,6 +7236,7 @@ substantive
 substitutes
 substituting
 substitutions
+substr
 substrhash
 substring
 substrings
@@ -7271,7 +7257,6 @@ subvert
 subverted
 succeeded
 succinctly
-sucking
 sucks
 sue
 suffers
@@ -7421,7 +7406,6 @@ sysv
 sysvr
 syswrite
 sytem
-sz
 szlig
 t
 tab
@@ -7680,6 +7664,7 @@ tpf
 tpj
 tprint
 tputs
+tr
 traced
 traces
 tracing
@@ -7809,7 +7794,6 @@ tye
 tyni
 typeahead
 typecast
-typecasting
 typedef
 typedefs
 typeglob
@@ -7905,6 +7889,7 @@ uncontroversial
 unconventional
 uncounted
 uncuddled
+undef
 undefine
 undefines
 undefining
@@ -7915,7 +7900,6 @@ undelivered
 undenting
 underbar
 underbars
-underdocumented
 undergoes
 undergone
 underlining
@@ -7953,6 +7937,7 @@ ungainly
 ungetc
 ungracefully
 uni
+unicode
 unicodeness
 unicore
 unidata
@@ -7962,7 +7947,6 @@ unification
 unignored
 unimplemented
 unimport
-unimporting
 unimports
 uninformative
 uninstall
@@ -7977,6 +7961,7 @@ uniquely
 uniskip
 unitcheck
 universes
+unix
 unixen
 unixes
 unixify
@@ -8024,7 +8009,6 @@ unportabilities
 unportable
 unpredictable
 unpredictably
-unprinted
 unprivileged
 unproductive
 unprototyped
@@ -8153,6 +8137,7 @@ usurps
 ut
 utc
 utest
+utf
 utfebcdic
 util
 utilities
@@ -8215,6 +8200,7 @@ vbuf
 vc
 vcatpvfn
 vd
+ve
 vec
 vectors
 vehicular
@@ -8300,6 +8286,7 @@ vp
 vprintf
 vrexx
 vromans
+vs
 vsetpvfn
 vsnprintf
 vsprintf
@@ -8476,6 +8463,7 @@ wtraditional
 wu
 wunitialized
 wwrite
+www
 wx
 wxwidgets
 wysiwyg
@@ -8520,6 +8508,7 @@ xidstart
 xism
 xl
 xlc
+xml
 xmx
 xof
 xop
@@ -8561,10 +8550,10 @@ xterm
 xv
 xvs
 xx
+xxx
 xxxx
 xxxxx
 xyz
-xz
 y
 yacc
 yacsmoke
@@ -8627,5 +8616,4 @@ zsb
 zsh
 zslig
 zwj
-zz
 zzz

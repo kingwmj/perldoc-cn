@@ -6,11 +6,13 @@ use 5.010;
 use autodie;
 use File::Find qw< find >;
 
-open(DEBUG, '>', 'debug.txt');
+# 调试句柄
+open (my $fh_debug, '>', 'debug.pod');
 
 # 扫描目录并获取所有文件列表
 my $find_dir = 'en';
 my @filelist; # 目录中所有的 pod && txt 文档
+
 # 获取文件列表
 find(\&wanted, $find_dir);
 sub wanted {
@@ -23,11 +25,10 @@ sub wanted {
 my $dict_dir = 'dict';
 my $file_dict_common  = "$dict_dir/dict_common.txt";
 my $file_dict_rare    = "$dict_dir/dict_rare.txt";
-my $file_dict_code    = "$dict_dir/dict_code.txt";
 
 # 定义存储字典内部变量
-my(%dict_hash, %dict_common, %dict_rare, %dict_code);
-foreach my $file ($file_dict_common, $file_dict_rare, $file_dict_code) {
+my(%dict_hash, %dict_common, %dict_rare);
+foreach my $file ($file_dict_common, $file_dict_rare) {
 	open(my $fh, '<', $file);
 	while (my $line = <$fh>) {
         chomp $line;
@@ -36,26 +37,58 @@ foreach my $file ($file_dict_common, $file_dict_rare, $file_dict_code) {
             $dict_hash{$key} = $value;
             $dict_common{$key} = $value if ($file eq $file_dict_common);
             $dict_rare{$key}   = $value if ($file eq $file_dict_rare);
-            $dict_code{$key}   = $value if ($file eq $file_dict_code);
 		}
 	}
 }
 
-# 对比三个字典看是否有重复
+# 对比 %dict_common && %dict_rare, 如果有重复就删除 %dict_common 中的记录
 foreach my $key (keys %dict_common) {
-    say DEBUG "$key in common also in rare" if ( exists $dict_rare{$key} );
-    say DEBUG "$key in common also in code" if ( exists $dict_code{$key} );
+    delete $dict_common{$key} if ( exists $dict_rare{$key} );
 }
 
-# 解析文本，生成单词列表
+# 将没有同 %dict_rare %dict_code 重复的记录输出为新的 dict_common.txt
+open (my $fh_common, '>', $file_dict_common);
+foreach my $word (sort keys %dict_common) {
+    say {$fh_common} "$word||$dict_common{$word}";
+}
+
+# 解析文本，生成单词列表，同时生成代码单词表
+my $file_dict_code  = "$dict_dir/dict_code.txt";
 my (%wordlist);
 foreach my $file ( @filelist ) {
 	say "Starting parse file $file ...";
 	open(my $fh, '<', $file);
+    my $blank_line = 0; # 空行计数
 	while ( my $line = <$fh> ) {
 		chomp $line;
-		next if ($line =~ m/^\s+/); # 过滤注释
-		$line =~ s/\W|\d/ /g; # 将非字母和数字替换成空格
+
+        # 将连续的空行合并成一行
+        $blank_line++   if     (/^$/);
+        $blank_line = 0 unless (/^$/);
+        next if ($blank_line > 1);
+        
+        # 忽略文本
+		next if ($line =~ m/^\s+/); # 忽略原文输出部分
+        next if ($line =~ m/^=encoding/); # 忽略 =encoding 行
+        next if ($line =~ m/^=over/);
+        next if ($line =~ m/^=back/);
+        next if ($line =~ m/^=cut/);
+        next if ($line =~ m/^=for/);
+        next if ($line =~ m/^=item\s+\*$/);
+        next if ($line =~ m/^=item\s+\d+$/);
+
+        # 预处理文本
+        $line =~ s/\s+$//; # 去除行后空格
+        next if ($line =~ /^$/); # 再次去除空行
+
+        # 集中显示POD
+        say {$fh_debug} $line;
+
+        # 格式化字符串处理
+        $line =~ s/X<.*?>//g;  # 去除索引标签，以后需要翻译
+
+        # 生成单词表
+ 		$line =~ s/\W|\d/ /g; # 将非字母和数字替换成空格
 		$line =~ s/\s+|_/ /g; # 将下划线和多个空格替换成单个空格
 		my @line = split / /, $line; # 拆分
 		foreach my $word (@line) {
@@ -67,36 +100,19 @@ foreach my $file ( @filelist ) {
 }
 
 # 匹配单词列表
-my (%dict_unknown, %dict_know);
+my (%dict_unknown);
 foreach my $key (sort keys %wordlist) {
-	if (exists $dict_hash{$key}) {
-        # 如果匹配上，就加入匹配散列
-        $dict_know{$key} = $dict_hash{$key};
-	}
-	else {
+	if (!exists $dict_hash{$key}) {
         # 如果没有匹配上，就加入不匹配散列
 		$dict_unknown{$key} = '';
 	}
 }
 
-# 输出结果
-my $file_dict_know    = "$dict_dir/dict_know.txt";
-my $file_dict_unknown = "$dict_dir/dict_unknown.txt";
-
-open(my $fh_know,    '>', $file_dict_know);
-open(my $fh_unknown, '>', $file_dict_unknown);
-
-# 输出匹配结果
-foreach my $word (sort keys %dict_know) {
-    say {$fh_know} "$word||$dict_hash{$word}";
-}
-
 # 输出不匹配结果
+my $file_dict_unknown = "$dict_dir/dict_unknown.txt";
+open(my $fh_unknown, '>', $file_dict_unknown);
 foreach my $word (sort keys %dict_unknown) {
     say {$fh_unknown} $word;
 }
 
 say "Parsing Over!";
-
-# 去除下划线'_', 非单词字符，数字，和单字符单词
-# 加载完全的字典，加载不必翻译的字典系列

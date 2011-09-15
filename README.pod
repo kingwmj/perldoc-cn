@@ -11,6 +11,10 @@ L<http://www.cpan.org/src/5.0/perl-5.14.1.tar.gz>
  en     英文 POD 文件夹 (pod格式)
  cn     中文 POD 文件夹 (pod格式)
  dict   词典 (txt格式)
+    dict_common.txt 常用单词词典
+    dict_rare.txt   生僻单词词典
+    dict_code.txt   专有名字词典
+    dict_unknown.txt 未识别单词
  data   例句数据库 (txt格式)
  temp   临时文件夹 (pod文件格式)
  doc    待处理规范文件夹 (pod文件格式)
@@ -20,7 +24,7 @@ L<http://www.cpan.org/src/5.0/perl-5.14.1.tar.gz>
  translate_tips.bat Windows平台上执行此脚本的批处理脚本
  parse_pod.pl 生成中文POD文档的脚本
  parse_pod.bat Windows平台执行此脚本的批处理脚本
- debug.txt 调试程序输出临时文档
+ debug.pod 调试程序输出临时文档
 
 解析步骤，首先运行词典解析脚本 L<parse_dict.pl>, 将文档中的生僻词
 查找出来，通过人工办法添加到词典文档中。然后运行翻译提示对照脚本
@@ -43,8 +47,7 @@ F<translate_tips.pl>, 生成与输入文本同名的翻译对照文件。
 
 专有词汇，变量名称，函数名称，常用缩写等无需翻译的单词。
 如：Perl perl int
-
-另外，脚本将动态生成一个 L<dict_format.txt> 格式化字符串字典。
+脚本将动态生成这个字符串字典。
 用于原文表现文本中的格式化代码。这个字典是根据 [BLXSFI]<...> 
 解析生成的。
 
@@ -54,8 +57,7 @@ F<translate_tips.pl>, 生成与输入文本同名的翻译对照文件。
 前三个词典手工添加维护。
 
 此脚本同时拆分文本中的所有可翻译的单词，匹配所有词典，将不能匹配的
-单词列表输出 L<dict_unknown.txt>， 同时输出匹配单词列表输出
-L<dict_know.txt> ，供手工查询补充添加，分析错误，验证分析。
+单词列表输出 L<dict_unknown.txt>，供手工查询补充添加，分析错误，验证分析。
 ，并维护此脚本。同时需要制作一个小脚本 L<filter_dict.pl>, 用于将
 做好标记的 dict_unknown.txt 拆分，添加到前三个词典中。
 生僻词添加 B<||> 分隔符，需要忽略的不动，属于代码的前面加一个空格。
@@ -79,5 +81,10 @@ L<dict_know.txt> ，供手工查询补充添加，分析错误，验证分析。
 中文POD文档，应当是根据例句数据库自动生成的。
 
 根据例句数据库和词典，生成格式可调的中文POD格式。
+
+=head2 Pod 格式规范
+
+先使用 Pod 格式规范化工具，对 Pod 英文进行检查，消除所有明显的问题。
+
 
 =cut
