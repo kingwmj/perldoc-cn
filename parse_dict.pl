@@ -3,11 +3,28 @@
 use strict;
 use warnings;
 use 5.010;
+use utf8;
 use autodie;
 use File::Find qw< find >;
+use Lingua::EN::Splitter qw( words );
+use Pod::Simple;
+
+my $podparser = new Pod::Simple;
+
+BEGIN {
+    no warnings 'redefine';
+    *Lingua::EN::Splitter::words = sub {
+        my $self = shift;
+        my $input = shift;
+        $input =~ s/$self->{PARAGRAPH_BREAK}/ /g;
+        return [ split /$self->{NON_WORD_CHARACTER}+/, $input ];
+    }
+}
 
 # 调试句柄
 open (my $fh_debug, '>', 'debug.pod');
+my $blank = "\x{0020}";
+my $tab   = $blank x 4;
 
 # 扫描目录并获取所有文件列表
 my $find_dir = 'en';
@@ -59,13 +76,10 @@ foreach my $file ( @filelist ) {
 	say "Starting parse file $file ...";
 	open(my $fh, '<', $file);
     my $blank_line = 0; # 空行计数
+    my $text; # 局部缓冲，每个文件一个累加标量
 	while ( my $line = <$fh> ) {
 		chomp $line;
-
-        # 将连续的空行合并成一行
-        $blank_line++   if     (/^$/);
-        $blank_line = 0 unless (/^$/);
-        next if ($blank_line > 1);
+        $line =~ s/\s+$//; # 去除行后空格
         
         # 忽略文本
 		next if ($line =~ m/^\s+/); # 忽略原文输出部分
@@ -78,25 +92,35 @@ foreach my $file ( @filelist ) {
         next if ($line =~ m/^=item\s+\d+$/);
 
         # 预处理文本
-        $line =~ s/\s+$//; # 去除行后空格
-        next if ($line =~ /^$/); # 再次去除空行
+        $line =~ s/^=head[1234]\s+//; # 去除 =head 标题标记
+        $line =~ s/^=item\s+//; # 去除 =item 标记
+        $line =~ s/\s+/$blank/g; # 将多个空格合并成一个空格
+ 
+        # 将连续的空行合并成一行
+        $blank_line++   if     ($line =~ /^$/);
+        $blank_line = 0 unless ($line =~ /^$/);
+        next if ($blank_line > 1);
+
+        # 保存输出到变量
+        $line =~ s/$/$blank/; # 末尾添加空格，可以没有标点符号的标题单独成词
+        $text .= $line;
 
         # 集中显示POD
         say {$fh_debug} $line;
+    }
 
-        # 格式化字符串处理
-        $line =~ s/X<.*?>//g;  # 去除索引标签，以后需要翻译
+    # 生成单词表
+    $wordlist{$_}++ for @{ words($text) };
+}
 
-        # 生成单词表
- 		$line =~ s/\W|\d/ /g; # 将非字母和数字替换成空格
-		$line =~ s/\s+|_/ /g; # 将下划线和多个空格替换成单个空格
-		my @line = split / /, $line; # 拆分
-		foreach my $word (@line) {
-			$word = lc($word);
-			my $length = length($word);
-			$wordlist{$word} = '';
-		}
-	}
+# 规范 %wordlist 单词散列
+foreach my $word (keys %wordlist) {
+    # 去除包含数字的单词
+    delete $wordlist{$word} if ( $word =~ /[0-9_]/ );
+    # 去除只有一个字母的单词
+    delete $wordlist{$word} if ( length($word) < 2 );
+    # 去除重复一个字母的单词
+    delete $wordlist{$word} if ( $word =~ /^(\w)\1+$/ );
 }
 
 # 匹配单词列表
