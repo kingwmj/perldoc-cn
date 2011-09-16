@@ -62,8 +62,24 @@ F<translate_tips.pl>, 生成与输入文本同名的翻译对照文件。
 做好标记的 dict_unknown.txt 拆分，添加到前三个词典中。
 生僻词添加 B<||> 分隔符，需要忽略的不动，属于代码的前面加一个空格。
 
+使用 L<Pod::Simple::Text> 模块解析 B<Pod> 文档，生成的文件保存
+到标量中，用于提取单词，但后缀问题。如何处理。
+
+使用 C<< my $parser = Pod::Simple::Text->new() >> 建立解析器。
+
+使用 C<< $parser->parse_file( I<$some_filename> ); >> 解析文件。
+
+使用 C<< $parser->parse_string_document( I<$all_content> ); >> 解析字符串
+
+使用 C<< $parser->output_string( I<\$some_string> ) >> 输出标量，用于
+解析带格式的关键字列表.
 
 这个脚本中的一些部分要做成独立的模块。避免代码重用造成的维护困难。
+
+需要建立一个抽象层，预处理脚本，对原生英文I<POD>文档进行规范。
+使用递归替换，替换掉这些标记字符串，结果进行单词分析。
+匹配网址，文件名，专有名词，全大写缩写等字符，判断是否已经格式化。
+姓名，函数名，程序名。。。如果过多，很难看。抽象层隐藏起来。
 
 =head2 翻译提示脚本 L<translate_tip.pl>
 

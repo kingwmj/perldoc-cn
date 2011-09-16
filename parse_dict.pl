@@ -7,7 +7,8 @@ use utf8;
 use autodie;
 use File::Find qw< find >;
 use Lingua::EN::Splitter qw( words );
-use Pod::Simple;
+use Pod::Simple::Text;
+use File::Slurp qw< read_file >;
 
 my $podparser = new Pod::Simple;
 
@@ -24,7 +25,6 @@ BEGIN {
 # 调试句柄
 open (my $fh_debug, '>', 'debug.pod');
 my $blank = "\x{0020}";
-my $tab   = $blank x 4;
 
 # 扫描目录并获取所有文件列表
 my $find_dir = 'en';
@@ -72,43 +72,15 @@ foreach my $word (sort keys %dict_common) {
 # 解析文本，生成单词列表，同时生成代码单词表
 my $file_dict_code  = "$dict_dir/dict_code.txt";
 my (%wordlist);
+# 去除标记，转换为纯文本
+my $parser = Pod::Simple::Text->new();
 foreach my $file ( @filelist ) {
 	say "Starting parse file $file ...";
-	open(my $fh, '<', $file);
-    my $blank_line = 0; # 空行计数
-    my $text; # 局部缓冲，每个文件一个累加标量
-	while ( my $line = <$fh> ) {
-		chomp $line;
-        $line =~ s/\s+$//; # 去除行后空格
-        
-        # 忽略文本
-		next if ($line =~ m/^\s+/); # 忽略原文输出部分
-        next if ($line =~ m/^=encoding/); # 忽略 =encoding 行
-        next if ($line =~ m/^=over/);
-        next if ($line =~ m/^=back/);
-        next if ($line =~ m/^=cut/);
-        next if ($line =~ m/^=for/);
-        next if ($line =~ m/^=item\s+\*$/);
-        next if ($line =~ m/^=item\s+\d+$/);
-
-        # 预处理文本
-        $line =~ s/^=head[1234]\s+//; # 去除 =head 标题标记
-        $line =~ s/^=item\s+//; # 去除 =item 标记
-        $line =~ s/\s+/$blank/g; # 将多个空格合并成一个空格
- 
-        # 将连续的空行合并成一行
-        $blank_line++   if     ($line =~ /^$/);
-        $blank_line = 0 unless ($line =~ /^$/);
-        next if ($blank_line > 1);
-
-        # 保存输出到变量
-        $line =~ s/$/$blank/; # 末尾添加空格，可以没有标点符号的标题单独成词
-        $text .= $line;
-
-        # 集中显示POD
-        say {$fh_debug} $line;
-    }
-
+    my $text = read_file($file);
+    # 替换掉整个文件中的格式化字符串
+    $text = format_text($text);
+    # 集中显示POD
+    say {$fh_debug} $text;
     # 生成单词表
     $wordlist{$_}++ for @{ words($text) };
 }
@@ -140,3 +112,33 @@ foreach my $word (sort keys %dict_unknown) {
 }
 
 say "Parsing Over!";
+
+# 使用递归替换将代码中的格式字符串替换掉，结果生成单词表
+# 并存储到专门的数组中, 按照标记格式保存
+# 从长到短保存，用 Pod::simple 模块解析文本，保存为散列。
+# 以便进行恢复和高亮显示
+# 提取替换掉的内容到一个数组
+sub format_text {
+    my $text = shift;
+    # 将注释替换掉
+    $text =~ s/^\s+.*?$//xmsg;
+    # 替换掉格式化字符串，嵌套三层的替换三次
+    $text =~ s/[BCEILFSX]<<\s.*?\s>>//sg;
+    $text =~ s/[BCEILFSX]<[^<]+>/0/sg;
+    $text =~ s/[BCEILFSX]<[^<]+>/0/sg;
+    $text =~ s/[BCEILFSX]<[^<]+>/0/sg;
+    
+    # 将变量名称替换掉
+    $text =~ s/\$\w+//g;
+    # 将函数名称替换掉
+    $text =~ s/\w+\(\d*\)//g;
+    # 在行末加空格
+    $text =~ s/$/$blank/g;
+    # 去掉行首的空格
+    $text =~ s/^\s+//g;
+    # 替换掉空行
+    $text =~ s/(^\s*$)+//xmsg;
+
+    return $text;
+}
+
