@@ -1,0 +1,22 @@
+12.15. Exercise
+12.15. 练习
+You can find the answer to this exercise in "Answer for Chapter 12" in the Appendix.
+答案索引找
+12.15.1. Exercise [45 min]
+Give the Animal class the ability to get and set the name and color. Be sure that your result works under use strict. Also make sure your get methods work with both a generic animal and a specific animal instance. Test your work with:
+my $tv_horse = Horse->named(‘Mr. Ed’);
+$tv_horse->set_name(‘Mister Ed’);
+$tv_horse->set_color(‘grey’);
+print $tv_horse->name, ‘ is ‘, $tv_horse->color, "\n";
+print Sheep->name, ‘ colored ‘, Sheep->color, ‘ goes ‘, Sheep->sound, "\n";
+What should you do if you’re asked to set the name or color of a generic animal?
+12.15.1 练习　［４５分钟］
+给Animal类添加设置和取得名字和颜色的能力。要保证在use strict下能运行。而且要保证get方法在类和实例情况下都能工作。并以以下代码测试：
+my $tv_horse = Horse->named(‘Mr. Ed’);
+$tv_horse->set_name(‘Mister Ed’);
+$tv_horse->set_color(‘grey’);
+print $tv_horse->name, ‘ is ‘, $tv_horse->color, "\n";
+print Sheep->name, ‘ colored ‘, Sheep->color, ‘ goes ‘, Sheep->sound, "\n";
+要在类层面设置名字或颜色，你该如何做？
+
+

@@ -1,0 +1,80 @@
+4.3. Dereferencing the Array Reference
+4.3. 还原一个指向数组的引用
+If you look at @skipper, you’ll see that it consists of two parts: the @ symbol and the name of the array. Similarly, the syntax $skipper[1] consists of the name of the array in the middle and some syntax around the outside to get at the second element of the array (index value 1 is the second element because index values start at 0).
+我们看一下@skipper, 你会发现它包括两部份：@符号和数组名。相似地，语法$skipper[1]包括当中的数组名和围绕在周围的语法符号表示取这个数组的第二个元素（索引1表示取第二个元素，因为索引起始值是0）。
+Here’s the trick: we can place any reference to an array in curly braces in place of the name of an array, ending up with a method to access the original array. That is, wherever we write skipper to name the array, we use the reference inside curly braces: { $items }. For example, both of these lines refer to the entire array:
+@  skipper
+@{ $items }
+这里有一个小戏法：我们可以用在外面套上大括号的指向数组的引用，来替换数组的名字，其结果就是访问原始的数组。换句话说，就是我们写sipper数组名字的地方，可以用大括号包起来的指向数组的引用来代替：{$items}。举例来说，下面两行都指向同一数组：
+@  skipper
+@{ $items }
+whereas both of these refer to the second item of the array:[*]
+$  skipper [1]
+${ $items }[1]
+同样，下面两行同指这个数组的第二个元素：[*]
+$  skipper [1]
+${ $items }[1]
+    [*] Note that we added whitespace in these two displays to make the similar parts line up. This whitespace is legal in a program, even though most programs won’t use it.
+    [*] 注意，为了对齐语法上的各部份，我们在上面的例子中加了空格。这些空格在程序上也是合法的，尽管许多程序不必如此。
+By using the reference form, we’ve decoupled the code and the method of array access from the actual array. Let’s see how that changes the rest of this subroutine:
+sub check_required_items {
+  my $who   = shift;
+  my $items = shift;
+  my @required = qw(preserver sunscreen water_bottle jacket);
+  for my $item (@required) {
+    unless (grep $item eq $_, @{$items}) { # not found in list?
+      print "$who is missing $item.\n";
+    }
+  }
+}
+运用引用的形式，我们已经可以分离数组名字和从实际数组中访问数组的方法。我们来看看子例程的余下部分：
+sub check_required_items {
+  my $who   = shift;
+  my $items = shift;
+  my @required = qw(preserver sunscreen water_bottle jacket);
+  for my $item (@required) {
+    unless (grep $item eq $_, @{$items}) { # not found in list?
+      print "$who is missing $item.\n";
+    }
+  }
+}
+All we did was replace @_ (the copy of the provisions list) with @{$items}, a dereferencing of the reference to the original provisions array. Now we can call the subroutine a few times, as before:
+my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+check_required_items(‘The Skipper’, \@skipper);
+my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
+check_required_items(‘Professor’, \@professor);
+my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
+check_required_items(‘Gilligan’, \@gilligan);
+我们做的仅仅就是把@_(供应清单的拷贝)替换成@{$items}, 对一个引用的还原操作来取得原始的供应清单数组。现在我们调用子例程次数相比以前少多了。
+my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+check_required_items(‘The Skipper’, \@skipper);
+my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
+check_required_items(‘Professor’, \@professor);
+my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
+check_required_items(‘Gilligan’, \@gilligan);
+In each case, $items points to a different array, so the same code applies to different arrays each time we invoke it. This is one of the most important uses of references: decoupling the code from the data structure on which it operates so we can reuse the code more readily.
+以上每个例子中，$items指向一个不同的数组。如此，同样的代码每次调用的时候可以应用到不同的数组。这就是引用的一个最重要的用法之一：把代码同其操作的具体数据结构分离开，这样我们可以重用代码并使其更可读。
+Passing the array by reference fixes the first of the two problems we mentioned earlier. Now, instead of copying the entire provision list into the @_ array, we get a single element of a reference to that provisions array.
+用引用传数组解决了我们上面提到的两个问题中的一个。即，相比以前我们拷贝供应清单到@_数组，现在我们传一个指向供应清单数组的单值。
+Could we have eliminated the two shifts at the beginning of the subroutine? Sure, but we sacrifice clarity:
+sub check_required_items {
+  my @required = qw(preserver sunscreen water_bottle jacket);
+  for my $item (@required) {
+    unless (grep $item eq $_, @{$_[1]}) { # not found in list?
+      print "$_[0] is missing $item.\n";
+    }
+  }
+}
+我们是否可以消除传两个值给子例程？当然可以，不过这样牺牲了明晰性：
+sub check_required_items {
+  my @required = qw(preserver sunscreen water_bottle jacket);
+  for my $item (@required) {
+    unless (grep $item eq $_, @{$_[1]}) { # not found in list?
+      print "$_[0] is missing $item.\n";
+    }
+  }
+}
+We still have two elements in @_. The first element is the passenger or crew member name, which we use in the error message. The second element is a reference to the correct provisions array, which we use in the grep expression.
+我们仍有两个元素在数组@_中。第一个元素是成员或乘务员的名字，我们用它来组成出错信息。第二个元素是指向供应清单数组的引用。我们把它用在grep表达式中。
+
+

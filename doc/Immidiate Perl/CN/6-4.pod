@@ -1,0 +1,115 @@
+6.4. Storing Complex Data with Storable
+6.4. 用Storable模块存储复杂数据结构
+We can take the output of Data::Dumper’s Dumper routine, place it into a file, and then load the file to a different program. When we evaluate the code as Perl code, we end up with two package variables, $VAR1 and $VAR2, that are equivalent to the original data. This is called marshaling the data: converting complex data into a form that we can write to a file as a stream of bytes for later reconstruction.
+我们可以取Data::Dumper模块中的Dumper子例程的输出，将其放到一个文件中，然后，由另外一个程序把文件调入。 在我们将这输出作为Perl代码来解析的时候，我们最后可以得到两个包变量：$VAR1和$VAR2，并且这与原始的数据是一样的。这个过程就叫作调制数据：将复杂数据结构转换成一个表，然后我们可以将其作为字节流写到文件中去，便于以后重建这些数据。
+However, another Perl core module is much better suited for marshaling: Storable. It’s better suited because compared to Data::Dumper, Storable produces smaller and faster-to-process files. (The Storable module is standard in recent versions of Perl, but you can always install it from the CPAN if it’s missing.)
+但是，Perl有另外一个模块更能胜任调制数据的工作：Storable.  之所以更能胜任，是因为相较于Data::Dumper， Storable产生的文件更小，能被更快地执行。(Storable模块在最近版本的Perl的标准发布中就有，但是，如果你这里没有的话，可以从CPAN上下载安装。)
+The interface is similar to using Data::Dumper, except we must put everything into one reference. For example, let’s store the mutually referencing data structures:
+use Storable;
+my @data1 = qw(one won);
+my @data2 = qw(two too to);
+push @data2, \@data1;
+push @data1, \@data2;
+store [\@data1, \@data2], ‘some_file’;
+与Storable的接口同使用Data::Dumper十分相似， 除了我们必须把所有东西要放到一个引用中去。比如，让我们把存一个互相引用的数据结构：
+use Storable;
+my @data1 = qw(one won);
+my @data2 = qw(two too to);
+push @data2, \@data1;
+push @data1, \@data2;
+store [\@data1, \@data2], ‘some_file’;
+The file produced by this step is under 100 bytes, which is quite a bit shorter than the equivalent Data::Dumper output. It’s also much less readable for humans. It’s easy for Storable to read, as you’ll soon see.[*] Next, fetch the data, again using the Storable module. The result will be a single array reference. We dump the result to see if it stored the right values:
+    [*] The format used by Storable is architecture byte-order dependent by default. Its documentation shows how to create byte-order-independent storage files.
+use Storable;
+my $result = retrieve ‘some_file’;
+use Data::Dumper;
+$Data::Dumper::Purity = 1;
+print Dumper($result);
+这步产生的内容小于100字节，相比同样用Data::Dumper的输出，那是非常的小。这同样也更不具可读性。你不久也会了解，这样的话更利于Storable模块读这些数据。[*] 下一步，我们同样用Storable模块读取这些数据。产生的结果是一个指向单个数组的引用。我们把读出的结果打印出来，看看是否存得对：
+     [*]Storable采用的格式是缺省依赖字节顺序的结构。文档中有说明如果创建不依赖字节顺序的存储文件。
+Here’s the result:
+$VAR1 = [
+          [
+            'one',
+            'won',
+            [
+              'two',
+              'too',
+              'to',
+              [  ]
+            ]
+          ],
+          [  ]
+        ];
+$VAR1->[0][2][3] = $VAR1->[0];
+$VAR1->[1] = $VAR1->[0][2];
+下面是产生的结果：
+$VAR1 = [
+          [
+            'one',
+            'won',
+            [
+              'two',
+              'too',
+              'to',
+              [  ]
+            ]
+          ],
+          [  ]
+        ];
+$VAR1->[0][2][3] = $VAR1->[0];
+$VAR1->[1] = $VAR1->[0][2];
+This is functionally the same as the original data structure. We’re now looking at the two array references within one top-level array. To get something closer to what we saw before, we can be more explicit about the return value:
+use Storable;
+my ($arr1, $arr2) = @{ retrieve ‘some_file’ };
+use Data::Dumper;
+$Data::Dumper::Purity = 1;
+print Dumper($arr1, $arr2);
+这在功能上等同于原来的数据结构。我们现在来看看在一个数组层面上的两个数组引用。同我们先前看到的比较相近，我们可以更显式地返回值：
+use Storable;
+my ($arr1, $arr2) = @{ retrieve ‘some_file’ };
+use Data::Dumper;
+$Data::Dumper::Purity = 1;
+print Dumper($arr1, $arr2);
+or equivalently:
+use Storable;
+my $result = retrieve ‘some_file’;
+use Data::Dumper;
+$Data::Dumper::Purity = 1;
+print Dumper(@$result);
+或下面写法也一样：
+use Storable;
+my $result = retrieve ‘some_file’;
+use Data::Dumper;
+$Data::Dumper::Purity = 1;
+print Dumper(@$result);
+and we’ll get:
+$VAR1 = [
+          'one',
+          'won',
+          [
+            'two',
+            'too',
+            'to',
+            [  ]
+          ]
+        ];
+$VAR1->[2][3] = $VAR1;
+$VAR2 = $VAR1->[2];
+这样，我们就得到：
+$VAR1 = [
+          'one',
+          'won',
+          [
+            'two',
+            'too',
+            'to',
+            [  ]
+          ]
+        ];
+$VAR1->[2][3] = $VAR1;
+$VAR2 = $VAR1->[2];
+just as we did in the original program. With Storable, we can store data and retrieve it later. More information on Storable can be found in perldoc Storable, as always.
+就像我们在原来的程序里做的那样。 用Storable模块， 我们可以先存后取。欲得更多有关Storable模块的信息，可以用perldoc Storable来查，老招术了：）
+
+

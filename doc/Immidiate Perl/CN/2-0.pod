@@ -1,0 +1,6 @@
+Chapter 2. Intermediate Foundations
+第二章 进阶基础
+Before we get started on the meat of the book, we want to introduce some intermediate-level Perl idioms that we use throughout the book. These are the things that typically set apart the beginning and intermediate Perl programmers. Along the way, we’ll also introduce you to the cast of characters that we’ll use in the examples throughout the book.
+在开始深入学习这本书之前，我们要介绍一些中阶Perl语言的“习惯用语”。我们会在整本书里都用到这些“习语”。对这些“习语”的掌握程度区分了一个程序员对Perl的运用等级是中阶还是初阶。我们将会在贯穿整本书的例子里向您介绍这些“演员”。
+
+

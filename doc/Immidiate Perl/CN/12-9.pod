@@ -1,0 +1,27 @@
+12.9. A Horse of a Different Color
+12.9. 一匹有不同色彩的马
+Having all horses be brown would be boring. Let’s add a method or two to get and set the color:
+## in Animal
+sub color {
+  my $self = shift;
+  $self->{Color};
+}
+sub set_color {
+  my $self = shift;
+  $self->{Color} = shift;
+}
+我们来加一两个方法来设置颜色，这样让所有出生的马都是棕色。
+Now we can fix that color for Mr. Ed:
+my $tv_horse = Horse->named(‘Mr. Ed’);
+$tv_horse->set_color(‘black-and-white’);
+print $tv_horse->name, ‘ is colored ‘, $tv_horse->color, "\n";
+我们可以为Mr. Ed修改一下颜色：
+my $tv_horse = Horse->named(‘Mr. Ed’);
+$tv_horse->set_color(‘black-and-white’);
+print $tv_horse->name, ‘ is colored ‘, $tv_horse->color, "\n";
+which results in:
+Mr. Ed is colored black-and-white
+输出结果是：
+Mr. Ed is colored black-and-white
+
+

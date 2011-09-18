@@ -1,0 +1,38 @@
+11.8. The SUPER Way of Doing Things
+11.8. 用SUPER方法来处理问题
+By changing the Animal class to the SUPER class in that invocation, we get a search of all our superclasses (classes listed in @ISA) automatically:
+{ package Animal;
+  sub speak {
+    my $class = shift;
+    print "a $class goes ", $class->sound, "!\n";
+  }
+}
+{ package Mouse;
+  @ISA = qw(Animal);
+  sub sound { ‘squeak’ }
+  sub speak {
+    my $class = shift;
+    $class->SUPER::speak;
+    print "[but you can barely hear it!]\n";
+  }
+}
+在调用时，把Animal类改成SUPER类， 我们可以自动查到我们的所有的超级类（在@ISA列表中的类）：
+{ package Animal;
+  sub speak {
+    my $class = shift;
+    print "a $class goes ", $class->sound, "!\n";
+  }
+}
+{ package Mouse;
+  @ISA = qw(Animal);
+  sub sound { ‘squeak’ }
+  sub speak {
+    my $class = shift;
+    $class->SUPER::speak;
+    print "[but you can barely hear it!]\n";
+  }
+}
+Thus, SUPER::speak means to look in the current package’s @ISA for speak, invoking the first one found if there’s more than one. In this case, we look in the one and only base class, Animal, find Animal::speak, and pass it Mouse as its only parameter.
+所以，SUPER::speak 表示在当前包的@ISA查找speak， 如果找到多个，则调用第一个被找到的。 在这个例子中， 我们找到仅有的一个基础类： Aniaml， 找到方法：Animal::speak， 并将其作为参数传给Mouse类。
+
+

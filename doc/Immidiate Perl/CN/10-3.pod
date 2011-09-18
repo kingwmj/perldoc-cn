@@ -1,0 +1,59 @@
+10.3. Using do
+10.3. 使用do
+The Skipper placed a few common navigation subroutines into navigation.pm. If the Skipper merely inserts:
+do ‘navigation.pm’;
+die $@ if $@;
+into his typical navigation program, it’s almost the same as if the eval code were executed right at that point in the program.[+]
+Skipper把一些导航通用子程序放入navigation.pm后， 如果Skipper只将如下语句：
+do ‘navigation.pm’;
+die $@ if $@;
+放到导航程序里的话， 它几乎同我们用eval把代码插在同一地点的执行结果是相同的。[+]
+    [+] Except in regard to @INC, %INC, and missing file handling, which we’ll show later.
+    [+] 这排除了考虑@INC、%INC的情况，以及丢失文件定位处理， 这个我们在后面的章节会遇到。
+That is, the do operator acts as if the code from navigation.pm were incorporated into the current program, although in its own scope block, so that lexicals (my variables) and most directives (such as use strict) from the included file don’t leak into the main program.
+那就是说， do 操作符的功能就像把navigation.pm中的代码直接引入现当前的程序一样， 尽管在它自己的块范围内， 所以词法变量（my 声明的变量） 和大多数指示字（如use strict）不会流到主程序里去。
+Now the Skipper can safely update and maintain one copy of the common subroutines without having to copy and recopy all the fixes and extensions into the many separate navigation programs he creates and uses. Figure 10-1 illustrates how the Skipper can use his common library.
+这样， Skipper可能安全的修改一处拷贝，而不必把这些修改和扩展拷贝到所有其它他创建和使用的导航程序中。 图10-1展示了Skipper如何使用他的通用程序库。
+图10-1. Skipper在他其它所有的导航程序中使用navigation.pm 文件中的程序
+Figure 10-1. The Skipper uses the navigation.pm file in all his other navigation programs
+Of course, this requires a bit of discipline, because breaking the expected interface of a given subroutine now breaks many programs instead of just one.[+] The Skipper needs to give special thought to his design for reusable components and modularity design. We’ll presume the Skipper has had some experience at that, but we’ll show some more on that in later chapters.
+当然， 这样做需要一些约束， 因为如果在给出的子程序中破坏了一个预期的接口，会影响到许多其它的程序而不只自己一个。[+] Skipper需要对组件的重用性和模块化的设计给予专门的考虑。 我们先假定Skipper有这方面的经验， 但是我们会在以后的章节中展示更多这方面的知识。
+    [+] In later chapters, we’ll show how to set up tests to be used while maintaining reused code.
+    [+] 在后面的章节中， 我们会展示如何建立测试程序来维护可重用的代码。
+By placing some of the code into a separate file, other programmers can reuse the Skipper’s routines, and vice versa. If Gilligan writes a routine to drop_anchor( ) and places it in the file drop_anchor.pm, then the Skipper can use Gilligan’s code by including his library:
+do ‘drop_anchor.pm’;
+die $@ if $@;
+…
+drop_anchor(  ) if at_dock(  ) or in_port(  );
+通过将一些代码放到文件中， 其它的程序员可以重用Skipper写的程序， 反过来也一样。 如果Gilligan写了一个程序:drop_dnchor()，并且将其放到文件drop_anchor.pm中， 这样Skipper就可以通过引入库的办法使用Gilligan的代码：
+do ‘drop_anchor.pm’;
+die $@ if $@;
+…
+drop_anchor(  ) if at_dock(  ) or in_port(  );
+ 
+Thus, the code that we bring in from separate files permits easy maintenance and interprogrammer cooperation.
+所以， 从分开的文件引入代码可以使我们可以更方便地维护和协同编程。
+While the code we brought in from a .pm file can have direct executable statements, it’s much more common to simply define subroutines that we can load using do.
+当代码从一个 .pm文件导入的时候可以有直接可执行的语句， 这比用do简单定义子程序更为常用。
+Going back to that drop_anchor.pm library for a second, what if the Skipper wrote a program that needed to "drop anchor" as well as navigate?
+do ‘drop_anchor.pm’;
+die $@ if $@;
+do ‘navigation.pm’;
+die $@ if $@;
+…
+turn_toward_heading(90);
+…
+drop_anchor(  ) if at_dock(  );
+我们再回到drop_anchor.pm库， 如果Skipper要写个程序需要“抛锚”和导航呢？
+do ‘drop_anchor.pm’;
+die $@ if $@;
+do ‘navigation.pm’;
+die $@ if $@;
+…
+turn_toward_heading(90);
+…
+drop_anchor(  ) if at_dock(  );
+That works fine and dandy. The subroutines defined in both libraries are available to this program.
+这一工作很好很顺利。 子程序在两个库中定义，使用起来就像在这个程序里一样。
+
+

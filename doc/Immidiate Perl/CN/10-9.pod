@@ -1,0 +1,18 @@
+10.9. Packages and Lexicals
+10.9. 包和词法变量
+A lexical variable (a variable introduced with my) isn’t prefixed by the current package because package variables are always global: we can always reference a package variable if we know its full name. A lexical variable is usually temporary and accessible for only a portion of the program. If we declare a lexical variable, then using that name without a package prefix gets the lexical variable. A package prefix ensures that we are accessing a package variable and never a lexical variable.
+一个词法变量（以my声明的变量） 不会有当前包名做前缀，因为包变量已经是全局的了：我们总是可以引用一个包变量，如果我们知道它的全名。 一个词法变量通常是临时的或只在程序的局部可访问。如果我们声明一个词法变量， 然后不带包前缀地使用它，就获得一个词法变量。 一个包前缀保证我们可以访问一个包变量，而不是词法变量。
+For example, suppose a subroutine within navigation.pm declares a lexical @homeport variable. Any mention of @homeport will then be the newly introduced lexical variable, but a fully qualified mention of @Navigation::homeport accesses the package variable instead.
+package Navigation;
+@homeport = (21.283, -157.842);
+sub get_me_home {
+  my @homeport;
+  .. @homeport .. # refers to the lexical variable
+  .. @Navigation::homeport .. # refers to the package variable
+}
+.. @homeport .. # refers to the package variable
+举例来说，假定navigationpm中的一个子例程声明了一个词法变量@homeport。那么，任何使用@homeport时，都是指新引入的词法变量，但是如果用全名来引用@havigation::homeport将访问的是包变量。
+Obviously, this can lead to confusing code, so we shouldn’t introduce such duplication needlessly. The results are completely predictable, though.
+显然， 这段代码会导致混淆，所以我们不应该搞这种没必要的双重声明。 尽管结果早就会料到。
+
+

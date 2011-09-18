@@ -1,0 +1,114 @@
+5.5. Creating an Anonymous Array Directly
+5.5. 直接建立匿名数组
+In the get_provisions_list routine earlier, we created a half dozen array names that we used only so that we could take a reference to them immediately afterward. When the subroutine exited, the array names all went away, but the references remained.
+在早前的get_provisions_list子程序中（参考5.3节） ， 我们建立了半打数组，而且创建的目的仅仅是为了后面马上要给他们建立引用。 当子程序退出的时候，所有数组名将销毁，但引用还留着。
+While creating temporarily named arrays would work in the simplest cases, creating such names becomes more complicated as the data structures become more detailed. We’d have to keep thinking of names of arrays just so we could forget them shortly thereafter.
+临时命名的数组，在简单环境中还可以工作，但这些名字在数据结构开始越来越复杂的情况下会变得比较繁琐。我们应该想到，正确地处理这些数组的名字，这样我们可以很快就忘掉它。
+We can reduce the namespace clutter by narrowing down the scope of the various array names. Rather than declaring them within the scope of the subroutine, we can create a temporary block:
+my @skipper_with_name;
+{
+  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+  @skipper_with_name = (‘The Skipper’, \@skipper);
+}
+我们可以用缩小不同数组名的范围的方法来降低命名空间的繁杂性。 代替在子程序范围内声明变量， 我们可以建立一个临时块：
+my @skipper_with_name;
+{
+  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+  @skipper_with_name = (‘The Skipper’, \@skipper);
+}
+At this point, the second element of @skipper_with_name is a reference to the array formerly known as @skipper. However, that name is no longer relevant.
+上例中，@skipper_with_name第二个元素是个指向先前命令的数组@skipper。 然而， 那个名字现在与程序不再有关系了。
+This is a lot of typing to simply say "the second element should be a reference to an array containing these elements." We can create such a value directly using the anonymous array constructor, which is yet another use for square brackets:
+my $ref_to_skipper_provisions =
+  [ qw(blue_shirt hat jacket preserver sunscreen) ];
+为了仅仅说明“第二个元素应该是个指向一个包括这些元素的引用”，而编上例中这些代码，好像太麻烦了。 我们可以创建一个直接使用匿名数组的结构，即方括号的另一种用法：
+my $ref_to_skipper_provisions =
+  [ qw(blue_shirt hat jacket preserver sunscreen) ];
+The square brackets take the value within (evaluated in a list context); establish a new, anonymous array initialized to those values; and (here’s the important part) return a reference to that array. It’s as if we had said:
+my $ref_to_skipper_provisions;
+{
+  my @temporary_name =
+  ( qw(blue_shirt hat jacket preserver sunscreen) );
+  $ref_to_skipper_provisions = \@temporary_name;
+}
+方括号把内中（相当一在一个列表环境）元素取出来；为这些元素建立一个新的，匿名的数组；并且（这里很重要）返回一个对这个匿名数组的引用。 就好像我们说过的：
+my $ref_to_skipper_provisions;
+{
+  my @temporary_name =
+  ( qw(blue_shirt hat jacket preserver sunscreen) );
+  $ref_to_skipper_provisions = \@temporary_name;
+}
+Here we don’t need to come up with a temporary name, and we don’t need the extra noise of the temporary block. The result of a square-bracketed anonymous array constructor is an array reference, which fits wherever a scalar variable fits.
+这里，我们不必需要提供临时变量名字，也不要讨厌的临时代码块。用方括号返回的匿名数组结构就是一个对数组的引用，并且用在任何标量环境中都合适。
+Now we can use it to construct the larger list:
+my $ref_to_skipper_provisions =
+  [ qw(blue_shirt hat jacket preserver sunscreen) ];
+my @skipper_with_name = (‘The Skipper’, $ref_to_skipper_provisions);
+现在，我们可以用它来构建一个更大的列表：
+my $ref_to_skipper_provisions =
+  [ qw(blue_shirt hat jacket preserver sunscreen) ];
+my @skipper_with_name = (‘The Skipper’, $ref_to_skipper_provisions);
+Of course, we didn’t actually need that scalar temporary, either. We can put a scalar reference to an array as part of a larger list:
+my @skipper_with_name = (
+  ’The Skipper’,
+  [ qw(blue_shirt hat jacket preserver sunscreen) ]
+);
+甚至，我们也根本不要那个临时标量。 我们可以直接把临时标量替换成数组引用，作为一个更大列表的一部份：
+my @skipper_with_name = (
+  ’The Skipper’,
+  [ qw(blue_shirt hat jacket preserver sunscreen) ]
+);
+Now let’s walk through this. We’ve declared @skipper_with_name, the first element of which is the Skipper’s name string, and the second element is an array reference, obtained by placing the five provisions into an array and taking a reference to it. So @skipper_with_name is only two elements long, just as before.
+来，我们回顾一下。 我们已经声明了@skipper_with_name，它的第一个元素是Skipper的名字字串， 第二个元素是一个对数组的引用， 它是由把五个元素放到一个数组，并且取其引用得到的。 所以， @skipper_with_name数组仅有两个元素长。
+Don’t confuse the square brackets with the parentheses here. They each have their distinct purpose. If we replace the square brackets with parentheses, we end up with a six-element list. If we replace the outer parentheses (on the first and last lines) with square brackets, we construct an anonymous array that’s two elements long and then take the reference to that array as the only element of the ultimate @skipper_with_name array.[*] So, in summary, if we have this syntax:
+my $fruits;
+{
+  my @secret_variable = (‘pineapple’, ‘papaya’, ‘mango’);
+  $fruits = \@secret_variable;
+}
+别把这里的方括号和小括号搞混了。 它们各有不同的目的。 如果我们用小括号代替方括号， 我们结果会得到一个六个元素的列表。如果我们将外圈的（第一行和最后一行）的小括号用方括号代替， 我们就构建了一个两个元素长的匿名数组的引用，并将其返回给@skipper_with_name数组。[*] 这样，总之，如果我们有以下的代码：
+my $fruits;
+{
+  my @secret_variable = (‘pineapple’, ‘papaya’, ‘mango’);
+  $fruits = \@secret_variable;
+}
+    [*] In classrooms, we’ve seen that too much indirection (or not enough indirection) tends to contribute to the most common mistakes made when working with references.
+    [*] 在教学中， 我们经常会看到在使用引用时犯的直接（或不那么直接）的错误。
+we can replace it with:
+my $fruits = ['pineapple', 'papaya', 'mango'];
+我们可以以此代替：
+my $fruits = ['pineapple', 'papaya', 'mango'];
+Does this work for more complicated structures? Yes! Anytime we need an element of a list to be a reference to an array, we can create that reference with an anonymous array constructor. In fact, we can also nest them in our provisions list:
+sub get_provisions_list {
+  return (
+    ['The Skipper',   [qw(blue_shirt hat jacket preserver sunscreen)] ],
+    ['The Professor', [qw(sunscreen water_bottle slide_rule radio)  ] ],
+    ['Gilligan',      [qw(red_shirt hat lucky_socks water_bottle)   ] ],
+  );
+}
+my @all_with_names = get_provisions_list(  );
+那么在更复杂的结构中，这个原则还工作吗？当然！只要是需要一个指向数组的引用，我们就可以创建指向匿名数组的引用。实际上， 我们还可以嵌套使用：
+sub get_provisions_list {
+  return (
+    ['The Skipper',   [qw(blue_shirt hat jacket preserver sunscreen)] ],
+    ['The Professor', [qw(sunscreen water_bottle slide_rule radio)  ] ],
+    ['Gilligan',      [qw(red_shirt hat lucky_socks water_bottle)   ] ],
+  );
+}
+my @all_with_names = get_provisions_list(  );
+Walking through this from the outside in, we have a return value of three elements. Each element is an array reference, pointing to an anonymous two-element array. The first element of each array is a name string, while the second element is a reference to an anonymous array of varying lengths naming the provisions all without having to come up with temporary names for any of the intermediate layers.
+我们由外而内地看一下上面的代码， 我们返回了三个元素。 每个元素是一个数组引用， 并且是指向有两个元素的匿名数组的引用。 内中每个数组第一个元素是名字字串，而第一个元素又是一个变长的匿名数组的引用。 而且变长数组包括了所有的装备清单，并且我们不必再提供临时名字作为中间变量。
+To the caller of this subroutine, the return value is identical to the previous version. However, from a maintenance point of view, the reduced clutter of not having all the intermediate names saves screen and brain space.
+对于调用它的子程序来说，现在的返回值对于前一个版本是一样的。  然而，从代码维护的角度来看，去掉那些中间名字，这样降低了复杂性也节省了代码占用屏幕空间。
+We can show a reference to an empty anonymous array using an empty anonymous array constructor. For example, if we add one "Mrs. Howell" to that travel list, as someone who has packed rather light, we’d simply insert:
+['Mrs. Howell',
+  [  ]
+],
+我们也可以将引用指现空的匿名数组。比如，如果我们加一个Mrs. Howell到一个遊客列表， 并且它没带多少装备，我们可以简单的这样写：
+['Mrs. Howell',
+  [  ]
+],
+This is a single element of the larger list. This item is a reference to an array with two elements, the first of which is the name string, and the second of which is itself a reference to an empty anonymous array. The array is empty because Mrs. Howell hasn’t packed anything for this trip.
+这是一个只有一个元素的大列表。这是一个指向一个具有两个元素的数组的引用，第一个元素是名字字串， 第二个元素自身是个指向空的匿名数组的引用。 这个数组是空的，因为Howell先生为他的旅程什么也没有带。
+
+
