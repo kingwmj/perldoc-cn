@@ -1,0 +1,2 @@
+perl allwords.pl
+pause

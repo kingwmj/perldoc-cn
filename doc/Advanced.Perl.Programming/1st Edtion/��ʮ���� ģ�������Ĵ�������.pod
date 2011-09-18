@@ -1,0 +1,251 @@
+第十七章 模板驱动的代码生成
+我宁可编写程序去编写程序，也不愿意编写程序
+
+本章将构建一个模版驱动的代码生成器，这种软件是C.C++或Java程序员工具箱中不可或缺的一种工具，本章有两个目的：一是阐明作为一种代码重用方法的代码生成问题，然后是提出一种兵不算简单的问题，让大家联系一下我们在前半本书中所学到的所有概念：复杂数据结构，模块，对象以及eval，请大家尽情想用Perl吧！
+
+有关代码生成的问题
+程序员总是不停的创建与使用小巧的规格语言，数据库模式，资源（在Unix中的rc文件，如.mwmrc和.openwinrc),用户界面规格，网络接口规格等等均为此类语言的范例。这种语言可以使你们以一种高级，精简及陈述性的格式来描述你的需求、例如，在Motif的UIL(用户接口语言）中，你只需及简单的陈述一下你需要放在一个窗体中的两个按钮，就可以达到编写20行左右C语句的效果。
+这种规格语言与传统系统编程语言如C或C++之间存在的巨大语义性差异，可以通过两种方式来进行沟通。第一种就是使C应用程序将这种规格说明看成是一种元数据；也就是说，该应用程序内嵌了规格语法分析器，并使用C数据结构和一种内部API来与他交换信息。另一种方法就是使用一个独立的编译器将这种规格说明翻译成C语言，并将其与应用进行连接。RPC系统与CASE工具则更倾向于使用这种方式。
+
+在下面的章节中，我们将学习第二种方式并亲手构建一个可配置的代码生成框架，取名为Jeeves。
+
+我们前面提到的代码生成器很显然是特定于某一领域的，实际应用中我还发现他们的输出能力有着不必要的专有性。考虑下面的例子：
+
+
+Jeeves 是 P.G. Wodehouse 小说中能干的男管家，他只要动一下眉毛就会替他的笨主人做完所有的活儿。
+
+CASE
+许多CASE工具从对象模型规格说明中产生C代码。下面的样例规格说明列举了实体类和他们的属性，并指出了这些类之间关联的程度（degree）和势（cardinality);
+
+Employee {
+	int		emp_id key
+	string[40]  name
+	Department  dept_id
+	double		salary
+}
+Department {
+	int			dept_id key
+	string[20]  name
+}
+Relationship Department(1) contains Employee (n)
+
+给定了这样一种小巧的规格说明语言，举例来说，我们可以自动的生成C和嵌入式SQL代码来进行数据库表的维护，如下所示：
+
+int create_employee_table {
+	exec sql create table employee_table {
+		employee_id integer,
+		name varchar, salary folat);
+	return check_db_error();
+}
+int create_employee (employee *e) {
+	if (!check_dept(e->dept))
+	return 0;
+	e->employee_id = ++g_employee_id;
+	exec sql insert into table employee_table {
+		employee_id, name, salary;}
+		values (:*e);
+		return check_db_error();
+}
+
+POD, Javadoc
+真个Perl文档都是以一种称做POD(plain old documentation, 普通旧式文档）格式来编写的。它提供了一种简单而高级的原语用来指定段落的风格(=head1, =item)和字符的风格（例如，B<foo>将会以黑体打印出这个单词）。发行版中包含有一些转换工具如pod2text,pod2html,pod2man等等）。POD文档可以嵌入在代码中，并由这些工具来抽取（Perl解释器将会忽略这些格式命令）。由于文档与代码是集成在一起的，因此这种机制降低了代码与文档不匹配的可能性。
+
+与之类似，所有的Java库都使用一种Javadoc的格式来建立文档。这种文档可以使用一个名为javadoc的工具来加以提取或转换成HTML格式。
+
+这两种工具集都受限于特定的输出（ASCII,HTML等）。例如，如果你想编写一个pod2rt转换器（这是在微软Windows系统中使用的Rich Text Format格式的文档），你就得从头开始，因为POD语法分析器不是以单独软件包的方式
+提供的。一种更好的选择是应当是以POD语法分析器为中心，然后编写几种不同类型即插即用的后端模块。
+
+SWIG,XS
+在第十八章"扩展Perl：第一课"中，我们将会有机会学到两个名为SWIG和XS的工具。给定一个用户界面规格说明，他们就会产生能够将Perl与定制的C扩展联编起来的代码。实际上，SWIG就是一种我们将要构建的经典的代码生成类型的例子；由于其后端是模板驱动的；因此它能够从一种规格说明语言产生各种类型的输出代码。
+
+在大多数情况下，对多种类型输出的需求，通常要超过对输入规格的改变次数。这种现象将会衍生出两种结论。首先，对输入进行的语法分析与产生最终的输出是相关但又分立的任务。第二，输出应当是可配置的。我们要门拥有参数化的输出生成器，要么就是有许多可以同输入语法分析器互换使用的输出生成器。就我的经验而言，第一种选项经常不那么实用。例如，要为POD编写一个输出生成器，使他在改动几个参数后就能够输出HTML,ASCII或RTF格式的信息。这实在没有什么意义，因为这些输出集是那么的不同。
+
+Jeeves框架采取第二种方案，通过提供一个模板驱动的代码生成器后端，他就可以帮助你编写一个可配置的翻译器。这个模块允许你编写带有循环语句，if/then 条件测试，变量，以及部分Perl代码的可配置模板，因此这可不是一种普通的产生工具的工具。（不然，他也许就应该被称做yacccc了。）
+让我们通过例子来更好的解释这个框架。
+
+Jeeves的例子
+我们先来看一个非常简单的对象模型规格文件，其中包含了一组类，每个类又包含一组类型属性：
+
+// 、、、、、、、
+
+
+下面的代码段描述了一个从模板转换成中间形式的Perl文件的例子：
+
+@foreach class_list
+Name: $class_name
+	@foreach attr_list
+	Attr: $attr_name, $attr_type
+	@end
+@end
+
+我们去掉多余的只保留核心部分，相应的中间文件如下所示：
+
+$ROOT->visit();
+foreach $class_list_i (@class_list) {
+	$class_list_i->visit();
+	print "Name: $class_name\n";
+	foreach $attr_list_i (@attr_list) {
+		$attr_list_i->visit();
+		print "Attr: $attr_name. $attr_type\n";
+		Ast->bye();
+	}
+	Ast->bye();
+}
+
+Ast::visit将所有访问到的AST节点的属性转换成包main中的全局Perl变量。语法树的根节点将被首先访问到。这将会创建一个全局变量@class_list. 由于它就是根节点的首要的属性，而且当他们其中的一个被访问时，属性class_name与attr_list就会成为$class_name和@attr_list以供使用。这段代码必须考虑到给定全局变量已经存在的可能性，这一般是由于嵌套外层有相似命名的属性，或者就是因为已经由模版通过一个@perl指令定义过了。因此visit()将会在需要时跟踪变量原先的值；bye将会在一个@FOREACH代码块结束时将其恢复成原先的值。
+
+Jeeves的实现
+在下面的章节中，我们将会实现Jeeves框架的所有部件。你会发现针对一个样例问题运行Jeeves，并将其输出的拷贝放在手边，会很有帮助。
+
+AST模块
+AST模块是一种非常简单的功能库，因此我们将在下面只了解其中几个比较有趣的过程。
+
+一个AST节点就是一个属性包容器，因此散列表能够很好的胜任这项工作。为了调试方便，为每一个节点取一个名字：
+
+package Ast;
+use strict;
+sub new {
+	my ($pkg, $name) = @_;
+	bless {
+		'ast_node_name' => $name}, $pkg;
+}
+
+所有的规格语法分析器都使用new,add_prop和add_prop_list来创建AST对象；
+
+sub add_prop {
+	my ($node, $prop_name, $prop_value) = @_;
+	$node->{$prop_name} = $prop_value;
+}
+
+sub add_prop_list {
+	my ($node, $prop_name, $node_ref) = @_;
+	if (! exists $node->{$prop_name}) {
+		$node->{$prop_name} = [];
+	}
+	push (@{$node->{$prop_name}}, $node_ref);
+}
+
+add_prop只是简单的向AST对象增加一个名字-值对。add_prop_list创建一个列表值的属性。属性值为一个匿名数组，其中包含了指向其他AST节点的引用。你可以拥有自己的列表值属性，但是你决不能将他用作@foreach的参数，因为他所假定的列表元素为AST节点。
+
+my @saved_values_stack;
+sub visit {
+	no strict 'refs';
+	my $node = shift;
+	package main;
+	my ($var, $val, $old_val, %saved_values);
+	while (($var, $val) = each %{$node}) {
+		if (defined ($old_val = $$var)) {
+			saved_values{$var} = $old_val;
+		}
+		$$var = $val;
+	}
+	push (@saved_values_stack, \%saved_values);
+}
+
+visit与bye方法由中间Perl文件来使用。$node 为正在访问的节点，而%$node 就是对应的散列表。$var 为诸如class_name的属性名，因此为了检查$class_name 这样的变量是否存在，我们可以使用符号引用，如if defined($$var). 所有在此之前已经存在的变量，都被暂存在一个散列表 （%saved_values)中，而接着又被推送到一个堆栈中。这个栈就代表了所有这些暂存值的集合。
+
+sub bye {
+	my $rh_saved_values = pop(@saved_values_stack);
+	no strict 'refs';
+	package main;
+	my ($var,$val);
+	while (($var,$val) = each %$rh_saved_values) {
+		$$var = $val;
+	}
+}
+
+bye()简单的对栈进行弹出式操作，并将全局变量恢复到原先的值。附带说一句，由于use strict并不鼓励使用符号引用，因此我们不得不在用no stricts 'refs' 时暂时将它关掉一会儿。
+
+模版语法分析器
+模板语法分析器支持下面所示的一些指令
+@//   
+注释。这一行不会被输出
+
+@foreach var [condition]  对var的每个元素进行循环（这里假定var为一个数组）并在条件（可选）成立时执行循环体。条件只是一些嵌入的Perl代码并可以这么来使用：
+@FOREACH attr_list ($ClassName eq "Test")
+
+@if @elsif @else @end
+直接翻译成Perl的if语句
+
+@openfile filename [options]
+跟在这一行后面的所有语句将被简单的发送到这个文件中直到碰到，另一个@OPENFILE 为止。其中的选项为：
+-append: 将文件以添加模式打开
+-no_overwrite: 当文件存在时不要覆盖它
+-only_if_different: 只有文件发生改变时才覆盖这个文件，这在make环境中非常有用，在那里你一般不想改变文件。
+
+@perl
+用于嵌入Perl代码，作为高级功能的换码符。
+@perl $user_name = $ENV{USER};
+@perl print $user_name;
+
+下面的模板语法分析器简单的将所有模板指令在中间文件中翻译成相应的Perl代码。每个子例程后面都有解释。
+
+package TemplateParser;
+use strict;
+
+sub parse {
+	# 参数：模板文件，中间Perl代码文件
+	my ($pkg, $template_file, $inter_file) = @_;
+	unless (open (T, $template_file)) {
+		warn "$template_file: $@";
+		retrun 1;
+	}
+	open (I, "> $inter_file") or die "Error opening inermediate file $inter_file : $@";
+
+	emit_opening_stmts($template_file);
+	my $line;
+	while (defined($line = <T>)) {
+		if ($line !~ /^\s*\@/) { # Is it a command?
+			emit_text($line);
+			next;
+		)
+		if ($line =~ /^\s*\@OPENFILE\s*(.*)\s*$/i) {
+			emit_open_file($1);
+		} elsif ($line =~ /^\s*\@FOREACH\s*(\w*)\s*(.*)\s*/i) {
+			emi_loop_begin($1, $2);
+		} elsif ($line =~ /^\s*\@END/i) {
+			emit_loop_end();
+		} elsif ($line =~ /^\s*\@PERL(.*)/i) {
+			emit_perl("$1\n");
+		};
+	}
+	emit_closing_stmts();
+
+	close(I);
+	return 0;
+}
+
+TemplateParse::parse由驱动程序以模板文件名为参数进行调用。对模板中的每一行，它都要检查改行是一条命令还是普通文本，并相应的调用子例程"emit"。所有产生的代码如下：
+
+sub emit_open_stmts {
+	my $template_file = shift;
+	emit("#Created automatically form $template_file");
+	emit(<<'_EOC_');
+
+	use Ast;
+	use JeevesUtil;
+
+	$tmp_file = "jeeves.tmp";
+	sub open_file;
+	if (! (defined ($ROOT) && $ROOT)) {
+
+规格语法分析器样例
+输入规格语法分析器特定于某以应用领域。这一节将来看一下我们的业余对象模型规格分析器，我们的主要目的就是复习一下AST库是如何使用的；语法分析器代码本身非常简单。对于更复杂的语法分析任务，你可以使用Berkeley yacc 的一个版本，该程序经过改造能够产生Perl而不是C代码。我已经应用这种组合成功的生成了CORBA规范的IDL语法分析器。
+
+例17-4中的语法分析器允许属性具有如下的附加注语：
+
+class Foo {
+	int id, access=readonly, db_col_name=id, index=yes;
+	};
+
+在模板文件中这些标志属性可以像“标准”属性如attr_name和attr_type一样来使用。
+
+
+
+相关资源
+1.Berkeley yacc for perl
+可以从CPAN的src/misc/perl_byacc.tar.Z下获得
+2.Lex for Perl. Parse::Lex
+可以从CPAN获得，使用Lex来生成词法分析器。文档是以法语写成的，即便你不会说法语，那些功能库也很容易看懂。
+
+

@@ -1,0 +1,276 @@
+Chapter 15. Exporter
+In Chapter 3, we showed you how to use modules, some of which pulled functions into the current namespace. Now we're going to show you how to get your own modules to do that.
+
+15.1. What use Is Doing
+So, just what does use do? How does the import list come into action? Perl interprets the use list as a particular form of BEGIN block wrapped around a require and a method call. For example, the following two operations are equivalent:
+
+use Island::Plotting::Maps qw( load_map scale_map draw_map );
+
+BEGIN {
+  require Island::Plotting::Maps;
+  Island::Plotting::Maps->import( qw( load_map scale_map draw_map ) );
+}
+
+Let's break this code down, piece by piece. First, the require is a package-name require, rather than the string-expression require from Chapter 10. The colons are turned into the native directory separator (such as / for Unix-like systems), and the name is suffixed with .pm (for "Perl module"). For this example on a Unix-like system, we end up with:
+
+require "Island/Plotting/Maps.pm";
+
+Recalling the operation of require from earlier, this means Perl looks in the current value of @INC, checking through each directory for a subdirectory named Island that contains a further subdirectory named Plotting that contains the file named Maps.pm.[*] If Perl doesn't find an appropriate file after looking at all of @INC, the program dies.[] Otherwise, the first file found is read and evaluated. As always with require, the last expression evaluated must be true (or the program dies),[*] and once Perl has read a file, it will not reread if requested again. In the module interface, we expect the require'd file to define subroutines in the same-named package, not the caller's package. So, for example, a portion of the File::Basename file might look something like this, if we took out all the good stuff:
+
+[*] The .pm portion is defined by the interface and can't be changed. Thus, all module filenames must end in dot-p-m.
+
+[] Trappable with an eval, of course.
+
+[*] Again, trappable with eval.
+
+package File::Basename;
+sub dirname { ... }
+sub basename { ... }
+sub fileparse { ... }
+1;
+
+These three subroutines are then defined in the File::Basename package, not the package in which our use occurs. A require'd file must return a true value, and it's traditional to use 1; as the last line of a module's code.
+
+How do these subroutines get from the module's package into the user's package? That's the second step inside the BEGIN block. Perl automatically calls a routine called import in the module's package, passing along the entire import list. Typically, this routine aliases some of the names from the imported namespace to the importing namespace. The module author is responsible for providing an appropriate import routine. It's easier than it sounds, as discussed later in this chapter.
+
+Finally, the whole thing is wrapped in a BEGIN block. This means that the use operation happens at compile time, rather than runtime, and indeed it does. Thus, subroutines are associated with those defined in the module, prototypes are properly defined, and so on.
+
+15.2. Importing with Exporter
+In Chapter 3, we skipped over that "and now magic happens" part where the import routine (defined by the module author) is supposed to take File::Basename::fileparse and somehow alias it into the caller's package so it's callable as fileparse.
+
+Perl provides a lot of introspection capabilities. Specifically, we can look at the symbol table (where all subroutines and many variables are named), see what is defined, and alter those definitions. You saw a bit of that back in the AUTOLOAD mechanism earlier in Chapter 14. In fact, as the author of File::Basename, if we simply want to force filename, basename, and fileparse from the current package into the main package, we can write import like this:
+
+sub import {
+  no strict 'refs';
+  for (qw(filename basename fileparse)) {
+    *{"main::$_"} = \&$_;
+  }
+}
+
+Boy, is that cryptic! And limited. What if the caller didn't want fileparse? What if the caller invoked use in a package other than main?
+
+Thankfully, there's a standard import that's available in the Exporter module. As the module author, all we do is add:
+
+use base qw(Exporter);
+
+Now the import call to the package will inherit upward to the Exporter class, providing an import routine that knows how to take a list of subroutines[*] and export them to the caller's package.
+
+[*] And variables, although far less common, and arguably the wrong thing to do.
+
+15.3. @EXPORT and @EXPORT_OK
+The import provided by Exporter examines the @EXPORT variable in the module's package to determine which variables it exports by default. For example, File::Basename might do something like:
+
+package File::Basename;
+our @EXPORT = qw( basename dirname fileparse );
+use base qw(Exporter);
+
+The @EXPORT list both defines a list of available subroutines for export (the public interface) and provides a default list for Perl to use when we don't specify an import list. For example, these two calls are equivalent:
+
+use File::Basename;
+
+BEGIN { require File::Basename; File::Basename->import }
+
+We pass no list to import. In that case, the Exporter->import routine looks at @EXPORT and provides everything in the list.[]
+
+[] Remember, having no list is not the same as having an empty list. If the list is empty, the module's import method is simply not called at all.
+
+What if we had subroutines we didn't want as part of the default import but that would still be available if we asked for them? We can add those subroutines to the @EXPORT_OK list in the module's package. For example, suppose that Gilligan's module provides the guess_direction_toward routine by default but could also provide the ask_the_skipper_about and get_north_from_professor routines, if requested. We can start it like this:
+
+package Navigate::SeatOfPants;
+our @EXPORT = qw(guess_direction_toward);
+our @EXPORT_OK = qw(ask_the_skipper_about get_north_from_professor);
+use base qw(Exporter);
+
+The following invocations would then be valid:
+
+use Navigate::SeatOfPants;  # gets guess_direction_toward
+
+use Navigate::SeatOfPants qw(guess_direction_toward); # same
+
+use Navigate::SeatOfPants
+  qw(guess_direction_toward ask_the_skipper_about);
+
+use Navigate::SeatOfPants
+  qw(ask_the_skipper_about get_north_from_professor);
+  ## does NOT import guess_direction_toward!
+
+If we specify any names, they must be in either @EXPORT or @EXPORT_OK, so this request is rejected by Exporter->import:
+
+use Navigate::SeatOfPants qw(according_to_GPS);
+
+because according_to_GPS is in neither @EXPORT nor @EXPORT_OK.[*] Thus, with those two arrays, we have control over our public interface. This does not stop someone from saying Navigate::SeatOfPants::according_to_GPS (if it existed), but at least now it's obvious that they're using something we didn't intend to offer them.
+
+[*] This check also catches misspellings and mistaken subroutine names, keeping you from wondering why the get_direction_from_professor routine isn't working.
+
+15.4. %EXPORT_TAGS
+We don't have to list every function or variable that we want to import, either. We can create shortcuts, or tags, to group them under a single name. In the import list, we precede the tag name with a colon. For example, the core Fcntl module makes the flock constants available as a group with the :flock tag:
+
+use Fcntl qw( :flock );        # import all flock constants
+
+As described in the Exporter documentation, a few shortcuts are available automatically. The DEFAULT tag pulls in the same things as if we had provided no import list:
+
+use Navigate::SeatOfPants qw(:DEFAULT);
+
+That isn't very useful on its own, but if we want to pull in the default symbols and more, we don't have to type everything out simply because we supply an import list:
+
+use Navigate::SeatOfPants qw(:DEFAULT get_north_from_professor);
+
+These are rarely seen in practice. Why? The purpose of explicitly providing an import list is generally to control the subroutine names we use in our program. Those last examples do not insulate us from future changes to the module, which may import additional subroutines that could collide with our code.[] In a few cases, a module may supply dozens or hundreds of possible symbols. These modules can use advanced techniques (described in the Exporter documentation) to make it easy to import batches of related symbols.
+
+[] For this reason, it is generally considered a bad idea for an update to a released module to introduce new default imports. If you know that your first release is still missing a function, though, there's no reason why you can't put in a placeholder: sub according_to_GPS { die "not implemented yet" }.
+
+In our modules, we use the %EXPORT_TAGS hash to define these tags. The hash key is the name of the tag (without the colon), and the value is an anonymous array of symbols.
+
+package Navigate::SeatOfPants;
+use base qw(Exporter);
+
+our @EXPORT    = qw(guess_direction_toward);
+our @EXPORT_OK = qw(
+                get_north_from_professor
+                according_to_GPS
+                ask_the_skipper_about
+                );
+
+our %EXPORT_TAGS = (
+        all       => [ @EXPORT, @EXPORT_OK ],
+        gps       => [ qw( according_to_GPS ) ],
+        direction => [ qw(
+                get_north_from_professor
+                according_to_GPS
+                guess_direction_toward
+                ask_the_skipper_about
+                ) ],
+        );
+
+Our first tag, all, includes all of the exportable symbols (everything in both @EXPORT and @EXPORT_OK). The gps tag comprises only the functions that deal with GPS, and the direction tag includes all the functions that deal with direction. The tags can contain overlaps too, and you'll notice that according_to_GPS shows up in each one of them. No matter how we define our tags, everything they include has to be either in @EXPORT or @EXPORT_OK.
+
+Once we define our export tags, our users can use them in their import lists:
+
+use Navigate::SeatOfPants qw(:direction);
+
+15.5. Exporting in a Primarily OO Module
+As seen earlier, the normal means of using an object-oriented module is to call class methods and then methods against instances resulting from constructors of that class. This means that an OO module typically exports nothing, so we'll have:
+
+package My::OOModule::Base;
+our @EXPORT = (  ); # you may even omit this line
+use base qw(Exporter);
+
+What if we then derive a class from this base class? The most important thing to remember is that the import method must be defined from the Exporter class, so we add it like so:
+
+package My::OOModule::Derived;
+use base qw(Exporter My::OOModule::Base);
+
+However, wouldn't the call to My::OOModule::Derived->import eventually find its way up to Exporter via My::OOModule::Base? Sure it would. So we can leave that out:
+
+package My::OOModule::Derived;
+use base qw(My::OOModule::Base);
+
+Only the base classes at the top of the tree need to specify Exporter, and only when they derive from no other classes.
+
+Please be aware of all the other reserved method names that can't be used by your OO module (as described in the Exporter manpage). At the time of this writing, the list is export_to_level, require_version, and export_fail. Also, we may wish to reserve unimport because Perl will call that routine when we replace use with no. That use is rare for user-written modules, however, although it often shows up with pragmas such as strict and warnings.
+
+Even though an OO module typically exports nothing, we might choose to export a named constructor or management routine. This routine typically acts a bit like a class method, but we want users to call it as a regular subroutine.
+
+One example is the LWP library, available on the CPAN as part of the libwww-perl distribution. The URI::URL module, now deprecated and replaced by the URI module, deals with universal resource identifiers, most commonly seen as URLs such as http://www.gilligan.crew.hut/maps/island.pdf. We can construct a URI::URL object as a traditional object constructor with:
+
+use URI::URL;
+my $u = URI::URL->new('http://www.gilligan.crew.hut/maps/island.pdf');
+
+The default import list for URI::URL also imports a url subroutine, which we can use as a constructor as well:
+
+use URI::URL;
+my $u = url('http://www.gilligan.crew.hut/maps/island.pdf');
+
+Because this imported routine isn't a class method, we don't use the arrow method call to invoke it. Also, the routine is unlike anything else in the module: it gets no initial class parameter. Even though normal subroutines and method calls are both defined as subroutines in the package, the caller and the author must agree as to which is which.
+
+The url convenience routine was nice, initially. However, it clashed with the same-name routine that CGI.pm TRied to export as well, leading to interesting errors (especially in a mod_perl setting). The module that got there last won. (The modern interface in the URI module doesn't export such a constructor.) Prior to that, in order to prevent a crash, we had to remember to bring it in with an empty import list:
+
+use URI::URL (  );        # don't import "url"
+my $u = URI::URL->new(...);
+
+15.6. Custom Import Routines
+Let's use CGI.pm as an example of a custom import routine before we show you how to write your own. Not satisfied with the incredible flexibility of the Exporter's import routine, CGI.pm author Lincoln Stein created a special import for the CGI module.[*] If you've ever gawked at the dizzying array of options that can appear after use CGI and wondered how it all worked, it's all a simple matter of programming. You can just look at the source yourself.
+
+[*] Some have dubbed this the "Lincoln Loader" out of a simultaneous deep respect for Lincoln and the sheer terror of having to deal with something that just doesn't work like anything else they've encountered.
+
+As part of the extension provided by this custom import, you can use the CGI module as an object-oriented module:
+
+use CGI;
+my $q = CGI->new;         # create a query object
+my $f = $q->param('foo'); # get the foo field
+
+or a function-oriented module:
+
+use CGI qw(param);        # import the param function
+my $f = param('foo');     # get the foo field
+
+If you don't want to spell out every possible subfunction, bring them all in:
+
+use CGI qw(:all);         # define 'param' and 800-gazillion others
+my $f = param('foo');
+
+And then there's pragmata available. For example, if you want to disable the normal sticky field handling, simply add -nosticky into the import list:
+
+use CGI qw(-nosticky :all);
+
+If you want to create the start_table and end_table routines, in addition to the others, it's simply:
+
+use CGI qw(-nosticky :all *table);
+
+Truly a dizzying array of options. How did Lincoln make it all work? You can just look in the CGI.pm code, see for yourself, but we'll show you the basics.
+
+The import method is just a regular method, so we can make it do anything that we want. Earlier we showed a simple (although hypothetical) example for File::Basename. In that case, instead of using the import method from Exporter as the real module does, we wrote our own to force the symbols into the main namespace.
+
+sub import {
+  no strict 'refs';
+  for (qw(filename basename fileparse)) {
+    *{"main::$_"} = \&$_;
+  }
+}
+
+This only works for main since that's what we hardcoded into the routine. We can figure out the calling package on the fly, however, by using the built-in caller. In scalar context, caller returns the calling package:
+
+sub import {
+  no strict 'refs';
+  my $package = caller;
+  for (qw(filename basename fileparse)) {
+    *{$package . "::$_"} = \&$_;
+  }
+}
+
+We can get even more information from caller by using it in list context.
+
+sub import {
+  no strict 'refs';
+  my( $package, $file, $line ) = caller;
+  warn "I was called by $package in $file\n";
+  for (qw(filename basename fileparse)) {
+    *{$package . "::$_"} = \&$_;
+  }
+}
+
+Since import is just a method, any arguments to it (that's the import list, remember) show up in @_. We can inspect the argument list and decide what to do. Let's turn on debugging output only if debug shows up in the import list. We're not going to import a subroutine named debug. We're only going to set $debug to a true value if it's there, then do the same stuff we did before. This time we only print the warning if we've turned on debugging.
+
+sub import {
+  no strict 'refs';
+  my $debug = grep { $_ eq 'debug' } @_;
+  my( $package, $file, $line ) = caller;
+  warn "I was called by $package in $file\n" if $debug;
+  for (qw(filename basename fileparse)) {
+    *{$package . "::$_"} = \&$_;
+  }
+}
+
+These are the basic tricks that Lincoln used to work his CGI magic, and it's the same stuff that the Test::More module, which we introduce in Chapter 17, uses in its own import to control how testing works.
+
+15.7. Exercises
+You can find the answers to these exercises in "Answers for Chapter 15" in the Appendix.
+
+15.7.1. Exercise 1 [15 min]
+Take the Oogaboogoo library you created in Chapter 10, Exercise 1 and turn it into a module you can bring in with use. Alter the invoking code so that it uses the imported routines (rather than the full package specification, as you did before), and test it.
+
+15.7.2. Exercise 2 [15 min]
+Modify your answer to Exercise 1 to use an export tag named all. When the user uses all, your module should import all of the subroutine names.
+
+use Oogaboogoo::date qw(:all);
+

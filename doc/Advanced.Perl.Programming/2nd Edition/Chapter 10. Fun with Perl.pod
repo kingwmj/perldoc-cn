@@ -1,0 +1,533 @@
+Chapter 10. Fun with Perl
+Perl programming isn't all work and no play. Unlike many other languages, it's in the essence of Perl culture not to take itself too seriouslythanks in part to Larry himself. After all, it's hard to be too serious about anything whose mascot is a camel.
+
+So Perl programmers have invented many and varied ways of amusing themselves in their time off, and understanding these things will get you a step closer to understanding Perl culture. What's particularly interesting about having fun with Perl, though, is that it can teach you a great deal. When people are trying to squeeze every last character out of a Perl golf entry, they'll come up with some interesting tricks in the language that you may not have thought of; part of the appeal of JAPHs is that they do obvious things in completely unexpected ways; and some of the Acme:: modules use extremely advanced or clever techniques in order to do something totally frivolous.
+
+Some people say that you've really mastered a language when you can tell jokes in it; by the end of this chapter, your sense of Perl humor will be honed a little furtherand, hopefully, your mastery of the language will be furthered, as well.
+
+10.1. Obfuscation
+Detractors of Perl will invariably say something about it looking like line noise; they point to wonderfully obvious, but not necessarily friendly, constructions like @{$_[0]||[ ]} as examples of how ugly Perl can turn out. (However, put the same detractors in front of a COBOL program and they'll probably complain about it being too verboseyou can't please some people.) At any rate, the reputation Perl has achieved for being incomprehensible is largely due to the recreational activities of the Obfuscated Perl Contest[*] and Perl Golf competitions. (Thanks, guys!)
+
+[*] The Obfuscated Perl Contest was run by The Perl Journal from 1996 until 2000 and took its inspiration from the International Obfuscated C Contest (http://www.iocc.org/), although for some reason most people don't think of C as looking like line noise.
+
+But obfuscation is not only about producing code that looks like line noise. Obfuscations are really an outlet for creative impulses thatas professional programmerswe can't always use in our day jobs. Working on an obfuscation, we exchange the various operational constraints of work for another set of constraints: aestethics, cleverness, shortness, etc. The fact that the program prints "Just another Perl hacker" or does whatever the rules for the golf hole said is only a side effect.
+
+As an example, we're going to take on a challenge posed on the Belfast Perl Mongers mailing list: write a program to solve the game of Boggle?[*] as quickly as possible. I wrote a pretty quick algorithm but decided to obfuscate it before entering. Here's the idea I had: first, give the dice coordinates from (1,1) to (4,4). Now we construct a matrix of each die's neighbor:
+
+[*] Boggle™ is a word game that uses a grid of lettered dice; you have to find find words by tracing paths through adjacent letters, without using the same die twice. So in the grid on this page, you can start at p and trace out peril, but you can't have piper because that would require going over the p twice.
+
+    my @neighbors=
+    (undef,[undef,[[1,2],[2,1],[2,2]],[[1,1],[1,3],[2,1],[2,2],[2,3]],[[1,
+    2],[1,4],[2,2],[2,3],[2,4]],[[1,3],[2,3],[2,4]]],[undef,[[1,1],[1,2],[
+    2,2],[3,1],[3,2]],[[1,1],[1,2],[1,3],[2,1],[2,3],[3,1],[3,2],[3,3]],[[
+    1,2],[1,3],[1,4],[2,2],[2,4],[3,2],[3,3],[3,4]],[[1,3],[1,4],[2,3],[3,
+    3],[3,4]]],[undef,[[2,1],[2,2],[3,2],[4,1],[4,2]],[[2,1],[2,2],[2,3],[
+    3,1],[3,3],[4,1],[4,2],[4,3]],[[2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,
+    3],[4,4]],[[2,3],[2,4],[3,3],[4,3],[4,4]]],[undef,[[3,1],[3,2],[4,2]],
+    [[3,1],[3,2],[3,3],[4,1],[4,3]],[[3,2],[3,3],[3,4],[4,2],[4,4]],[[3,3]
+
+This tells us that, for instance, the top left die (1,1) has neighbors (1,2), (2,1), and (2,2). Naturally, I used a small Perl program to pre-compute this for speed.
+
+Next, we need to read the board from standard input and also keep two pieces of information about itfirst, we want to know what letters we have on the board in total, and also we want to have a hash that looks up dice by the letter on them. That's to say, given the following board:
+
+    iane
+    nvpo
+    oire
+    ewlg
+
+we can look up "e" and get (1,4), (3,4), and (4.1).
+
+    for my $line (1..4) {
+      chop(my $row = <>);
+      my @row = split //, $row;
+      $has.=$row;
+      push @{$where{ $row[$_] }}, [$line, $_] for 1..4;
+    }
+
+(We used one-based arrays to simplify the generation of the @neighbors variabledetecting that $neighbors[0] is undef is easier than having to check that we don't accidentally get an inaccurate answer by looking at $neighbors[-1].)
+
+Next, we read in a word list and determine whether we can find the word in the Boggle grid. You might think it would be better to look through the Boggle grid and see what words you can make, as a human would, but this turns out to involve nearly half a million possibilities, whereas we can get any word list down smaller than that.
+
+The key to this is in noting that we're only interested in words made up of letters that can actually be found on our grid; that's the $has variable:
+
+    while (<>) {
+        chomp;
+        next unless /^[$has]{3,9}$/o;
+        my @stuff = split //, (my $word=$_);
+
+We then locate the first letter of the word in our %where hash, giving us all possible starting points. The path subroutine takes a position, a hash of the positions already visited (so we don't go over the same letter twice) and the letters left to find, and returns a true value if there's a path that traces out the letters:
+
+        for (@{$where{shift @stuff}}) {
+         print $word
+           if path($_, { $_->[0] . $_->[1] => 1 }, @stuff);
+        }
+
+As you might be able to guess, path is a recursive subroutine; it looks at the available positions of the next letter to be found, checks that they're neighbors of the current position and that they're not in the history, and then does the same for the next letter to find.
+
+    sub path {
+        my ($pos, $history, @left) = @_;
+        my @neigh = @{ $neighbors[ $pos->[0] ][ $pos->[1] ] };
+        for my $newpos (@{ $where{ shift @left } }) {
+            next if (!scalar grep { $newpos->[0] =  = $_->[0] &&
+                                    $newpos->[1] =  = $_->[1] } @neigh)
+                 || $history->{ $newpos->[0] . $newpos->[1] }++;
+            return !@left || path($newpos, $history, @left);
+            }
+    }
+
+OK, we've spent a long time explaining the algorithm. Let's go around obfuscating it. First, we look at variable and subroutine names. You'll get no points for having descriptive naming, and brevity is a strong element of obfuscation. Let's replace @neighbors with @n, $history with $h, $nextpos with $n (note the useful distinction between @n and $n), and so on. We also get rid of obvious extraneous whitespace to give us:
+
+    #!/usr/bin/perl -l
+    my@n=
+    (undef,[undef,[[1,2],[2,1],[2,2]],[[1,1],[1,3],[2,1],[2,2],[2,3]],[[1,
+    2],[1,4],[2,2],[2,3],[2,4]],[[1,3],[2,3],[2,4]]],[undef,[[1,1],[1,2],[
+    2,2],[3,1],[3,2]],[[1,1],[1,2],[1,3],[2,1],[2,3],[3,1],[3,2],[3,3]],[[
+    1,2],[1,3],[1,4],[2,2],[2,4],[3,2],[3,3],[3,4]],[[1,3],[1,4],[2,3],[3,
+    3],[3,4]]],[undef,[[2,1],[2,2],[3,2],[4,1],[4,2]],[[2,1],[2,2],[2,3],[
+    3,1],[3,3],[4,1],[4,2],[4,3]],[[2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,
+    3],[4,4]],[[2,3],[2,4],[3,3],[4,3],[4,4]]],[undef,[[3,1],[3,2],[4,2]],
+    [[3,1],[3,2],[3,3],[4,1],[4,3]],[[3,2],[3,3],[3,4],[4,2],[4,4]],[[3,3]
+    ,[3,4],[4,3]]]);
+    for my $l(1..4){chop(my $r = <>); my @r = split //, $r; $h.=$r;
+    push @{$w{$r[$_] }}, [$l, $_] for 1..4;}
+    while (<>) {chomp; next unless /^[$h]{3,9}$/o; my @s = split //, (my
+    $w=$_);p($_,{$_->[0].$_->[1] => 1},@s) and print $w for @{$w{shift @s}};}
+    sub p { my ($p, $h, @l) = @_; my @n2 = @{$n[$p->[0]][$p->[1]]};for my
+    $n (@{$w{shift @l}}) {
+        next if (!scalar grep {$n->[0]=  =$_->[0]&&$n->[1]=  =$_->[1]} @n2)
+    ||$h->{$n->[0].$n->[1]}++; return !@l||p($n,$h,@l);}}
+
+Well, this is still just about comprehensible, so we need to add a few more touches. For starters, Perl is amazingly tolerant of whitespace. Not only can we get rid of more whitespace where it's not needed (such as, for instance, all the whitespace in my @r = split //, $r) but we can add whitespace where it might not be expectedfor instance, a pleasing addition is a newline between the $ and r of a variable. We can also trim the code by replacing those undefs with zeros, and swapping a few control structures aroundX&&next instead of next if X, for instance. And, of course, no obfuscated program is complete without being formed into a nice regular shape:
+
+    my@n=(0,[0,[[2,2],[2,1],[1,2]],[[2,3],[2,2],[2,1],[1,3]
+    ,[1,1]],[[2,4],[2,3],[2,2],[1,4],[1,2]],[[2,4],[2,3],[1
+    ,3]]],[0,[[3,2],[3,1],[2,2],[1,2],[1,1],[1,2]],[[3,3],[
+    3,2],[3,1],[2,3],[2,1],[1,3],[1,2],[1,3]],[[3,4],[3,3],
+    [3,2],[2,4],[2,2],[1,4],[1,3],[1,2]],[[3,4],[3,3],[2,3]
+    ,[1,4]]],[0,[[4,2],[4,1],[3,2],[2,2],[2,1],[2,2]],[[4,3
+    ],[4,2],[4,1],[3,3],[3,1],[2,3],[2,2],[2,3]],[[4,4],[4,
+    3],[4,2],[3,4],[3,2],[2,4],[2,3],[2,4]],[[4,4],[4,3],[3
+    ,3],[2,4]]],[0,[[4,2],[3,2],[3,1],[3,2]],[[4,3],[4,1],[
+    3,3],[3,2],[3,3]],[[4,4],[4,2],[3,4],[3,3],[3,4]],[[4,3
+    ],[3,4]]]);my@b=[  ];my($h,%w);for my $l(0,1,2,3){chop(my
+    $r=<>);my@r=split//,$r;push@b,[0,@r];push@{$w{$r[$_]}},
+    [$l,$_]for 1..4;$h.=$r}while (<>){/^[$h]{3,9}$/o||next;
+    chomp;my@s=split//,(my$w=$_);p($_,{$_->[0].$_->[1]=>1},
+    @s)&&print$w."\n"for@{$w{shift@s}}}sub p{my($p,$h,@l)=@
+    _;my@z=@{$n[$p->[0]][$p->[1]]};for my$n(@{$w{shift@l}})
+    {next if(!scalar grep{$n->[0]=  =$_->[0]&&$n->[1]=  =$_->[1
+    ]}@z)||$h->{$n->[0].$n->[1]}++;return!@l||p($n,$h,@l)}}
+
+It was at this point that we tripped over a Perl 5.6.0 parser buffer overflow:
+
+        syntax error at boggle.pl.old line 14, near "5{"
+        Unrecognized character \x02 at boggle.pl.old line 14.
+
+which suggested that this was obfuscated enough.
+
+But I am but an amateur at the obfuscation game; for instance, it's possible to determine what my algorithm does by inspectionit doesn't do anything interesting like rewrite itself on the fly or redefine subroutines at runtime. I don't make use of the interesting properties of Perl's special variables, such as the wonderful discovery that $} (and hence @}, %}, and *}) is a legal variable name that happens to be unused by the system.
+
+For a piece of code that uses all these tricks and more, check out Damian Conway's SelfGOL. This program, if we can call it such, is just more than 1,000 bytes of pure, unadulterated evil. Instead of entering a different program for each category of the Obfuscated Perl Contest, Damian entered "SelfGOL" to all four.
+
+SelfGOL can reproduce itself; it can turn other programs into a quine; it can display a scrolling banner; it plays the Game of Life; and it contains no (ordinary) loops, goto statements, or if statements. Control flow is done, well, interestingly. We reproduce it here in its entirety without comment, as it takes Damian three to seven hours to explain it:
+
+    #!/usr/bin/perl -s
+    $;=$/;seek+DATA,undef$/,!$s;$_=<DATA>;$s&&print||(*{q;::\;
+    ;}=sub{$d=$d-1?$d:$0;s;';\t#$d#;,$_})&&$g&&do{$y=($x||=20)*($y||8);sub
+    i{sleep&f}sub'p{print$;x$=,join$;,$b=~/.{$x}/g,$;}sub'f{pop||1}sub'n{substr($b,
+    &f%$y,3)=~tr,O,O,}sub'g{@_[~~@_]=@_;--($f=&f);$m=substr($b,&f,1);($w,$w,$m,O)
+    [n($f-$x)+n($x+$f)-(${m}eq+O=>)+n$f]||$w}$w="\40";$b=join'',@ARGV?<>:$_,$w
+    x$y;$b=~s).)$&=~/\w/?O:$w)gse;substr($b,$y)=q++;$g='$i=0;$i?$b:$c=$b;
+    substr+$c,$i,1,g$i;$g=~s?\d+?($&+1)%$y?e;$i-$y+1?eval$g:do{$b=$c;p;i}';
+    sub'e{eval$g;&e};e}||eval||die+No.$;
+    _ _DATA_ _
+    $d&&do{{$^W=$|;*_=sub{$=+s=#([A-z])(.*)#=#$+$1#=g}}
+    @s=(q[$_=sprintf+pop@s,@s],";\n"->($_=q[
+    $d&&do{{$^W=$|;*_=sub{$=+s=#([A-z])(.*)#=#$+$1#=g}}'
+    @s=(q[%s],q[%s])x2;%s;print"\n"x&_,$_;i;eval};
+    ]))x2;$_=sprintf+pop@s,@s;print"\n"x&_,$_;i;eval};$/=$y;$"=",";print
+    q<#!/usr/bin/perl -sw
+    !$s?{do{>.($_=<>).q<}:do{@s=(q[printf+pop@s,@s],q[#!/usr/bin/perl -sw
+    !$s?{do{>.(s$%$%%$g,y=[=  =  =  =y=]=  =||&d,$_).q<}:do{@s=(q[%s],q[%s])x2;%s}
+    ])x2;printf+pop@s,@s}
+    >
+
+These are its command-line switches:
+
+    % selfgol -g           # play the Game of Life
+    % selfgol -s           # reproduce
+    % selfgol -d           # display banner
+    % selfgol -f script.pl # convert script.pl into a quine
+
+We cannot leave the topic of obfuscation without mentioning B::Deparse. More than a few people have come up with the bright idea of writing auto-obfuscation programs in order to safeguard their code against prying eyes for commercial reasons; still others produce horrifyingly obfuscated code that you would prefer to understand before running. Deparse helps with both of these. For instance, Mark-Jason Dominus's entry in the 5th Obfuscated Perl Contest looks like this:
+
+    @P=split//,".URRUU\c8R";@d=split//,"\nrekcah xinU / lreP rehtona tsuJ";sub p{
+    @p{"r$p","u$p"}=(P,P);pipe"r$p","u$p";++$p;($q*=2)+=$f=!fork;map{$P=$P[$f|ord
+    ($p{$_})&6];$p{$_}=/ ^$P/ix?$P:close$_}keys%p}p;p;p;p;p;map{$p{$_}=~/^[P.]/&&
+    close$_}%p;wait until$?;map{/^r/&&<$_>}%p;$_=$d[$q];sleep rand(2)if/\S/;print
+
+If you want to deconstruct this, you could do worse than starting with the following:
+
+    % perl -MO=Deparse mjd-japh
+
+    @P = split(??, '.URRUUxR', 0);
+    @d = split(??, "\nrekcah xinU / lreP rehtona tsuJ", 0);
+    sub p {
+        @p{"r$p", "u$p"} = ('P', 'P');
+        pipe *{"r$p"}, *{"u$p"};
+        ++$p;
+        ($q *= 2) += $f = !fork;
+        map {$P = $P[$f | ord $p{$_} & 6];
+        $p{$_} = / ^$P/xi ? $P : close *$_;} keys %p;
+    }
+    p ;
+    p ;
+    p ;
+    p ;
+    p ;
+    map {close *$_ if $p{$_} =~ /^[P.]/;} %p;
+    wait until $?;
+    map {<$_> if /^r/;} %p;
+    $_ = $d[$q];
+    sleep rand 2 if /\S/;
+    print $_;
+
+B::Deparse is a module designed to work with the Perl compiler, O.pm. If we tell O to use the Deparse backend, (use O 'Deparse', or perl -MO=Deparse as it's more commonly spelled) instead of spitting out C or Perl bytecode, it spits out Perl as parsed by the Perl parser and then unparsed again.
+
+If you need another hint, the -p option to Deparse can be used to add additional parentheses:
+
+    % perl -MO=Deparse,-p mjd-japh
+    ...
+
+        (($q *= 2) += ($f = (!fork)));
+        map({($P = $P[($f | (ord($p{$_}) & 6))]);
+
+    ..
+
+10.2. Just Another Perl Hacker
+A long time ago, in a Usenet newsgroup far, far away, Perl hacker Randal Schwartz (coauthor of Learning Perl and the early Programming Perl books) signed off a Usenet post with the famous words:
+
+    Just another Perl hacker,
+
+Of course, since Randal was talking about Perl and demonstrating techniques in Perl, this signature very soon mutated into the very obvious Perl code:
+
+    print "Just another Perl hacker,\n";
+
+and at this point, the JAPH was born. As Randal and others demonstrated a Perl programming technique in their Usenet articles, the point would be highlighted by a valedictory JAPH. For instance, when demonstrating the fact that sort sorts lexicographically with uppercase characters first, one might sign off:
+
+    print join" ", (sort(qw(another Just Perl hacker,)))[0,2,1,3];
+
+Since then, it has become a Perl tradition to produce programs that output the words "Just another Perl hacker" in cute, educational, or unexpected ways. The undisputed kingor perhaps, queenof JAPHdom is the Dutch hacker Abigail, who has contributed some of the most surprising JAPHs to the Perl community. The JAPH culture is so established that some of Abigail's JAPHs have been included in recent versions of Perl as regression tests, since they expose some of the strangest edge cases of the perl interpreter's behavior.
+
+Abigail's JAPHs use many of the tricks involved in obfuscated Perl but always end up surprising many readers. For instance, here's one of the more famous ones:
+
+    * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+    % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %;
+    BEGIN {% % = ($ _ = " " => print "Just another Perl Hacker\n")}
+
+The fact that this prints out a JAPH should be no surprise, since this is given entirely in the last line; the surprise should be in the fact that the whole thing parses as valid Perl code. But if you remember that // is a valid pattern match, %% is a perfectly good name for a hash, and ** is a perfectly good glob, then all should become relatively clear.
+
+There's a varying degree of complexity involved in JAPHs. The most basic JAPH somehow encodes the JAPH string, and then decodes it. This is pretty boring:
+
+    $_ = q ;4a75737420616e6f74686572205065726c204861636b65720as;;
+         for (s;s;s;s;s;s;s;s;s;s;s;s)
+             {s;(..)s?;qq qprint chr 0x$1 and \161 ssq;excess;}
+
+Then there are the kind of JAPHs that obviously contain the JAPH string, but it's not at all obvious how it reaches standard output:
+
+    eval {die [[qq [Just another Perl Hacker]]]};; print
+    ${${${@}}[$#{@{${@}}}]}[$#{${@{${@}}}[$#{@{${@}}}]}]
+
+And then there are those JAPHs that look like they might contain something like the JAPH string, but the rest is unclear:
+
+    BEGIN {$^H {q} = sub {$_ [1] =~ y/S-ZA-IK-O/q-tc-fe-m/d; $_ [1]}; $^H= 0x28100}
+    print "Just another PYTHON hacker\n";
+
+This particular JAPH relies upon a little-known feature of the overload pragmaexplained in Chapter 1combined with a little-known feature of its implementationthe fact that it relies on placing specific values in the magic variables $^H and %^H.
+
+A similar effect, it turns out, can be obtained by tying special variables:
+
+    tie $" => A; $, = " "; $\ = "\n"; @a = ("") x 2; print map {"@a"} 1 .. 4;
+    sub A::TIESCALAR {bless \my $A => A} #  Yet Another silly JAPH by Abigail
+    sub A::FETCH     {@q = qw /Just Another Perl Hacker/ unless @q; shift @q}
+
+Here, the $" variable, which is used to join array elements when they are interpolated in double-quoted strings, is tied; hence, when we interpolate the (empty) array @a, the tied variable pulls out another word from the JAPH string stored in @q.
+
+Special variables also play an interesting part in this Abigail creation, but in a very different way:
+
+    map{${+chr}=chr}map{$_=>$_^ord$"}$=+$]..3*$=/2;
+    print "$J$u$s$t $a$n$o$t$h$e$r $P$e$r$l $H$a$c$k$e$r\n";
+
+This takes advantage of the very fortuitous coincidences that the value of $= (the default number of lines on a format page) plus $] (the Perl version, generally just over 5 for now) is 65, the ASCII code for "A," and three-over-two times $= is 90, the ASCII code for "Z." Combined with the fact that the ASCII character set is arranged so that you can flip between lower- and uppercase letters by flipping the 5th bit (32, the value of a space character, as stored in $"), the first line of this JAPH sets $a to a, $b to b, and so on through to $Z; once this is accomplished, the second line follows naturally.
+
+$A++
+This discipline was invented by the Paris Perl Mongers, who also host a list of results at http://paris.mongueurs.net/aplusplus.html. The challenge is to increment the value of $A by one. There are currently 288 entries, ranging from the simple:
+
+    $A++;
+
+to the mind-blowing:
+
+    y ccccd x s vvchr oct oct ord uc ave x s vvucve le
+    s vvuc ave x s vvchr oct oct oct ord uc bve x eval
+
+10.3. Perl Golf
+The golfers are another example of the funny side of Perl; these are players of the game invented by Uri Guttman and played out on the golf@perl.org (Perl Golfers) mailing list and far too many other places, such as in front of those asking for help with relatively trivial problems on comp.lang.perl.misc. The goal of this particular sport is to solve a programming problem in as few characters as possible.
+
+For instance, consider generating the Fibonnacci series (1, 1, 2, 3, 5, 8, etc.). One might start with the following uninspired program:
+
+    perl -e '$a=$b=1; while (1) {$c= $a+$b; print $c,"\n"; $a=$b; $b=$c; }'
+
+This weighs in at an abysmal 61 characters, or strokes. We can immediately improve on this by removing extraneous whitespace and making use of the -l option to print newlines after every print statement:
+
+    perl -le '$a=$b=1;while(1){$c=$a+$b;print$c;$a=$b;$b=$c;}'
+
+This gives us a slightly more respectable 48 (the -l counts as a stroke), but that's still way over par. Let's notice that the second "1" constant isn't doing anything, the assignment followed by print will always yield a true value, so we can use that instead:
+
+     perl -le '$a=$b=1;while(print$c=$a+$b){$a=$b;$b=$c;}'
+
+We're now down to 43, and we can get rid of the initial $a= and the last semicolon for another three strokes. Maybe you feel we would be better off without an intermediate variable:
+
+    perl -le '$b=1;while(print$a+$b){($a,$b)=($b,$a+$b)}'
+
+but this again yields 43 strokes. A new train of thought is required.
+
+So far we've been computing the n'th term and printing it, then shuffling our variables around so we stored the n'th and n-1'th. But what we can do is carry about the n'th and n-1'th terms and increment each by the other: f(n) + f(n-1) yields f(n+1), and f(n+1) + f(n) yields f(n+2). This time we generate two terms inside our loop:
+
+    perl -le '$b=1;while(1){$a+=$b;print$a;$b+=$a;print$b}'
+
+We're now back up to 45 strokes, but this formulation leads naturally to:
+
+    perl -le '$b=1;while(1){print$a+=$b;print$b+=$a}'
+
+and thence to the beautifully symmetric:
+
+    perl -le '$b=1;print$a+=$b while print$b+=$a'
+
+This is 35 strokes, not bad; I dare say it can be improved upon, but aesthetics forces me to stop here. Ooh, no, one more thing:
+
+    perl -le 'print$a+=$b while print$b+=$a||1'
+
+33 strokes in all. Oh, and we can shave a character by using a special variable instead of $b, because then we won't need the space after while:
+
+    perl -le 'print$a+=$}while print$}+=$a||1'
+
+32 strokes. Beat that if you can!
+
+All right, I admit it; it's addictive.
+
+10.4. Perl Poetry
+Programming Perl mentions the arcane art of Perl Poetrywriting valid Perl programs that, shall we say, have greater literary than pragmatic value.
+
+One-Liners
+Somewhat related to golf is the culture of one-liners; seeing how much you can get done in a single line of Perl, sometimes in unexpected ways. For instance, everyone knows that you can count the number of lines in a file using the -n switch to Perl:
+
+    perl -nle '$count++; END{print $count}'
+
+And that you can use the $. variable instead, Perl's built-in line counter:
+
+    perl -nle 'END{print $.}'
+
+But only an expert one-linerer, such as Abigail, might come up with something like:[*]
+
+    perl -wlpe '}{$_=$.'
+
+Or how about this golf one-liner that uses a regular expression to factor a number, and hence test it for primacy?
+
+    perl -le '(1x shift)=~/^1?$|^(11+?)\1+$/||print"Prime"'
+
+[*] If these one-liners make too little sense, try using B::Deparse to see what Perl is really doing.
+
+The trend for writing Perl Poetry began, of course, with Larry and the first Perl haiku:
+
+    print STDOUT q
+    Just another Perl hacker,
+    unless $spring
+
+However, Perl haiku have problemsthey require the reader to agree on certain syllabic conventions. In this case, STDOUT must be read as "standard out" instead of the more usual "studout," and the $ in $spring must be pronounced.
+
+To avoid these kinds of confusion, Perl poems have gravitated toward the abstract, generally without a rhyme or syllabic structure. The first example of this, and the most widely known example of Perl poetry, is attributed to Larry: the Black Perl poem that can be found in Programming Perl.
+
+As noted there, the undisputed master of Perl poetry is Sharon Hopkins, whose listen, reverse, rush, and shopping poems have received widespread critical acclaim and publication in major periodicals.
+
+The practice of Perl poetry has passed its azimuth and is now in decline, save for the occasional Perl poetry contest and entries on the Poetry page of perlmonks.org. This is partially due to lack of interest and partially due to a concerted effort by Larry to ensure that Black Perl does not run on modern versions of Perl. That said, I wish to humbly offer a personal example, inspired by the great masterwork of Proust, À la Récherche du Temps Perdu:
+
+    for(long => time) {$early && $self->went($bed);}
+    rand time && do {
+        while ($candle--) {
+            (time => $eyes->shut(  )) < (time => print "Falling asleep!")
+        }
+    };
+
+10.5. Acme::*
+With all this crazy hackery going on, an outlet was needed on CPAN for less serious module contributions to the Perl world. The Acme namespace was set aside for wacky, explosive, or Heath-Robinsonian modules, and has very quickly become one of the more densely populated namespaces on CPAN. Most, if not all, of Acme:: is, in some way, London.pm's fault.
+
+It all started with the Bleach module, a neat toy by Damian Conway that spawned a host of less amusing and sadly uninspired imitators. Because of the host of imitators that followed, clogging up the root of the CPAN namespace, it was decided that silliness should not be discouraged, but moved to Acme::, and Bleach became Acme::Bleach. Bleach is really clever; it takes an ordinary program, like so:
+
+    use Bleach;
+    for my $i (1..10) {
+        print "Hello! $i\n";
+    }
+
+The first time this program runs, it appears to do nothing at all. However, when you come to look at the code again, it now looks like:
+
+    use Bleach;
+
+The really clever part is that it still runs, and it now prints out the message 10 times. This is astonishing until you know the trick. How does Bleach work, then? Everyone assumed this was done with source filters, but the business end of Bleach is a mere 11 lines long:
+
+    my $tie = " \t"x8;
+    sub whiten { local $_ = unpack "b*", pop; tr/01/\t/; s/(.{9})/$1\n/g; $tie.$_ }
+    sub brighten { local $_ = pop; s/^$tie|[^ \t]//g; tr/ \t/01/; pack "b*", $_ }
+    sub dirty { $_[0] =~ /\S/ }
+    sub dress { $_[0] =~ /^$tie/ }
+    open 0 or print "Can't rebleach'$0'\n" and exit;
+    (my $shirt = join "", <0>) =~ s/.*^\s*use\s+Acme::Bleach\s*;\n//sm;
+    local $SIG{_ _WARN_ _} = \&dirty;
+    do {eval brighten $shirt; exit} unless dirty $shirt && not dress $shirt;
+    open 0, ">$0" or print "Cannot bleach '$0'\n" and exit;
+    print {0} "use Acme::Bleach;\n", whiten $shirt and exit;
+
+It all becomes pretty obvious when you look at what the subroutines do. The whiten subroutine takes a string, turns it into its binary representation, and turns the zeros and ones into different types of whitespace. The brighten subroutine does the opposite, after first removing the signature $tie. The dirty subroutine checks to see if there's anything in a string that isn't whitespace, and dress checks to see if the signature is present.
+
+So the module loads up your code by using a slightly nifty Perl trick, found in the documentation of open:
+
+If EXPR is omitted, the scalar variable of the same name as the FILEHANDLE contains the filename.
+
+That is, by opening a filehandle called 0, we take the filename from $0, the location of our program. Then we lop off everything before use Acme::Bleach, and turn off warnings by setting the warn handler to an irrelevant subroutine. Now the code we've read in could be already bleached, in which case it's not dirty and will be dressed; if this is the case, we brighten it and execute it. If not, we whiten it and write it back.
+
+Very simple, once you've seen the trick. Other modules based on the same principle include Acme::Buffy, Acme::Pony, and many other London.pm in-jokes.
+
+There are, of course, some Acme:: modules that do other things. They range from the amusing but simple and uninspired (Acme::Handwaveyou tell it what data you expect, and it returns it), through amusing, simple, and inspired (Acme::Don'tlike a do block, but not quite) right up to the spectacular.
+
+Acme::Eyedrops, for instance, deserves an honorable mention. This takes an ordinary Perl programand let's use a classic:
+
+    print "hello world\n";
+
+and automatically obfuscates it:
+
+    perl -MAcme::EyeDrops=sightly -e 'print sightly("helloworld.pl")'
+
+    eval eval
+    '"'.('['^'+').('['^')').('`'|')').('`'|'.').('['^'/').('{'^'[').'\\'.'"'.
+    ('`'|'(').('`'|'%').('`'|',').('`'|',').('`'|'/').('{'^'[').('['^',').('`'
+    |'/').('['^')').('`'|',').('`'|'$').'\\'.'\\'.('`'|'.').'\\'.'"'.';'.('!'^
+    '+').'"'
+
+(We've reformatted the actual output slightly for, um, readability.)
+
+Now you can probably see what it's done hereit's encoded the ASCII values of each character in the program: the first character is '[' ^ '+', which is p, and so on. But that's not all it can do; it can pour that mess of punctuation into pretty shapes. For instance, if you pass the shape => "simon" option, you get a rather unflattering portrait[*] of your humble author:
+
+[*] Based on a very flattering portrait.
+
+    eval eval '"'.
+                        ('['^'+').("\["^
+                     ')').("\`"| ')').('`'
+                   |'.').('['^'/' ).('{'^'[')
+                  .'\\'.'"'.("\`"| '(').(('`')|
+                '%').('`'|(',')).( '`'|',').('`'
+              |'/').('{'^'[').('['^ ',').('`'|'/'
+             ).('['^')').('`'|',').( '`'|'$').'\\'
+            .'\\'.('`'|'.').'\\'.'"' .';'.('!'^'+')
+           .'"';$:='.'^'~';$~='@'|'(' ;$^=')'^'[';$/
+          ='`'|'.';$_='('^'}';$,='`'| '!';$\=')'^'}';
+         $:='.'^'~';$~=('@')|     '(' ;$^     =')'^'['
+         ;$/='`'|'.';$_='('                    ^'}';$,
+        ='`'|'!';$\=(')')^                      '}';$:=
+        '.'^'~';$~='@'|'('                       ;($^)=
+       ')'^'[';$/='`'|'.';                       $_='('
+       ^'}';$,='`'|'!';$\=                        "\)"^
+      '}';$:='.'^"\~";$~= (                       '@')
+      |'(';$^=')'^'[';$/  =                        '`'
+      |'.';$_='('^'}';$,  =                        ((
+      '`'))|'!';$\="\)"^  (                        ((
+      '}')));$:='.'^'~'; (   ( ( (          (   (  (
+      $~)))))))='@'|"\("; (        (      (        (     (
+      $^)))))=')'^'[';$/    ='`'|            '.'  ;      (
+    (   $_))='('^'}';$,    ='`'|'!'         ;($\) =     (
+      (  ')'))^'}';$:                             =    (
+        '.')^"\~";                      (          $~)
+         =  '@'                         |          (
+         (                              (          (
+         (                              (          (
+          (    (                                   (
+           ( ( (                   (     (  (      (
+               (                  (      (  (      (
+               (                  (      (  (
+               (                                  (
+            (   (
+            (    (                   '('))))))   )
+            )     )             )))))))))))))
+            )      )               ))))))))     ;
+            (       (                 $^))=')'^'[';
+            #         ;           #                 ;
+            #             ;     #                    ;
+             #                ;                       #
+                             ;          #  ;  #        ;
+              #                     ;
+                            #                           ;
+                                 #                       ;
+                           #    ;                         #
+                               ;                           #
+
+Some modules are perhaps better left unwritten.
+
+On the other hand, there are some Acme:: modules that are interesting ideas in other waysAcme::Your, for instance, works like our, but you get to use unqualified package variables from a different package. This is an inventive (and possibly even useful) use of source filters, which allow you to wrap a filtering layer around Perl's parser, affecting the program code it sees.
+
+Source Filters
+Source filters were invented by Paul Marquess and provide a way of intercepting Perl source code before it reaches Perl's parser. Using the functions in Filter::Util::Call to talk to the Perl internals, you can install Perl subroutines into the way of the input stream, the way Perl reads a program.
+
+The easiest way to do this is with the Filter::Simple module, which abstracts away a lot of the business of registering filters, reading from the input stream, putting things back into the input stream, and so on. Instead of the original, clumsy source filter mechanism, you can now say:
+
+    package Filter::Rot13;
+
+    use Filter::Simple;
+    FILTER { tr[a-z][n-za-m]; }
+
+When some code now use's Filter::Rot13, all code after the use statement will be passed through the FILTER block, here rotating the alphabet 13 places.
+
+Many Acme modules derive their usefulness from Filter::Simple, whereas Switch, which provides an implementation of a switch-case statement for Perl, is possibly the most comprehensive use of source filters.
+
+A final Acme curiosity, and one of my favourites, is Acme::Chef, an implementation of David Morgan-Mar's Chef programming language. In Chef, programs are expressed in the form of recipes:
+
+    Hello World Souffle.
+
+    This recipe prints the immortal words "Hello world!", in a basically
+    brute force way. It also makes a lot of food for one person.
+
+    Ingredients.
+    72 g haricot beans
+    101 eggs
+    108 g lard
+    111 cups oil
+    32 zucchinis
+    119 ml water
+    114 g red salmon
+    100 g dijon mustard
+    33 potatoes
+
+    Method.
+
+    Put potatoes into the mixing bowl. Put dijon mustard into the mixing
+    bowl. Put lard into the mixing bowl. Put red salmon into the mixing
+    bowl. Put oil into the mixing bowl. Put water into the mixing
+    bowl. Put zucchinis into the mixing bowl. Put oil into the mixing
+    bowl. Put lard into the mixing bowl. Put lard into the mixing
+    bowl. Put eggs into the mixing bowl. Put haricot beans into the mixing
+    bowl. Liquify contents of the mixing bowl. Pour contents of the mixing
+    bowl into the baking dish.
+
+    Serves 1.
+
+Acme::Chef comes with a Chef interpreter and a compiler to turn Chef programs into Perl programs. I can't help wondering how much programmer time gets spent on this sort of thing.
+
+10.6. Conclusion
+In this chapter, we've looked at some of the things that Perl hackers do to let their hair down: obfuscation, poetry, JAPHs, and plain, all-out silliness.
+
+If these things sound like your idea of fun, I have three pieces of advice for you:
+
+Subscribe to the fwp@perl.org Fun With Perl mailing list.
+
+Visit the appropriate sections on perlmonks.org.
+
+Seek professional guidance.
+

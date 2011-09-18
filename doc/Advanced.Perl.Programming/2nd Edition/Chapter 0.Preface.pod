@@ -1,0 +1,85 @@
+Advanced Perl Programming, 2nd Edition
+By Simon Cozens
+...............................................
+Publisher: O'Reilly
+Pub Date: June 2005
+
+
+With a worldwide community of users and more than a million dedicated programmers, Perl has proven to be the most effective language for the latest trends in computing and business.
+
+Every programmer must keep up with the latest tools and techniques. This updated version of Advanced Perl Programming from O'Reilly gives you the essential knowledge of the modern Perl programmer. Whatever your current level of Perl expertise, this book will help you push your skills to the next level and become a more accomplished programmer.
+
+O'Reilly's most high-level Perl tutorial to date, Advanced Perl Programming, Second Edition teaches you all the complex techniques for production-ready Perl programs. This completely updated guide clearly explains concepts such as introspection, overriding built-ins, extending Perl's object-oriented model, and testing your code for greater stability.
+
+Other topics include:
+
+
+Complex data structures
+
+
+Parsing
+
+
+Templating toolkits
+
+
+Working with natural language data
+
+
+Unicode
+
+
+Interaction with C and other languages
+
+
+In addition, this guide demystifies once complex topics like object-relational mapping and event-based development-arming you with everything you need to completely upgrade your skills.
+
+Praise for the Second Edition:
+
+"Sometimes the biggest hurdle to problem solving isn't the subject itself but rather the sheer number of modules Perl provides. Advanced Perl Programming walks you through Perl's TMTOWTDI ("There's More Than One Way To Do It") forest, explaining and comparing the best modules for each task so you can intelligently apply them in a variety of situations." --Rocco Caputo, lead developer of POE
+
+"It has been said that sufficiently advanced Perl code is indistinguishable from magic. This book of spells goes a long way to unlocking those secrets. It has the power to transform the most humble programmer into a Perl wizard." --Andy Wardley
+
+"The information here isn't theoretical. It presents tools and techniques for solving real problems cleanly and elegantly." --Curtis 'Ovid' Poe
+
+" Advanced Perl Programming collects hard-earned knowledge from some of the best programmers in the Perl community, and explains it in a way that even novices can apply immediately." --chromatic, Editor of Perl.com
+
+Preface
+It was all Nathan Torkington's fault. Our Antipodean programmer, editor, and O'Reilly conference supremo friend asked me to update the original Advanced Perl Programming way back in 2002.
+
+The Perl world had changed drastically in the five years since the publication of the first edition, and it continues to change. Particularly, we've seen a shift away from techniques and toward resourcesfrom doing things yourself with Perl to using what other people have done with Perl. In essence, advanced Perl programming has become more a matter of knowing where to find what you need on the CPAN,[*] rather than a matter of knowing what to do.
+
+[*] The Comprehensive Perl Archive Network (http://www.cpan.org) is the primary resource for user-contributed Perl code.
+
+Perl changed in other ways, too: the announcement of Perl 6 in 2000 ironically caused a renewed interest in Perl 5, with people stretching Perl in new and interesting directions to implement some of the ideas and blue-skies thinking about Perl 6. Contrary to what we all thought back then, far from killing off Perl 5, Perl 6's development has made it stronger and ensured it will be around longer.
+
+So it was in this context that it made sense to update Advanced Perl Programming to reflect the changes in Perl and in the CPAN. We also wanted the new edition to be more in the spirit of Perlto focus on how to achieve practical tasks with a minimum of fuss. This is why we put together chapters on parsing techniques, on dealing with natural language documents, on testing your code, and so on.
+
+But this book is just a beginning; however tempting it was to try to get down everything I ever wanted to say about Perl, it just wasn't possible. First, because Perl usage covers such a wide spreadon the CPAN, there are ready-made modules for folding DNA sequences, paying bills online, checking the weather, and playing poker. And more are being added every day, faster than any author can keep up. Second, as we've mentioned, because Perl is changing. I don't know what the next big advance in Perl will be; I can only take you through some of the more important techniques and resources available at the moment.
+
+Hopefully, though, at the end of this book you'll have a good idea of how to use what's available, how you can save yourself time and effort by using Perl and the Perl resources available to get your job done, and how you can be ready to use and integrate whatever developments come down the line.
+
+In the words of Larry Wall, may you do good magic with Perl!
+
+Contents
+Chapter 1, Advanced Techniques, introduces a few common tricks advanced Perl programmers use with examples from popular Perl modules.
+
+Chapter 2, Parsing Techniques, covers parsing irregular or unstructured data with Parse::RecDescent and Parse::Yapp, plus parsing HTML and XML.
+
+Chapter 3, Templating Tools, details some of the most common tools for templating and when to use them, including formats, Text::Template, HTML::Template, HTML::Mason, and the Template Toolkit.
+
+Chapter 4, Objects, Databases, and Applications, explains various ways to efficiently store and retrieve complex data using objectsa concept commonly called object-relational mapping.
+
+Chapter 5, Natural Language Tools, shows some of the ways Perl can manipulate natural language data: inflections, conversions, parsing, extraction, and Bayesian analysis.
+
+Chapter 6, Perl and Unicode, reviews some of the problems and solutions to make the most of Perl's Unicode support.
+
+Chap ter 7, POE, looks at the popular Perl event-based environment for task scheduling, multitasking, and non-blocking I/O code.
+
+Chapter 8, Testing, covers the essentials of testing your code.
+
+Chapter 9, Inline Extensions, talks about how to extend Perl by writing code in other languages, using the Inline::* modules.
+
+Chapter 10, Fun with Perl, closes on a lighter note with a few recreational (and educational) uses of Perl.
+
+

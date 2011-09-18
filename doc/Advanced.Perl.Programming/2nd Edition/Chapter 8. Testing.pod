@@ -1,0 +1,606 @@
+Chapter 8. Testing
+Every programmer likes writing code, but only a brave and masochistic few actually like writing tests for their code. However, with the rise of XP, Agile programming, and other programming methodologies, it has become more important for programmers to write complete test suites for the code they produce.
+
+Not only that, but thanks to the efforts of the Perl Kwalitee Assurance team, headed by Michael Schwern, there's a good deal of social pressure for CPAN module writers to come up with thorough automated test plans for their modules.
+
+Thankfully, Schwern and others have also produced a bunch of modules that make producing such test plans relatively painless. We'll take a look at the more popular and useful modules in this chapter.
+
+8.1. Test::Simple
+Back in the mists of time, around the late 1990s, test plans were very simple indeed; you had a program that spat out "ok" or "not ok" followed by a test number, and an automated testing harness would go through, run your tests, and pick out the tests that failed.
+
+So, programmers would write test scripts that looked something like this:
+
+    print "1..10\n";
+
+    print (( 1 + 1 =  = 2  ? "": "not "), "ok 1\n");
+    print (( 2 + 2 != 7  ? "": "not "), "ok 2\n");
+    if (foobar(  ) ) {
+        print "ok 3\n";
+    } else {
+        print "not ok 3\n";
+    }
+    ...
+
+Then some programmers realized they didn't want to keep score of the test numbers themselves, so they used a variable instead:
+
+    print "1..10\n";
+
+    my $i = 1;
+    print (( 1 + 1 =  = 2  ? "": "not "), "ok ", $i++, "\n");
+    print (( 2 + 2 != 7  ? "": "not "), "ok ", $i++, "\n");
+    ...
+
+The next logical advance would be to put the test into a subroutine that spat out the appropriate string. Some people came up with their own idiosyncratic way of skipping tests, marking known failures, and providing names for their tests so that they wouldn't have to go through and count to find the failing test.
+
+Eventually, we ended up in the situation where every test suite looked more or less the same but somehow subtly different from the others. It was out of this chaos that the original Test module was born. Test provided an ok subroutine that compared one thing with another, and reported the result and an automated test number.
+
+However, Test wasn't very flexible, and along came its modern replacement, Test::Simple. It works on exactly the same principle: you have an ok function that runs a test and prints out the appropriate output. Here's a simple test plan with Test::Simple.
+
+    use Test::Simple tests => 3;
+
+    ok( 1 + 1 =  = 2 );
+    ok( 2 + 2 != 7, "Two and two are not seven" );
+    ok( foobar(  ) );
+
+The first line states how many tests are going to run, so that the automated test harness will know if the test script completed successfully or died halfway through. Then come the three tests. Test::Simple provides the ok subroutine to emit a test result. If the first parameter to ok is true, then the test was successful. The second parameter is an optional description to display along with the test result. When you're viewing the output, the description makes it much easier to understand what the test is for and also helps to locate which tests are failing. Running the preceding three tests on the command line has the following result:
+
+    1..3
+    ok 1
+    ok 2 - Two and two are not seven
+    ok 3
+
+If the first parameter to ok is false, then the test failed. When you test a false value:
+
+    ok( 1 =  = 2, "One is two" );
+
+The test output includes your description, the name of the test file, and the line number where the test failed to help you locate which test is failing:
+
+    not ok 1 - One is two
+    #     Failed test (simple.t at line 5)
+
+These results are interpreted by the test harness to total up successes and failures. And this, basically, is all there is to Test::Simple, and all that most people need to know about testing. Test::Simple was, as its name implies, deliberately made really, really easy, so that there'd be no excuse[*] for not writing a decent test plan.
+
+[*] Well, other than laziness, impatience, or hubris.
+
+8.2. Test::More
+If you want a little more than the appropriately named Test::Simple, you can move on to the equally appropriately named Test::More.
+
+The first useful thing this module provides is a number of different ways to compare a value against another. First, you can provide two values and ask Test::More if they're the same:
+
+    is( test_function(  ), 1234, "Checking whether test_function returns 1234");
+
+or if they're different:
+
+    isnt( MyClass->new(  ), undef, "new method should succeed");
+
+And you can use regular expressions to see whether something looks like what you expect:
+
+    like(time, qr/^\d+$/, "Time really ought to be a positive integer");
+
+Another useful feature is cmp_ok. It performs explicit numeric, string, or boolean comparisons so you don't have to rely on DWIM. This takes two values and a Perl comparison function, allowing you to specify your tests like this:
+
+    cmp_ok(MyModule::foo(  ), ">", 12, "foo greater than 12");
+
+One advantage of is, isnt, like, and cmp_ok over ok is that they provide more detailed results when a test fails. These can be helpful in debugging a failure:
+
+    not ok 1 - Checking whether test_function returns 1234
+    #     Failed test (more.t at line 5)
+    #          got: '4321'
+    #     expected: '1234'
+    not ok 2 - foo greater than 12
+    #     Failed test (more.t at line 9)
+    #     '12'
+    #         >
+    #     '12'
+
+The final set of comparison tests deal with comparing structures, something that traditionally has been pretty tedious to do with the ordinary Test and Test::Simplestyles of testing. The is_deeply subroutine compares one structure with another and reports if they're the same and, if not, at what point they vary:
+
+    $got = some_function(  ); # Let's say it returned
+
+                            # [ 1, { a => "foo", b => [ "bar" ] } ]
+
+    $expected =  [1, { a => "foo", b => "bar" }];
+
+    is_deeply($got, $expected);
+
+This example's output is:
+
+    not ok 1
+    #     Failed test (t.pl at line 123)
+    #     Structures begin differing at:
+    #          $got->[1]{b} = 'ARRAY(0x6590)'
+    #     $expected->[1]{b} = 'bar'
+    # Looks like you failed 1 tests of 1.
+
+showing us that we found an array where we expected a bar scalar.
+
+8.2.1. Skips and Todos
+In some cases, you won't want all of your tests to run. There are two major reasons why: first, because the end user's system may not actually have some capability you wish to test; second, you may have written tests for something your code doesn't actually do quite yet. Test::More has the ability to handle both of these cases, which it calls skips and todos, respectively.
+
+Let's take an example. You've written a web services module, and you'd like to test it by connecting to some Internet server and making a query. Unfortunately, not all the world has always-on Internet access yet, so it's polite not to depend on the fact that your tests can make network connections. We'll use the libnet bundle's Net::Config settings to determine whether or not we should make Internet connections during tests:
+
+    use Net::Config qw(%NetConfig);
+
+    my $may_make_connections = $NetConfig{test_hosts};
+
+and if we can't talk to the network, we skip our network-related tests:
+
+    SKIP: {
+        skip "No network connection", 2 unless $may_make_connections;
+
+        ok($client->connect("myhost.foonly.com"));
+
+        is($client->request("2+2"),
+           4,
+           "Foonly calculator didn't make 2+2 equal 4"
+          );
+    }
+
+The SKIP: label on the block is mandatory, as it allows Test::More to find the end of the block. The parameters to skip are a string giving the reason why these tests are skipped, and the number of tests to skip. These tests are marked as OK but contain the keyword "skip" in the output so that test harnessesthe frameworks that check the output of test suiteswill know that they haven't actually run.
+
+    ok 1 # skip No network connection
+    ok 2 # skip No network connection
+
+The syntax for todo tests is similar, but the outcome is different. Skipped tests output ok and are marked with a skip; todo tests output not ok, but test harnesses will not fail the test suite because they will know that these are todos.
+
+You mark a TODO block by setting the $TODO variable:
+
+    TODO: {
+        local $TODO = "Insufficient funds";
+        ok(eval { $man->put_on_mars });
+        ok(eval { $man->colonize_planet });
+    }
+
+When run outside of a testing harness, this will report:
+
+    not ok 2 # TODO Insufficient funds
+    #     Failed (TODO) test (t.pl at line 6)
+    not ok 3 # TODO Insufficient funds
+    #     Failed (TODO) test (t.pl at line 7)
+
+but inside a harness:
+
+    t....ok
+    All tests successful.
+    Files=1, Tests=3,  0 wallclock secs ( 0.19 cusr +  0.01 csys =  0.20 CPU)
+
+The advantage of this is that as you implement the missing functionality, the tests will gradually begin to pass and the test harness will report them as unexpected successes. Once all the tests pass normally, you can remove the TODO designation.
+
+8.2.2. Automated Tests
+As we saw when discussing is_deeply above, Test::More attempts to make it easy to do more complex tests. It also provides a few other features to help automate the testing process.
+
+First, eq_set performs an order-agnostic array comparison. For instance, if you know your function is going to return a list from 1 to 10, but you don't know the order, you can make sure you get a full set of results as follows:
+
+    ok(eq_set([myfunc(  )], [1..10]), "We got a list from 1 to 10");
+
+If you're testing object-oriented modules, Test::More has a few useful additions for you. The isa_ok function checks to see if an object belongs to a particular class; this is typically used to check a constructor:
+
+    my $s = IO::Socket->new;
+    isa_ok($s, "IO::Socket");
+
+Finally, there's can_ok, for testing a variety of methods on an object. Strictly speaking, can_ok merely tests the interface to an object, ensuring that it can respond to the methods specified. It calls the can method on the class of the object. If you don't define your own custom version, the universal default can searches the object's inheritance tree for the named method:
+
+    can_ok($s, "accept", "timeout", "connected",
+               "close"); # Inherited from IO::Handle
+
+Using these methods together, a great deal of the pain of testing classes can be taken away. Later in the chapter, we'll see how these techniques can be combined with class-based testing to make the creation of such test suites even easier.
+
+8.3. Test::Harness
+When you've installed CPAN modules, you might have noticed two different styles of test output. In the first instance, you run something like perl -Mblib t/1.t and you see a list of results:
+
+    1..25
+    ok 1 - Loaded module
+    ok 2 - Can create a new object
+    ok 3 -  ... of the correct class
+    ...
+
+And in the second case, you run make test on a MakeMaker-generated install process or prove t/*.t, and you see something like this:
+
+    t/1...............ok
+    t/2...............ok
+    t/3...............FAILED tests 2, 5
+            Failed 2/6 tests, 66.67% okay
+
+    ...
+    Failed Test Stat Wstat Total Fail  Failed  List of Failed
+    -------------------------------------------------------------------------------
+    t/3.t                      6    2  33.33%  2 5
+    Failed 1/20 test scripts, 95.00% okay. 2/349 subtests failed, 99.43% okay.
+
+So, what's the difference? The difference is that, in the second case, something is running each test file in the t/ directorywhether it's one file or many filesand collating the results. The thing that's doing the collating is Test::Harness. Its job is to gather up the test results and make sure everything went OK before the module gets installed.
+
+So, if you're planning on writing tests that don't use the standard Test::Simple or Test::More modules (or indeed any of the other test modules out there), or you want to write your own test module, then you need to know how to produce test output that Test::Harness is going to be happy with. Otherwise, it will think your module is failing its tests. This standard output format is known as TAPthe Test Anything Protocoland credit for the name goes to Joe McMahon and Andy Lester.
+
+The interface to Test::Harness is the runtests function. You give runtests a list of filenames, it runs each one in turn and produces the summary you just saw. That's all. The interesting question is what Test::Harness expects from a test suite.
+
+The first thing it expects to see from a test suite is a plan. A plan is a line of text, of the form 1..N, and it must appear as either the first or the last thing seen on standard output. This ensures that Test::Harness can determine whether your test ended when it was supposed to or died in the middle. If you don't know how many tests you're going to have until you've run them, you can put out a plan right at the end. But you must have one, and only one, either at the very start or the very end.
+
+Each test must output the word ok, or the words not ok, and they must say this at the beginning of a line. They don't have to say what number they are, but it's useful.
+
+Test output can contain comments. Like a comment in Perl, these begin with a hash character. After the ok (or the not ok) and the test number, you can have a description that says what your test is called. Usually these are introducted by a dash, but anything between the test number and either a # character or the end of the line is treated as the description. Here are some valid test results:
+
+    ok
+    not ok 2
+    ok 3 - Array in correct order
+
+And here are some things that are not valid test results:
+
+    OK
+    Checking to see if we can parse the XML again... ok
+    4 not ok
+
+Test::Harness treats certain test comments specially. These are called directives. If a comment starting with skip immediately follows the test number, then the harness notes that this test has been skipped. Similarly, as we saw when looking at Test::More, the harness marks a test with a TODO directive as non-fatal.
+
+There are other things your test script might produce that Test::Harness knows how to deal with. You can specify that you want to skip the entire test file, by writing out:
+
+    1..0
+
+Or you can abort the current test by outputting the magic words Bail out!. Most other things in your test output will be ignored by the version of Test::Harness current at the time of writing, although that may change. For more details on this format, read Test::Harness::TAP.
+
+8.4. Test::Builder
+But to be honest, who would want to write a test module from scratch anyway? Isn't there some module we could use to help us with that? Well, rather unsurprisingly, there is. Written by chromatic and maintained by Michael Schwern, the Test::Builder module provides you with useful functionality for, well, building a test module.
+
+Test::Builder is an object-oriented module that implements the concept of a test object. This object performs some useful housekeeping work for us, such as keeping score of what test number we're at, how many tests have passed and failed, and so on, allowing us to concentrate on deciding whether or not a test should pass.
+
+The test object also provides methods similar to the Test::More tests: ok, is, like, and so on. In fact, Test::Simple and Test::More are mostly just thin wrappers around Test::Builder methods.
+
+Just like Apache->request, Test::Builder->new is a singleton object; future calls to new return the same object. This means you can use test routines from multiple different classes based on Test::Builder and they'll work together seamlessly maintaining a consistent count of passed and failed tests, along with the current test.
+
+The usual incantation to begin using Test::Builder looks like this:
+
+    use Test::Builder;
+    my $Test = Test::Builder->new;
+
+This creates a lexically scoped name for the singleton test object so you can refer to it directly within your test module. If you look into the code for Test::Simple, you'll find that's pretty much all there is to it: creating the Test::Builder object, an import subroutine, and an ok subroutine that simply calls the test object's ok method.
+
+    sub ok ($;$) {
+        $Test->ok(@_);
+    }
+
+The real magic is in the import routine. There are various different ways to set it up, depending on how important it is to be compatible with Perl 5.004 and earlier versions. One good example is in Test::Exception by Adrian Howard.
+
+    sub import {
+        my $self = shift;
+        if (@_) {
+            my $package = caller;
+            $Test->exported_to($package);
+            $Test->plan(@_);
+        };
+        $self->export_to_level(1, $self, $_) foreach @EXPORT;
+    }
+
+The critical bits of code here are the calls to the test object's exported_to and plan methods, which tell the test object where the test routines are exported to and set up the test plan. These two calls are wrapped in an if so that you can either use Test::Exception alone and have it set up its own test plan:
+
+    use Test::Exception tests => 5;
+
+or use it together with Test::More:
+
+    use Test::More tests => 5;
+    use Test::Exception;
+
+Suppose you wanted to support fuzzy matching. We'll start with the standard steps to create a Test::Builder object and export our custom test routine. We'll use String::Approx to perform the fuzzy matching between the tested value and the expected value.
+
+    package Test::Fuzzy;
+
+    use Test::Builder;
+    use String::Approx qw( amatch );
+
+    use base qw( Exporter );
+    our @EXPORT = qw( is_fuzzy );
+
+    my $Test = Test::Builder->new;
+
+Finally, we write is_fuzzy. Just like is, we'll take two strings as arguments and an optional test description:
+
+    sub is_fuzzy ($$;$) {
+        my ($got, $expected, $desc) = @_;
+        my $result = amatch($expected, $got);
+        $Test->ok($result, $desc);
+    }
+
+We don't even have to define an import subroutine if we leave Test::More to handle the test plan. To use our custom testing module, we use Test::More and Test::Fuzzy, then call our custom is_fuzzy test routine:
+
+    use Test::More tests => 2;
+    use Test::Fuzzy;
+
+    is_fuzzy('one', 'none', "one is like none");
+    is_fuzzy('blue', 'green', "blue is like green");
+
+These two tests produce the following output:
+
+    ok 1 - one is like none
+    not ok 2 - blue is like green
+    #     Failed test (fuzzy.t at line 7)
+
+And that's it!
+
+8.5. Test::Builder::Tester
+If you have a particularly perverse mind, you may now be thinking, "So what do the tests for Test::Builder look like?" Well, even more perverse minds have got there first, and Test::Builder has its own test suite creation module, rather predictably called Test::Builder::Tester. (And here it bottoms out, as Test::Builder::Tester contains enough functionality to test itself.)
+
+The basic premise of Test::Builder::Tester is this: you first declare what output you expect to see from your Test::Builder module for a particular test; then you run the test in a controlled manner, producing the output for real; then your actual test compares the expected output with the real output. This may seem a little meta until you see an example, so let's look at one now.
+
+We're writing a test script for our new Test::Fuzzy module; we begin by using Test::Fuzzy and also Test::Builder::Tester to provide the meta-testing functions and to state our test plan.
+
+    use Test::Fuzzy;
+    use Test::Builder::Tester tests => 1;
+
+We're going to run two tests that should pass, so we declare that we expect to see two successful results:
+
+    test_out("ok 1");
+    test_out("ok 2");
+
+This tells Test::Builder::Tester what to expect on its standard output.
+
+Now we actually run the two tests that should pass:
+
+    is_fuzzy("motches", "matches");
+    is_fuzzy("fuzy",    "fuzzy");
+
+All being well, this should output:
+
+    ok 1
+    ok 2
+
+since they do match approximately. But in this case, the actual output is not written to the screen but stashed away by Test::Builder::Tester so that it can be compared against our predictions.
+
+The final stage is to see whether or not the test output that's been stashed away really did meet our prediction:
+
+    test_test("Two trivial tests passed OK");
+
+If it did indeed output the right thing, then Test::Builder::Tester finally does output something to the screen, like so:
+
+    ok 1 - Two trivial tests passed OK
+
+There are extensions to Test::Builder::Tester, such as Test::Builder::Tester::Color, which allows it to disambiguate between, for instance, expected and unexpected failures by means of color-coding, but if you're going that deeply into metatesting, you'd probably be best learning the ropes for yourself.
+
+8.6. Keeping Tests and Code Together
+Putting your tests in a separate file is the usual and traditional way to write a test suite. However, as with documentation, it's easier to keep your tests updated if they're right there alongside your code. The Test::Inline and Pod::Tests modules help you do this.
+
+The weird thing about Test::Inline is that it doesn't actually do anything. It contains no code, only documentation on how to write inline tests. Inline tests are written as ordinary Pod, Perl's plain old documentation format, designed to go alongside the Pod for the subroutines you're implementing.
+
+Test::Inline explains how you can add testing blocks to the documentation of your modules, like so:
+
+    =head2 keywords
+
+       my @keywords = keywords($text);
+
+    This is a very simple algorithm which removes stopwords from a
+    summarized version of a text and then counts up what it considers to
+    be the most important "keywords". The C<keywords> subroutine returns a
+    list of five keywords in order of relevance.
+
+    =begin testing
+
+    my @keywords = keywords(scalar `perldoc -t perlxs`);
+    # reasonable sample document
+
+    is_deeply(\@keywords, [qw(perl xsub keyword code timep)],
+              "Correct keywords returned from perlxs");
+
+    =end testing
+
+    sub keywords {
+        ...
+
+With this layout, the documentation section makes it clear what the subroutine should do and then the testing section contains code to test it; keeping the documentation and tests together makes it clearer what ought to be tested. It also means that changes to the functionality can be made in the three important places at the same time: in the code, in the documentation, and in the tests.
+
+This is all well and good, but once we've got these embedded tests, what do we do with them? The Pod::Tests module contains a driver for extracting tests, pod2test:
+
+    % pod2test lib/Keywords.pm t/Keywords-embedded.t
+    % make test
+    ...
+
+The Test::Inline::Tutorial documentation provides some information about how to automate the extraction process, as well as tricks to make sure the example code that you give in your Pod works properly.
+
+8.7. Unit Tests
+As we mentioned in the introduction, the rise of movements like Extreme Programming[*] has led to both a revolution and a resurgence of interest in testing methodologies.
+
+[*] Extreme Programming Explained, by Kent Beck (Addison-Wesley), is the canonical work on the subject.
+
+One particular feature of the XP approach is unit testing, an old practice recently brought back to the limelight; the idea that one should test individual components of a program or module in isolation, proving the functional correctness of each part as well as the program as a whole.
+
+Needless to say, Perl programming devotees of XP have produced a wealth of modules to facilitate and encourage unit testing. There are two major XP testing suites, PerlUnit and Test::Class. PerlUnit is a thorough implementation of the standard xUnit suite, and will contain many concepts immediately familiar to XP devotees. However, it's also insanely complete, containing nearly 30 subclasses and related modules. We'll look here at Test::Class, which can be thought of as unit testing in the Perl idiom. We'll also be examining modules to help with the nuts and bolts of unit testing in areas where it may seem difficult.
+
+8.7.1. Test::Class
+The Test::Class module can be viewed in two waysfirst, as a module for testing class-based modules and, second, as a base class for classes whose methods are tests.
+
+Suppose we have the following very simple class, and we want to write a test plan for it:
+
+    package Person;
+    sub new {
+        my $self = shift;
+        my $name = shift;
+        return undef unless $name;
+        return bless {
+           name => $name
+        }, $self;
+    }
+
+    sub name {
+        my $self = shift;
+
+        $self->{name} = shift if @_;
+        return $self->{name};
+    }
+
+We'll start by writing a test class, which we'll call Person::Test. This inherits from Test::Class like so:
+
+    package Person::Test;
+    use base 'Test::Class';
+
+    use Test::More tests => 1;
+    use Person;
+
+Tests inside our test class are, predictably, specified in the form of methods. With one slight special featuretest methods are given the :Test attribute. So, for instance, we could test the new method:
+
+    sub constructor :Test {
+        my $self = shift;
+        my $test_person = Person->new("Larry Wall");
+        isa_ok($test_person, "Person");
+    }
+
+Notice that the job of emitting the usual Perl ok and not ok messages has not gone awayto do this, we use the Test::More module and make use of its functions inside of our test methods.
+
+Although it may seem initially attractive to name your test methods the same as the methods you're testing, you'll find that you may well want to carry out several tests using and abusing each method. There are two ways to do this. First, you can specify that a particular method contains a number of tests by passing a parameter to the :Test attribute:
+
+    sub name :Test(2) {
+        my $self = shift;
+        my $test_person = Person->new("Larry Wall");
+        my $test_name = $test_person->name();
+        is($test_name, "Larry Wall");
+
+        my $test_name2 = $test_person->name("Llaw Yrral");
+        is($test_name2, "Llaw Yrral");
+    }
+
+Or you could split each test into a separate methodin our Person example, we could have name_with_args and name_no_args or get_name and set_name. In most cases, you'll want to use a mixture of these two approaches.
+
+ Never name a test method new. Because your test class inherits from Test::Class, this will override Test::Class's new method causing it to run only one test.
+
+It's fine to define your own test class constructor named new, but make sure it includes the necessary behavior from Test::Class's new or calls SUPER::new.
+
+Once you define all the tests that you want to run, you can then tell Perl to run the tests, using the runtests method inherited from Test::Class:
+
+    _ _PACKAGE_ _->runtests;
+
+With that line in Person::Test, you can run the tests within a test file with just use Person::Test, or on the command line by running perl Person/Test.pm. A more common strategy is to provide a test script that runs all the class tests for a project:
+
+      use Test::Class;
+      my @classes;
+      Test::Class->runtests(@classes);
+      BEGIN {
+        my @found = code_to_find_all_classes(  );
+        foreach my $class (@found) {
+          eval {require $class};
+          push @classes if $class->isa('Test::Class');
+        }
+      }
+
+That's how we define test methods and un the test, but how does Test::Class know which test methods are defined, and in what order does it run the tests?
+
+Well, the truth is quite simplethe Test::Class module goes through the methods defined in the test class, looking for methods marked with the :Test attribute, and it calls them in alphabetical order. (Although, depending on the ordering is generally thought to be a bad thing.)
+
+The problem with this is that sometimes you want an object available all through your testing so you can poke at it using a variety of methods. Our test class, Person::Test, is a real class, and the test methods all get called with a real Person::Test object that can store information just like any other module. We want a fresh Person object in each test to avoid side effects as other test methods alter and test the object repeatedly.
+
+To facilitate this, Test::Class provides another designation for test methodscertain methods can be set to run before each test starts and after each test finishes, to set up and tear down test-specific data. These special methods have special parameters to the :Test attributethose marked as :Test(setup) run before each test, and those marked as :Test(teardown) run after each test. For instance, we could set up our Person:
+
+    sub setup_person :Test(setup) {
+        my $self = shift;
+        $self->{person} = Person->new("Larry Wall");
+    }
+
+and now we can use this object in our test methods:
+
+    sub get_name :Test {
+        my $self = shift;
+        is ($self->{person}->name, "Larry Wall");
+    }
+
+    sub set_name :Test {
+        my $self = shift;
+        $self->{person}->name("Jon Orwant"); # What a transformation!
+        is ($self->{person}->name, "Jon Orwant");
+
+        $self->{person}->name("Larry Wall"); # Better put Larry back.
+    }
+
+In other cases, setup may be an expensive process you only want to run once, or side effects may not be an issue because the object is an unchanging resource. Test::Class provides alternatives to setup and teardownmethods marked as :Test(startup) run before the first test method and those marked as :Test(shutdown) run after all the tests have finished. For instance, if our testing requires a database connection, we could set that up in our test object, too:
+
+    sub setup_database :Test(startup) {
+        my $self = shift;
+        require DBI;
+        $self->{dbh} = DBI->connect("dbi:mysql:dbname=test", $user, $pass);
+        die "Couldn't make a database connection!" unless $self->{dbh};
+    }
+
+    sub destroy_database :Test(shutdown) {
+        my $self = shift;
+        $self->{dbh}->disconnect;
+
+    }
+
+One useful feature of Test::Class is that it will do its utmost to run the startup and finalization methods, despite what may happen during the tests; if something dies during testing, this will be reported as a failure, and the program will move on to the next test, to assure that the test suite survives until finalization. For this reason, other suggested uses of startup and shutdown methods include creating and destroying temporary files, adding test data into a database (and then removing it or rolling it back again), and so on.
+
+8.7.2. Test::MockObject
+One idea behind unit testing is that you want to minimize the amount of code involved in a given test. For instance, let's suppose we're writing some HTML and web handling code that uses an LWP::UserAgent in its machinations. We want to test one subroutine of our program, but to do so would pull in a heap of code from LWP and may even require a call out to a web site and a dependency on particular information there. LWP has its own tests, and we know that it's relatively well behaved. We just want to make sure that our subroutine is well behaved. We also want to avoid unnecessary and unpredictable network access where we can.
+
+Wouldn't it be nice, then, if we could get hold of something that looked, walked, and quacked like an LWP::UserAgent, but was actually completely under our control? This is what Test::MockObject provides: objects that can conform to an external interface, but allow the test developer to control the methods.
+
+Let's first create a new mock object:
+
+    use Test::MockObject;
+
+    my $mock_ua = Test::MockObject->new(  );
+
+This will eventually become the mock LWP::UserAgent that our subroutine uses. In order to be like an LWP::UserAgent, it needs to respond to some methods. We add methods with the mock method:
+
+    $mock_ua->mock('clone',  sub { return $mock_ua    });
+
+Test::MockObject offers a series of alternatives to mocksuch as set_true and set_falsethat are shortcuts for common cases. For example, set_always creates a mock method that always returns a constant value:
+
+    $mock_ua->set_always('_agent', 'libwww/perl-5.65');
+
+After we've built up a set of methods and established what we'd like them to do, we have a mock user agent that can be passed into our subroutine and produce known output to known stimuli.
+
+ Be careful that the mock object's interface matches the real object's interface. You could end up with passing tests but failing code if, for example, a mocked method expects an array-reference where the real method expects an array. Integration tests are a good way to protect against this.
+
+This is all very well if we are passing in the object to our routine, but what about the more common case where the routine has to instantiate a new LWP::UserAgent for itself? Test::MockObject can get around thisin addition to faking an individual object, we can use it to fake an entire class.
+
+First, we lie to Perl and tell it that we've already loaded the LWP::UserAgent modulethis stops the interpreter loading the real one and stomping all over our fakery:
+
+    $mock_ua->fake_module("LWP::UserAgent");
+
+Note that this must be done during a BEGIN block or in some other manner before anything else calls use LWP::UserAgent, or else the real module will be loaded.
+
+Now we can use our mock object to create a constructor for the fake LWP::UserAgent class:
+
+    $mock_ua->fake_new("LWP::UserAgent");
+
+After this, any call to LWP::UserAgent->new returns the mock object.
+
+In this way, we can isolate the effects of our tests to a much better-defined area of code and greatly reduce the complexity of what's being tested.
+
+8.7.3. Testing Apache, DBI, and Other Complex Environments
+There are many opportunities for us to avoid writing tests, and the more lazy of us tend to take any such opportunity we can find. Unfortunately, most of these opportunities are not justifiedabsolutely any code can be tested in some meaningful way.
+
+For instance, we've seen how we can remove the dependency on a remote web server by using a mock user agent object; but what if we want to test a mod_perl application that uses a local web server? Of course, we could set up a special test Apache instance, something the HTML::Mason test suite does. This is a bit of a pain, however.
+
+Thankfully, there's a much easier solution: we can mock up the interface between our application and Apache, pretending there's a real, live Apache server on the other end of our Apache::Request object. This is a bit more complex than the standard Test::MockObject trick and is certainly not something you'd want to set up in every test you write. The Apache::FakeRequest module gives you access to an object that looks and acts like an Apache::Request, but doesn't require a web server.
+
+In the majority of cases, you can just call your application's handler routine with the fake request object:
+
+    use Apache::FakeRequest;
+
+    my $r = Apache::FakeRequest->new(  );
+
+    myhandler($r);
+
+However, given that the ordinary Apache request is a singleton objectsubsequent calls to Apache->request return the same objectyou may find that lazier programmers do not pass the $r object around, but instead pick it up themselves. To allow testing in the face of this kind of opposition, you will have to override the Apache->request and Apache::Request->new methods, like so:
+
+    use Apache::FakeRequest;
+
+    my $r = Apache::FakeRequest->new(  );
+    *Apache::request = sub { $r };
+    *Apache::Request::new = sub { $r };
+
+    myhandler($r);
+
+This way, no matter what shenanigans your handler attempts to get a request object, it should always get your fake request.
+
+In some cases, however, you've just got to bite the bullet; if you want to test a database-backed application, you're going to have to set up a database and populate it. How you do this depends on your situation. If you're developing an in-house product, it makes sense to use your real development database and have something like Test::Class's startup and shutdown routines insert and delete the data you need.
+
+If, on the other hand, you're writing a CPAN module and want remote users to be able to test the module, things become more tricky. You can, of course, have them set up a test database and provide your test suite with details of how to access it, but it's difficult to do this while keeping the suite non-interactive: developers using the CPANPLUS module to automatically install modules and their dependencies won't appreciate having to stop and set up a database before going on; neither do software packagers such as those involved in the Debian project need the hassle of setting up a database just for your tests.
+
+In these cases, one decent solution is to use the DBD::CSV or DBD::AnyData modulessimply put your test data into a set of colon-separated files and have your test suite work from that instead of a real RDBMS. If your module requires slightly heavier database access than that, a reasonable solution is DBD::SQLite, a lightweight database server embedded in a C library. This allows you to ship a couple of data files with your tests, giving you pretty much everything you need from a relational database.
+
+8.8. Conclusion
+I'd like to end on a philosophical note, to try to persuade you to read through the chapter again, read Test::Tutorial, visit http://qa.perl.org, or otherwise expand your knowledge of testing with the many resources available.
+
+I used to be extremely hubristic about testing. My attitude was "if it didn't work, I wouldn't have released it!" and I provided only the most minimal of tests with my modules. I've since become a reformed character. Over the past few years, I've become personally more and more convinced of the merit of writing comprehensive test suites for the modules and code that I produce.
+
+Even if you're not a devotee of test-driven developmentwriting your tests first and then writing code until they passa full test suite makes sure that any future changes you make don't cause problems with old functionality; I've found it beneficial to add every bug report I've been sent as a test case, to aid regression testing. If nothing else, adding tests to a module gives the end user confidence that your code is thorough and robust. And, finally, even the most basic of tests can, to mix metaphors, nip glaring bugs in the bud.
+
+In short, tests are a good thing. And, thankfully, with modules like Test::More and Test::Simple, they need not be a pain to write. I may have joked earlier that nothing bar laziness and hubris could stop one from writing tests, but even that doesn't stand up to examinationnot writing tests is false laziness. The certainty that resolved bugs are not going to recur is ample payoff for the time spent writing tests.
+
+Get into the discipline of testing. It will save you time, and it will spare you blushes.
+

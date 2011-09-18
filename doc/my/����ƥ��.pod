@@ -1,0 +1,80 @@
+=encoding utf8
+
+# ============== POD 内容介绍===============
+#  
+# =========================================
+
+# 日期：Wed Aug 31 11:43:45 2011
+# 作者: 宋志泉 songzhiquan@hotmail.com
+
+=head1 智能匹配
+
+智能匹配操作符 C<~~> ，根据两端算子的类型决定实际的匹配方式。
+使用智能匹配可以用最少的指令写出功能强大的条件判断。
+智能匹配通常和 given-when 一起联合起来使用。
+
+ use 5.010;
+
+ if (exists $hash{$key}) { ... } # 5.08
+ if ($key ~~ %hash) { ... }
+
+ if ( grep { $_ eq $name } @cats ) { ... } # 5.08
+ if ( $name ~~ @cats ) { ... }
+
+
+=head2 正则表达式检查散列键
+
+ my $matched = 0;
+ 
+ foreach my $key (keys %hash) {
+    do { $matched = 1; last } if $key =~ /$regex/;
+ }
+ if ($matched) {
+    print "One of the keys matched!\n";
+ }
+
+ if (%hash ~~ /$regex/) {
+     say "One of the elements matched";
+ }
+
+=head3 其他的匹配模式
+
+ %hash1 ~~ %hash2   # 键相同的两个散列
+ @array1 ~~ @array2 # 完全相同的两个数组
+ $scalar ~~ $code_ref # $code_ref->( $scalar ) 是否返回真
+
+=head3 given-when 的用法
+
+ use 5.010；
+
+ given ($dog) {
+    when ('Fido')  { ... }
+    when ('Rover') { ... }
+    when ('Spot')  { ... }
+    default        { ... }
+ }
+
+默认情况下，只要某个 when
+块得到匹配，这段程序的运算就结束了。Perl不再计算其他的 When 块， 好像在每个
+when 块末尾有一个隐形的 break 语句，用以直接跳出整个循环。
+
+利用 continue 语句，可以使程序在当前 when 块结束后 进入下一个 when
+块继续比较。
+
+=head3 对列表进行分支判断
+
+ use 5.010;
+
+ my $count = 0;
+
+ foreach (@array) {
+        when (/[aeiou]$/) { $vowels_count++ }
+        when (/[^aeiou]$/) { $count++ }
+ }
+
+ when = if (expression) { expression; next }
+
+=cut
+# vim:tw=78:ts=8:ft=pod:norl:
+
+

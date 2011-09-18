@@ -1,0 +1,544 @@
+Chapter 5. References and Scoping
+We can copy and pass around references like any other scalar. At any given time, Perl knows the number of references to a particular data item. Perl can also create references to anonymous data structures (structures that do not have explicit names) and create references automatically as needed to fulfill certain kinds of operations. Let's look at copying references and how it affects scoping and memory usage.
+
+5.1. More Than One Reference to Data
+Chapter 4 explored how to take a reference to an array @skipper and place it into a new scalar variable:
+
+my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+my $reference_to_skipper = \@skipper;
+
+We can then copy the reference or take additional references, and they'll all refer to the same thing and are interchangeable:
+
+my $second_reference_to_skipper = $reference_to_skipper;
+my $third_reference_to_skipper  = \@skipper;
+
+At this point, we have four different ways to access the data contained in @skipper:
+
+@skipper
+@$reference_to_skipper
+@$second_reference_to_skipper
+@$third_reference_to_skipper
+
+Perl tracks how many ways it can access the data through a mechanism called reference counting . The original name counts as one, and each additional reference that we create (including copies of references) also counts as one. The total number of references to the array of provisions is now four.
+
+We can add and remove references as we wish, and as long as the reference count doesn't hit zero, Perl maintains the array in memory and it is still accessible via any of the other access paths. For example, we might have a temporary reference:
+
+check_provisions_list(\@skipper)
+
+When this subroutine executes, Perl creates a fifth reference to the data and copies it into @_ for the subroutine. The subroutine is free to create additional copies of that reference, which Perl notes as needed. Typically, when the subroutine returns, Perl discards all such references automatically, and you're back to four references again.
+
+We can kill off each reference by using the variable for something other than a reference to the value of @skipper. For example, we can assign undef to the variable:
+
+$reference_to_skipper = undef;
+
+Or, maybe we just let the variable go out of scope:
+
+my @skipper = ...;
+
+{ # naked block
+...
+my $ref = \@skipper;
+...
+...
+} # $ref goes out of scope at this point
+
+In particular, a reference held in a subroutine's private (lexical) variable goes away at the end of the subroutine.
+
+Whether we change the value, or the variable itself goes away, Perl notes it as an appropriate reduction in the number of references to the data.
+
+Perl recycles the memory for the array only when all references (including the name of the array) go away. In this case, Perl only reclaims memory when @skipper and all the references we created to it disappear.
+
+Such memory is available to Perl for other data later in this program invocation, and generally Perl doesn't give it back to the operating system.
+
+5.2. What If That Was the Name?
+Typically, all references to a variable are gone before the variable itself. But what if one of the references outlives the variable name? For example, consider this code:
+
+my $ref;
+
+{
+  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+  $ref        = \@skipper;
+
+  print "$ref->[2]\n"; # prints jacket\n
+}
+
+print "$ref->[2]\n"; # still prints jacket\n
+
+Immediately after we declare the @skipper array, we have one reference to the five-element list. After $ref is initialized, we'll have two, down to the end of the block. When the block ends, the @skipper name disappears. However, this was only one of the two ways to access the data! Thus, the five-element list is still in memory, and $ref still points to that data.
+
+At this point, the five-element list is in an anonymous array, which is a fancy term for an array without a name.
+
+Until the value of $ref changes, or $ref itself disappears, we can still use all the dereferencing strategies we used prior to when the name of the array disappeared. In fact, it's still a fully functional array that we can shrink or grow just as we do any other Perl array:
+
+push @$ref, 'sextant'; # add a new provision
+print "$ref->[-1]\n"; # prints sextant\n
+
+We can even increase the reference count at this point:
+
+my $copy_of_ref = $ref;
+
+or equivalently:
+
+my $copy_of_ref = \@$ref;
+
+The data stays alive until we destroy the last reference:
+
+$ref = undef; # not yet...
+$copy_of_ref = undef; # poof!
+
+5.3. Reference Counting and Nested Data Structures
+The data remains alive until we destroy the last reference, even if that reference lives within a larger active data structure. Suppose an array element is itself a reference. Recall the example from Chapter 4:
+
+my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+my @skipper_with_name   = ('The Skipper', \@skipper);
+
+my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
+my @professor_with_name = ('The Professor', \@professor);
+
+my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
+my @gilligan_with_name  = ('Gilligan', \@gilligan);
+
+my @all_with_names = (
+        \@skipper_with_name,
+        \@professor_with_name,
+        \@gilligan_with_name,
+        );
+
+Imagine for a moment that the intermediate variables are all part of a subroutine:
+
+my @all_with_names;
+
+sub initialize_provisions_list {
+  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+  my @skipper_with_name = ('The Skipper', \@skipper);
+
+       my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
+  my @professor_with_name = ('The Professor', \@professor);
+
+  my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
+  my @gilligan_with_name = ('Gilligan', \@gilligan);
+
+  @all_with_names = ( # set global
+    \@skipper_with_name,
+    \@professor_with_name,
+    \@gilligan_with_name,
+  );
+}
+
+initialize_provisions_list(  );
+
+We set the value of @all_with_names to contain three references. Inside the subroutine we have named arrays with references to arrays first placed into other named arrays. Eventually, the values end up in the global @all_with_names. However, as the subroutine returns, the names for the six arrays disappear. Each array has had one other reference taken to it, making the reference count temporarily two, and then back to one as the name disappears. Because the reference count is not yet zero, the data continues to live on, although it is now referenced only by elements of @all_with_names.
+
+Rather than assign the global variable, we can rewrite this without @all_with_names and return the list directly:
+
+sub get_provisions_list {
+  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+  my @skipper_with_name = ('The Skipper', \@skipper);
+
+  my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
+  my @professor_with_name = ('The Professor', \@professor);
+
+  my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
+  my @gilligan_with_name = ('Gilligan', \@gilligan);
+
+  return (
+    \@skipper_with_name,
+    \@professor_with_name,
+    \@gilligan_with_name,
+  );
+}
+
+my @all_with_names = get_provisions_list(  );
+
+Here, we create the value that we'll eventually store in @all_with_names as the last expression evaluated in the subroutine. The subroutine returns a three-element list. As long as the named arrays within the subroutine have had at least one reference taken of them, and it is still part of the return value, the data remains alive.[*] If we alter or discard the references in @all_with_names, Perl reduces the reference count for the corresponding arrays. If that means the reference count has become zero (as in this example), Perl also eliminates the arrays themselves. Because the arrays inside @all_with_names also contain a reference (such as the reference to @skipper), Perl reduces that reference count by one. Again, that reduces the reference count to zero, freeing that memory as well, in a cascading effect.
+
+[*] Compare this with having to return an array from a C function. We must either return a pointer to a static memory space, making the subroutine nonreentrant, or we must malloc new memory space, requiring the caller to know to free the data. Perl just does the right thing.
+
+Removing the top of a tree of data generally removes all the data contained within. The exception is when we make additional copies of the references of the nested data. For example, if we copy Gilligan's provisions:
+
+my $gilligan_stuff = $all_with_names[2][1];
+
+then when we remove @all_with_names, we still have one live reference to what was formerly @gilligan, and the data from there downward remain alive.
+
+The bottom line is simply: Perl does the right thing. If we still have a reference to data, we still have the data.
+
+5.4. When Reference Counting Goes Bad
+Reference counting as a way to manage memory has been around for a long time. A really long time. The downside of reference counting is that it breaks when the data structure is not a directed graph that is, when some parts of the structure point back in to other parts in a looping way. For example, suppose each of two data structures contains a reference to the other (see Figure 5-1):
+
+my @data1 = qw(one won);
+my @data2 = qw(two too to);
+
+push @data2, \@data1;
+push @data1, \@data2;
+
+Figure 5-1. When the references in a data structure form a loop, Perl's reference-counting system may not be able to recognize and recycle the no-longer-needed memory space
+
+At this point, we have two names for the data in @data1: @data1 itself and @{$data2[3]}, and two names for the data in @data2: @data2 itself and @{$data1[2]}. We've created a loop. In fact, we can access won with an infinite number of names, such as $data1[2][3][2][3][2][3][1].
+
+What happens when these two array names go out of scope? Well, the reference count for the two arrays goes down from two to one, but not zero. And because it's not zero, Perl thinks there might still be a way to get to the data, even though there isn't! Thus, we've created a memory leak. A memory leak in a program causes the program to consume more and more memory over time. Ugh.
+
+At this point, you're right to think that example is contrived. Of course we would never make a looped data structure in a real program! Actually, programmers often make these loops as part of doubly linked lists, linked rings, or a number of other data structures. The key is that Perl programmers rarely do so because the most important reasons to use those data structures don't apply in Perl. Most of that deals with managing memory and connecting discontiguous memory blocks, which Perl does for us. If you've used other languages, you may have noticed programming tasks that are comparatively easy in Perl. For example, it's easy to sort a list of items or to add or remove items, even in the middle of the list. Those tasks are difficult in some other languages, and using a looped data structure is a common way to get around the language's limitations.
+
+Why mention it here? Well, even Perl programmers sometimes copy an algorithm from another programming language. There's nothing inherently wrong with doing this, although it would be better to decide why the original author used a "loopy" data structure and then recode the algorithm to use Perl's strengths. Perhaps you should use a hash instead, or perhaps the data should go into an array that will be sorted later.
+
+Some upcoming version of Perl is likely to use garbage collection in addition to, or instead of, referencing counting.[*] Until then, we must be careful not to create circular references or, if we do, break the circle before the variables go out of scope. For example, the following code doesn't leak:
+
+[*] Just don't ask us about it. We wrote this book a long time before you got a chance to read it, so we didn't exactly know the details back then.
+
+{
+  my @data1 = qw(one won);
+  my @data2 = qw(two too to);
+  push @data2, \@data1;
+  push @data1, \@data2;
+  ... use @data1, @data2 ...
+  # at the end:
+  @data1 = (  );
+  @data2 = (  );
+}
+
+We eliminated the reference to @data2 from within @data1, and vice versa. Now the data have only one reference each, which all go to zero references at the end of the block. In fact, we can clear out either one and not the other, and it still works nicely. Chapter 13 shows how to create weak references, which can help with many of these problems.
+
+5.5. Creating an Anonymous Array Directly
+In the get_provisions_list routine earlier, we created a half dozen array names that we used only so that we could take a reference to them immediately afterward. When the subroutine exited, the array names all went away, but the references remained.
+
+While creating temporarily named arrays would work in the simplest cases, creating such names becomes more complicated as the data structures become more detailed. We'd have to keep thinking of names of arrays just so we could forget them shortly thereafter.
+
+We can reduce the namespace clutter by narrowing down the scope of the various array names. Rather than declaring them within the scope of the subroutine, we can create a temporary block:
+
+my @skipper_with_name;
+{
+  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+  @skipper_with_name = ('The Skipper', \@skipper);
+}
+
+At this point, the second element of @skipper_with_name is a reference to the array formerly known as @skipper. However, that name is no longer relevant.
+
+This is a lot of typing to simply say "the second element should be a reference to an array containing these elements." We can create such a value directly using the anonymous array constructor, which is yet another use for square brackets:
+
+my $ref_to_skipper_provisions =
+  [ qw(blue_shirt hat jacket preserver sunscreen) ];
+
+The square brackets take the value within (evaluated in a list context); establish a new, anonymous array initialized to those values; and (here's the important part) return a reference to that array. It's as if we had said:
+
+my $ref_to_skipper_provisions;
+{
+  my @temporary_name =
+  ( qw(blue_shirt hat jacket preserver sunscreen) );
+  $ref_to_skipper_provisions = \@temporary_name;
+}
+
+Here we don't need to come up with a temporary name, and we don't need the extra noise of the temporary block. The result of a square-bracketed anonymous array constructor is an array reference, which fits wherever a scalar variable fits.
+
+Now we can use it to construct the larger list:
+
+my $ref_to_skipper_provisions =
+  [ qw(blue_shirt hat jacket preserver sunscreen) ];
+my @skipper_with_name = ('The Skipper', $ref_to_skipper_provisions);
+
+Of course, we didn't actually need that scalar temporary, either. We can put a scalar reference to an array as part of a larger list:
+
+my @skipper_with_name = (
+  'The Skipper',
+  [ qw(blue_shirt hat jacket preserver sunscreen) ]
+);
+
+Now let's walk through this. We've declared @skipper_with_name, the first element of which is the Skipper's name string, and the second element is an array reference, obtained by placing the five provisions into an array and taking a reference to it. So @skipper_with_name is only two elements long, just as before.
+
+Don't confuse the square brackets with the parentheses here. They each have their distinct purpose. If we replace the square brackets with parentheses, we end up with a six-element list. If we replace the outer parentheses (on the first and last lines) with square brackets, we construct an anonymous array that's two elements long and then take the reference to that array as the only element of the ultimate @skipper_with_name array.[*] So, in summary, if we have this syntax:
+
+[*] In classrooms, we've seen that too much indirection (or not enough indirection) tends to contribute to the most common mistakes made when working with references.
+
+my $fruits;
+{
+  my @secret_variable = ('pineapple', 'papaya', 'mango');
+  $fruits = \@secret_variable;
+}
+
+we can replace it with:
+
+my $fruits = ['pineapple', 'papaya', 'mango'];
+
+Does this work for more complicated structures? Yes! Anytime we need an element of a list to be a reference to an array, we can create that reference with an anonymous array constructor. In fact, we can also nest them in our provisions list:
+
+sub get_provisions_list {
+  return (
+    ['The Skipper',   [qw(blue_shirt hat jacket preserver sunscreen)] ],
+    ['The Professor', [qw(sunscreen water_bottle slide_rule radio)  ] ],
+    ['Gilligan',      [qw(red_shirt hat lucky_socks water_bottle)   ] ],
+  );
+}
+
+my @all_with_names = get_provisions_list(  );
+
+Walking through this from the outside in, we have a return value of three elements. Each element is an array reference, pointing to an anonymous two-element array. The first element of each array is a name string, while the second element is a reference to an anonymous array of varying lengths naming the provisionsall without having to come up with temporary names for any of the intermediate layers.
+
+To the caller of this subroutine, the return value is identical to the previous version. However, from a maintenance point of view, the reduced clutter of not having all the intermediate names saves screen and brain space.
+
+We can show a reference to an empty anonymous array using an empty anonymous array constructor. For example, if we add one "Mrs. Howell" to that travel list, as someone who has packed rather light, we'd simply insert:
+
+['Mrs. Howell',
+  [  ]
+],
+
+This is a single element of the larger list. This item is a reference to an array with two elements, the first of which is the name string, and the second of which is itself a reference to an empty anonymous array. The array is empty because Mrs. Howell hasn't packed anything for this trip.
+
+5.6. Creating an Anonymous Hash
+Similar to creating an anonymous array, you can also create an anonymous hash. Consider the crew roster from Chapter 4:
+
+my %gilligan_info = (
+  name     => 'Gilligan',
+  hat      => 'White',
+  shirt    => 'Red',
+  position => 'First Mate',
+);
+
+my %skipper_info = (
+  name     => 'Skipper',
+  hat      => 'Black',
+  shirt    => 'Blue',
+  position => 'Captain',
+);
+
+my @crew = (\%gilligan_info, \%skipper_info);
+
+The variables %gilligan_info and %skipper_info are just temporaries we needed to create the hashes for the final data structure. We can construct the reference directly with the anonymous hash constructor, which is yet another meaning for curly braces, as we'll see. We can replace this:
+
+my $ref_to_gilligan_info;
+
+{
+  my %gilligan_info = (
+    name     => 'Gilligan',
+    hat      => 'White',
+    shirt    => 'Red',
+    position => 'First Mate',
+  );
+  $ref_to_gilligan_info = \%gilligan_info;
+}
+
+with the anonymous hash constructor:
+
+my $ref_to_gilligan_info = {
+  name     => 'Gilligan',
+  hat      => 'White',
+  shirt    => 'Red',
+  position => 'First Mate',
+};
+
+The value between the open and closing curly braces is an eight-element list. The eight-element list becomes a four-element anonymous hash (four key/value pairs). Perl takes a reference to this hash and returns as a single scalar value, which we assign to the scalar variable. Thus, we can rewrite the roster creation as:
+
+my $ref_to_gilligan_info = {
+  name     => 'Gilligan',
+  hat      => 'White',
+  shirt    => 'Red',
+  position => 'First Mate',
+};
+
+my $ref_to_skipper_info = {
+  name     => 'Skipper',
+  hat      => 'Black',
+  shirt    => 'Blue',
+  position => 'Captain',
+};
+
+my @crew = ($ref_to_gilligan_info, $ref_to_skipper_info);
+
+As before, we can now avoid the temporary variables and insert the values directly into the top-level list:
+
+my @crew = (
+  {
+    name     => 'Gilligan',
+    hat      => 'White',
+    shirt    => 'Red',
+    position => 'First Mate',
+  },
+
+  {
+    name     => 'Skipper',
+    hat      => 'Black',
+    shirt    => 'Blue',
+    position => 'Captain',
+  },
+);
+
+Note we use trailing commas on the lists when the element is not immediately next to the closing brace, bracket, or parenthesis. This is a nice style element to adopt because it allows for easy maintenance. We can add or rearrange lines quickly, or comment out lines without destroying the integrity of our list.
+
+Now @crew is identical to the value it had before, but we no longer need to invent names for the intermediate data structures. As before, the @crew variable contains two elements, each of which is a reference to a hash containing keyword-based information about a particular crew member.
+
+The anonymous hash constructor always evaluates its contents in a list context and then constructs a hash from key/value pairs, just as if we had assigned that list to a named hash. Perl returns a reference to that hash as a single value that fits wherever a scalar fits.
+
+Now, a word from our parser: because blocks and anonymous hash constructors both use curly braces in roughly the same places in the syntax tree, the compiler has to make ad hoc determinations about which of the two you mean. If the compiler ever decides incorrectly, you might need to provide a hint to get what you want. To show the compiler that you want an anonymous hash constructor, put a plus sign before the opening curly brace: +{ ... }. To be sure to get a block of code, just put a semicolon (representing an empty statement) at the beginning of the block: {; ... }.
+
+5.7. Autovivification
+Let's look again at the provisions list. Suppose we were reading the data from a file, in this format:
+
+The Skipper
+  blue_shirt
+  hat
+  jacket
+  preserver
+  sunscreen
+Professor
+  sunscreen
+  water_bottle
+  slide_rule
+Gilligan
+  red_shirt
+  hat
+  lucky_socks
+  water_bottle
+
+We indent provisions with some whitespace, following a non-indented line with the person's name. Let's construct a hash of provisions. The keys of the hash will be the person's name, and the value will be an array reference to an array containing a list of provisions.
+
+Initially, we might gather the data using a simple loop:
+
+my %provisions;
+my $person;
+
+while (<>) {
+  if (/^(\S.*)/) { # a person's name (no leading whitespace)
+    $person = $1;
+    $provisions{$person} = [  ] unless exists $provisions{$person};
+  } elsif (/^\s+(\S.*)/) { # a provision
+    die 'No person yet!' unless defined $person;
+    push @{ $provisions{$person} }, $1;
+  } else {
+    die "I don't understand: $_";
+  }
+}
+
+First, we declare the variables for the resulting hash of provisions and the current person. For each line that we read, we determine if it's a person or a provision. If it's a person, we remember the name and create the hash element for that person. The unless exists test ensures that we won't delete someone's provision list if his list is split in two places in the datafile.
+
+For example, suppose that "The Skipper" and "sextant" (note the leading whitespace) are at the end of the datafile in order to list an additional data item.
+
+The key is the person's name, and the value is initially a reference to an empty anonymous array. If the line is a provision, push it to the end of the correct array, using the array reference.
+
+This code works fine, but it actually says more than it needs to. Why? Because we can leave out the line that initializes the hash element's value to a reference to an empty array:
+
+my %provisions;
+my $person;
+
+while (<>) {
+  if (/^(\S.*)/) { # a person's name (no leading whitespace)
+    $person = $1;
+    ## $provisions{$person} = [  ] unless exists $provisions{$person};
+  } elsif (/^\s+(\S.*)/) { # a provision
+    die 'No person yet!' unless defined $person;
+    push @{ $provisions{$person} }, $1;
+  } else {
+    die "I don't understand: $_";
+  }
+}
+
+What happens when we try to store that blue shirt for the Skipper? While looking at the second line of input, we'll end up with this effect:
+
+push @{ $provisions{'The Skipper'} }, "blue_shirt";
+
+At this point, $provisions{"The Skipper"} doesn't exist, but we're trying to use it as an array reference. To resolve the situation, Perl automatically inserts a reference to a new empty anonymous array into the variable and continues the operation. In this case, the reference to the newly created empty array is dereferenced, and we push the blue shirt to the provisions list.
+
+This process is called autovivification. Any nonexistent variable, or a variable containing undef, which we dereference while looking for a variable location (technically called an lvalue context), is automatically stuffed with the appropriate reference to an empty item, and Perl allows the operation to proceed.
+
+This is actually the same behavior we've probably been using in Perl all along. Perl creates new variables as needed. Before that statement, $provisions{"The Skipper"} didn't exist, so Perl created it. Then @{ $provisions{"The Skipper"} } didn't exist, so Perl created it as well.
+
+For example, this works:
+
+my $not_yet;                # new undefined variable
+@$not_yet = (1, 2, 3);
+
+Here, we dereference the value $not_yet as if it were an array reference. But since it's initially undef, Perl acts as if we had said:
+
+my $not_yet;
+$not_yet = [  ]; # inserted through autovivification
+@$not_yet = (1, 2, 3);
+
+In other words, an initially empty array becomes an array of three elements.
+
+This autovivification also works for multiple levels of assignment:
+
+my $top;
+$top->[2]->[4] = 'lee-lou';
+
+Initially, $top contains undef, but because we dereference it as if it were an array reference, Perl inserts a reference to an empty anonymous array into $top. Perl then accesses the third element (index value 2), which causes Perl to grow the array to be three elements long. That element is also undef, so Perl stuffs it with a reference to another empty anonymous array. We then spin out along that newly created array, setting the fifth element to lee-lou.
+
+5.8. Autovivification and Hashes
+Autovivification also works for hash references . If we dereference a variable containing undef as if it were a hash reference, a reference to an empty anonymous hash is inserted, and the operation continues.
+
+One place this comes in very handy is in a typical data reduction task. For example, let's say the Professor gets an island-area network up and running (perhaps using Coco-Net or maybe Vines) and now wants to track the traffic from host to host. He begins logging the number of bytes transferred to a log file, giving the source host, the destination host, and the number of transferred bytes:
+
+professor.hut gilligan.crew.hut 1250
+professor.hut lovey.howell.hut 910
+thurston.howell.hut lovey.howell.hut 1250
+professor.hut lovey.howell.hut 450
+professor.hut laser3.copyroom.hut 2924
+ginger.girl.hut professor.hut 1218
+ginger.girl.hut maryann.girl.hut 199
+...
+
+Now the Professor wants to produce a summary of the source host, the destination host, and the total number of transferred bytes for the day. Tabulating the data is as simple as:
+
+my %total_bytes;
+while (<>) {
+  my ($source, $destination, $bytes) = split;
+  $total_bytes{$source}{$destination} += $bytes;
+}
+
+Let's see how this works on the first line of data. We'll be executing:
+
+$total_bytes{'professor.hut'}{'gilligan.crew.hut'} += 1250;
+
+Because %total_bytes is initially empty, Perl doesn't find the first key of professor.hut, but it establishes an undef value for the dereferencing as a hash reference. (Keep in mind that an implicit arrow is between the two sets of curly braces here.) Perl sticks a reference to an empty anonymous hash in that element, which it then immediately extends to include the element with a key of gilligan.crew.hut. Its initial value is undef, which acts like a zero when you add 1250 to it, and the result of 1250 is inserted back into the hash.
+
+Any later data line that contains this same source host and destination host will re-use that same value, adding more bytes to the running total. But each new destination host extends a hash to include a new initially undef byte count, and each new source host uses autovivification to create a destination host hash. In other words, Perl does the right thing, as always.
+
+Once we've processed the file, it's time to display the summary. First, we determine all the sources:
+
+for my $source (keys %total_bytes) {
+...
+
+Now, we should get all destinations. The syntax for this is a bit tricky. We want all keys of the hash, resulting from dereferencing the value of the hash element, in the first structure:
+
+for my $source (keys %total_bytes) {
+  for my $destination (keys %{ $total_bytes{$source} }) {
+....
+
+For good measure, we should probably sort both lists to be consistent:
+
+for my $source (sort keys %total_bytes) {
+  for my $destination (sort keys %{ $total_bytes{$source} }) {
+    print "$source => $destination:",
+     " $total_bytes{$source}{$destination} bytes\n";
+  }
+  print "\n";
+}
+
+This is a typical data-reduction report generation strategy.[*] Simply create a hash-of-hashrefs (perhaps nested even deeper, as you'll see later), using autovivification to fill in the gaps in the upper data structures as needed, and then walk through the resulting data structure to display the results.
+
+5.9. Exercises
+You can find the answers to these exercises in "Answers for Chapter 5" in the Appendix.
+
+5.9.1. Exercise 1 [5 min]
+Without running it, can you see what's wrong with this piece of a program? If you can't see the problem after a minute or two, see whether trying to run it will give you a hint of how to fix it.
+
+my %passenger_1 = {
+  name       => 'Ginger',
+  age        => 22,
+  occupation => 'Movie Star',
+  real_age   => 35,
+  hat        => undef,
+};
+
+my %passenger_2 = {
+  name          => 'Mary Ann',
+  age           => 19,
+  hat           => 'bonnet',
+  favorite_food => 'corn',
+};
+
+my @passengers = (\%passenger_1, \%passenger_2);
+
+5.9.2. Exercise 2 [40 min]
+The Professor's datafile (mentioned earlier in this chapter) is available as coconet.dat in the files you can download from the O'Reilly web site. There may be comment lines (beginning with a pound sign); be sure to skip them. (That is, your program should skip them. You might find a helpful hint if you read them!)
+
+Modify the code from this chapter so that each source machine's portion of the output shows the total number of bytes from that machine. List the source machines in order from most to least data transferred. Within each group, list the destination machines in order from most to least data transferred to that target from the source machine.
+
+The result should be that the machine that sent the most data will be the first source machine in the list, and the first destination should be the machine to which it sent the most data. The Professor can use this printout to reconfigure the network for efficiency.
+

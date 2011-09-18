@@ -1,0 +1,29 @@
+=encoding utf8
+
+=head1 Perldoc 资源
+
+=head1 Perl文档 资源
+
+=head1 Perl 论坛资源
+
+=head1 Perl 书籍资源
+
+=head1 Vim 资源
+
+=head1 Git 资源
+
+=head1 Css 资源
+
+=head1 Html 资源
+
+=head1 网络论坛资源
+
+Ubuntu 中文论坛 注册名:ssqq 注册密码:1M6H452MX
+ChinaUnix 中文论坛 注册名:perlvim 注册密码：
+github 版本管理用户名 songzan@foxmail.com password: .com域名
+git@github.com:songzan/xml10n.git
+
+如何管理多个计算机同时维护一个源呢？
+1. 将配置文件进行备份，作为 git 管理起来，任何一个机器都能恢复。
+
+=end

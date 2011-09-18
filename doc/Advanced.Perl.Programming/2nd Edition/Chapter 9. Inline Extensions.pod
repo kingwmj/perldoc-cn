@@ -1,0 +1,785 @@
+Chapter 9. Inline Extensions
+Although Perl is a very powerful language, there are still some things that it cannot do by itself: it can't communicate directly with hardware or take advantage of complex mathematical libraries. Other things it can do, but not very quickly: you can ask Perl to rotate an image by reading in and parsing the image file format, doing all the transformations on a really big array, and writing it out again, but that takes a lot of time and effort. It's far better to ask a C library to do this for you, and the way to do this is to write an extension to allow Perl to talk to the C library. In fact, many graphical interfaces to Perl are merely extensions talking to the relevant C libraries.
+
+The usual way to write an extension to bridge Perl and C is to use a complex and awkward intermediary language called XS (extension subroutines). If you want to do things the complex and awkward way, I suggest reading perlxstut in the Perl documentation, or my Extending and Embedding Perl (Manning). However, since one of the cardinal virtues of a Perl programmer is laziness, there has to be a less complex and awkward way to do it, right?
+
+Thankfully, there is; Brian Ingerson got fed up with writing XS and ended up writing a very clever Perl module called Inline to do it for him. As we'll see later in the chapter, Inline has become generalized to handle languages other than C, so the module we'll look at for now is called Inline::C.
+
+9.1. Simple Inline::C
+The idea behind Inline::C is pretty straightforward: you write a C function as part of your Perl program, and the Inline library goes away and does the work required to make that function available from Perl. So, here's the simplest C function we could possibly wrap:
+
+    use Inline C => q[
+
+    void print_hi(  ) {
+         puts("Hi, world!");
+    }
+
+    ];
+
+    print_hi(  );
+
+The first time this program is run, it takes a little time; Inline::C has to parse the C code, determine what wrappings are needed to bridge the gap between C and Perl (almost nothing in this case), write the wrapping, fire up a C compiler, create a shared library that can be loaded by Perl, and load it up. Only then is the print_hi subroutine available to Perl.
+
+If we had to go through this rigmarole every time we executed the program, Inline wouldn't actually buy us very much. But if we run our program again, we should find that it's considerably faster. All Inline needs to do in this case is make sure that the C code we're compiling hasn't changed, and then load up the shared library it created last time.
+
+9.1.1. Taking and Giving
+Of course, real functions are a little more complicated than that; they take arguments, they return a value. With Inline, interfacing with these real functions isn't that much more complicated at all.
+
+Let's take a relatively noncontrived example. You want to display some information to the user, such as:
+
+    You have 2 lives left; score 1500, with 15 gold pieces.
+
+However, you also want the user to be able to customize this information, if they prefer seeing:
+
+    [Lives: 2 XP: 1500 GP:15]
+
+So what you do is set up the output format as a pattern for printf, and have something like this:
+
+    my $pattern = $user_pattern ||
+                  "You have %i lives left; score %04i, with %2i gold pieces";
+    printf $pattern, $lives, $xp, $gp;
+
+But then you hear that allowing users to supply their own format string caused Korea to be knocked off the Net last week, which didn't seem too much of a big deal to you, but then someone starts telling you scary stories about the %p format, and you start wondering how you can sanitize the format string you were passed.
+
+And then you remember that you're developing on a BSD Unix, which has the very handy fmtcheck function in the C library just for this purpose.[*] So you write a quick C function that selects the right format, like so:
+
+[*] OK, we said it was relatively noncontrived. So we lied.
+
+    char* score_format(char* pref_format, char* user_format) {
+          return fmtcheck(user_format, pref_format);
+    }
+
+And once you put that in your Inline section, you can call it just like a normal Perl subroutine. This time, use a slightly different formulation of Inline; instead of passing in a string, put your C code into the DATA section at the end of the program. To tell Inline what to look at, add the _ _C marker after the DATA_ _ marker.
+
+    use Inline C;
+
+    my $pref_format = "You have %i lives left; score %04i, with %2i gold pieces";
+    my ($lives, $score, $gp) = (3, 2500, 50);
+
+    my $user_format = "[Lives: %i, XP: %i, GP: %i]";
+
+    printf(score_format($pref_format, $user_format), $lives, $score, $gp);
+
+    _ _END_ _
+    _ _C_ _
+    #include <stdio.h>
+
+    char* score_format(char* pref_format, char* user_format) {
+          return fmtcheck(user_format, pref_format);
+    }
+
+This determines that the user's format it safe and uses that instead of your format. Inline::C automatically knows how to deal with int, long, double, char*, and many other types as specified in the default Perl typemap (found in the ExtUtils subdirectory of your @INC path). Later on in the chapter, we'll see how to use more complex structures with Inline.
+
+9.1.2. C is not Always a Win
+But first a cautionary tale: there are any number of people who will complain that Perl is too slow, and if you're doing anything serious, you should rewrite it in C for speed. OK, then. This time, we're going to write a function to find the number of alphabetic characters in a string. We could use Perl's tr operator, but perhaps calling out to C will be faster. Here is the C function we're going to use:
+
+    int count_alpha(char* foo) {
+        int i = 0;
+        do {
+         if (isalpha(*foo)) i++;
+        } while (*foo++);
+        return i;
+    }
+
+    use Inline C;
+
+    use Benchmark;
+    $test = "a b cd e fg" x 10000;
+
+    timethese(10000,
+        {
+          Perl => sub { $test =~ tr/[a-zA-Z]//; },
+          C    => sub { count_alpha ($test) }
+        }
+    )
+
+    _ _DATA_ _
+    _ _C_ _
+
+    int count_alpha(char* foo) {
+        int i = 0;
+        do {
+         if (isalpha(*foo)) i++;
+        } while (*foo++);
+        return i;
+    }
+
+This produces output similar to:
+
+    Benchmark: timing 10000 iterations of C, Perl...
+             C: 24 wallclock secs (20.80 usr +  0.15 sys = 20.95 CPU) @ 477.33/s
+    (n=10000)
+          Perl: 10 wallclock secs ( 8.05 usr +  0.04 sys =  8.09 CPU) @ 1236.09/s
+    (n=10000)
+
+Unfortunately, we find that when we run this, the Perl built-in version is around twice as fast; this is a good reminder that it's not always beneficial to recode things in C for speed.[*] However, we've found that it is easy enough to wrap simple C functions in Perl, receiving and passing values between the two languages without worrying about the usual XS glue.
+
+[*] With considerable hand-optimization and tuning of the Inline options, we can produce a C function that competes reasonably well with the Perl built-in. However, the time spent shunting around between Perl and C means that the built-in will win every time.
+
+9.2. More Complex Tasks with Inline::C
+On the other hand, there are times when we want to mess about with the XS glue, and Inline allows us to do this, too. In this section, we'll look at some advanced uses of the Inline::C module.
+
+9.2.1. Dealing with Perl's Internal Values
+Anyone who's familiar with XS at all knows that Perl doesn't use simple types like ints, char *s, and so on internally; it uses its own special types, SV*s for scalars, AV*s for arrays, and HV*s for arrays.
+
+If we know the functions for manipulating these types,[*] then we can gain a little flexibility by using them directly in our Inline::C programs.
+
+[*] You can find a handy guide in the perlapi documentation, or the Perl API chapter of Extending and Embedding Perl.
+
+Here's an example; there's no (clean) way of telling directly from Perl if a reference is an object or just an ordinary reference. But this simple piece of XS uses the sv_isobject API function to determine whether an SV* is an object or not.
+
+    use IO::File;
+    use Inline C => <<'EOT';
+    int blessed (SV* sv) {
+        if (SvMAGICAL(sv))
+            mg_get(sv);     /* Call FETCH, etc. if we're tied */
+
+        return sv_isobject(sv);
+    }
+    EOT
+
+    my $a = \123;
+    my $b = IO::File->new;
+
+    print "\$a is a blessed reference\n" if blessed($a);
+    print "\$b is a blessed reference\n" if blessed($b);
+
+This prints out:
+
+    $b is a blessed reference
+
+What else can we know about a scalar? Well, there are various subtypes of scalar: integers, numbers, and strings. The Perl guys call these IV, NV, and PV types, respectively. Let's first look at converting between these types and accessing information about the value of our scalar.
+
+First, there's SvTYPE, which tells us what sort of SV we're dealing with. It returns a member of an enum, shown in Table 9-1.
+
+Table 9-1. Valid svtypes SVt_NULL
+ Undefined value (undef)
+
+SVt_IV
+ Integer
+
+SVt_NV
+ Floating-point number
+
+SVt_PV
+ String
+
+SVt_PVAV
+ Array
+
+SVt_PVHV
+ Hash
+
+SVt_PVFM
+ Format
+
+SVt_RV
+ Reference
+
+SVt_PVCV
+ Code
+
+SVt_PVGV
+ Typeglob
+
+SBt_PVIO
+ I/O type (file handle)
+
+SVt_PVIV
+ Like SVt_PV, but also holds an integer value: a stringified integer or a string used as an integer
+
+SVt_PVNV
+ Like SVt_PV, but also holds a floating-point value and an integer value: a stringified floating-point number, a string or integer used as a floating-point number, or a floating-point number used as an integer
+
+SVt_PVLV
+ Various types with LValue behavior
+
+SVt_PVMG
+ Blessed or magical scalar
+
+SVt_PVBM
+ Like SVt_PVMG, but does a fast lookup of its string value using the Boyer-Moore algorithm
+
+Note from this that arrays and 3hashes are just advanced types of SVsalthough we refer specifically to these two types as AV and HV later on in our XS programming, it's worth remembering that these are just specialized names for something that's an SV underneath.
+
+We can ask the scalar to transmogrify itself into an IV, NV, or SV, and read its value using the suitably named SvIV, SvNV, and SvPV functions. We mustn't forget that in C, strings have two properties: where they start and how long they are. SvPV returns the start of the string but also sets its second argument to be the length of the string:
+
+    void dump_values(SV* sv) {
+        STRLEN len;
+
+        printf("As a float: %f\n", SvNV(sv));
+        printf("As an integer: %i\n", SvIV(sv));
+        printf("As a string: %s\n", SvPV(sv, len));
+    }
+
+Notice that the type STRLEN is defined to be an appropriate type for storing string lengths. If we don't really care about the length, as in this example, we can use the SvPV_nolen macro instead.
+
+We can also get at these properties of a string directly using macros: the SvCUR macro tells us the length of the string. Why is it SvCUR and not SvLEN? Because, predictably, SvLEN is used for something elsethere is a distinction between the current length of the Perl string, and the amount of space allocated for it. Keeping track of this separately allows the Perl interpreter to extend a Perl string in place, without having to call out to memory allocation regions. SvLEN gives us the length of this allocated region. But how do they differ?
+
+Suppose the following series of operations:
+
+    my $a = "abc";
+    for (1..10) {
+        $a .= "d";
+        chop $a;
+    }
+
+Everyone knows that this produces the string abc at the end. However, how this is done is slightly complex. Because in C you need to take close care of the memory you allocate and release, Perl needs to track the length of the string. So we start with a C string four characters longa, b, c, and the end-of-string null terminator. But now we need to add another character to the end, and we have only allocated four characterswe need to stop and allocate some more. Now our C string is five characters long, and our Perl string is four characters long.
+
+Now, allocating memory during Perl's runtime is computationally expensive, relatively speaking, and so it's something we want to avoid doing. So when we chop the string, what Perl doesn't do is shrink the string back to four characters. This would be particularly silly in this case, since the very next thing we do is go around the loop again and add another character to it, requiring another reallocation. Instead, it keeps track of the fact that it's allocated five characters, even though, after the chop, it's only presently using four of them. Hence, as the Perl string can expand and contract at will, the allocated memory never shrinks; it only expands. SvCUR tells you the current length of the Perl string, and SvLEN tells you the total length allocated. (Incidentally, since these macros are just accessors into a structure, we can efficiently chop a scalar with something like SvCUR(sv);).
+
+Of course, just accessing the data is not always enough; sometimes we need to modify it as well, and this is where the sv_set... series of functions come in. We can set a scalar's integer, number, and string values with sv_setiv, sv_setnv and sv_setpv, respectively. We can also find out what values the scalar currently thinks are valid by using the SvIOK, SvNOK, and SvPOK macros. For instance, given:
+
+     $a = "5";
+
+the value held in $a will only have been used as a string, and hence it will be POK. If we now say:
+
+     $b = $a + 10;
+
+then although $a's value has not changed, Perl will need to look at its numeric value in order to add 10 to it. This means it will now be both POK and IOK (or NOK before 5.8.0). If we now do something like:
+
+     $a .= "abc";
+
+then we will denature its integer value, and only the string value will be currentit will now only be POK. We'll see more examples of these macros later in the chapter.
+
+Other interesting things to do with scalars include looking at and fiddling with their internal stateas one might imagine, this is not something to do carelessly. For instance, the macro SvTAINTED tells if a scalar contains tainted data; corresponding macros SvTAINTED_on and SvTAINTED_off alter the state of that flag:
+
+    void dodgify(SV* sv) {
+         SvTAINTED_on(sv);
+    }
+
+    void blow_away_all_the_security_in_my_program(SV* sv) {
+         SvTAINTED_off(sv);
+    }
+
+A scalar's reference count tells you how many copies of a scalar are knocking around. For instance, we know that if we have an object like so:
+
+    {
+        my $f = IO::Handle->new;
+    }
+
+then the object will be destroyed once $f goes out of scope. However, if we store a copy of it somewhere else:
+
+    {
+        my $f = IO::Handle->new;
+        $My::Copy = $f;
+    }
+
+then the reference count is two; it drops back to one once $f goes away and no longer holds a copy of it, but will remain at one until $My::Copy stops referring to it. The object will only be destroyed when the reference count drops to zerowhen $My::Copy stores something else, or at the end of the program. We can fiddle the reference count with SvREFCNT_inc and SvREFCNT_dec:
+
+    int immortalize(SV* sv) {
+        SvREFCNT_inc(sv);
+        return SvREFCNT(sv);
+    }
+
+This fools the scalar into thinking that something else is holding a copy of it, and it won't go away until the end of the program. It tells Perl that you also have a reference to the scalar, and not to destroy it when all the references that Perl knows about go away. Once you remove your private reference to it, you need to decrease the reference count with SvREFCNT_dec, otherwise Perl goes on thinking that someone, somewhere is referring to it, and hence doesn't correctly tidy it away. Decreasing the reference count avoids a leak. Unless, of course, someone fiddles with it again, like this:
+
+    void kill_kill_kill(SV* sv) {
+        SvREFCNT(sv) = 1;
+        SvREFCNT_dec(sv);
+    }
+
+This forces the scalar to be destroyed (calling the DESTROY method if it's an object), but woe betide any variables that still believe they refer to it.
+
+Certain special scalars are accessible from C: PL_sv_yes and PL_sv_no refer to true and false values, respectively; as these are intended to be singleton SVs, they are always referred to by pointers. Hence you should use &PL_sv_yes and &PL_sv_no in your code:
+
+    SV* tainted(SV* sv) {
+        if (SvTAINTED(sv))
+           return &PL_sv_yes;
+        else
+           return &PL_sv_no;
+    }
+
+There's also &PL_sv_undef for undef.
+
+What if you want to get hold of a normal global variable from Perl-space inside your C function? The get_sv function returns an SV given a name; this is the usual way to get at options from your extension code:
+
+    if (SvTRUE(get_sv("MyModule::DEBUG", TRUE")))
+       printf("XXX Passing control to library function\n");
+
+While there are a large number of other functions for dealing with SVs, these are by far the most common you will use. Let's now move on to looking at a situation where you need to use SVs: varying numbers of arguments.
+
+9.2.2. Handling the Stack
+Anyone who has some XS experience may expect that we could quite easily retrieve variable arguments using an AV* in the function's prototype. Unfortunately, this doesn't quite work; Inline::C by default only handles a fixed number of arguments to a function. If you want to handle arrays and varying numbers of parameters, you'll need to handle the stack yourself. Inline::C provides several macros to help you do this: Inline_Stack_Vars sets up the variables used by the other stack handling macros, Inline_Stack_Items tells you the number of arguments to your function, and Inline_Stack_Item retrieves an item from the stack.
+
+    use Inline C => q{
+
+    void print_array(SV* arg1, ... ) {
+         Inline_Stack_Vars;
+         int i;
+
+         for (i=0 ; i < Inline_Stack_Items ; i++) {
+             printf("The %ith argument is %s\n", i,
+                     SvPV_nolen(Inline_Stack_Item(i));
+         }
+    }
+
+    };
+
+    print_array("Hello", 123, "fish", 0.12);
+
+Note that although we declared an explicit argument, arg1, it remains on the stack as Inline_Stack_Item(0).
+
+So we can read multiple arguments from a stack and return zero or one values. If we want to return multiple values, then we also need to manipulate the stack.
+
+It's well known that the Perl special variable $!, the error variable, is a bit, well, special; it holds both an integer (error code) and a string (error description):
+
+    % perl -le '$!=3; print $!; print $!+0'
+
+    No such process
+    3
+
+We can create such values with the Scalar::Utils function dualvar. Here's a generic routine to return both values from this type of dual-valued scalar:
+
+    use Inline C => q{
+
+    void bothvars (SV* var) {
+         Inline_Stack_Vars;
+         Inline_Stack_Reset;
+         if (SvPOK(var) && SvIOK(var)) { /* dual-valued */
+             Inline_Stack_Push(sv_2mortal(newSViv(SvIV(var)))); /* Push integer part */
+         }
+         Inline_Stack_Push(var); /* Push string part */
+         Inline_Stack_Done;
+    }
+
+    };
+
+    use Scalar::Util qw(dualvar);
+
+    my $var = dualvar(10, "Hello");
+    print "$_\n" for bothvars($var);
+
+We use Inline_Stack_Vars as before, since we're manipulating the stack. Inline_Stack_Reset says that we're done taking the arguments off the stack (Inline has already done that for us, putting the value into var) and we're ready to start pushing return values back.
+
+Now if it's a dual-valued scalarit's OK to use both the string and the integer parts at the momentthen we create a new SV* holding the integer part, and use Inline_Stack_Push to place that onto the stack. We use Inline_Stack_Push again on the original value, as this will give us the string part.
+
+Now we're done, and we tell Inline there are no more values to come, with Inline_Stack_Done.
+
+If you want to have multiple arguments and multiple return values, you can just combine the two techniques.
+
+9.2.3. Handling More Complex Perl Types
+Of course, there's a far more natural way to deal with arrays in Perl subroutinespass them around as references. But first we need to know how to get hold of references in XS and what to do with them when we've got them.
+
+9.2.3.1 References
+If we arrange our XS function to receive a reference, there are two things we need to do with it once we've got itfirst, work out what sort of reference it is and, second, dereference it. As it happens, in XS, these two things are strongly related. We already know how to work out what type an SV is, using the SvTYPE macro and the SVt_... enumeration. The only other trick is to dereference the RV, and we do this with the SvRV macro.
+
+For instance, we find the following code inside Data::Dumper:
+
+        if (SvROK(sv) && (SvTYPE(SvRV(sv)) =  = SVt_PVAV))
+            keys = (AV*)SvREFCNT_inc(SvRV(sv));
+
+This is saying that if sv is a reference, and the type of the referenced SV is an AVas we noted when looking at SvTYPE, arrays are just specialized SVsthen we dereference it, increase its reference count (because we're about to hold a reference to it somewhere in a way that's not managed by Perl) and store it in keys.
+
+9.2.3.2 Arrays
+OK, so we've now got an array. What can we do with that? Naturally, all the Perl operations on arrays have equivalents in C space. We'll only look here at the most common three operationsfinding the length of the array, getting an element, and storing an element.
+
+The C equivalent to $#array is the av_len macro; like $#array it returns the highest index, or -1 if the array is empty. Hence we can imagine an array iterator would look something like this:
+
+        for (i = 0; i <= av_len(array); i++) {
+            SV* elem;
+            ...
+        }
+
+Now we come to extracting the individual SVs. We have two ways to proceed: the official way uses the av_fetch function. This takes three parameters: an AV, an index, and a boolean determining whether or not the element should be created if it does not already exist.
+
+        for (i = 0; i <= av_len(array); i++) {
+            SV** elem_p = av_fetch(array, i, 0);
+            SV* elem;
+            if (elem_p)
+                elem = *elem_p;
+            ...
+        }
+
+As you can see, this returns a pointer, which tells us whether there's a valid SV in that array element. (Naturally, if we'd passed in a true value for the third parameter to av_fetch, then we'd always get valid SVs and wouldn't need to check elem_p.) If we say something like this from Perl:
+
+    my @array;
+    $array[3] = "Hi there!";
+
+then elements 0, 1, and 2 will not have a valid SV, and so av_fetch can't return anything.
+
+The less official, but faster, way to retrieve elements takes notice of the fact that AVs are implemented as real C arrays underneath. The macro AvARRAY gives us a pointer to the base of the array:
+
+        SV** base = AvARRAY(array);
+        for (i = 0; i <= av_len(array); i++) {
+            SV* elem = base[i];
+            if (elem)
+                printf("Element %i is %s\n", i, SvPV_nolen(elem));
+        }
+
+Finally, storing SVs in an array uses the predictably named av_store function. This also takes three parametersthe array, the element, and the index to store. Naturally, as the array stores pointers to the underlying SV structures, you only need to call this when you're putting a completely new SV into an element; if you're just modifying the existing SVs, there's no need to call av_store afterward, because av_fetch( ) gave you a pointer to the SV in the array, and the array is still pointing to that same SV:
+
+        for (i = 0; i <= av_len(array); i++) {
+            SV** elem_p = av_fetch(array, i, 0);
+            if (elem_p) {
+                SV* elem = elem_p;
+                sv_setiv(elem, SvIV(elem) + 1); /* add 1 to each element */
+            }
+        }
+
+9.2.3.3 Hashes
+And what about hashes, then? These also have two functions for getting and setting values, hv_fetch and hv_store. The hash key is passed to each function as a string and an integer representing the string's length. The hv_fetch function, like av_fetch, returns a pointer to an SV*, not an SV* itself. For instance, DB_File reads some configuration values for a DBM file from a Perl hash:
+
+         svp = hv_fetch(action, "ffactor", 7, FALSE);
+         info->db_HA_ffactor = svp ? SvIV(*svp) : 0;
+
+         svp = hv_fetch(action, "nelem", 5, FALSE);
+         info->db_HA_nelem = svp ? SvIV(*svp) : 0;
+
+         svp = hv_fetch(action, "bsize", 5, FALSE);
+         info->db_HA_bsize = svp ? SvIV(*svp) : 0;
+
+Again, like av_fetch, the final parameter determines whether or not we should create an SV at this point if there isn't one already there. In fact, given that Perl will happily create SVs for us, we can pretty much do without hv_store:
+
+      SV** new_sv = hv_fetch(hash, "message", 7, TRUE);
+      if (!new_sv)
+          croak("So what happened there, then?");
+      sv_setpv(*new_sv, "Hi there!");
+
+(croak is the C interface to Perl's die and takes a format string à la printf.)
+
+However, if you prefer doing without the surreality of using a function called "fetch" to store things, hv_store works just fine:
+
+          SV* message = newSVpv("Hi there!", 9);
+          hv_store(hash, "message", message, 0);
+
+This creates a new SV, gives it a nine-character-long string value, and then stores that SV as the message key into the hash. The 0 at the end of hv_store tells Perl that we didn't pre-compute the hash value for this key, so we'd like Perl to do it for us. Pre-computing hash keys is unlikely to be worth your while, so you almost always want to supply 0 here.
+
+As usual, for more hash manipulation functions, look at perlapi.
+
+9.2.4. Wrapping C Libraries
+A common use of extending Perl is to allow access to functions in existing C libraries; it's no fun making up your own C code all the time. Let's first look at an example of linking in a C library to our ordinary Inline functions.
+
+We'll use Philip Hazel's pcre library[*] as an alternative regular expression engine. Here's a wrapper function around the library that sets up a regular expression structure and tries to match against a string.
+
+[*] Perl Compatible Regular Expressions (http://www.pcre.org/).
+
+    use Inline C => q{
+
+    #define OVECCOUNT 30
+    #include <pcre.h>
+
+    int pcregrep( char* regex, char* string ) {
+       pcre *re;
+       const char *error;
+       int rc, i, erroffset;
+       int ovector[OVECCOUNT];
+
+       re = pcre_compile( regex, 0, &error, &erroffset, NULL );
+       if (re =  = NULL)
+         croak("PCRE compilation failed at offset %d: %s\n", erroffset,
+    error);
+
+       rc = pcre_exec( re, NULL, string, (int)strlen(string), 0, 0,
+                       ovector, OVECCOUNT );
+
+       if (rc < 0) {
+          /* Matching failed: handle error cases */
+           if (rc =  = PCRE_ERROR_NOMATCH)
+               return 0;
+
+           croak("Matching error %d\n", rc);
+       }
+
+       return 1;
+    }
+
+    };
+
+Of course, this won't work out of the boxwe need to tell Inline where to get the pcre_compile and pcre_exec functions. We do this by specifying additional configuration options to Inline C:
+
+    use Inline C => Config => LIBS => '-L/sw/lib -lpcre' => INC => '-I/sw/include';
+
+The special option Config tells Inline that what follows are options to Inline::C; the LIBS option tells the compiler to link in libpcre, while the INC option says that the pcre.h header file we refer to lives in /sw/include.[*] By adding the preceding line before our wrapper function, we set up the compiler's environment correctly. Now everything works fine:
+
+[*] Usually the header file and library would live in /usr/local/include and /usr/local/lib, but on this machine, they're in /sw/.
+
+    use Inline C => Config => LIBS => '-L/sw/lib -lpcre' => INC => '-I/sw/include';
+    use Inline C => q{
+
+    #define OVECCOUNT 30
+    #include <pcre.h>
+    /* The big long function we saw before. */
+    };
+
+    if (pcregrep("f.o", "foobar")) {
+        print "It matched!\n";
+    } else {
+        print "No match!\n";
+    }
+
+And this does indeed print It matched!.
+
+But we don't always want to write wrapper functions around C functions in a library; sometimes we want to call the functions directly. In this case, we use the Inline::C configuration option AUTOWRAP, which tells the module to parse function prototypes it finds in our code; now we only need to provide a prototype for the functions we are interested in:
+
+    use Inline C => Config => LIBS => '-L/sw/lib -lpcre' =>
+                              INC => '-I/sw/include' =>
+                              ENABLE => AUTOWRAP;
+    use Inline C => "char* pcre_version(  );";
+
+    print "We have pcre version ", pcre_version(  ), "\n";
+    # We have pcre version 3.9 02-Jan-2002
+
+(Notice that we don't specify an argument type of void; this confuses the Inline::C parser.)
+
+If we have a suitably written header file, we can merely include that and automatically wrap all our library functions. This is a quick and easy way of getting access to a C library, but it's not terribly flexible. However, for many quick hacks, it's good enough.
+
+9.2.5. Debugging Inline Extensions
+The reason I point out that we shouldn't specify void in prototypes is, well, bitter experience, to be honest. I initially had this code:
+
+    use Inline C => "char* pcre_version(void)";
+
+and had no idea why it was not working. Running the program gave me a torrent of errors:
+
+    pcreversion_c1dc.c: In function `pcre_version':
+    pcreversion_c1dc.c:20: parse error before '{' token
+    pcreversion_c1dc.c:21: parameter `sp' is initialized
+    pcreversion_c1dc.c:21: parameter `mark' is initialized
+    ...
+
+    A problem was encountered while attempting to compile and install your
+    Inline C code. The command that failed was:
+      make > out.make 2>&1
+
+    The build directory was:
+    /Users/simon/_Inline/build/pcreversion_c1dc
+
+    To debug the problem, cd to the build directory, and inspect the
+    output files.
+
+When a compilation fails, Inline keeps all the files around that it used to build the shared library, and tells us where to find them. If I look at /Users/simon/_Inline/build/pcreversion_c1dc/pcreversion_c1dc.c, I can quite quickly spot the problem:
+
+    ...
+    #include "INLINE.h"
+    char* pcre_version(void)
+    #line 16 "pcreversion_c1dc.c"
+    #ifdef _ _cplusplus
+    extern "C"
+    #endif
+    XS(boot_pcreversion_c1dc)
+    ...
+
+Oops! I forgot the semicolon at the end of my prototype, so the compiler's seeing char* pcre_version(void) XS(boot_pcreversion_c1dc), which is horribly nonsensical.
+
+But things didn't immediately improve when I added the stray semicolon:
+
+    Can't locate auto/main/pcre_versio.al in @INC (@INC contains:
+    /Users/simon/_Inline/lib /System/Library/Perl/darwin
+    /System/Library/Perl /Library/Perl/darwin /Library/Perl /Library/Perl
+    /Network/Library/Perl/darwin /Network/Library/Perl
+    /Network/Library/Perl .) at pcreversion line 6
+
+Now everything has compiled just finewhich means Inline has cleaned up the build directory and we don't have the source any morebut the function in question doesn't seem to have been defined properly.
+
+In this case, what we need to do is force Inline to keep the build directory around so we can have a poke at it. We do this by passing the option noclean to Inline; the easiest way to do this is on the command line:
+
+% perl -MInline=noclean pcreversion
+
+As Inline options accumulate, this doesn't replace any of the options we gave in our script itself.
+
+Now we can go digging around in ~/_Inline/build/ and look at the generated code. In this case, however, it's not majorly informativeeverything looks OK. So, another couple of handy options we can add are info, which produces informative messages about the progress of the Inline process, and force, which forces a recompile even if the C source code has not changed. These options are case-insensitive, so we end up with a command line like the following:
+
+    % perl -MInline=Force,NoClean,Info ~/pcreversion
+
+    Information about the processing of your Inline C code:
+
+    Your source code needs to be compiled. I'll use this build directory:
+    /Users/simon/_Inline/build/pcreversion_5819
+
+    and I'll install the executable as:
+    /Users/simon/_Inline/lib/auto/pcreversion_5819/pcreversion_5819.bundle
+
+    No C functions have been successfully bound to Perl.
+
+Ah, OK. Now we have a hint about the problemInline::C scanned our C code but didn't find any functions that it recognized and, hence, didn't bind anything to Perl. This tells us that there's something wrong with our prototype, and, lo and behold, getting rid of the void clears everything up.
+
+9.2.6. Packaging Inline Modules
+In the past I'd always seen Inline::C as useful for prototyping, or a simple glue layer between C and Perl for quick hacks, and would discourage people from using it for the "serious" business of creating CPAN modules.
+
+However, Brian "Ingy" Ingerson has worked hard on these issues and there are now two equally suitable ways to write fully functional Perl modules in Inline, without bothering with XS.
+
+The first way is a bit of a hack and is still my preferred method: first, create a skeleton XS module with h2xs:
+
+    % h2xs -n My::Thingy
+
+    Writing My/Thingy/Thingy.pm
+    Writing My/Thingy/Thingy.xs
+    Writing My/Thingy/Makefile.PL
+    Writing My/Thingy/test.pl
+    Writing My/Thingy/Changes
+    Writing My/Thingy/MANIFEST
+
+You can see the dreaded XS file in there, but don't worry about that for now.
+
+Next, leave that alone and develop your Inline::C-based program. Run it with the -MInline=NoClean option to leave the build directory around, and then simply grab the auto-generated XS code from the end of the .xs file from there and add it to the end of Thingy.xs into your module directory.
+
+The advantages of this are that you end up with a pure XS module that can be used completely independently of Inline and doesn't require the end user to drag down another CPAN module; the disadvantage is that you end up grubbing around in XS code, something you set out to avoid.
+
+The second way, which Ingy recommends, is much simpler but ends up with a module that does depend on Inline being installed. (As Inline is finding its way into the Perl core, and so will be installed with every instance of Perl, this should soon cease to be a consideration.) With this, you start writing your module as though it were pure-Perl:
+
+    % h2xs -XAn My::Thingy
+    Writing My/Thingy/Thingy.pm
+    Writing My/Thingy/Makefile.PL
+    Writing My/Thingy/test.pl
+    Writing My/Thingy/Changes
+    Writing My/Thingy/MANIFEST
+
+You then need to set @EXPORT and the other Exporter variables in the usual way,[*] and pass the NAME and VERSION options to Inline in your Thingy.pm:
+
+[*] See the perlnewmod documentation if you're not sure what the "usual way" of creating Perl modules is.
+
+        our $VERSION="1.01";
+
+        use Inline VERSION => '1.01',
+                      NAME => 'My::Thingy';
+
+Finally, open up the Makefile.PL and change ExtUtils::MakeMaker to Inline::MakeMaker. This ensures that the C part of the module is compiled only once, when the end user runs make, and then the C shared library is installed along with the rest of the module in the usual way during make install.
+
+9.3. Inline:: Everything Else
+Originally, Inline was just for wrapping C code; however, pretty soon developers[] saw the potential to extend the concept to other languages. Brian rewrote the original Inline.pm to support a greater degree of pluggability, and now CPAN contains a whole host of Inline:: modules.
+
+[] Particularly Neil Watkiss, at the time Brian's coworker at ActiveState.
+
+To round off the chapter, we'll take a look at some other languages you can use in the Inline style.
+
+9.3.1. Inline::Python
+Perhaps the most advanced of the non-C Inline modules is Neil Watkiss's Inline::Python; together with his PyPerl, one can mix Python and Perl code in a near-seamless way.
+
+The first and most obvious thing we can do with Inline::Python is the same sort of thing we've been doing with Inline::Cwrap Python routines and use them from Perl:
+
+    use Inline Python => q{
+    import os
+    def orig_path(  ):
+        return os.defpath.split(os.pathsep)
+    };
+
+    print "$_\n" for orig_path(  );
+
+Python's os.defpath method returns a built-in search path for executables (unmodified by the value of the $PATH environment variable); we then split this on the separator character for paths (generally ":" on Unix systems) and return it as a Python array.
+
+Inline::Python takes care of turning that Python array into an array that we can use in Perl.
+
+Again, just like Inline::C, we can import library functions without specifying code for them:
+
+    use Inline Python => q{
+    from quopri import encodestring
+    };
+
+    print encodestring("quoted=printable"); # quoted=3Dprintable
+
+However, we can also import entire classes, allowing access to Python classes and their methods. Let's use the RobotFileParser class contained in the Python robotparser library, used for reading and querying robots.txt files on remote web sites:
+
+    use Inline Python => q{
+    from robotparser import RobotFileParser
+    };
+
+    my $parser= RobotFileParser->new(  );
+    $parser->set_url('http://www.musi-cal.com/robots.txt');
+    $parser->read(  );
+    # ...
+
+Once we've imported a class, all of its methods are available from Perl as though we were using the class from Pythonall arguments to the methods and any return values come through the Inline::Python bridge, appearing to Perl like Perl values and appearing to Python like Python values. This allows for a pretty seamless integration of Python libraries into Perl.
+
+But what if we want to mix the two languages even more? When Inline::Python starts up, it loads a special Python library called perl. We can use this to grab subroutines from the Perl environment.
+
+    use Inline Python => q{
+
+    def callperl(  ):
+        print "This is Python speaking..."
+        perl.hi_world(  )
+    };
+
+    sub hi_world { print "Hello! I'm in Perl!\n" }
+
+    callperl(  );
+
+Our Perl main package appears as the perl class inside the Python interpreter. Using the same magic that wraps Python methods into Perl subroutines, Inline::Python also turns Perl subroutines into Python methods. That's seamless integration.
+
+Inline::Python also provides a few other functions that make for a smooth transition in and out of Python; perl.eval inside Python and py_eval inside Perl can evaluate strings in the appropriate foreign language, and there are facilities for controlling the binding of Perl and Python routines.
+
+Inline::Python works well for applications where the mother tongue is Perl; Neil's PyPerl is a first-language Python equivalent. Neil has worked hard to produce an extremely robust framework for fluid movement between Perl and Python, and the Inline::Python module is a huge bonus for anyone who wants or needs to use Python classes in their Perl code.
+
+9.3.2. Inline::Ruby
+Ruby (http://www.ruby-lang.org) is an interesting, modern, object-oriented scripting language created by Yukihiro Matsumoto (Matz). As you might be able to guess, Inline::Ruby allows you to call Ruby methods and access Ruby classes from Perl. It works precisely the same way as Inline::Python, but doesn't support the same sort of two-way communication. However, you can define methods in Ruby and import Ruby libraries and have them callable from Perl.
+
+An interesting, but slightly complex, feature of Inline::Ruby is the ability to pass Perl subroutines to iterators. Ruby distinguishes between two types of usage for what Perl calls anonymous subroutines: the first type is called a Proc object in Ruby, and it is what most uses of Perl anonymous subs turn into; with the second type, all Ruby methods can take an optional block as an argument following the ordinary formal parameters. This acts as a callback, and the Ruby method can yield control to the callback with the yield keyword.
+
+When a method iteratively calls yield over the contents of a data structure, it's referred to as an iterator. Here's an example of iterating over an array:
+
+    array = ["Hello", "there", "Ruby!"]
+    array.each { |x| puts x }
+
+The each iterator method is a little like Perl's for loop: it calls the attached code block on each element of the array in turn.
+
+You might asssume that we could happily say something like this in Inline::Ruby:
+
+    $object->each(sub { print $_[0] });
+
+However, as we've mentioned, the code block isn't passed to the iterator as an ordinary argumentit's attached separately. To get the same effect in Inline::Ruby, we need to associate the code block like so:
+
+    $object->iter(sub { print $_[0] })->each;
+
+This first prepares the object for calling the iterator with the right code block, and then calls it with no ordinary arguments; this does what we mean.
+
+If you haven't taken much of a look at Ruby thus far, I'd encourage you to do so; maybe start by looking at my rubyisms Perl module, which brings some of the more interesting features from Ruby into Perl.
+
+9.3.3. Inline::CPR
+We've seen how Inline::C can create Perl extensions to C libraries; the usual topic that goes along with extensions is embedding. This is the process of creating a C program that contains a Perl interpreter and can call Perl subroutines.
+
+Unfortunately, embedding is trickypossibly trickier than XS. Ingy's solution is the curious Inline::CPR module. It works a little like this: you write a C program in the usual way that contains a main( ) function. Here's a simple one:
+
+    void main(void) {
+         printf("Hello, C!\n");
+    }
+
+Now you do something a bit funny with it; you add a shebang (#!) line to make the C program run under the CPR interpreter, like so:
+
+    #!/usr/bin/cpr
+
+    void main(void) {
+         print("Hello, C!\n");
+    }
+
+At this point, we have a C program that is a CPR script.
+
+The CPR interpreter is a little program that starts a Perl interpreter and passes your C program wholesale to Inline::C. This compiles your C functions and binds them to Perl subroutines. Once the Perl interpreter has finished doing the usual Inline::C thing, it calls the main subroutine. Conceptually, you've written a Perl program like this:
+
+    #!/usr/bin/perl
+
+    use Inline C => q{
+
+    void main(void) {
+         printf("Hello, C!\n");
+    }
+
+    };
+
+    main(  )
+
+Once this is done, your C program is up and running inside the context of a Perl interpreter.
+
+The neat part is that because you have a C program running inside Perl, you can use all theInline::C TRicks you've learned about already in this chapter.
+
+Inline::CPR is still in the development stages, and you can't really do anything too clever with it, but it's an interesting framework for solving the embedding problem.
+
+9.3.4. Inline::Struct
+You may be thinking that Inline::C is all very well for interfacing to relatively simple C libraries, but in the real world, libraries use more complicated variable types than just the strings, integers, and floating-point types we've seen so far. Most libraries define their own structures and expect us to pass and recieve these structures. How can we do this with Inline?
+
+The answer is to use Neil Watkiss's Inline::Struct. This gives us an object-oriented approach to C structures. To enable this, we simply add the following to our Inline::C programs:
+
+    use Inline C => Config => ENABLE => STRUCTS;
+
+And then, theoretically, any structures defined in your C code will be wrapped into Perl classes.
+
+9.3.5. Miscellaneous Other Inlines
+There are now more Inline-style modules on the CPAN than it's sensible to describe, so we'll end this chapter by throwing out a few pointers to other modules worth looking at.
+
+For many years, the only way to plug Java and Perl together was the O'Reilly JPL (Java Perl Lingo) project. This used the JNI (Java Native Interface) C library to embed a Java interpreter inside a Perl interpreter. It was slow, complex and not entirely well documented. Now we have Inline::Java, a Perl-Java bridge that can use either JNI or a socket connection to a standalone Java server process.
+
+Inline::ASM is an obvious extension of the Inline::C concept which lets you write assembly code inline; this is turned into a little library that is wrapped with Inline::C in the usual way.
+
+Inline::Basic is an interesting language extension because it doesn't actually call out to a separate interpreter; it uses a Basic interpreter written in Perl (the Language::Basic module) to interpret your Inline code. Finally, Inline::Files is not actually an Inline.pm module at all, but uses a similar technique to allow you to put multiple virtual files into a _ _DATA_ _ section of a Perl program, instead of just the one.
+
+9.4. Conclusion
+The Inline modules are an easy-to-use interface for incorporating code and libraries from other languages in your Perl code. You won't use them every day, but they are a valuable addition to any Perl programmer's toolbox.
+

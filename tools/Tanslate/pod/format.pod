@@ -1,0 +1,49 @@
+=head2 Chapter 1 
+
+contains motivational material and also presents some background issues in computer architecture and programming-language principles.
+
+=head2 Chapter 2 
+
+develops a miniature compiler and introduces many of the important concepts, which are then developed in later chapters. The compiler itself appears in the appendix.
+
+=head2 Chapter 3 
+
+covers lexical analysis, regular expressions, finite-state machines, and scanner-generator tools. This material is fundamental to text-processing of all sorts.
+
+=head2 Chapter 4 
+
+covers the major parsing methods, top-down (recursive-descent, LL) and bottom-up (LR and its variants).
+
+=head2 Chapter 5 
+
+introduces the principal ideas in syntax-directed definitions and syntax-directed translations.
+
+=head2 Chapter 6 
+
+takes the theory of Chapter 5 and shows how to use it to generate intermediate code for a typical programming language.
+
+=head2 Chapter 7 
+
+covers run-time environments, especially management of the run-time stack and garbage collection.
+
+=head2 Chapter 8
+
+is on object-code generation. It covers construction of basic blocks, generation of code from expressions and basic blocks, and register-allocation techniques.
+
+=head2 Chapter 9 
+
+introduces the technology of code optimization, including flow graphs, data-flow frameworks, and iterative algorithms for solving these frameworks.
+
+=head2 Chapter 10
+
+covers instruction-level optimization. The emphasis is on the extraction of parallelism from small sequences of instructions and scheduling them on single processors that can do more than one thing at once.
+
+=head2 Chapter 11
+
+talks about larger-scale parallelism detection and exploitation. Here, the emphasis is on numeric codes that have many tight loops that range over multidimensional arrays.
+
+=head2 Chapter 12
+
+is on interprocedural analysis. It covers pointer analysis, aliasing, and data-flow analysis that takes into account the sequence of procedure calls that reach a given point in the code.
+
+=cut

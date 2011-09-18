@@ -1,0 +1,1435 @@
+Chapter 2. Parsing Techniques
+One thing Perl is particularly good at is throwing data around. There are two types of data in the world: regular, structured data and everything else. The good news is that regular datacolon delimited, tab delimited, and fixed-width filesis really easy to parse with Perl. We won't deal with that here. The bad news is that regular, structured data is the minority.
+
+If the data isn't regular, then we need more advanced techniques to parse it. There are two major types of parser for this kind of less predictable data. The first is a bottom-up parser. Let's say we have an HTML page. We can split the data up into meaningful chunks or tokenstags and the data between tags, for instanceand then reconstruct what each token means. See Figure 2-1. This approach is called bottom-up parsing because it starts with the data and works toward a parse.
+
+Figure 2-1. Bottom-up parsing of HTML
+
+The other major type of parser is a top-down parser. This starts with some ideas of what an HTML file ought to look like: it has an <html> tag at the start and an </html> at the end, with some stuff in the middle. The parser can find that pattern in the document and then look to see what the stuff in the middle is likely to be. See Figure 2-2. This is called a top-down parse because it starts with all the possible parses and works down until it matches the actual contents of the document.
+
+Figure 2-2. Top-down parsing of HTML
+
+2.1. Parse::RecDescent Grammars
+Damian Conway's Parse::RecDescent module is the most widely used parser generator for Perl. While most traditional parser generators, such as yacc, produce bottom-up parsers, Parse::RecDescent creates top-down parsers. Indeed, as its name implies, it produces a recursive descent parser. One of the benefits of top-down parsing is that you don't usually have to split the data into tokens before parsing, which makes it easier and more intuitive to use.
+
+2.1.1. Simple Parsing with Parse::RecDescent
+I'm a compulsive player of the Japanese game of Go.[*] We generally use a file format called Smart Game Format (http://www.red-bean.com/sgf/) for exchanging information about Go games. Here's an example of an SGF file:
+
+[*] The American Go Association provides an introduction to Go by Karl Baker called The Way to Go (http://www.usgo.org/usa/waytogo/W2Go8x11.pdf).
+
+    (;GM[1]FF[4]CA[UTF-8]AP[CGoban:2]ST[2]
+    RU[Japanese]SZ[19]HA[5]KM[5.50]TM[  ]
+    PW[Simon Cozens]PB[Keiko Aihara]AB[dd][pd][jj][dp][pp]
+    ;W[df];B[fd];W[cn]
+       (;B[dl])
+       (;B[fp]CR[fp]C[This is the usual response.])
+       (;B[co]CR[co]C[This way is stronger still.]
+        ;W[dn];B[fp])
+    )
+
+This little game consists of three moves, followed by three different variations for what happens next, as shown in Figure 2-3. The file describes a tree structure of variations, with parenthesised sections being variations and subvariations.
+
+Figure 2-3. Tree of moves
+
+Each variation contains several nodes separated by semicolons, and each node has several parameters. This sort of description of the format is ideal for constructing a top-down parser.
+
+The first thing we'll do is create something that merely works out whether some text is a valid SGF file by checking whether it parses. Let's look at the structure carefully again from the top and, as we go, translate it into a grammar suitable for Parse::RecDescent.
+
+Let's call the whole thing a game tree, since as we've seen, it turns out to be a tree-like structure. A game tree consists of an open parenthesis, and a sequence of nodes. We can then have zero, one, or many variationsthese are also stored as game treesand finally there's a close parenthesis:
+
+                GameTree : "(" Sequence GameTree(s?) ")"
+
+Read this as "You can make a GameTree if you see (, a Sequence, ...". We've defined the top level of our grammar. Now we need to define the next layer down, a sequence of nodes. This isn't difficult; a sequence contains one or more nodes:
+
+    Sequence: Node(s)
+
+A node starts with a semicolon and continues with a list of properties. A property is a property identifier followed by a list of values. For example, the RU[Japanese] propertywith the property identifier RUspecifies that we're using Japanese rules in this game.
+
+    Node: ";" Property(s)
+    Property: PropIdent PropValue(s)
+
+We've covered most of the high-level structure of the file; we have to start really defining things now. For instance, we need to be able to say that a property identifier is a bunch of capitalized letters. If we were trying to do the parsing by hand, now would be the time to start thinking about using regular expressions. Thankfully, Parse::RecDescent allows us to do just that:
+
+     PropIdent : /[A-Z]+/
+
+Next come our property values: these are surrounded by square brackets and contain any amount of text; however, the text itself may contain square brackets. We can mess about with the grammar to make this work, or we can just use the Text::Balanced module.
+
+Text::Balanced
+Text::Balanced is another module that should be in your toolbox if you have to deal with any kind of structured data. It's a companion module to Parse::RecDescent, which takes care of extracting "balanced" text sequences. For instance, given a string:
+
+    (lambda (x) (append x '(hacker))) ((lambda (x) (append '(just another) x))
+    '(LISP))
+
+the expression ($first, $rest) = extract_bracketed($jalh, "( )") will return (lambda (x) (append x '(hacker))) in $first, and the rest of the string in $rest.
+
+Text::Balanced also contains routines for extracting quoted strings while allowing backslash escapes, Perl quotelike strings (qq|xyz| and the like), XML-tagged text, and much more.
+
+The Text::Balanced way of extracting a square-bracketed expression is:
+
+    extract_bracketed($text, '[  ]');
+
+and Parse::RecDescent allows us to plug that directly into the grammar:
+
+    PropValue : { extract_bracketed($text, '[  ]') }
+
+Parse::RecDescent automatically fills the magic variable $text with the input to the parser.
+
+We've now reached the bottom of the structure, which completes our grammar. Let's look again at the rules we've defined:
+
+    my $grammar = q{
+        GameTree  : "(" Sequence GameTree(s?) ")"
+        Sequence   : Node(s)
+        Node       : ";" Property(s)
+        Property   : PropIdent PropValue(s)
+        PropIdent : /[A-Z]+/
+        PropValue: { extract_bracketed($text, '[  ]') }
+    }
+
+Now that we have the grammar wrapped up in a Perl string, we can feed it to Parse::RecDescent:
+
+    my $sgf_parser = Parse::RecDescent->new($grammar);
+
+This returns an object with methods for each of our rules: we can call $sgf_parser->GameTree to begin parsing a whole file, and this method will in turn call $sgf_parser->Sequence, which will call $sgf_parser->Node and so on. So let's give it a valid SGF fileencoding the famous Shusaku openingand see what it makes of it:
+
+    use strict;
+    use Parse::RecDescent;
+    my $grammar = q{
+        GameTree  : "(" Sequence GameTree(s?) ")"
+        Sequence   : Node(s)
+        Node       : ";" Property(s)
+        Property   : PropIdent PropValue(s)
+        PropIdent : /[A-Z]+/
+        PropValue: { extract_bracketed($text, '[  ]') }
+    };
+    my $sgf_parser = Parse::RecDescent->new($grammar);
+
+    undef $/; my $sgf = <DATA>;
+    print $sgf_parser->GameTree($sgf);
+
+    _ _DATA_ _
+    (;GM[1]FF[4]AP[CGoban:2]ST[2]RU[Japanese]
+    PW[Honinbo Shuwa]PB[Yasuda Shusaku]
+    WR[7d]BR[5d]
+    ;B[qd];W[dc];B[pq];W[oc];B[cp];W[qo]
+    ;B[pe]C[This is the famous "Shusaku opening".])
+
+When we run this, we may be surprised to find out that it prints nothing but a single parenthesis:
+
+    )
+
+because we haven't defined what we want to do with the parsed data yet. This is only fair enough; Parse::RecDescent is offering us the last token it saw, which was a close parenthesis. If, on the other hand, we give it a broken SGF file:
+
+    (;GM[1]FF[4]AP[CGoban:2]ST[2]RU[Japanese]
+    PW[Honinbo Shuwa]PB[Yasuda Shusaku]
+    WR[7d]BR[5d]
+    ;B[qd];W[dc];B[pq];W[oc];B[cp];W[qo]
+    ;B[pe]C[This)
+
+then we get no output at allit could not be parsed.
+
+Let's briefly run over how we constructed that grammar, then we'll see how we can turn the parser into something more useful.
+
+2.1.1.1 Types of match
+So far we've seen several different ways to match portions of a data stream:
+
+Plain quoted text, such as the semicolon at the start of a node
+
+Regular expressions, as used to get the property name
+
+Subrules, to reference other parts of the grammar
+
+Code blocks, to use ordinary Perl expressions to extract text
+
+We also used several types of repetition directive, as shown in Table 2-1.
+
+Table 2-1. Types of repetition directive Directive
+ Meaning
+
+(s)
+ Tells Parse::RecDescent that we want to find one or more of the given subrules
+
+(s?)
+ To mean 0 or more
+
+(?)
+ To mean 1 or 0
+
+(5)
+ To match precisely 5 times
+
+(5..)
+ To match 5 or more
+
+(..5)
+ To match 0 to 5
+
+(5..10)
+ To match between 5 and 10 times
+
+These repetition specifiers can only be applied to subrule-type matches.
+
+2.1.1.2 Actions
+What we've constructed so far is strictly called a recognizer. We can tell whether or not some input conforms to the given structure. Now we need to tell Parse::RecDescent what to do with the data once it's been recognized, and we do this with actions.
+
+At its simplest, an action is a block of Perl code that sits at the end of a grammar rule. For instance, we could say:
+
+    Node       : ";" Property(s) { print "I saw a node!\n" }
+
+When this runs with the input from the previous section "Simple Parsing with Parse::RecDescent," we see the output:
+
+    I saw a node!
+    I saw a node!
+    I saw a node!
+    I saw a node!
+    I saw a node!
+    I saw a node!
+    I saw a node!
+    I saw a node!
+    )
+
+This is quite reassuring, as there are actually eight nodes in our example SGF file.
+
+We can also get at the results of each match, using the @item array:
+
+    Property   : PropIdent PropValue(s)
+                     { print "I saw a property of type $item[1]!\n" }
+
+Notice that this array is essentially one-based: the data matched by PropIdent is element one, not element zero. Anyway, this now gives:
+
+    I saw a property of type GM!
+    I saw a property of type FF!
+    I saw a property of type AP!
+    I saw a property of type ST!
+    I saw a property of type RU!
+    I saw a property of type PW!
+    I saw a property of type PB!
+    I saw a property of type WR!
+    I saw a property of type BR!
+    I saw a node!
+    I saw a property of type B!
+    ...
+
+As we saw with the curious case of the ) returned by our recognizer, by default Parse::RecDescent sets the value of a match equal to the last token matched. This works just fine for simple rules like PropIdent, but for complex rules such as GameTree, it falls down pretty flat. Not to worry! There's one final piece of the puzzle: you can set the magic variable $return to be the output that you want each rule to return.
+
+For instance, let's concentrate on the Property rule. We'd like this to return some kind of data structure that represents the property: its type and its value. So, we say something like this:
+
+    Property   : PropIdent PropValue(s)
+                 { $return = { type => $item[1], value => $item[2] } }
+
+Now, there's nothing forcing us to start by parsing an entire GameTree. Remember that Parse::RecDescent's new method returns an object with a method for each rule? We can just parse a single Property:
+
+    my $prop = $sgf_parser->Property("RU[Japanese]");
+    print "I am a property of type $prop->{type}, ";
+    print "with values $prop->{value}";
+
+And Perl tells us:
+
+    I am a property of type RU, with values ARRAY(0x2209d4)
+
+Because we specified that the PropValue may be repeated, Parse::RecDescent has helpfully put all its values into an array reference for us. Well, that's great, but to be honest, the majority of properties in real SGF files only have one value each, so we can make the output a bit friendlier by replacing the array reference $items[2] by its first element if it only has the one element.
+
+    Property   : PropIdent PropValue(s)
+                 { $return = { type => $item[1], value => @{$item[2]}=  =1 ?
+                   $item[2][0] : $item[2] } }
+
+This time we have something a little easier to deal with:
+
+    I am a property of type RU, with values [Japanese]
+
+Oops! We forgot that extract_bracketed keeps the square brackets around the extracted text. So let's look again at the PropValue rule:
+
+    PropValue : { extract_bracketed($text, '[  ]') }
+
+This is a code block matcha block of Perl code that determines whether or not something matchesbut it looks just like the actions that we've been adding. So how does Parse::RecDescent know whether something's a code block match or an action?
+
+Well, there's a dirty little secret herecode block matches and actions are precisely the same thing. When Parse::RecDescent sees a block of Perl code as it's working its way though a rule, it immediately executes it. If it returns true, then we consider that to be a successful match. So, as a general principle, it's important that your actions return a true value, or otherwise they'll make the match fail.
+
+So, we can strip off the brackets inside the PropValue rule, only when the call to extract_bracketed was successful:
+
+    PropValue : { my $value = extract_bracketed($text, '[  ]');
+                  ($return) = $value =~ /^\[(.*)\]/ if $value; }
+
+And this will now do what we expected. One final change to the GameTree rule:
+
+    GameTree  : "(" Sequence GameTree(s?) ")"
+                     { $return = { mainline => $item[2], variations => $item[3] } }
+
+so that Parse::RecDescent returns a handy data structure representing any valid SGF file:[*]
+
+[*] In fact, my module Games::Go::SGF does something similar to this.
+
+    $VAR1 = {
+              'variations' => [  ],
+              'mainline' => [
+                              [
+                                {
+                                  'value' => '1',
+                                  'type' => 'GM'
+                                },
+                                {
+                                  'value' => '4',
+                                  'type' => 'FF'
+                                },
+                                {
+                                  'value' => 'CGoban:2',
+                                  'type' => 'AP'
+                                },
+                                {
+                                  'value' => '2',
+                                  'type' => 'ST'
+                                },
+     ...
+
+For reference, the final program looks like this:
+
+    use strict;
+    use Parse::RecDescent;
+    my $grammar = q{
+        GameTree  : "(" Sequence GameTree(s?) ")"
+                     { $return = { mainline => $item[2], variations => $item[3] } }
+        Sequence   : Node(s)
+        Node       : ";" Property(s)
+        Property   : PropIdent PropValue(s)
+                     { $return = { type => $item[1], value => @{$item[2]}=  =1 ?
+                     $item[2][0] : $item[2] } }
+        PropIdent : /[A-Z]+/
+        PropValue : { my $value = extract_bracketed($text, '[  ]');
+          ($return) = ($value =~ /^\[(.*)\]/) if $value; }
+    };
+    my $sgf_parser = Parse::RecDescent->new($grammar);
+
+    undef $/; my $sgf = <DATA>;
+    use Data::Dumper;
+
+    my $tree = $sgf_parser->GameTree($sgf);
+    print Dumper($tree);
+
+2.1.2. Debugging
+It's all very well to be presented with a completed grammar like that, but what about debugging? Well, I'll be honest and admit that I did make a few mistakes when I wrote the preceding example. First time through, I got too clever with extract_bracketed in PropValue, so it looked like this:
+
+    PropValue : { my ($value) = extract_bracketed($text, '[  ]');
+      ($return) = ($value =~ /^\[(.*)\]/) }
+
+You see, extract_bracketed is context sensitive. In scalar context it modifies its input, stripping out the bracketed section that it found, but in list context it leaves the original input alone returning two values: what matched and what remained. In my list-context version, $text wasn't being changed, and the output looked something like this:
+
+    $VAR1 = undef;
+
+Oops. How do you debug something like that? Thankfully, Parse::RecDescent has a very capable built-in tracing system, which spits out masses of debugging output. You can turn this on with the global variable $RD_TRACE, or from the command line using the -s flag to Perl, like this:
+
+    % perl -s test.pl -RD_TRACE
+
+The output is in two parts. The first is how Parse::RecDescent understood the grammar:
+
+    Parse::RecDescent: Treating "GameTree :" as a rule declaration
+    Parse::RecDescent: Treating ""("" as an interpolated literal terminal
+    Parse::RecDescent: Treating "Sequence" as a subrule match
+
+This is nearly always correct, so we don't need to worry about that. The next part comes when Parse::RecDescent is attempting to process some text. It tells us which rule it's processing, what it's doing, and what input it has:
+
+    | GameTree |Trying rule: [GameTree]               |
+    | GameTree |                                      |"(;GM[1]FF[4]AP[CGoban:2]ST[2
+    |          |                                      |]RU[Japanese]\nPW[Honinbo
+    |          |                                      |Shuwa]PB[Yasuda
+    |          |                                      |Shusaku]\nWR[7d]BR[5d]\n;B[qd
+    |          |                                      |];W[dc];B[pq];W[oc];B[cp];W[q
+    |          |                                      |o]\n;B[pe]C[This is the
+    |          |                                      |famous "Shusaku
+    |          |                                      |Opening".])\n"
+    | GameTree |Trying production: ['(' Sequence      |
+    |          |GameTree ')']                         |
+    | GameTree |Trying terminal: ['(']                |
+    | GameTree |>>Matched terminal<< (return value:   |
+    |          |[(])                                  |
+
+This tells us that it's in the middle of trying to match a GameTree, and that in doing so, it has to try to match '(' Sequence GameTree ')'. So, it looks for the first thing, a terminal symbol, (, and it finds one.
+
+When you're trying to work out why something didn't match, it's sometimes easier to work from the bottom up, because Parse::RecDescent will give up soon after failing the test that's broken. About three-quarters of the way through the trace, we find the following:
+
+    |   Node   |>>Matched repeated subrule:           |
+    |          |[Property]<< (1 times)                |
+
+This is a problem, because we know the first node has more than one property. So we look up a bit more, and we see:
+
+    | Property |Trying action                         |
+    | Property |>>Matched action<< (return value:     |
+    |          |[HASH(0x20b324)])                     |
+    | Property |>>Matched production: [PropIdent      |
+    |          |PropValue]<<                          |
+    | Property |>>Matched rule<< (return value:       |
+    |          |[HASH(0x20b324)])                     |
+    | Property |(consumed: [GM])                      |
+
+Aha! It thinks that it's matched a valid property, but all that it's consumed is "GM"it hasn't sucked up the "[1]" at all.
+
+This should tell us that there's something wrong with the way the grammar is parsing the property value and, moreover, that it's matching without sucking up any text. That's precisely what the bug was.
+
+2.1.3. More Difficult Parsing
+Of course, this isn't all you can do with Parse::RecDescent; the module has a sophisticated system of directives, options, and magic variables to help you get around any parsing problem.
+
+2.1.3.1 Commit, reject, and error
+One of the problems with recursive descent grammars is that they can be terribly slow; there are a huge number of possible matches in any decent-sized grammar, and Parse::RecDescent has to try absolutely all of them. It certainly ends up trying a lot of parses that can't possibly make sense.
+
+To ameliorate this problem, Parse::RecDescent has a series of directives that can help us prune the tree of possibilities. All directives have the same format: a keyword in angle brackets. For instance, the directive <commit> specifies that there's no turning back from what we've just seen. Suppose we have the following rules for method calling in an OO programming language:
+
+     Method:
+             Variable '.' Methodname '(' Arguments ')'
+             | Variable '.' Property
+             | ClassIdentifier '.' Methodname '(' Arguments ')'
+             | ClassIdentifier '.' Property
+
+Now, if we have some text $obj.frob(gargle gargle howl) we know that it's supposed to be a method call of the first type. If something goes wrong parsing the arguments, then there's no point coming back and seeing if it's a property call on an object, or whether it's some kind of class method.
+
+In fact, as soon as we've seen Variable.Methodname ( then there's no turning back; we can be sure that this is supposed to be a method call on an object, with arguments. At this point, we can commit to this parse. The same goes for class methods, and we can optimize our grammar like so:
+
+     Method:
+             Variable '.' Methodname '(' <commit> Arguments ')'
+             | Variable '.' Property
+             | ClassIdentifier '.' Methodname '(' <commit> Arguments ')'
+             | ClassIdentifier '.' Property
+
+The effect of a commit is to cause the whole production to fail if the current subrule fails; if Arguments doesn't parse or we don't see a closing bracket, then the Method rule fails, without checking the other options. This massively cuts down the number of possibilities that Parse::RecDescent has to try.
+
+ One oft-encountered gotcha is that directives take a place in the @item array; to refer to Arguments in the first rule, you need to specify $item[6], not $item[5].
+
+Unfortunately, there are times when we want this pruning behavior, but we also want to try the other options. The typical example of this is an if-then-else-end sequence. Let's try and write a grammar for this sort of sequence:
+
+     Conditional:
+             "if" Cond "then" Block "end"
+             | "if" Cond "then" Block "else" Block "end"
+
+As soon as we see the if, we know we're parsing a conditional. So, we can say:
+
+     Conditional:
+             "if" <commit> Cond "then" Block "end"
+             | "if" <commit> Cond "then" Block "else" Block "end"
+
+Unfortunately, this will never parse an else block properly. We'll commit to the first option and parse the conditional, the then, and the block, but instead of seeing end as we expect, we see else. This fails, and since we're committed, the whole rule fails.
+
+So, while we want to commit to an if statement, we want the ability to change our minds later, reversing the commitment when there's a valid option. The directive to do this is called uncommit, and so our final grammar looks like this:
+
+     Conditional:
+             "if" <commit> Cond "then" Block <uncommit> "end"
+             | "if" <commit> Cond "then" Block "else" Block "end"
+
+The opposite of commit, however, is called reject, and that states that we can't even go down this road at all. One usage of this would be to restrict a rule to a subset of its possibilities. Suppose we've got the rule control_modifier, which matches if, unless, while, and until statement modifiers. If there's a time when we want to match just the conditionals, you could say:
+
+     conditional_modifier:
+             "while" <reject>
+           | "until" <reject>
+           | control_modifier
+
+Of course, this is horribly lazywe should just have defined control_modifier as a superset of conditional_modifier, not the other way around. Worse, it's inefficient, since when we get to control_modifier, we have to check for while and until again.
+
+So what is <reject> actually useful for, then? The most useful application of it is using a rule purely for its side effects without being interested in whether it matches. For instance, you might want to use a rule to set up some global variable that will affect the parsing later:
+
+    conditional_modifier:  { $::in_modifier = 1 }  <reject>
+        | "if" expr
+           { ... $::in_modifier = 0; }
+        | "unless" expr
+           { ... $::in_modifier = 0; }
+
+Now expr can take note of the $::in_modifier variable and alter its parsing behavior accordingly.
+
+Similarly, if you get overwhelmed by debugging the grammar with RD_TRACE, you can insert simple debugging statements followed by a reject directive:
+
+    conditional_modifier:
+        { warn "I'm trying to parse a conditional modifier!" }  <reject>
+        | "if" expr
+        | "unless" expr
+
+Another way of trimming the grammar, similar to <commit>, is to report an error when something impossible happens. Just like <commit>, the idea is to fail as quickly as possible, hence saving on backtracking. The predictably named <error> directive helps us to do this:
+
+    subroutine: "sub" sub_declaration
+
+    block: <perl_codeblock>
+
+    sub_name: /[a-zA-Z_]\w+/
+
+    sub_declaration : block
+                    | sub_name block
+                    | <error>
+
+<perl_codeblock> is a directive that extracts one block in curly braces.
+
+Now if we say sub 01234 { }, we get:
+
+    ERROR (line 1): Invalid sub declaration: Was expecting block, or sub
+                    name
+
+The <error> directive automatically derives a sensible and useful error message from the grammar. If you don't want that, write your own error message:
+
+    subroutine: "sub" sub_declaration
+
+    block: <perl_codeblock>
+
+    sub_name: /[a-zA-Z_]\w+/
+
+    sub_declaration : block
+                    | sub_name block
+                    | <error: Bad subroutine definition>
+
+If you're using <commit> and <error> together, you can use the variant <error?> form to provide a useful error message for failed committed matches:
+
+     Method:
+             Variable '.' Methodname '(' <commit> Arguments ')'
+             | Variable '.' Property
+             | ClassIdentifier '.' Methodname '(' <commit> Arguments ')'
+             | ClassIdentifier '.' Property
+             | <error?>
+
+This won't produce an error message unless we're in a committed state, but it will wail if something goes wrong with argument processing:
+
+    ERROR (line 1): Invalid Method: Was expecting Arguments but found "foo
+                    bar)" instead
+
+Creative use of <commit> and <error> can greatly speed up a highly complex grammar.
+
+2.1.3.2 Syntactic whitespace
+In the examples we've seen so far, whitespace hasn't been significant: Parse::RecDescent happily skipped over spaces, tabs, and newlines alike. Unfortunately, whitespace is significant for some data formats. In particular, there are some data formats in which, for instance, newlines mark the end of a particular rule.
+
+Headers in a mail message are one such format: a newline marks the end of a header, unless there's a continuation line following. A continuation line is marked by yet more significant whitespace: a space at the beginning of the line. There's also a significant newline between the header and the body.
+
+What we need to do is to tell Parse::RecDescent what whitespace it can skip over and what is significant. The variable used to tell Parse::RecDescent of this is $Parse::RecDescent::skip.
+
+The normal setting is to skip over any whitespace: /\s*/. However, in this case, it can't skip over anything!
+
+    $Parse::RecDescent::skip = '';
+
+If we say this, we now have to specify newlines and possible spaces explicitly in our grammar.
+
+    message : header "\n" body
+    header : header_line(s)
+    header_line : field ":" value "\n" continuation
+                | field ":" value "\n"
+    field: /\w+/
+    value: /.*/;
+    continuation : " " /.*/ "\n" continuation(?)
+    body : body_line(s?)
+    body_line : /.*/ "\n"
+
+We'll see more applications of significant whitespace in our example grammars.
+
+2.1.3.3 Automating the process
+What we've seen so far is great, but we're still doing a lot of work ourselves. This isn't particularly lazy, and laziness, as you know, is a key virtue of a Perl programmer. So let's let the module do some of the work.
+
+The first thing we can do is set a default action; the magic variable $::RD_AUTOACTION can be set to a string that will be evaled and used as the action for any rule that doesn't have one. If we set a sufficiently general autoaction, we can let Parse::RecDescent get on with parsing the input while we massage the data structure when it's done.
+
+In fact, the sufficiently general autoaction turns out to be this:
+
+    $::RD_AUTOACTION = '[@item]';
+
+This sticks everything that gets parsed into an array reference and builds up a list-of-lists representing the parse tree. Of course, this will give us every single item in the input whether we want it or not, but the point is that we're going to post-process it. If we use autoactions in our Shusaku example, we get something a little like this:
+
+    $VAR1 = [
+              'GameTree',
+              '(',
+              [
+                'Sequence',
+                [
+                  [
+                    'Node',
+                    ';',
+                    [
+                      [
+                        'Property',
+                        [
+                          'PropIdent',
+                          'GM'
+                        ],
+                        [
+                          '1'
+                        ]
+                      ],
+    ...
+
+Another interesting autoaction idea is to bless what got parsed into a class representing the rule. The autoaction looks like this:
+
+    $::RD_AUTOACTION = 'bless [@item[1..$#item]], "SGFParser::$item[0]";';
+
+You'll then end up with an SGFParser::GameTree object. It's then a trivial matter to add the appropriate methods to get a bunch of SGFParser::Sequence objects, explore the SGFParser::Nodes, and so on.
+
+Of course, we could be lazier still. The <autotree> directive, placed at the top of a grammar, will generate a parse tree and bless nodes into appropriately named classes. Here's our grammar now:
+
+    my $grammar = q{
+
+        <autotree>
+
+        GameTree  : "(" Sequence GameTree(s?) ")"
+        Sequence   : Node(s)
+        Node       : ";" Property(s)
+        Property   : PropIdent PropValue(s)
+        PropIdent : /[A-Z]+/
+        PropValue : { my $value = extract_bracketed($text, '[  ]');
+          ($return) = ($value =~ /^\[(.*)\]/) if $value; }
+    };
+
+Each object is a hash looking something like this:
+
+    $tree= {
+        _ _RULE_ _ => "GameTree",
+        _ _STRING1_ _ => "(",
+        Sequence => Sequence=HASH(0x23feb8),
+        GameTree => ARRAY(0x24fcd4),
+        _ _STRING2_ _ => ")"
+    };
+
+There's obviously a trade-off here between laziness in specifying actions and control over the data structure you get back, so autoactions and autotrees need to be used carefully.
+
+On the other hand, the final piece of laziness is extremely useful when developing a grammar. Let's suppose we're still working out how to specify an SGF property for our grammar, but we want to make sure everything else works first. So, we write a test grammar like this:
+
+    my $grammar = q{
+        GameTree  : "(" Sequence GameTree(s?) ")"
+        Sequence   : Node(s)
+        Node       : ";" Property(s)
+        Property   : "foo"
+    };
+
+And now we can test our parser with dummy pseudo-SGF files:
+
+    (;foo;foo;foo(foo;foo;foo foo))
+
+and so on. When we're happy that this does what we want, we can work on developing the property specification properly. If you're constructing a very complex grammar, you might want to do this sort of thing for quite a few rules. This is where autostubbing comes in.
+
+All we need do is set $::RD_AUTOSTUB, and Parse::RecDescent will allow us to replace undefined rules by their names. That's to say:
+
+    $::RD_AUTOSTUB = 1;
+    my $grammar = q{
+        GameTree  : "(" Sequence GameTree(s?) ")"
+        Sequence   : Node(s)
+        Node       : ";" Property(s)
+    };
+
+will enable us to match:
+
+    (;Property;Property;Property(Property;Property;Property Property))
+
+When we're done, simply remove the $::RD_AUTOSTUB line, and Parse::RecDescent will go back to warning us about undefined rules!
+
+2.1.3.4 And much more...
+There are many more obscure features of Parse::RecDescent that you'll probably never use but may be useful in some particularly troublesome situation.
+
+For instance, Parse::RecDescent populates not just the @item array but also a wide variety of local variables to help with the parsing. Perhaps the most useful of these is the %item hash. Suppose we've got a rule:
+
+    structure: type "{" definition(s) "}" name modifier(s?) ";"
+
+That's not so badif we want to get at the value of the modifiers, we just say $item[6]. But suppose we add a rule in the future; are we going to remember to update all the offsets and turn it into $item[7]? What if we add a directive? Are we going to remember that this also changes the offsets?
+
+%item stops us worrying about this; we can just refer to $item{modifier} and we'll get the right thing. Of course, if we have a rule with two modifiers in it, this method won't work so wellParse::RecDescent only records the value of the second modifier in the hash.
+
+We've already met the $return variable, which stores the return code; there's also $text, which stores the remaining text being parsed. This allows us to modify the incoming text stream. The standard example of this is an #include-style facility:
+
+    include: "#include" filespec { $text = main::include_file($item[2]) . $text; }
+
+Notice that, since Parse::RecDescent's runtime is in its own little package, we must explicitly state where to find include_file.
+
+Another useful feature is the ability to have rules that are called when the parser starts upthese start-up rules are placed outside any rule, like so:
+
+    { my ($fish, $fowl) = (0, 0); print "Checking for fishes and fowls\n"; }
+
+    list: item(s)
+        {
+            print "Found $fish fish and $fowl fowl\n";
+        }
+
+    item:  "fish"
+                { $fish++; }
+          | "fowl"
+                { $fowl++; }
+          | <error: "Neither fish nor fowl">
+
+There are a wealth of other features: scoring of ambiguous rules, parsing of blocks and Perl-like structures, explicit specification of operator precedence, passing parameters between rules, and so on. However, the basic features of Parse::RecDescent as we've described them will be able to help you solve a huge number of parsing challenges.
+
+2.1.4. Some Examples
+To finish off our survey of Parse::RecDescent, here are a few full examples of parsing real-life data. We've seen a bunch of techniques for creating parsers with Parse::RecDescent, but how do we actually go about creating real-life parsers? The following two examples show data formats that I recently needed to parse, and how I went about it.
+
+2.1.4.1 Parsing iCalendar data
+Apple's iCal application for calendaring and scheduling events speaks a standard data format called iCalendar (RFC 2445), www.ietf.org/rfc/rfc2445.txt. This is a fairly simple line-based protocol that looks a little like this:
+
+    BEGIN:VCALENDAR
+    CALSCALE:GREGORIAN
+    X-WR-TIMEZONE;VALUE=TEXT:Europe/London
+    METHOD:PUBLISH
+    PRODID:-//Apple Computer\, Inc//iCal 1.0//EN
+    X-WR-CALNAME;VALUE=TEXT:Home
+    VERSION:2.0
+    BEGIN:VEVENT
+    SEQUENCE:5
+    DTSTART;TZID=Europe/London:20020923T193000
+    DTSTAMP:20020913T204302Z
+    SUMMARY:Bert Jansch at the Camden Jazz Cafe
+    UID:543A3F74-D09B-11D6-8A6E-000393D74DB6
+    STATUS:CONFIRMED
+    DTEND;TZID=Europe/London:20020923T223000
+    END:VEVENT
+    ...
+    END:VCALENDAR
+
+I needed to get some simple information out of these calendar files. Net::ICal is an extensive set of modules to read and write iCalendar dataand generally the tool of choice for such tasksbut for my limited needs it made sense to extract the information with a quick grammar.
+
+As you can see, the format is essentially colon-separated key-value lines, with options denoted by ;NAME=OPTION before the value. Normally we'd parse it with the techniques in the first section of this chapter, but because there's a bit more structurethe calendar is split up into events, and each event has a set of data associated with ita more structured approach is needed.
+
+We'll start off with a simple approximation:
+
+    calendarfile: calendar(s)
+    calendar: "BEGIN:VCALENDAR\n" line(s) "END:VCALENDAR\n"
+    line: /\w+/ option(s?) ":" /.*/ "\n"
+    option: ";" /\w+/ "=" /[^;:]+/
+
+Because newlines are significant, we need to remember to set the $Parse::RecDescent::skip variable to '[ \t]+'.
+
+Now, this simple approximation looks good, but it has a bit of a problem. Given a simple calendar:
+
+    BEGIN:VCALENDAR
+    NAME:Test
+    END:VCALENDAR
+
+the parser will fail. Why? Because the line(s) subrule consumes both the NAME line and the END line. Parse::RecDescent grammars don't backtrack in the same way as regular expressions and won't give up the END line for another reparse. This is where we need to use <reject>. This is one way to do it:
+
+    line: "END" <reject>
+        | /\w+/ option(s?) ":" /.*/ "\n"
+
+but we can be a bit neater; <reject> allows us to specify a conditional, like so:
+
+    line: /\w+/ <reject: $item[1] eq "END"> option(s?) ":" /.*/ "\n"
+
+Now our simple test works. Let's add some event handling to it:
+
+    calendarfile: calendar(s)
+    calendar: "BEGIN:VCALENDAR\n" line(s) "END:VCALENDAR\n"
+
+    line: event | dataline
+
+    event: "BEGIN:VEVENT\n" dataline(s) "END:VEVENT\n"
+    dataline: /\w+/ <reject: $item[1] eq "END"> option(s?) ":" /.*/
+    option: ";" /\w+/ "=" /[^;:]+/
+
+There are other types of iCalendar eventsVJOURNAL, VALARM, and so on; they all have more or less the same format, but inspecting the data that I needed to parse, I found that iCal didn't use these in my case. It's easy enough to make the parser completist, but I wasn't really interested in doing that at the time. Similarly, the RFC defines which individual data lines are allowed, but for this example, let's be pragmatic and accept whatever items iCal wants to throw at us.
+
+Now it's time to try it on some real calendar dataand we find quickly that it fails. So, we bring out RD_TRACE, and we find that the last thing that matched was:
+
+    | dataline |Trying rule: [dataline]               |
+    | dataline |Trying production: [/[\w]+/           |
+    |          |<reject:<reject: $item[1] eq "END">>  |
+    |          |option ':' /.*/]                      |
+    | dataline |Trying terminal: [/[\w]+/]            |
+    | dataline |>>Matched terminal<< (return value:   |
+    |          |[X])                                  |
+    | dataline |                                      |"-WR-
+
+The line in question was:
+
+    X-WR-TIMEZONE;VALUE=TEXT:Europe/London
+
+Oops! \w+ wasn't quite right for the key names. Let's try [\w-]+.
+
+    use Parse::RecDescent;
+    my $grammar = q{
+    calendarfile: calendar(s)
+    calendar: "BEGIN:VCALENDAR\n" line(s) "END:VCALENDAR\n"
+    line: event | dataline
+    event: "BEGIN:VEVENT\n" dataline(s) "END:VEVENT\n"
+    dataline: /[\w-]+/ <reject: $item[1] eq "END"> option(s?) ":" /.*/
+    option: ";" /\w+/ "=" /[^;:]+/
+    };
+
+    my $p = Parse::RecDescent->new($grammar);
+    use Data::Dumper;
+    open IN, "test.ics" or die $!;
+    undef $/;
+    print Dumper($p->calendarfile(<IN>));
+
+And now this works . . . partially:
+
+    $VAR1 = [
+              'END:VCALENDAR
+    '
+            ];
+
+We now need some actions to sort out the output data structure.
+
+Let's start at the bottom. We want to turn the options (the name=option pairs) into a hash, so we'll put each option into its own hash ref for the time being:
+
+    option: ";" /\w+/ "=" /[^;:]+/
+        { $return = { $item[2] => $item[4] }; }
+    };
+
+And when we aggegrate the options into a data line, we can turn the array of hash references into a single hashref:
+
+    dataline: /[\w-]+/ <reject: $item[1] eq "END"> option(s?) ":" /.*/
+        { my %options = map { %$_ } @{$item{3} };
+          $return = {
+            key => $item[1],
+            value => $item[5],
+            options => \%options
+          }; }
+
+An event is an array of data lines, but we want to turn that into one big hash reference. So we look at each one, turn the "key" element into the key, and file it into a hashref:
+
+    event: "BEGIN:VEVENT\n" dataline(s) "END:VEVENT\n"
+        { $return = {  };
+          for (@{$item[2]}) {
+            $return->{delete $_->{key}} = $_;
+          }
+        }
+
+Now things get a little tricky; each line in a calendar can be a data line of information about the whole calendar, or it can be part of an event. So we need to propagate up information about what we've just parsed so we can assemble it appropriately later. event and dataline both return hash references, so we can just add another element into that hash stating what we've got:
+
+    line: event    { $return = { type => "event", %{$item[1]} }; }  |
+          dataline { $return = { type => "data",  %{$item[1]} }; }
+
+Finally, we'll end up with an array full of events or calendar-wide data, and we need to put that together into one big data structure, using the same sort of tricks we used for event. This time, however, we push events onto an array. And, just for a touch of class, we'll sort the events array by date:
+
+    calendarfile: calendar(s)
+    calendar: "BEGIN:VCALENDAR\n" line(s) "END:VCALENDAR\n"
+        {   $return = {  };
+            my @events;
+            for (@{$item[2]}) {
+                my $type = delete $_->{type};
+                if ($type eq "event") {
+                    push @events, $_;
+                } else {
+                    $return->{delete $_->{key}} = $_;
+                }
+            }
+            $return->{events} = [ sort {$a->{DTSTART}->{value} cmp
+                                        $b->{DTSTART}->{value}} @events ];
+        }
+
+And now we have an iCalendar parser that will handle what I got out of iCal:
+
+    my $p = Parse::RecDescent->new($grammar);
+    use Data::Dumper;
+    open IN, "test.ics" or die $!;
+    undef $/;
+    my $cal = $p->calendarfile(<IN>);
+    for (@{$cal->[0]{events}}) {
+        my $when = $_->{DTSTART}->{value};
+        my $what = $_->{SUMMARY}->{value};
+        $when =~ s/T.*//; # Don't care about time of day
+        $when =~ s/(\d{4})(\d{2})(\d{2})/$1-$2-$3/;
+        $what =~ s/\\//g;
+        print "$when: $what\n";
+    }
+
+    2002-09-14: Leaving Drinks at the Porterhouse
+    2002-09-21: Star Wars
+    2002-09-23: Bert Jansch at the Camden Jazz Cafe
+    2002-09-28: .pad Party?
+    2002-10-03: Go Home
+
+2.1.4.2 .procmailrc
+When I wrote the Mail::Audit mail filtering library, I wanted to build in the ability for those using procmail to convert their configuration files over automatically. This time, instead of using Parse::RecDescent to produce a data structure, we're going to use it to create a Mail::Audit filtermore generically known as a Perl program.
+
+As usual, we'll start with a top-down description of a procmail configuration file. Thankfully, the procmailrc(5) manual page is extremely clear in detailing the syntax of the file, including some sections we can basically steal almost verbatim:
+
+A word beginning with # and all the following characters up to a NEWLINE are ignored. This does not apply to condition lines, which cannot be commented.
+
+A line starting with ':' marks the beginning of a recipe. It has the following format:
+
+                  :0 [flags] [ : [locallockfile] ]
+                  <zero or more conditions (one per line)>
+                  <exactly one action line>
+
+Conditions start with a leading '*', everything after that character is passed on to the internal egrep literally, except for leading and trailing whitespace.
+
+From this and a little more digging in the main page, we can derive the following rules:
+
+            program: thing(s)
+            thing: recipe | assignment | blank
+            blank : /^\s+/
+            assignment: /^(.*)=(.*)/
+            recipe : ':0' flags(?) locallock(?) "\n" condition(s) action "\n"
+                   |  ':0' flags(?) locallock(?) "\n" action "\n"
+            locallock : ':' filename(?)
+            filename: /[\w/-+\.]+/
+            flags : /[HBDAaEehbfcwWir]+/
+
+(We'll strip comments when we preprocess the data.) We also need to set $Parse::RecDescent::skip, because procmailrcs are line-oriented.
+
+Next, we'll look at the range of actions that are permissible:
+
+!
+
+Forwards to all the specified mail addresses
+
+|
+
+Starts the specified program, possibly in $SHELL if any of the characters $SHELLMETAS are spotted
+
+{
+
+Followed by at least one space, tab, or newline will mark the start of a nesting block
+
+Anything else will be taken as a mailbox name (either a filename or a directory, absolute or relative to the current directory (see MAILDIR)). If it is a (possibly yet nonexistent) filename, the mail will be appended to it.
+
+Hence, our action rule can be specified as:
+
+            action : '|' /.*/
+                    | '!' /.*/
+                    | '{' /\s+/ program '}'
+                    | filename
+
+Notice that we have a recursive use of program here to reflect the recursive nature of nested rules.
+
+All that's left is the rule that determines a condition:
+
+Conditions start with a leading '*', everything after that character is passed on to the internal egrep literally, except for leading and trailing whitespace.
+
+...
+
+There are some special conditions you can use that are not straight regular expressions. To select them, the condition must start with:
+
+!
+
+Invert the condition.
+
+$
+
+Evaluate the remainder of this condition according to sh(1) substitution rules inside double quotes, skip leading whitespace, then reparse it.
+
+?
+
+Use the exitcode of the specified program.
+
+<
+
+Check if the total length of the mail is shorter than the specified (in decimal) number of bytes.
+
+>
+
+Analogous to '<'.
+
+variablename??
+
+Match the remainder of this condition against the value of this environment variable...
+
+\
+
+To quote any of the above at the start of the line.
+
+So, we have a definition of a condition, and it looks like this:
+
+    condition : '*' /[*!?<>\\$]?/ /.*/ "\n"
+
+Now, once again, we have a recognizer; we need to add some rules to it. As before, we're not interested in providing absolutely everything that procmail does, just a reasonable samplemost of the time, the 80% solution is just fine.
+
+The easiest to start with is the assignment; this sets an environment variable, interpolating any variables in the right-hand side of the expression:
+
+    assignment: /^(.*)=(.*)/
+        { my $from=$1;
+          my $what;
+          ($what = $2) =~ s/\$(\w+)/\$ENV{$1}/g;
+          $return = "\$ENV{$from}=qq($what)"; }
+
+For each recipe, we're going to set up a set of conditions, and then perform a method on a Mail::Audit object if the condition tests true. So, let's have a look at the actions again. If we have a pipe, we want to emit code that pipes the mail to the specified program; if we have a forward, we want to emit code that calls the resend method to forward the mail, and if we have a filename, we call the accept method.
+
+    action : '|' /.*/
+                { $return = qq{\$item->pipe("$item[2]");}   ; }
+              | '!' /.*/
+                { $return = qq{\$item->resend('$item[2]');} ; }
+
+The only slight trick is the nesting action, but this turns out to be pretty simple. Since we've parsed the action recursively, and turned it into a set of Perl statements, we can just return them in place:
+
+               | '{' program '}'
+                  { $return = $item[2] }
+               | filename
+                  { $return = qq{\$item->accept("$item[1]");} }
+
+Conditions are tricky, so we'll hand them off to subroutines to deal with and turn into Perl code. We're not interested in all of the flags: the most important at this stage is whether or not this is an if or an elsif condition.
+
+    flag: /[HBDAaEehbfcwWir]+/
+            { %::flags = map { $_ => 1 } split //, $item[1];
+             $return = $::flags{E} ? " elsif " : "if"; }
+
+    condition : '*' /[*!?<>\\$]?/ /.*/ "\n"
+            { $return = main::parse_condition($item[2], $item[3])}
+
+We're going to use the flags in the parse_condition subroutine, and hence we need to store them in a global variable so that that subroutine can see them. However, flags aren't globalthey're specific to each recipe. So, at the beginning of each recipe, we need to reset the flags variable. This can be done with an action and a <reject> directive:
+
+        recipe : { %main::flags = (  ); } <reject>
+
+Now, what is a recipe? As the manual page says, it's a set of conditions that are ANDed together. In Perl terms, that's an if (or elsif if the E flag is set) followed by the conditions we parsed using parse_condition:
+
+    recipe : ':0' flags(?) locallock(?) "\n" condition(s) action "\n"
+        {
+          $return = "if " unless @{$item[2]}; # If there are no flags
+          $return .= "@{$item[2]} ("; # "if" or "elsif" if there are flags
+          $return .= join(" and\n\t", @{$item[5]});
+
+Next we perform the action; we'll call upon a subroutine to indent the Perl code returned from the action subrule for readability. Also, if the c flag is set, we continue; otherwise, we exit here.
+
+    $return .= ")\n{".
+        main::indent($item[6] . ($main::flags{c} ? "" :"\n exit 1;\n"))
+       ."}\n";
+    }
+
+The same goes for recipes with no conditions, so we end up with a recipe rule looking like this:
+
+    recipe : ':0' flags(?) locallock(?) "\n" condition(s) action "\n"
+        {
+          $return = "if " unless @{$item[2]}; # If there are no flags
+          $return .= "@{$item[2]} ("; # "if" or "elsif" if there are flags
+          $return .= join(" and\n\t", @{$item[5]});
+          $return .= ")\n{".
+              main::indent($item[6] . ($main::flags{c} ? "" :"\n exit 1;\n"))
+             ."}\n";
+        }
+           | ':0' flags(?) locallock(?) "\n" action "\n"
+        {
+          if ("@{$item[2]}" eq "else") { $return = "else " }
+          $return . = "{ " .
+              main::indent($item[5] . ($main::flags{c} ? "" :"\n exit 1;\n"))
+             ."}\n";
+        }
+
+And that's essentially it! All we need is a driver that sets up the input, calls the parser, and spits out some housekeeping code around the generated program, like so:
+
+    my $parser = Parse::RecDescent->new($grammar) or die;
+    undef $/;
+    my $data = <ARGV>;
+    $data =~ s/#.*//g;
+    my $program = $parser->program($data);
+
+    print 'use Mail::Audit; my $item = Mail::Audit->new(  );', "\n";
+    print $program;
+    print "\n\$item->accept(  )";
+
+The full program can be found in the Mail::Audit distribution and can be used to turn this (from the procmailex(5) manual page):
+
+    :0 c
+    * ^From.*peter
+    * ^Subject:.*compilers
+    ! william@somewhere.edu
+
+    :0
+    * ^From.*peter
+    * ^Subject:.*compilers
+    petcompil
+
+into this:
+
+    use Mail::Audit; my $item = Mail::Audit->new();
+    if ($item->header(  ) =~ /^From.*peter/i and
+            $item->$item->header(  ) =~ /^Subject:.*compilers/i)
+    {       $item->resend('william@somewhere.edu');}
+
+    if ($item->header(  ) =~ /^From.*peter/i and
+            $item->header(  ) =~ /^Subject:.*compilers/i)
+    {       $item->accept("petcompil");
+            exit 1;
+    }
+
+    $item->accept(  )
+
+2.2. Parse::Yapp
+If you're more familiar with tools like yacc, you may prefer to use François Désarménien's Parse::Yapp module. This is more or less a straight port of yacc to Perl.
+
+yacc
+yacc, Yet Another Compiler Compiler, is a tool for C programmers to generate a parser from a grammar specification. The grammar specification is much the same as we've seen in our investigation of Parse::RecDescent, but yacc produces bottom-up parsers.
+
+For instance, let's use Parse::Yapp to implement the calculator in Chapter 3 of lex & yacc (O'Reilly). This is a very simple calculator with a symbol table, so you can say things like this:
+
+    a = 25
+    b = 30
+    a + b
+    55
+
+Here's their grammar:
+
+    %{
+    double vbltable[26];
+    %}
+
+    %union {
+        double dval;
+        int vblno;
+    }
+
+    %token <vblno> NAME
+    %token <dval> NUMBER
+    %left '-' '+'
+    %left '*' '/'
+    %nonassoc UMINUS
+
+    %type <dval> expression
+    %%
+    statement_list:    statement '\n'
+        |    statement_list statement '\n'
+        ;
+
+    statement:    NAME '=' expression    { vbltable[$1] = $3; }
+        |    expression        { printf("= %g\n", $1); }
+        ;
+
+    expression:    expression '+' expression { $$ = $1 + $3; }
+        |    expression '-' expression { $$ = $1--$3; }
+        |    expression '*' expression { $$ = $1 * $3; }
+        |    expression '/' expression
+                    {    if($3 =  = 0.0)
+                            yyerror("divide by zero");
+                        else
+                            $$ = $1 / $3;
+                    }
+        |    '-' expression %prec UMINUS    { $$ = -$2; }
+        |    '(' expression ')'    { $$ = $2; }
+        |    NUMBER
+        |    NAME            { $$ = vbltable[$1]; }
+        ;
+    %%
+
+Converting the grammar is very straightforward; the only serious change we need to consider is how to implement the symbol table. We know that Perl's internal symbol tables are just hashes, so that's good enough for us. The other changes are just cosmetic, and we end up with a Parse::Yapp grammar like this:
+
+    %{ my %symtab; %}
+    %token NAME
+    %token NUMBER
+    %left '-' '+'
+    %left '*' '/'
+    %nonassoc UMINUS
+
+    %%
+
+    statement_list: statement '\n'
+        | statement_list statement '\n'
+        ;
+
+    statement: NAME '=' expression { $symtab{$_[1]} = $_[3]; }
+        | expression {  print "= ", $_[1], "\n"; }
+        ;
+
+    expression:
+        expression '+' expression { $_[1] + $_[3] }
+        | expression '-' expression { $_[1] - $_[3] }
+        | expression '*' expression { $_[1] * $_[3] }
+        | expression '/' expression
+                      {     if ($_[3] =  = 0)
+                               { $_[0]->YYError("divide by zero") }
+                            else
+                               { $_[1] / $_[3] }
+                      }
+        | '-' expression %prec UMINUS { -$_[2] }
+        | '(' expression ')' { $_[2] }
+        | NUMBER
+        | NAME { $symtab{$_[1]} }
+        ;
+
+    %%
+
+As you can see, we've declared a hash %symtab to hold the values of the names. Also, notice that that Yacc variables $1, $2, etc. become real subroutine parameters in the @_ array: $_[1], $_[2], and so on.
+
+Next we need to produce a lexer that feeds tokens to the parser. Parse::Yapp expects a subroutine to take input from the data store of the parser object. The Parse::Yapp object is passed in as the first parameter to the lexer, and so the data store ends up looking like $_[0]->YYData->{DATA}.[*] The lexing subroutine should modify this data store to remove the current token, and then return a two-element list.
+
+[*] There's nothing in Parse::Yapp that says the data has to live in {DATA}, but it's a good practice. If you have extremely complex data as input, you may want to use several different parts of $_[0]->YYData.
+
+The list should consist of the token type followed by the token data. For instance, in our calculator example, we need to tokenize 12345 as ("NUMBER", 12345). Operators, brackets, equals, and return should be returned as themselves, and names of variables need to be returned as ("NAME", "whatever"). At the end of the input, we need to return an empty string and undef: ('', undef).
+
+Here's a reasonably simple Perl routine that does all of that:
+
+    sub lex {
+    #    print " Lexer called to handle (".$_[0]->YYData->{DATA}.")\n";
+        $_[0]->YYData->{DATA} =~ s/^ +//;
+        return ('', undef) unless length $_[0]->YYData->{DATA};
+
+        $_[0]->YYData->{DATA} =~ s/^(\d+)// and return ("NUMBER", $1);
+        $_[0]->YYData->{DATA} =~ s/^([\n=+\(\)\-\/*])//    and return ($1, $1);
+        $_[0]->YYData->{DATA} =~ s/^(\w+)//    and return ("NAME", $1);
+        die "Unknown token (".$_[0]->YYData->{DATA}."\n";
+    }
+
+Now that we have our grammar and our lexer, we need to run the grammar through the command-line utility yapp to turn it into a usable Perl module. If all is well, this should be a silent process:
+
+    % yapp Calc.yapp
+    %
+
+and we should have a new file Calc.pm ready for use.
+
+Parse::Lex
+Our lexer in this case is pretty simple, so we could code it up in a fairly straightforward subroutine. However, for more difficult lexing operations, it might make sense to use a dedicated lexing language; Parse::Lex is to lex what Parse::Yapp is to yacc. Here's our lexer (crudely) rewritten for Parse::Lex.
+
+    my @lex = qw(
+        NUMBER \d+
+        NAME \w+
+        "+" "+"
+        "-" "-"
+        "*" "*"
+        "/" "/"
+        "=" "="
+        "(" "("
+        ")" ")"
+    )
+    my $lexer = Parse::Lex->new(@lex);
+    $lexer->from(\*STDIN);
+
+    sub lex {
+        my $token = $lexer->next;
+        return ('', undef) if $lexer->eoi;
+        return ($token->name, $token->getstring);
+    }
+
+We can now put it all together: our parser, the lexer, and some code to drive them.
+
+    sub lex {
+        $_[0]->YYData->{DATA} =~ s/^ +//;
+        return ('', undef) unless length $_[0]->YYData->{DATA};
+
+        $_[0]->YYData->{DATA} =~ s/^(\d+)// and return ("NUMBER", $1);
+        $_[0]->YYData->{DATA} =~ s/^([\n=+\(\)\-\/*])//    and return ($1, $1);
+        $_[0]->YYData->{DATA} =~ s/^(\w+)//    and return ("NAME", $1);
+        die "Unknown token (".$_[0]->YYData->{DATA}.")\n";
+    }
+
+    use Calc;
+    my $p = Calc->new(  );
+    undef $/;
+    $p->YYData->{DATA} = <STDIN>;
+    $p->YYParse(YYlex => \&lex);
+
+This will take a stream of commands on standard input, run the calculations, and print them out, like this:
+
+    % perl calc
+
+    a = 2+4
+    b = a * 20
+    b + 15
+    ^D
+
+    =135
+
+For most parsing applications, this is all we need. However, in the case of a calculator, you hardly want to put all the calculations in first and get all the answers out at the end. It needs to be more interactive.
+
+What we need to do is modify the lexer so that it can take data from standard input, using the YYData area as a buffer.
+
+    sub lex {
+        $_[0]->YYData->{DATA} =~ s/^ +//;
+        unless (length $_[0]->YYData->{DATA}) {
+            return ('', undef) if eof STDIN;
+            $_[0]->YYData->{DATA} = <STDIN>;
+            $_[0]->YYData->{DATA} =~ s/^ +//;
+        }
+
+        $_[0]->YYData->{DATA} =~ s/^(\d+)// and return ("NUMBER", $1);
+        $_[0]->YYData->{DATA} =~ s/^([\n=+\(\)\-\/*])//    and return ($1, $1);
+        $_[0]->YYData->{DATA} =~ s/^(\w+)//    and return ("NAME", $1);
+        die "Unknown token (".$_[0]->YYData->{DATA}.")\n";
+    }
+
+This time, we check to see if the buffer's empty, and instead of giving up, we get another line from standard input. If we can't read from that, then we give up. Now we can intersperse results with commands, giving a much more calculator-like feel to the application.
+
+2.3. Other Parsing Techniques
+Of course, we don't want to always be writing our own parsers for most of the data we come across, as there's a good chance someone else has come across that sort of data before. The best examples are HTML and XML: there's a vast amount of code out there that deals with these file formats, and most of the hard work has been put into CPAN modules. We'll look at a few of these modules in this section.
+
+2.3.1. HTML::Parser
+I'll start by saying something that is anathema to a lot of advanced Perl programmers: in certain circumstances, it is acceptable to use regular expressions to extract the data you want from HTML. I've written a bunch of screen-scraping programs to automate access to various web sites and applications, and because I knew the pages were machine-generated and unlikely to change, I had no qualms about using regular expressions to get what I wanted.
+
+In general, though, you should do things properly. The way to parse HTML properly is to use the HTML::Parser module.
+
+HTML::Parser is incredibly flexible. It supports several methods of operation: you can use OO inheritance, you can use callbacks, you can determine what data gets sent to callbacks and when the callbacks are called, and so on. We'll only look here at the simplest way of using it: by subclassing the module.
+
+Let's begin by examining a way to dump out the URL and link text for every hyperlink in a document. Because we're inheriting from HTML::Parser, we need to say something like this:
+
+    package DumpLinks;
+    use strict;
+    use base 'HTML::Parser';
+
+Next, we specify what happens when we see a start tag: if it's not an <a> tag, then we ignore it. If it is, we make a note of its HRef attribute and remember that we're currently in an <a> tag.
+
+    sub start {
+       my ($self, $tag, $attr) = @_;
+       return unless $tag eq "a";
+       $self->{_this_url} = $attr->{href};
+       $self->{_in_link} = 1;
+    }
+
+Notice that our method is called with the literal name of the current tag, plus a hash of the attributes given in the tag. It's actually called with a few more parameters, but these two are by far the most important; take a look at the HTML::Parser documentation for the rest.
+
+Now let's add a text handler: this is called for any ordinary text that isn't a tag. This needs to store away any text it finds while we're inside a link and do nothing otherwise.
+
+    sub text {
+        my ($self, $text) = @_;
+        return unless $self->{_in_link};
+        $self->{_urls}->{$self->{_this_url}} .= $text;
+    }
+
+Note that we have to use concatenation so that the following comes out correctly:
+
+     <a href="http://www.perl.com/">The <code>Perl</code> home page</a>
+
+The text handler will be called three times for this chunk: once for The, once for Perl, and once for home page. We want all three of these pieces of text, so we concatenate them together.
+
+Finally, we need an end tag handler to take us out of _in_link mode, like so:
+
+    sub end {
+        my ($self, $tag) = @_;
+        $self->{_in_link} = 0 if $tag eq "a";
+    }
+
+Let's look at our complete parser package again before we use it:
+
+    package DumpLinks;
+    use strict;
+    use base 'HTML::Parser';
+
+    sub start {
+       my ($self, $tag, $attr) = @_;
+       return unless $tag eq "a";
+       $self->{_this_url} = $attr->{href};
+       $self->{_in_link} = 1;
+    }
+
+    sub text {
+        my ($self, $text) = @_;
+        return unless $self->{_in_link};
+        $self->{_urls}->{$self->{_this_url}} .= $text;
+    }
+
+    sub end {
+        my ($self, $tag) = @_;
+        $self->{_in_link} = 0 if $tag eq "a";
+    }
+
+Using it couldn't be more simple: we instantiate a DumpLinks object, call its parse_file method on the HTML file of our choice, and we'll have a handy hash reference in $parser->{_urls} we can inspect.
+
+    Use DumpLinks;
+    my $parser = DumpLinks->new(  );
+    $parser->parse_file("index.html");
+    for (keys %{$parser->{_urls}}) {
+        print qq{Link to $_ (Link text: "}. $parser->{_urls}->{$_}. qq{")\n};
+    }
+
+Running this on the front page of this week's www.perl.com edition produces something like this:
+
+    Link to /cs/user/query/q/6?id_topic=42 (Link text: "Files")
+    Link to /pub/a/universal/pcb/solution.html (Link text: "Do it now.")
+    Link to http://www.oreillynet.com/python/ (Link text: "Python")
+    Link to http://training.perl.com/ (Link text: "Training")
+    Link to /cs/user/query/q/6?id_topic=68 (Link text: "Sound and Audio")
+    Link to /cs/user/query/q/6?id_topic=62 (Link text: "User Groups")
+    Link to http://search.cpan.org/author/DARNOLD/DBD-Chart-0.74 (Link text: "DBD-Chart-0.74")
+    Link to http://www.oreilly.com/catalog/perlxml/ (Link text: "Perl & XML")
+    Link to http://www.oreilly.com/catalog/regex2/ (Link text:
+"Mastering Regular Expressions, 2nd Edition")
+    Link to http://www.openp2p.com/ (Link text: "openp2p.com")
+    ...
+
+As if that wasn't easy enough, there are a few other modules you might consider when dealing with HTML text. For doing something like the above, if you don't care about the link text, HTML::LinkExtor can do the job in seconds:
+
+    use HTML::LinkExtor;
+    my $parser = HTML::LinkExtor->new(  );
+    $parser->parse_file("index.html");
+    for ($parser->links) {
+        my ($tag, %attrs) = @$_;
+        print $attrs{href},"\n";
+    }
+
+If you're not interested in writing callbacks, another module worth looking into is HTML::TokeParser, which parses an HTML file one token at a time. Another favorite is HTML::TreeBuilder, which allows you to navigate the document's structure as a tree of Perl objects.
+
+For more on HTML parsing with Perl modules, you should check out Sean Burke's Perl and LWP (O'Reilly).
+
+2.3.2. XML Parsing
+Of course, nowadays HTML is old hat, and everything is being written in the much more right-on XML. The principles are the same, only the module name changes: instead of using HTML::Parser, there's an XML::Parser module.
+
+This works in the same way as HTML::Parser--you set callbacks for start tags, end tags, and the stuff in between. Of course, for 99% of the things you need to do with XML, this method is complete overkill. Just like with so many other things in Perl, if you want the flexibility, you can have it, but if you want things to be simple, you can have that, too. Simple is goodand a good module for handling XML simply is called, simply, XML::Simple.
+
+The job of XML::Simple is to turn some XML into a Perl data structure or vice versa. It exports two subroutines: XMLin and XMLout. Let's see how it copes with a real-life XML file. This is a description of the opcodes in Microsoft's Common Interpreted Language, as implemented by the Mono project (http://www.mono-project.com[*]):
+
+[*] If you've got Mono installed, you can probably find this file as /usr/local/share/mono/cil/cil-opcodes.xml.
+
+    <opdesc>
+    <opcode name="nop" input="Pop0" output="Push0" args="InlineNone" o1="0xFF" o2="0x00"
+    flow="next"/>
+    <opcode name="break" input="Pop0" output="Push0" args="InlineNone" o1="0xFF"
+    o2="0x01" flow="break"/>
+    <opcode name="ldarg.0" input="Pop0" output="Push1" args="InlineNone" o1="0xFF"
+    o2="0x02" flow="next"/>
+    <opcode name="ldarg.1" input="Pop0" output="Push1" args="InlineNone" o1="0xFF"
+    o2="0x03" flow="next"/>
+    ...
+    </opdesc>
+
+For instance, this tells us that the ldarg.0 operator takes no arguments from the stack, returns one value to the stack, has no arguments inline, is represented by the assembly code FF 02, and passes control flow to the next operation.
+
+We'll use XML::Simple to read the file and Data::Dumper to take a look at the resulting data structure:
+
+    % perl -MData::Dumper -MXML::Simple -e
+
+    'print Dumper XMLin("/usr/local/share/mono/cil/cil-opcodes.xml")'
+
+    $VAR1 = {
+              'opcode' => {
+                            'stloc.2' => {
+                                           'args' => 'InlineNone',
+                                           'input' => 'Pop1',
+                                           'o1' => '0xFF',
+                                           'o2' => '0x0C',
+                                           'output' => 'Push0',
+                                           'flow' => 'next'
+                                         },
+                            'stloc.3' => {
+                                           'args' => 'InlineNone',
+                                           'input' => 'Pop1',
+                                           'o1' => '0xFF',
+                                           'o2' => '0x0D',
+                                           'output' => 'Push0',
+                                           'flow' => 'next'
+                                         },
+                             ...
+                           }
+            };
+
+As you can see, this is pretty much exactly what we could have hoped for. So if we want to see how the shl operator took its arguments, we can ask:
+
+     use XML::Simple;
+     my $opcodes = XMLin("/usr/local/share/mono/cil/cil-opcodes.xml");
+     my $shl = $opcodes->{opcode}->{shl};
+     print "shl takes its input by doing a ".$shl->{input}."\n";
+     print "And it returns the result by doing a ".$shl->{output}."\n";
+
+The other function that XML::Simple exports is XMLout, which, as you might be able to guess, turns a Perl data structure into XML. For instance, we could introduce a new opcode:
+
+    $opcodes->{opcode}->{hcf} = {
+                                 'args' => 'InlineNone',
+                                 'input' => 'Pop0',
+                                 'o1' => '0xFF',
+                                 'o2' => '0xFF',
+                                 'output' => 'Push0',
+                                 'flow' => 'explode'
+                                };
+
+    print XMLout($opcodes);
+
+And now we'd find another item in that list of XML:
+
+    <opcode args="InlineNone" input="Pop0" o1="0xFF" o2="0xFF" output="Push0"
+    flow="explode" name="hcf" />
+
+XML::Simple is particularly handy for dealing with configuration filessimply state that the config should be given in XML, and use XML::Simple to read and write it. The XMLin and XMLout functions do all the rest.
+
+If you need to do anything more sophisticated with XML parsing, take a look at Perl and XML.
+
+2.3.3. And Everything Else...
+While we're on the subject of configuration files, there are plenty of other file formats out there that the Perl programmer will need to throw around during her programming life, and config files make up a good number of them. The rest of this chapter suggests a few other techniques for dealing with standard file formats.
+
+First of all, I have a personal favorite, but that's only because I wrote it. Config::Auto parses a variety of file formats, if necessary sniffing out what the file format is likely to be. Here's the Samba configuration from a default install of Mac OS X 10.2:
+
+    % perl -MData::Dumper -MConfig::Auto -e 'print Dumper Config::Auto::parse("/etc/smb.
+    conf")'
+
+    $VAR1 = {
+              'global' => {
+                            'guest account' => 'unknown',
+                            'client code page' => 437,
+                            'encrypt passwords' => 'yes',
+                            'coding system' => 'utf8'
+                          },
+              'homes' => {
+                           'read only' => 'no',
+                           'browseable' => 'no',
+                           'comment' => 'User Home Directories',
+                           'create mode' => '0750'
+                         }
+            };
+
+Other modules worth looking out for are AppConfig, Parse::Syslog (which provides access to Unix system logs), SQL::Statement, and Mac::PropertyList.
+
+2.4. Conclusion
+In this chapter, we've seen many of the techniques used for parsing structured data with Perl. Whether it's a case of creating your own parsers with Parse::RecDescent or Parse::Yapp, or choosing a ready-made parsing module, Perl is perfect for throwing around data and converting it into a different format.
+

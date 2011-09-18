@@ -1,0 +1,745 @@
+Chapter 5. Natural Language Tools
+Sean Burke, author of Perl and LWP and a professional linguist, once described artificial intelligence as the study of programming situations where you either don't know what you want or don't know how to get it.
+
+Natural-language processing, or NLP, is the application of AI techniques to answer questions about text written in a human language: what does it mean, what other documents is it like, and so on. As Perl is often described as a text-processing language, it shouldn't be much of a surprise to find that there are a great many modules and techniques available in Perl for carrying out NLP-related tasks.
+
+But as we've seen so far in this book, the real strength of Perl is not in the ease with which we can program particular techniques, but that so many of the techniques we needtechniques to break texts into sentences and words, to correctly strip the endings off inflected words, to put the right endings back on again, and so onhave already been implemented and placed on CPAN. So in this chapter we're going to take a tour of the natural language section of CPAN, and see how we can use its modules to slice and dice any language text we need to deal with.
+
+5.1. Perl and Natural Languages
+There's an especially good reason why Perl is used for handling natural language problemsPerl was created with natural languages in mind. In fact, Perl's creator, Larry Wall, has a joint degree in natural and artificial languages and sees Perl as influenced by both branches of his education.
+
+For instance, as Larry says, it is "officially OK" to program in a restricted subset of Perl, a sort of baby Perl. Much as no one is expected to learn the entirety of a human language before speaking it, Perl's ability to express programming concepts in multiple ways allows for a wide range of abilities to get the same job done.
+
+This is also why Perl folk aren't particularly worried about the ambiguities in the grammar of the languagenatural languages need ambiguity.[*] Perl can work out whether / is the division operator or the start of a regular expression based on context, the way humans do.
+
+[*] The aforementioned Sean Burke has a linguistic conjecture that says all natural languages tend toward some element of grammatical ambiguity; ambiguous languages are easier to learn. This may explain the relative difficulty of learning highly regularized artificial languages, such as Lojban.
+
+You can read more about the natural language concepts that influenced (and continue to influence) the design of Perl at Larry's site: http://www.wall.org/~larry/natural.html.
+
+5.2. Handling English Text
+Most of the time when dealing with natural-language processing we don't really need any heavy, state-of-the-art language manipulation algorithms. Indeed, most of what we're doing with Perl involves merely throwing around different chunks of text.
+
+5.2.1. Pluralizations and Inflections
+Our introduction to handling English text comes from the perennial user interface disaster:
+
+    You have 1 messages.
+
+If you've been using (or perhaps writing) bad code for long enough, you might not see anything wrong with that, but it is actually somewhat grammatically lacking. Everyone at some point has written code that gets around the problem, perhaps a little like this:
+
+    print "You have " . $messages . " message" . ($messages =  = 1 ? "" : "s") . ".\n";
+
+This itself should already be looking like a candidate for modularization, but the problem gets worse:
+
+    You have 2 messages in 2 mailboxs.
+
+Another oops. We surely meant mailboxes. We could write another special case for the word mailbox, but what's really needed is a generic routine to make things agree with a number. Unfortunately, of course, due to the hideous complexity of the English language, this is a near-impossible task. Thankfully, the great Dr. Damian Conway speaks Australian English, simplifying the problem dramatically, and has produced the Lingua::EN::Inflect module.
+
+This provides a whole host of subroutines, but perhaps the most useful for us are the PL, NO, and NUMWORDS routines.
+
+The first subroutine, PL, provides a way to get at the plural form of a given word:
+
+    % perl -MLingua::EN::Inflect=PL -le 'print "There are 2 ",PL("aide-de-camp")'
+    There are 2 aides-de-camp
+
+Additionally, you can pass in a number as well as a word to be pluralized, and PL will only do the pluralization if the number requires a plural.
+
+    use Lingua::EN::Inflect qw(PL);
+    for my $catcount (0..2) {
+        print "I saw $catcount ", PL("cat", $catcount), "\n";
+    }
+
+    # I saw 0 cats
+    # I saw 1 cat
+    # I saw 2 cats
+
+Now we're closer to solving our message/mailbox problem:
+
+    print "You have $message ", PL("message", $message), " ",
+          " in $mailbox ", PL("mailbox", $mailbox), "\n";
+
+This is a little smarter, although there's a certain amount of repetition in there. This is where we move onto the next subroutine, NO. This combines the number with the appropriate plural and, additionally, translates "0" into the slightly more readable "no":
+
+    use Lingua::EN::Inflect qw(NO);
+    my $message = 0; my $mailbox = 4;
+
+    print "You have ".NO("message", $message). " in ".
+          NO("mailbox", $mailbox)."\n";
+
+    # You have no messages in 4 mailboxes
+
+I prefer a slightly more refined approach, which takes advantage of the fact that people find it easier to read numbers from one to ten in running text if they're spelled out. For this, we need to bring in the NUMWORDS subroutine, which converts a number to its English equivalent. My preferred pluralization routine looks like this:
+
+    sub pl {
+        my ($thing, $number) = @_;
+        return NUMWORDS($number). " ".PL($thing, $number)
+           if $number >= 1 and $number <= 10;
+
+        NO($thing, $number);
+    }
+
+This handles "no cats," "one cat," "two cats," and "65 poets-in-residence" all perfectly well.
+
+Inflections
+The whole problem of inflections gets much harder when you're localizing an application for different languages. Sean M. Burke and Jordan Lachler wrote a good article on the subject about Locale::Maketexta module that helps you deal with localizations in a smart way. You can find the article at http://interglacial.com/~sburke/tpj/as_html/tpj13.html, or in the documentation for Locale::Maketext.
+
+5.2.2. Converting Words to Numbers
+The handy NUMWORDS subroutine from Lingua::EN::Inflect turns a number into English text for human-friendly display. A bunch of other modules on CPAN do roughly the same thing, including Lingua::EN::Numbers, Lingua::EN::Nums2Words, and Lingua::Num2Word.
+
+However, if we're really doing natural language work and trying to extract meaning from a chunk of text, we are often called to do precisely the oppositeturn some English text representing a number into its computer-friendly set of digits. The best Perl module for this on CPAN is Joey Hess's Lingua::EN::Words2Nums.
+
+Although it doesn't give you a regular expression for extracting numbers directly, once you have your number, it does a very thorough job of turning it into a digit string. The module exports the words2nums function, which does all the hard work:
+
+    % perl -MLingua::EN::Words2Nums -e 'print words2nums("twenty-five")'
+    25
+
+I particularly like this module because it caters to the fact that I can't spell. So, if I misspell forty-two, words2nums still returns the desired result:
+
+    % perl -MLingua::EN::Words2Nums -e 'print words2nums("fourty-two")'
+    42
+
+However, the fact that it can't scan through a text and return the first number it sees can be a bit of a pain. It's all very well if we're using it when prompting for a number:
+
+    my $times;
+    do {
+       print "How many times should we repeat the process? ";
+       $times = words2nums(scalar <STDIN>);
+       last if defined $times;
+       print "Sorry, I didn't understand that number.\n";
+    } while 1;
+
+But if, for instance, we want to write a supply chain program that automatically processes customer orders by email, we need to be able to scan through the text of the email to extract the numbers, so we can turn "I would like to buy forty-five copies of Advanced Perl Programming" into:
+
+    $order = { quantity => 45, title => "Advanced Perl Programming" };
+
+As it stands, Lingua::EN::Words2Nums won't let us do this; it wants the numbers pre-extracted. So we have to do a bit of trickery. Looking at how Lingua::EN::Words2Nums works, we see that it builds up a regular expression from a set of words:
+
+    our %nametosub = (
+        naught =>   [ \&num, 0 ],   # Cardinal numbers, leaving out the a
+        nought =>   [ \&num, 0 ],
+        zero =>     [ \&num, 0 ],   # ones that just add "th".
+        one =>      [ \&num, 1 ],   first =>    [ \&num, 1 ],
+    ...
+
+    );
+
+    # Note the ordering, so that eg, ninety has a chance to match before nine.
+    my $numregexp = join("|", reverse sort keys %nametosub);
+    $numregexp=qr/($numregexp)/;
+
+This is a big help, but we can't, unfortunately, steal this regexp directly, for two reasons. First, it's in a private lexical variable, so we can't easily get at it. Second, Words2Nums also does some munging on the text separate to the regular expression, removing non-numbers like "and," hyphens, and so on. But we'll start by grabbing the expression and passing it through the wonderful Regex::PreSuf module to optimize it. This module generates a regular expression from a list of words that matches the same words as the original list. The result looks like this:
+
+    (?-xism:((?:b(?:akers?dozen|illi(?:ard|on))|centillion|d(?:ecilli(?:ard|on)|
+    ozen|u(?:o(?:decilli(?:ard|on)|vigintillion)|vigintillion))|e(?:ight(?:een|
+    ieth|[yh])?|leven(?:ty(?:first|one))?|s)|f(?:i(?:ft(?:een|ieth|[yh])|rst|ve)|
+    o(?:rt(?:ieth|y)|ur(?:t(?:ieth|[yh]))?))|g(?:oogol(?:plex)?|ross)|hundred|mi
+    (?:l(?:ion|li(?:ard|on))|nus)|n(?:aught|egative|in(?:et(?:ieth|y)|t(?:een|
+    [yh])|e)|o(?:nilli(?:ard|on)|ught|vem(?:dec|vigint)illion))|o(?:ct(?:illi
+    (?:ard|on)|o(?:dec|vigint)illion)|ne)|qu(?:a(?:drilli(?:ard|on)|ttuor
+    (?:decilli(?:ard|on)|vigintillion))|in(?:decilli(?:ard|on)|tilli(?:ard|on)|
+    vigintillion))|s(?:core|e(?:cond|pt(?:en(?:dec|vigint)illion|illi(?:ard|on))|
+    ven(?:t(?:ieth|y))?|x(?:decillion|tilli(?:ard|on)|vigintillion))|ix(?:t(?:ieth|
+    y))?)|t(?:ee?n|h(?:ir(?:t(?:een|ieth|y)|d)|ousand|ree)|r(?:e(?:decilli(?:ard|
+    on)|vigintillion)|i(?:gintillion|lli(?:ard|on)))|w(?:e(?:l(?:fth|ve)|nt(?:ieth|
+    y))|o)|h)|un(?:decilli(?:ard|on)|vigintillion)|vigintillion|zero|s)))
+
+It's a start. Now we have to extend this to allow for all the munging that words2nums does on the text. The important bits of the code are:
+
+        s/\b(and|a|of)\b//g; # ignore some common words
+        s/[^A-Za-z0-9.]//g;  # ignore spaces and punctuation, except period.
+
+This is fine if we can change the text we're matching, but we don't necessarily want to do that. Instead, we have to construct a regular expression around our big optimized list of numbers that allows for and silently ignores these words and spaces. We also need to remember that we want to find numbers that are not in the middle of a word ("zone" does not mean a "z" followed by the number 1) so we use Perl's regular expression boundary condition (\b) to surround the final regexp. Here's what it looks like:
+
+    my $ok_words = qr/\b(and|a|of)\b/;
+    my $ok_things = qr/[^A-Za-z0-9.]/;
+    my $number = qr/\b(($numbers($ok_words|$ok_things)*)+)\b/i;
+    # Where $numbers is the big mad expression above.
+
+Bundling this into a package with a couple of utility functions gives you the Lingua::EN::FindNumber CPAN module:
+
+    use Lingua::EN::FindNumber;
+    print numify("Fourscore and seven years ago, our four fathers...");
+
+which prints out:
+
+    87 years ago, our 4 fathers...
+
+To go the other way, and turn numbers into words, there is a whole family of modules named Lingua::XX::Numbers where XX is the ISO language code of the language you want your numbers in: Lingua::EN::Numbers for English, for instance. There's also Lingua::EN::Numbers::Ordinate to turn "2" into "2nd". Similar modules exist for other languages.
+
+5.3. Modules for Parsing English
+Parsing ordinary written text is perhaps the ultimate goal of any natural-language processing system, and, to be honest, we're still a long way from it at the moment.
+
+Even so, there are a good number of modules on CPAN that can help us deal with understanding what's going on in a chunk of text.
+
+5.3.1. Splitting Up Text
+There are many scenarios in which a large document needs to be split up into some kind of chunks. This can vary from splitting out individual words, to splitting out sentences and paragraphs, and right up to splitting a document into logical subsectionsworking out which sets of paragraphs refer to a common topic and which others are unrelated.
+
+We'll begin with splitting up sentences, since there are a variety of ways to do this. The naive approach is to assume that a period, question mark, or exclamation mark followed by whitespace or the end of text is the end of a sentence, and to use punctuation and capitals to help this determination. This is what Text::Sentence does, and it's not bad:
+
+    use Text::Sentence qw( split_sentences );
+    my $text = <<EOF;
+    This is the first sentence. Is this the second sentence? This is the
+    third sentence, with an additional clause!
+    EOF
+    print "#$_\n\n" for split_sentences($text);
+
+This prints out:
+
+    #This is the first sentence.
+
+    #Is this the second sentence?
+
+    #This is the third sentence, with an additional clause!
+
+This punctuation-based assumption is generally good enough, but screws up messily on sentences containing abbreviations followed by capital letters, e.g., This one. It incorrectly identifies the boundary between the punctuation and the capital letter as a sentence boundary:
+
+    #This punctuation-based assumption is generally good enough, but screws
+    up messily on sentences containing abbreviations followed by capital
+    letters, e.g.,
+
+    #This one.
+
+Thankfully, the exceptions are sufficiently rare that even if you're doing some kind of statistical analysis on your sentences, with a big enough corpus the effect of the assumption failing is insignificant. For cases where it really does matter, though, Shlomo Yona's Lingua::EN::Sentence does a considerably better job:
+
+    use Lingua::EN::Sentence qw( get_sentences add_acronyms );
+    my $text = <<EOF;
+    This punctuation-based assumption is generally good enough, but screws
+    up messily on sentences containing abbreviations followed by capital
+    letters, e.g., This one. Shlomo Yona's Lingua::EN::Sentence does a
+    considerably better job:
+    EOF
+    my $sentences=get_sentences($text);
+    foreach my $sentence (@$sentences) {
+         print "#", $sentence, "\n\n";
+    }
+
+The result of this example is:
+
+    #This punctuation-based assumption is generally good enough, but screws
+    up messily on sentences containing abbreviations followed by capital
+    letters, e.g., This one.
+
+    #Shlomo Yona's Lingua::EN::Sentence does a considerably better job:
+
+For things that aren't sentences, my favorite segmentation module is Lingua::EN::Splitter; this can handle paragraph- and word-level segmentation, and its cousin Lingua::Segmenter::TextTiling takes a stab at clustering paragraphs into discrete sections of a document.
+
+The paragraph and word segmentation are done using fairly simple regular expressions, but the paragraph clustering is done using a technique invented by Marti Hearst called TextTiling. This measures the correlation of particular words in order to detect sets of paragraphs with distinct vocabularies.
+
+We'll use Lingua::En::Splitter's words routine often in this chapter. It's an excellent building block for analyzing texts, as in this simple concordancer for generating histograms of word-frequency:
+
+    use Lingua::EN::Splitter qw(words);
+
+    my $text = "Here is Edward Bear, coming downstairs now, bump, bump,
+    bump, on the back of his head, behind Christopher Robin.";
+
+    my %histogram;
+    $histogram{lc $_}++ for @{ words($text) };
+    use Data::Dumper; print Dumper(\%histogram);
+
+This example correctly counts up three occurrences of bump, and one each of the other words:
+
+    $VAR1 = {
+              'robin' => 1,
+              'here' => 1,
+              'edward' => 1,
+              'now' => 1,
+              'bear' => 1,
+              'coming' => 1,
+              'head' => 1,
+              'his' => 1,
+              'downstairs' => 1,
+              'of' => 1,
+              'bump' => 3,
+              'on' => 1,
+              'the' => 1,
+              'behind' => 1,
+              'back' => 1,
+              'is' => 1,
+              'christopher' => 1
+            };
+
+5.3.2. Stemming and Stopwording
+Of course, merely building up a histogram of words isn't enough for most serious analyses; our job is complicated by two main factors. First, there's the fact that most languages have some system of inflection where the same root word can appear in multiple forms.
+
+For instance, if you're trying to analyze a mass of scientific articles to find something about what happens when volcanos erupt, you want to find all those that speak about "volcanic eruption," "volcano erupting," "volcanos erupted," and so on. While these are quite obviously different words, we want them all to be treated the same for the purposes of searching.
+
+The usual process for doing this is to stem the words, pruning them back to their roots: all of the "volcanos erupting" phrases should be pruned back to "volcano erupt" or similar. Porter's stemming algorithm, invented by Martin Porter at Cambridge University and first described in the paper An algorithm for suffix stripping is by far the most widely used algorithm for stemming English words.[*]
+
+[*] That doesn't mean, of course, that it's particularly good. Porter himself says: "It is important to remember that the stemming algorithm cannot achieve perfection. On balance it will (or may) improve IR [information retrieval] performance, but in individual cases it may sometimes make what are, or what seem to be, errors."
+
+However, as with the infamous Brill part of speech tagger, once something gets established as the de facto standard tool in NLP, it's very hard to shift it.
+
+Benjamin Franz has implemented a generic framework for stemmers such as the Porter algorithm in Lingua::Stemmer; it contains stemming algorithms for many languages, but we'll look at Lingua::Stem::En for the moment.
+
+For a module later in this chapter, I needed to know if a particular word was a dictionary word, as opposed to some kind of personal noun. Of course, thanks to inflections, there are plenty of "dictionary" words that aren't in the dictionary. I employed a Porter stemmer to catch these.
+
+First we need to stem all the words in the dictionary, or else they aren't going to match the stemmed versions we're looking for:
+
+    sub stem {
+        require Lingua::Stem::En;
+        my ($stemmed) = @{ Lingua::Stem::En::stem({ -words => [shift] }) };
+    }
+
+     while (<DICT>) {
+        chomp;
+        next if /[A-Z]/;
+        $wordlist{stem($_)}=1;
+    }
+
+We actually make %wordlist a tied hash to a DBM file, so that we only need to stem the dictionary once, no matter how many times we look up words in it. Once that's done, we can now remove all the dictionary words from a list:
+
+    my @proper = grep { !$wordlist{$_} }
+        @{ Lingua::Stem::En::stem({ -words => \@words }) };
+
+Similarly, the Plucene Perl-based search engine has an analyzer that stems words so that searches for "erupting" and "erupt" give the same results.
+
+The second problem that arises is that there are a large number of English words that don't carry very much semantic content. For instance, you probably wouldn't miss much from that previous sentence if it were transformed into "The second problem arises large number English words don't carry semantic content." Words like "are," "that," and "very" are called stopwords.
+
+Stopwords don't add much to the underlying meaning of an utterance. In fact, if we're trying to wade through English text with Perl, we probably want to get rid of any such words and concentrate on the ones that are left.
+
+The Lingua::EN::StopWords module contains a handy hash of stopwords so that you can quickly look up whether a word has weight:
+
+     use Lingua::EN::StopWords qw(%StopWords);
+
+     my @words = qw(the second problem that arises is that there are a
+     large number of English words that don't carry very much semantic
+     content);
+
+     print join " ", grep { !$StopWords{$_} } @words;
+
+    second problem arises large number English words don't carry
+    semantic content
+
+By combining these two modules and Lingua::EN::Splitter, we can get some kind of a metric of the similarity of two sentences:
+
+    use Lingua::EN::StopWords qw(%StopWords);
+    use Lingua::Stem::En;
+    use Lingua::EN::Splitter qw(words);
+    use List::Util qw(sum);
+    print compare(
+        "The AD 79 volcanic eruption of Mount Vesuvius",
+        "The volcano, Mount Vesuvius, erupted in 79AD"
+        );
+
+    sub sentence2hash {
+        my $words   = words(lc(shift));
+        my $stemmed = Lingua::Stem::En::stem({
+                        -words => [ grep { !$StopWords{$_} } @$words ]
+                      });
+        return { map {$_ => 1} grep $_, @$stemmed };
+    }
+
+    sub compare {
+        my ($h1, $h2) = map { sentence2hash($_) } @_;
+        my %composite = %$h1;
+        $composite{$_}++ for keys %$h2;
+        return 100*(sum(values %composite)/keys %composite)/2;
+    }
+
+The compare subroutine tells us the percentage of compatibility between two sentencesin this example, 83%. The sentence2hash subroutine first splits a sentence into individual words, using Lingua::EN::Splitter. Then, after grepping out the stopwords, it stems them, makes sure there's something left after stemming (to get rid of non-words like "79"), and maps them into a hash.
+
+The compare subroutine simply builds up a hash that contains all the stemmed words and the number of times they appear in the two sentences. If the sentences mesh perfectly, then each word will appear precisely twice in the composite hash, and so the average value of the hash will be 2. To find the compability of the sentences, we divide the average by 2, and multiply by 100 to get a percentage.
+
+In this case, our two sentences only differed by the fact that the Porter stemmer didn't stem "volcano" to "volcan" as it did for "volcanic." It's not perfect, but it's good enough for NLP.
+
+5.4. Categorization and Extraction
+It is no exaggeration to say that the most widely used application of NLP, and also the one with the greatest research effort these days, is the fight against spamdeciding on the basis of the content whether a particular email is wanted or unwanted. Some anti-spam software, such as SpamAssassin, takes a relatively straightforward approach to the problem: an email gets points if it contains certain words or phrases, and this is combined with the use of relay blacklists and other non-textual evidence.
+
+However, anti-spam authors are increasingly taking an altogether different, and generally more successful, approach. They take one corpus of mail that is known to be spam and one that is known to be not spam (ham), and use statistical means to identify attributes that make a particular message more spammy or more hammy. When a new message comes in, the same statistical analysis is performed to determine its likely spamminess.
+
+This is an application of the field of natural-language processing called document categorization. We have two categoriesspam and hamand want to determine which category a new document is likely to fall into. Naturally, this can be used for many other purposes, although the fight against spam is arguably the most urgent: automatically determining the language of a document; helping to route enquiries to the most appropriate department of a company; even organizing recipe collections.
+
+We'll look at a few applications of document categorization, and the related field of information extraction.
+
+5.4.1. Bayesian Analysis
+Here's one application of document categorization that I found particularly useful. As we saw in the last chapter, I'm a big fan of receiving news and stories from web pages via RSS aggregation. The problem with subscribing to a variety of RSS feeds is that the quality and interest level of the stories varies wildly. While I like to know about upcoming Perl conferences through http://use.perl.org, I don't really care to be told about Perl Mongers meetings on the other side of the world.
+
+So there are a set of news stories I find interesting and a set I find boring. I should not be having to make the decision about whether something is interesting or boring when I have several thousand dollars of processor power in front of me. This is a document categorization problem, not too dissimilar to the spam problem, so we can use the same techniques to solve it.
+
+One technique that's found favor in anti-spam circles recently is Bayesian analysis. This is a very old technique, an application of the Bayesian theory of probability. It is used to invert conditional probabilities.
+
+Bayes and Predicting Diseases
+A quick introduction to Bayes's theorem is in order. For example, the chance that someone who has a particular rare genetic disease will test positive to a clinical test is 99%. Let's say John takes the test, and he tests positive. What are the chances that he has the disease? It's not 99%. Nothing like it. The short answer is that, at the moment, we can't say. We need more information.
+
+Now suppose we know that the test yields a 5% false-positive rate. That is, if John doesn't have the disease, there's a 5% chance he'll test positive anyway. We also need to know how common the disease is; let's say it's 0.5% prevalent in the general population. (We'll say P(D) = 0.005 for the probability of the disease.)
+
+Now we can work out the probability that any given test will be positive (P(T)). This is the combination of two situations: that the test is positive for someone who has the disease (0.005 * 0.99) and that the test is positive for someone who doesn't (0.995 * 0.05). This adds up to 4.975% + 0.495% = 5.47%. Should John be worried about this?
+
+To find out, we use Bayes's theorem. This allows us to turn on its head the probability that a person tests positive given that he has the disease (P(T|D) = 0.99) and gives us P(D|T), the probability that he has the disease given that he tests positive.
+
+Bayes's formula is:
+
+    P(D|T) = [P(T|D) x P(D)] / P(T)
+
+And plugging in the numbers, we find that John is only 9.05% likely to have the disease. Bayes's theorem is important because it forces us to take into account everything we knoweven though there was a relatively high chance that the test was accurate, we need to factor in the relative rarity of the disease in the general population.
+
+We want to find out the probability that a document is interesting given the particular set of words in it. We know the probability that any document is interesting, regardless of its words; just count up the number of documents that are interesting, count up all the documents, and divide. We can work out the probability that an interesting document contains a given set of words, and so all that's left is a lot of tedious mathematics.
+
+Thankfully, the Algorithm::NaiveBayes module can help to hide that away. It includes an analyzer that takes a number of attributes and corresponding weights, and associates them with a set of labels. Typically, for a text document, the attributes are the words of the document, and the weight is the number of times each word occurs. The labels are the categories under which we want to file the document.
+
+For instance, suppose we have the news article:
+
+    The YAPC::Taipei website is now open and calls for registration. Welcome to Taipei
+and join the party with us!
+
+We split that up into words, count the occurrence of the relevant words, and produce a hash like this:
+
+    my $news = {
+       now => 1, taipei => 2, join => 1, party => 1, us => 1,
+       registration => 1, website => 1, welcome => 1, open => 1,
+       calls => 1, yapc => 1
+    };
+
+Then we add this article to our categorizer's set of known documents:
+
+    my $categorizer = Algorithm::NaiveBayes->new;
+    $categorizer->add_instance( attributes => $news,
+                                label     => "interesting" );
+
+When we've added a load of documents, the categorizer has a good idea of what kind of words make up stories that I would categorize as interesting. We then ask it to do some sums, and we can find out what it thinks about a new document:
+
+    $categorizer->train;
+    my $probs = $categorizer->predict(  attributes => $new_news );
+
+This returns a hash mapping each category to the probability that the document fits into that category. So once we have our categorizer trained with a few hand-categorized documents, we can say:
+
+    if ( $probs->{interesting} > 0.5 ) {
+        # Probably interesting
+    }
+
+Of course, now the main problem is getting the document into the hash of words and weights. We use our now-familiar Lingua::EN::Splitter and Lingua::EN::StopWords techniques to produce a subroutine like this:
+
+    sub invert_string {
+       my ($string, $weight, $hash) = @_;
+       $hash->{$_} += $weight for
+            grep { !$StopWords{$_} }
+            @{words(lc($string))};
+    }
+
+This inverts a string, adding its component words into a hash. In our RSS aggregator example, the stories will be hashes extracted from XML::RSS objects. We want to give more weight to words that appear in the title of a story than those that appear in the body, so we end up with this:
+
+    sub invert_item {
+        my $item = shift;
+        my %hash;
+        invert_string($item->{title}, 2, \%hash);
+        invert_string($item->{description}, 1, \%hash);
+        return \%hash;
+    }
+
+With these subroutines in place, we can now train our analyzer on two carefully constructed RDF sources:
+
+    #!/usr/bin/perl
+
+    use XML::RSS;
+    use Algorithm::NaiveBayes;
+    use Lingua::EN::Splitter qw(words);
+    use Lingua::EN::StopWords qw(%StopWords);
+
+    my $nb = Algorithm::NaiveBayes->new(  );
+
+    for my $category (qw(interesting boring)) {
+        my $rss = new XML::RSS;
+        $rss->parsefile("$category.rdf");
+        $nb->add_instance(attributes => invert_item($_),
+                          label      => $category) for @{$rss->{'items'}};
+    }
+
+    $nb->train; # Work out all the probabilities
+
+And now we can ask it how we feel about the articles in a third source:
+
+    my $target = new XML::RSS;
+    $target->parsefile("incoming.rdf");
+    for my $item (@{$target->{'items'}}) {
+        print "$item->{title}: ";
+
+        my $predict = $nb->predict(attributes => invert_item($item));
+        print int($predict->{interesting}*100)."% interesting\n";
+    }
+
+If we train the categorizer from two weblogs written by Bob (interesting) and George (boring) as the data sources and then compare it with the Slashdot feed from a random day, it predicts the following:
+
+    Elektro, the Oldest U.S. Robot: 12% interesting
+    French Court Orders Google to Stop Competing Ad Displays: 0% interesting
+    Personal Spaceflight Leaders Form New Federation: 43% interesting
+    Symantec Antivirus May Execute Virus Code: 0% interesting
+    Open-Source Technique for GM Crops: 99% interesting
+    North Korea Admits to Having Nuclear Weapons: 19% interesting
+
+    Judge Slams SCO's Lack of Evidence: 24% interesting
+    Sci-Fi Channel Renews Battlestar Galactica: 0% interesting
+    Tecmo Sues Game Hackers Under DMCA: 15% interesting
+    Identifying World's Species With Genetic Bar Codes: 32% interesting
+
+This is a very simple case of categorization where we've only really used one dimensioninteresting versus boring. Now we'll look at a more complex example, using multiple dimensions and a more sophisticated algorithm.
+
+5.4.2. Keyword Extraction and Summary
+One extremely common task in language processing is the reduction of a text down to essential keywords or phrases. Perl people are busy people and don't want to read through masses of documents if they don't need to. Why not get a computer to do the bulk of the reading for them?
+
+There are two ways to getting a sense of what a document is about. The first is to extract what appear to be key sentences and strip away anything that doesn't seem so important. This is particularly good for summarizing scientific or factual input. The second is to look for particularly important keywords, nouns, and noun phrases that recur frequently in a text. This doesn't give a readable overview of the sense of the text, but it is often enough to give a good overview of the key concepts involved.
+
+Lingua::EN::Summarize is the module for the first approach, extracting key sentences. Digging into the source, we see it takes a relatively naive approach by looking for clauses that could be declarative:
+
+    my $keywords = "(is|are|was|were|will|have)";
+    my @clauses = grep { /\b$keywords\b/i }
+                   map { split /(,|;|--)/ } split_sentences( $text );
+
+It then tries to trim them to a required length. To be honest, it isn't great. If we run the summarize subroutine on the first part of this chapter:
+
+    use Lingua::EN::Summarize;
+    print summarize($chapter5, maxlength => 300, wrap => 70);
+
+it produces the following summary:
+
+    Is the application of AI techniques to answer questions about text
+    written in a human language: what does it mean. What other documents
+    is it like. As Perl is often described as a text-processing
+    language. It shouldn't be much of a surprise to find that there are a
+    great many modules and techniques available in Perl for carrying out
+    NLP-related tasks.
+
+To make a better text summarizer, we need to turn to the academic literature, and there's a lot of it. A paper by Kupiec, Pedersen, and Chen[*] uses a Bayesian categorizer, like the one we used to categorize RSS stories, to determine whether or not a given sentence would be in a summary. Implementing this using Algorithm::NaiveBayes should be a relatively straightforward exercise for the interested reader.
+
+[*] Julian Kupiec, Jan O. Pedersen, and Francine Chen. 1995. "A Trainable Document Summarizer." In Research and Development in Information Retrieval, pages 68-73. Available at http://www.dcs.shef.ac.uk/~mlap/teaching/kupiec95trainable.pdf.
+
+Another technique (by Hans Peter Luhn[]) uses something called Zipf's Law of Word Distribution, which states that a small corpus of words occur very frequently, some words occur with moderate frequency, and many words occur infrequently. To summarize a text, you take the sentences that contain words that appear very frequently. Unfortunately, this requires a very large corpus of related material, in order to filter out relatively common phrases, but let's implement this in Perl.
+
+[] Hans Peter Luhn. 1958. "The Automatic Creation of Literature Abstracts." IBM Journal of Research and Development, 2(2):159-165. Reprinted in H.P. Luhn: Pioneer of Information Science, Selected Works. Edited by Claire K. Schultz. Spartan Books, New York. 1968.
+
+I grabbed a bunch of technical papers on computational linguistics from http://www.arxiv.org and built up background and document-specific frequency histograms using the usual techniques:
+
+    use Lingua::EN::Splitter qw(words);
+    use Lingua::EN::Sentence qw(get_sentences);
+    use File::Slurp;
+    use Lingua::Stem::En;
+    use Lingua::EN::StopWords qw(%StopWords);
+    use List::Util qw(sum);
+    use strict;
+    my %base;
+    my %per_file;
+
+    my $amount = shift;
+    for my $file (<*.txt>) {
+        my $sentences = get_sentences ( scalar read_file($file) );
+        for my $sentence (@$sentences) {
+            my @words = grep { !$StopWords{$_} } @{words(lc $sentence) };
+            for my $word (@{ Lingua::Stem::En::stem({ -words => \@words }) }) {
+                $base{$word}++;
+                $per_file{$file}{$word}++;
+            }
+        }
+    }
+
+Now we convert these histograms into frequency tables, by dividing the count for each word by the total number of hits in the hash:
+
+    my $sum = sum values %base; $base{$_} /= $sum for keys %base;
+    my %totals;
+
+    for my $file (keys %per_file) {
+        $sum = sum values %{$per_file{$file}};
+        $per_file{$file}{$_} /= $sum for keys %{$per_file{$file}};
+    }
+
+Now that we have our frequencies of words relative to the corpus as a whole and relative to individual documents, we can start our second pass: look over a document and score each sentence in terms of the average relative unusualness of its constituent words. We begin as before:
+
+    for my $file (<*.txt>) {
+        print $file,":\n";
+        my $sentences = get_sentences (scalar read_file($file) );
+        my %markings;
+        my $order = 0;
+        for my $sentence (@$sentences) {
+            my @words = grep { !$StopWords{$_} } @{words(lc $sentence) };
+
+But this time we want to mark the sentence with its order in the document and a score for each word; this is the ratio between the expected frequency and the observed frequency:
+
+            my @words = grep { !$StopWords{$_} } @{words(lc $sentence) };
+            $markings{$sentence}->{order} = $order++;
+            if (!@words) {
+              $markings{$sentence}->{score} = 0;
+              next;
+            }
+            for my $word (@{ Lingua::Stem::En::stem({ -words => \@words }) }) {
+                my $score = $per_file{$file}{$word} / $base{$word};
+                $markings{$sentence}->{score} += $score;
+            }
+
+Finally, we divide the sentence's score by the number of words to find the average and so that we're not unfairly favoring longer sentences.
+
+            $markings{$sentence}->{score} /= @words;
+        }
+
+Now we have a score for each sentence in the document. We can sort the sentences by score to find the 10 highest-scoring, then re-sort them by order so that they appear in the original order:
+
+        my @sorted = sort
+                     { $markings{$b}->{score} <=> $markings{$a}->{score} }
+                     keys %markings;
+        my @selected = sort
+                     { $markings{$a}->{order} <=> $markings{$b}->{order} }
+                     @sorted[0..9];
+        print "@selected\n\n";
+    }
+
+And that's all we need for a simple frequency-based summarizer. To take an example of the output, the summarizer reduced a 2,000-word paper on language generation down to the following abstract:
+
+This paper introduces the neca mnlg; a Multimodal Natural Language Generator. The neca mnlg adopts the conventional pipeline architecture for generators (Reiter and Dale, 2000). Feature structures are also used in the fuf/surge generator. See http://www.cs.bgu.ac.il/surge/. Matching trees might in turn have incomplete daughter nodes. These are recursively expanded by matching them with the trees in the repository, until all daughters are complete. The module is based on the work of Krahmer and Theune (2002). The negation is passed on to the VP subtree via the feature. The attributes x and y allow us to capture unbounded dependencies via feature perlocation. The value of the attribute is passed on from the mother node to the daughter nodes. The neca mnlg has been implemented in prolog.
+
+5.4.2.1 Keyword extraction
+The second approach to document summary, extracting keywords, is a little easier, and it is instructive to have a look at the Lingua::EN::Keywords module and how its techniques evolved.
+
+The first versions of Lingua::EN::Keywords were very simple. They split the text into words manually, then counted up the frequency of each word, and returned the top five most frequent words. This was, of course, pretty bad.
+
+The second set of versions used a hardwired stopword list, which was a little better, but still not good enough. The third series used the Lingua::EN::StopWords techniques we've seen several times in this chapter. The fourth iteration used the same technique as "Keyword Extraction and Summary" earlier in this chapter to detect and score proper names that wouldn't appear in the dictionary, rather than ordinary words that would. This was because proper nouns are more easily identifiable as the topic of a document.
+
+And there it sat for a while as I looked for ways to extract not just words but key phrases. There are various academic papers about how to do this, but, to be honest, I couldn't get any of them to work accurately. Finally, something caught my eye: Maciej Ceglowski and his team at Middlebury College released Lingua::EN::Tagger, a rather nice English part-of-speech tagger, which contained a noun-phrase extractor. This produces histograms of all the nonstop words in the text, but also tries to group together nouns into phrases:
+
+    use Lingua::EN::Tagger;
+    my $tag = Lingua::EN::Tagger->new(longest_noun_phrase => 5,
+                                      weight_noun_phrases => 0);
+
+    my %wordlist = $tag->get_words("This is a test of the emergency warning
+    system. This is only a test. If this had been an actual emergency, you
+    would have been instructed to tune to either Cable Channel 3 or
+    local emergency radio stations.");
+
+This produces the following histogram in our word list %wordlist:
+
+    'emergency warning system' => 1,
+    'emerg' => 3,
+    'cable channel' => 1,
+    'warn' => 1,
+    'radio stations' => 1,
+    'actual emergency' => 1,
+    'local emergency radio stations' => 1,
+    'radio' => 1,
+    'emergency radio stations' => 1,
+    'emergency radio' => 1,
+    'channel' => 1,
+    'warning system' => 1,
+    'emergency warning' => 1,
+    'station' => 1,
+    'system' => 1,
+    'test' => 2
+
+As you can see, individual words (emergency) are stemmed (emerg), but noun phrases are kept together. If we collate these histograms over a large document, nouns that appear together as a phrase will rise to the top. For instance, if the document always talks about "local football leagues," then that phrase will be ranked highly. However, if there's a relatively even split between "local football leagues" and "local football matches," then "local football" will be the most frequent phrase.
+
+With this module available, Lingua::EN::Keywords just becomes a matter of collating the histograms and spitting back the most common phrases, with one slight exception. The problem is that when we constructed the histogram, we stemmed the words. To present these words to the user, we need to unstem them, but that's not very easy. The way we do this in Lingua::EN::Keywords is to cache every stemming in a hash, then reverse the hash to go from a stemmed word to the original. By subclassing Lingua::EN::Tagger, we can override the stem method, and provide another method to get access to the cache:
+
+    package My::Tagger;
+    use base 'Lingua::EN::Tagger';
+    my %known_stems;
+    sub stem {
+        my ( $self, $word ) = @_;
+        return $word unless $self->{'stem'};
+        return $known_stems{ $word } if exists $known_stems{$word};
+        my $stemref = Lingua::Stem::En::stem( -words => [ $word ] );
+
+        $known_stems{ $word } = $stemref->[0] if exists $stemref->[0];
+    }
+
+    sub stems { reverse %known_stems; }
+
+Now we can write a trivial unstem routine that looks up the original word from its stem in the reversed hash, shown in the next block of code.
+
+    use My::Tagger;
+    my $tag = My::Tagger->new(longest_noun_phrase => 5,
+                              weight_noun_phrases => 0);
+
+    sub unstem {
+        my %cache = $tag->stems;
+        my $stem = shift;
+        return $cache{$stem} || $stem;
+    }
+
+This isn't a perfect solution. If two different words have the same stem, the distinction is lost in the reverse operation. A few modifications to the stems subroutine can keep a record of the exact variations found in the original text if that information is important. Finally, the keyword subroutine is as simple as:
+
+    sub keywords {
+        my %wordlist = $tag->get_words(shift);
+        my %newwordlist;
+        $newwordlist{unstem($_)} += $wordlist{$_} for keys %wordlist;
+        my @keywords = sort { $newwordlist{$b} <=> $newwordlist{$a} } keys %newwordlist;
+        return $keywords[0..4];
+    }
+
+This generates a Lingua::EN::Tagger histogram from the single string argument. It then creates a new hash combining the counts from the original histogram with the unstemmed keywords. It sorts the keywords by frequency and returns the five most common keywords. If we pass the keywords subroutine the same text as the first example in this section, the first two results are emergency and test. The remaining three keywords of the top five aren't in a predictable order because they're all equally frequent.
+
+5.4.3. Extracting Names and Places
+An extension of the principle of extracting keywords from text involves what's known in the trade as named-entity extraction. A named entity is any proper noun, such as a place, a person's name, an organization's name, and so on. Extracting these proper nouns and categorizing them is a good first step to retrieving pertinent information from a particular source text.
+
+There are any number of well-documented algorithms for named-entity extraction in the academic literature, but, being Perl hackers, we're interested in a quick, easy but efficient ready-made solution.
+
+There are two modules that perform named-entity extraction for English text: GATE::ANNIE::Simple and Lingua::EN::NamedEntity. GATE::ANNIE::Simple is an Inline::Java wrapper around the GATE[*] project's ANNIE[] named-entity extraction engine. The GATE documentation talks of this use of ANNIE as a "textual sausage machine"--you feed text in at one end, and out the other end comes a categorized set of entities. This is the sort of solution we're looking for.
+
+[*] General Architecture for Text Engineering (http://www.gate.ac.uk).
+
+[] A Nearly-New Information Extraction system. When it comes to acronymic naming schemes, academics can be just as bad as hackers.
+
+    use GATE::ANNIE::Simple;
+    $text = <<EOF;
+    The United States is to ask the United Nations to approve the creation
+    of a multinational force in Iraq in return for ceding some political
+    authority, US officials say.
+    EOF
+    %entities = annie_extract($text);
+
+This results in the following entries in the %entities hash:
+
+    'Iraq' => 'Location',
+    'United Nations' => 'Organization',
+    'US' => 'Location',
+    'United States' => 'Location'
+
+ANNIE has very high recall and categorization accuracy, meaning that it can find most of the relevant entities in a document (and doesn't find too many things that aren't actually named entities) and can decide whether the entity is a person, a place, an organization, and so on. It can also extract dates, numbers, and amounts of money. The downside of ANNIE is its complexity, requiring a bridge to Java, and its speedbefore the first set of extraction, ANNIE must first load all its rulesets into memory, something that can take a matter of minutes even on a fast machine.
+
+When looking at alternatives to ANNIE for the purposes of writing this chapter, I started writing about a relatively naive approach:
+
+First, extract all phrases of capitalized words, storing the context two or three words before and two or three words after.
+
+Second, trim out those that are purely sentence-initial dictionary words, using a stemmer (see above) to remove inflections.
+
+Third, allocate a score to each entity in each of the following categories: person, place, organization. If the first word in the entity is found in a lexicon of forenames, score it up as a person, and so on.
+
+Then I realized that by the time I'd finished describing this heuristic in English, I could have already written it in Perl, and Lingua::EN::NamedEntity was born. It was originally designed to be a benchmark against which more academically correct solutions could be measured. Although it doesn't have the same precision as ANNIE, Lingua::EN::NamedEntity actually turned out to be good enough for most named-entity work.
+
+When you install the module from CPAN, it sets up a series of files in the .namedentity subdirectory of your home directory, precomputing the forename and lexicon databases to speed up their loading. Once it's all installed and set up, you can use the extract_entities subroutine to produce a list of named entities.
+
+As with most information-extraction techniques, named-entity recognition works well on reasonably long documents, so I ran it on a Perl 6 Summary:
+
+    use File::Slurp;
+    use Lingua::EN::NamedEntity;
+
+    my $file = read_file("summary.txt");
+    for my $ent (extract_entities($file)) {
+        print $ent->{entity}, ": ", $ent->{class}, "\n";
+    }
+
+The results weren't perfect, as you'll see:
+
+    Go Melvin: person
+    Larry and Damian: organisation
+    Hughes: place
+    Perlcentricity: place
+    Jonathan Worthington: person
+    Melvin Smith: person
+    Meanwhile Melvin Smith: person
+    Piers Cawley: person
+    Austin Hastings: person
+    Perl Foundation and the Perl: organisation
+    Simon Cozens: person
+    Robin Redeker: person
+    Simon: person
+    Right Thing: person
+    Leo T: person
+    Leon Brocard: person
+    Payrard: place
+    Perl: place
+    London: place
+    ...
+
+However, one thing to note is that Lingua::EN::NamedEntity ends up erring on the side of recklessness, much more so than ANNIEit will extract a lot of entities, and usually end up catching all the entities in a document, even if it does extract a few things that aren't really entities.
+
+There are three main plans for future work on the module. The first is to tighten up the categorization somewhat and extend the number of categories. At the moment, for instance, it filed Perl as a place, because the summary talks so much about things being "in Perl."
+
+The second is to remove some false positives by checking for supersets of supersets of entities: for instance, seeing "Melvin Smith" as an entity should make it less likely that "Meanwhile Melvin Smith" is really a person. Conversely, the third plan is to correlate subsetsnot only should it know that "Melvin Smith" and "Melvin" are the same person, but it should use the combined ranking to strengthen its certainty that both belong in the person category.
+
+5.5. Conclusion
+In this chapter, we've looked at just a few of the available tools for working with natural language data. Many more are available on CPAN, including modules for localization, machine translation, guessing the language of a text, and formatting text or numbers in ways unique to a language. If you have a language-related problem to solve, you'll do well looking through the Lingua::*, Locale::*, and Text::* namespaces on CPAN.
+

@@ -1,0 +1,1312 @@
+Chapter 1. Advanced Techniques
+Once you have read the Camel Book (Programming Perl), or any other good Perl tutorial, you know almost all of the language. There are no secret keywords, no other magic sigils that turn on Perl's advanced mode and reveal hidden features. In one sense, this book is not going to tell you anything new about the Perl language.
+
+What can I tell you, then? I used to be a student of music. Music is very simple. There are 12 possible notes in the scale of Western music, although some of the most wonderful melodies in the world only use, at most, eight of them. There are around four different durations of a note used in common melodies. There isn't a massive musical vocabulary to choose from. And music has been around a good deal longer than Perl. I used to wonder whether or not all the possible decent melodies would soon be figured out. Sometimes I listen to the Top 10 and think I was probably right back then.
+
+But of course it's a bit more complicated than that. New music is still being produced. Knowing all the notes does not tell you the best way to put them together. I've said that there are no secret switches to turn on advanced features in Perl, and this means that everyone starts on a level playing field, in just the same way that Johann Sebastian Bach and a little kid playing with a xylophone have precisely the same raw materials to work with. The key to producing advanced Perlor advanced musicdepends on two things: knowledge of techniques and experience of what works and what doesn't.
+
+The aim of this book is to give you some of each of these things. Of course, no book can impart experience. Experience is something that must be, well, experienced. However, a book like this can show you some existing solutions from experienced Perl programmers and how to use them to solve the problems you may be facing.
+
+On the other hand, a book can certainly teach techniques, and in this chapter we're going to look at the three major classes of advanced programming techniques in Perl. First, we'll look at introspection: programs looking at programs, figuring out how they work, and changing them. For Perl this involves manipulating the symbol tableespecially at runtime, playing with the behavior of built-in functions and using AUTOLOAD to introduce new subroutines and control behavior of subroutine dispatch dynamically. We'll also briefly look at bytecode introspection, which is the ability to inspect some of the properties of the Perl bytecode tree to determine properties of the program.
+
+The second idea we'll look at is the class model. Writing object-oriented programs and modules is sometimes regarded as advanced Perl, but I would categorize it as intermediate. As this is an advanced book, we're going to learn how to subvert Perl's object-oriented model to suit our goals.
+
+Finally, there's the technique of what I call unexpected codecode that runs in places you might not expect it to. This means running code in place of operators in the case of overloading, some advanced uses of tying, and controlling when code runs using named blocks and eval.
+
+These three areas, together with the special case of Perl XS programmingwhich we'll look at in Chapter 9 on Inlinedelineate the fundamental techniques from which all advanced uses of Perl are made up.
+
+1.1. Introspection
+First, though, introspection. These introspection techniques appear time and time again in advanced modules throughout the book. As such, they can be regarded as the most fundamental of the advanced techniqueseverything else will build on these ideas.
+
+1.1.1. Preparatory Work: Fun with Globs
+Globs are one of the most misunderstood parts of the Perl language, but at the same time, one of the most fundamental. This is a shame, because a glob is a relatively simple concept.
+
+When you access any global variable in Perlthat is, any variable that has not been declared with mythe perl interpreter looks up the variable name in the symbol table. For now, we'll consider the symbol table to be a mapping between a variable's name and some storage for its value, as in Figure 1-1.
+
+Note that we say that the symbol table maps to storage for the value. Introductory programming texts should tell you that a variable is essentially a box in which you can get and set a value. Once we've looked up $a, we know where the box is, and we can get and set the values directly. In Perl terms, the symbol table maps to a reference to $a.
+
+Figure 1-1. Consulting the symbol table, take 1
+
+You may have noticed that a symbol table is something that maps names to storage, which sounds a lot like a Perl hash. In fact, you'd be ahead of the game, since the Perl symbol table is indeed implemented using an ordinary Perl hash. You may also have noticed, however, that there are several things called a in Perl, including $a, @a, %a, &a, the filehandle a, and the directory handle a.
+
+This is where the glob comes in. The symbol table maps a name like a to a glob, which is a structure holding references to all the variables called a, as in Figure 1-2.
+
+Figure 1-2. Consulting the symbol table, take 2
+
+As you can see, variable look-up is done in two stages: first, finding the appropriate glob in the symbol table; second, finding the appropriate part of the glob. This gives us a reference, and assigning it to a variable or getting its value is done through this reference.
+
+1.1.1.1 Aliasing
+This disconnect between the name look-up and the reference look-up enables us to alias two names together. First, we get hold of their globs using the *name syntax, and then simply assign one glob to another, as in Figure 1-3.
+
+Figure 1-3. Aliasing via glob assignment
+
+We've assigned b's symbol table entry to point to a's glob. Now any time we look up a variable like %b, the first stage look-up takes us from the symbol table to a's glob, and returns us a reference to %a.
+
+The most common application of this general idea is in the Exporter module. If I have a module like so:
+
+    package Some::Module;
+    use base 'Exporter';
+    our @EXPORT = qw( useful );
+
+    sub useful { 42 }
+
+then Exporter is responsible for getting the useful subroutine from the Some::Module package to the caller's package. We could mock our own exporter using glob assignments, like this:
+
+    package Some::Module;
+    sub useful { 42 }
+
+    sub import {
+    no strict 'refs';
+    *{caller(  )."::useful"} = *useful;
+    }
+
+Remember that import is called when a module is used. We get the name of the calling package using caller and construct the name of the glob we're going to replacefor instance, main::useful. We use a symbolic reference to turn the glob's name, which is a string, into the glob itself. This is just the same as the symbolic reference in this familiar but unpleasant piece of code:
+
+    $answer = 42;
+    $variable = "answer";
+
+    print ${$variable};
+
+If we were using the recommended strict pragma, our program would die immediatelyand with good reason, since symbolic references should only be used by people who know what they're doing. We use no strict 'refs'; to tell Perl that we're planning on doing good magic with symbolic references.
+
+ Many advanced uses of Perl need to do some of the things that strict prevents the uninitiated from doing. As an initiated Perl user, you will occasionally have to turn strictures off. This isn't something to take lightly, but don't be afraid of it; strict is a useful servant, but a bad master, and should be treated as such.
+
+Now that we have the *main::useful glob, we can assign it to point to the *useful glob in the current Some::Module package. Now all references to useful( ) in the main package will resolve to &Some::Module::useful.
+
+That is a good first approximation of an exporter, but we need to know more.
+
+1.1.1.2 Accessing parts of a glob
+With our naive import routine above, we aliased main::useful by assigning one glob to another. However, this has some unfortunate side effects:
+
+    use Some::Module;
+    our $useful = "Some handy string";
+
+    print $Some::Module::useful;
+
+Since we've aliased two entire globs together, any changes to any of the variables in the useful glob will be reflected in the other package. If Some::Module has a more substantial routine that uses its own $useful, then all hell will break loose.
+
+All we want to do is to put a subroutine into the &useful element of the *main::useful glob. If we were exporting a scalar or an array, we could assign a copy of its value to the glob by saying:
+
+    ${caller(  )."::useful"} = $useful;
+    @{caller(  )."::useful"} = @useful;
+
+However, if we try to say:
+
+    &{caller(  )."::useful"} = &useful;
+
+then everything goes wrong. The &useful on the right calls the useful subroutine and returns the value 42, and the rest of the line wants to call a currently non-existant subroutine and assign its return value the number 42. This isn't going to work.
+
+Thankfully, Perl provides us with a way around this. We don't have to assign the entire glob at once. We just assign a reference to the glob, and Perl works out what type of reference it is and stores it in the appropriate part, as in Figure 1-4.
+
+Figure 1-4. Assigning to a glob's array part
+
+Notice that this is not the same as @a=@b; it is real aliasing. Any changes to @b will be seen in @a, and vice versa:
+
+    @b = (1,2,3,4);
+    *a = \@b;
+
+    push @b, 5;
+    print @a; # 12345
+
+    # However:
+    $a = "Bye"
+    $b = "Hello there!";
+    print $a; # Bye
+
+Although the @a array is aliased by having its reference connected to the reference used to locate the @b array, the rest of the *a glob is untouched; changes in $b do not affect $a.
+
+You can write to all parts of a glob, just by providing the appropriate references:
+
+    *a = \"Hello";
+    *a = [ 1, 2, 3 ];
+    *a = { red => "rouge", blue => "bleu" };
+
+    print $a;        # Hello
+    print $a[1];     # 2
+    print $a{"red"}; # rouge
+
+The three assignments may look like they are replacing each other, but each writes to a different part of the glob depending on the appropriate reference type. If the assigned value is a reference to a constant, then the variable's value is unchangeable.
+
+    *a = \1234;
+    $a = 10; # Modification of a read-only value attempted
+
+Now we come to a solution to our exporter problem; we want to alias &main::useful and &Some::Module::useful, but no other parts of the useful glob. We do this by assigning a reference to &Some::Module::useful to *main::useful:
+
+    sub useful { 42 }
+    sub import {
+    no strict 'refs';
+    *{caller(  )."::useful"} = \&useful;
+    }
+
+This is similar to how the Exporter module works; the heart of Exporter is this segment of code in Exporter::Heavy::heavy_export:
+
+    foreach $sym (@imports) {
+        # shortcut for the common case of no type character
+        (*{"${callpkg}::$sym"} = \&{"${pkg}::$sym"}, next)
+            unless $sym =~ s/^(\W)//;
+
+        $type = $1;
+        *{"${callpkg}::$sym"} =
+            $type eq '&' ? \&{"${pkg}::$sym"} :
+            $type eq '$' ? \${"${pkg}::$sym"} :
+            $type eq '@' ? \@{"${pkg}::$sym"} :
+            $type eq '%' ? \%{"${pkg}::$sym"} :
+            $type eq '*' ?  *{"${pkg}::$sym"} :
+            do { require Carp; Carp::croak("Can't export symbol:$type$sym") };
+        }
+
+This has a list of imports, which have either come from the use Some::Module '...'; declaration or from Some::Module's default @EXPORT list. These imports may have type sigils in front of them, or they may not; if they do not, such as when you say use Carp 'croak';, then they refer to subroutines.
+
+In our original case, we had set @EXPORT to ("useful"). First, Exporter checks for a type sigil and removes it:
+
+    (*{"${callpkg}::$sym"} = \&{"${pkg}::$sym"}, next)
+        unless $sym =~ s/^(\W)//;
+
+Because $sym is "useful"with no type sigilthe rest of the statement executes with a result similar to:
+
+    *{"${callpkg}::$sym"} = \&{"${pkg}::$sym"};
+    next;
+
+Plugging in the appropriate values, this is very much like our mock exporter:
+
+    *{$callpkg."::useful"} = \&{"Some::Module::useful"};
+
+On the other hand, where there is a type sigil the exporter constructs the reference and assigns the relevant part of the glob:
+
+    *{"${callpkg}::$sym"} =
+       $type eq '&' ? \&{"${pkg}::$sym"} :
+       $type eq '$' ? \${"${pkg}::$sym"} :
+       $type eq '@' ? \@{"${pkg}::$sym"} :
+       $type eq '%' ? \%{"${pkg}::$sym"} :
+       $type eq '*' ?  *{"${pkg}::$sym"} :
+       do { require Carp; Carp::croak("Can't export symbol: $type$sym") };
+
+Accessing Glob Elements
+The *glob = ... syntax obviously only works for assigning references to the appropriate part of the glob. If you want to access the individual references, you can treat the glob itself as a very restricted hash: *a{ARRAY} is the same as \@a, and *a{SCALAR} is the same as \$a. The other magic names you can use are HASH, IO, CODE, FORMAT, and GLOB, for the reference to the glob itself. There are also the really tricky PACKAGE and NAME elements, which tell you where the glob came from.
+
+These days, accessing globs by hash keys is really only useful for retrieving the IO element. However, we'll see an example later of how it can be used to work with glob references rather than globs directly.
+
+1.1.1.3 Creating subroutines with glob assignment
+One common use of the aliasing technique in advanced Perl is the assignment of anonymous subroutine references, and especially closures, to a glob. For instance, there's a module called Data::BT::PhoneBill that retrieves data from British Telecom's online phone bill service. The module takes comma-separated lines of information about a call and turns them into objects. An older version of the module split the line into an array and blessed the array as an object, providing a bunch of read-only accessors for data about a call:
+
+    package Data::BT::PhoneBill::_Call;
+    sub new {
+      my ($class, @data) = @_;
+      bless \@data, $class;
+    }
+
+    sub installation { shift->[0] }
+    sub line         { shift->[1] }
+    ...
+
+Closures
+A closure is a code block that captures the environment where it's definedspecifically, any lexical variables the block uses that were defined in an outer scope. The following example delimits a lexical scope, defines a lexical variable $seq within the scope, then defines a subroutine sequence that uses the lexical variable.
+
+    {
+       my $seq = 3;
+       sub sequence { $seq += 3 }
+    }
+
+    print $seq; # out of scope
+
+    print sequence; # prints 6
+    print sequence; # prints 9
+
+Printing $seq after the block doesn't work, because the lexical variable is out of scope (it'll give you an error under use strict. However, the sequence subroutine can still access the variable to increment and return its value, because the closure { $seq += 3 } captured the lexical variable $seq.
+
+See perlfaq7 and perlref for more details on closures.
+
+Of course, the inevitable happened: BT added a new column at the beginning, and all of the accessors had to shift down:
+
+    sub type         { shift->[0] }
+    sub installation { shift->[1] }
+    sub line         { shift->[2] }
+
+Clearly this wasn't as easy to maintain as it should be. The first step was to rewrite the constructor to use a hash instead of an array as the basis for the object:
+
+    our @fields = qw(type installation line chargecard _date time
+                     destination _number _duration rebate _cost);
+
+    sub new {
+      my ($class, @data) = @_;
+      bless { map { $fields[$_] => $data[$_] } 0..$#fields } => $class;
+    }
+
+This code maps type to the first element of @data, installation to the second, and so on. Now we have to rewrite all the accessors:
+
+    sub type         { shift->{type} }
+    sub installation { shift->{installation} }
+    sub line         { shift->{line} }
+
+This is an improvement, but if BT adds another column called friends_and_family_discount, then I have to type friends_and_family_discount three times: once in the @fields array, once in the name of the subroutine, and once in the name of the hash element.
+
+It's a cardinal law of programming that you should never have to write the same thing more than once. It doesn't take much to automatically construct all the accessors from the @fields array:
+
+    for my $f (@fields) {
+        no strict 'refs';
+        *$f = sub { shift->{$f} };
+    }
+
+This creates a new subroutine in the glob for each of the fields in the arrayequivalent to *type = sub { shift->{type} }. Because we're using a closure on $f, each accessor "remembers" which field it's the accessor for, even though the $f variable is out of scope once the loop is complete.
+
+Creating a new subroutine by assigning a closure to a glob is a particularly common trick in advanced Perl usage.
+
+1.1.2. AUTOLOAD
+There is, of course, a simpler way to achieve the accessor trick. Instead of defining each accessor individually, we can define a single routine that executes on any call to an undefined subroutine. In Perl, this takes the form of the AUTOLOAD subroutinean ordinary subroutine with the magic name AUTOLOAD:
+
+    sub AUTOLOAD {
+        print "I don't know what you want me to do!\n";
+    }
+
+    yow(  );
+
+Instead of dying with Undefined subroutine &yow called, Perl tries the AUTOLOAD subroutine and calls that instead.
+
+To make this useful in the Data::BT::PhoneBill case, we need to know which subroutine was actually called. Thankfully, Perl makes this information available to us through the $AUTOLOAD variable:
+
+    sub AUTOLOAD {
+        my $self = shift;
+        if ($AUTOLOAD =~ /.*::(.*)/) { $self->{$1} }
+
+The middle line here is a common trick for turning a fully qualified variable name into a locally qualified name. A call to $call->type will set $AUTOLOAD to Data::BT::PhoneBill::_Call::type. Since we want everything after the last ::, we use a regular expression to extract the relevant part. This can then be used as the name of a hash element.
+
+We may want to help Perl out a little and create the subroutine on the fly so it doesn't need to use AUTOLOAD the next time type is called. We can do this by assigning a closure to a glob as before:
+
+    sub AUTOLOAD {
+    if ($AUTOLOAD =~ /.*::(.*)/) {
+       my $element = $1;
+       *$AUTOLOAD = sub { shift->{$element} };
+       goto &$AUTOLOAD;
+    }
+
+This time, we write into the symbol table, constructing a new subroutine where Perl expected to find our accessor in the first place. By using a closure on $element, we ensure that each accessor points to the right hash element. Finally, once the new subroutine is set up, we can use goto &subname to try again, calling the newly created Data::BT::PhoneBill::_Call::type method with the same parameters as before. The next time the same subroutine is called, it will be found in the symbol tablesince we've just created itand we won't go through AUTOLOAD again.
+
+ goto LABEL and goto &subname are two completely different operations, unfortunately with the same name. The first is generally discouraged, but the second has no such stigma attached to it. It is identical to subname(@_) but with one important difference: the current stack frame is obliterated and replaced with the new subroutine. If we had used $AUTOLOAD->(@_) in our example, and someone had told a debugger to set a breakpoint inside Data::BT::PhoneBill::_Call::type, they would see this backtrace:
+
+    . = Data::BT::PhoneBill::_Call::type ...
+    . = Data::BT::PhoneBill::_Call::AUTOLOAD ...
+    . = main::process_call
+
+In other words, we've exposed the plumbing, if only for the first call to type. If we use goto &$AUTOLOAD, however, the AUTOLOAD stack frame is obliterated and replaced directly by the type frame:
+
+    . = Data::BT::PhoneBill::_Call::type ...
+    . = main::process_call
+
+It's also concievable that, because there is no third stack frame or call-return linkage to handle, the goto technique is marginally more efficient.
+
+There are two things that every user of AUTOLOAD needs to know. The first is DESTROY. If your AUTOLOAD subroutine does anything magical, you need to make sure that it checks to see if it's being called in place of an object's DESTROY clean-up method. One common idiom to do this is return if $1 eq "DESTROY". Another is to define an empty DESTROY method in the class: sub DESTROY { }.
+
+The second important thing about AUTOLOAD is that you can neither decline nor chain AUTOLOADs. If an AUTOLOAD subroutine has been called, then the missing subroutine has been deemed to be dealt with. If you want to rethrow the undefined-subroutine error, you must do so manually. For instance, let's limit our Data::BT::PhoneBill::_Call::AUTOLOAD method to only deal with real elements of the hash, and not any random rubbish or typo that comes our way:
+
+    use Carp qw(croak);
+    ...
+    sub AUTOLOAD {
+        my $self = shift;
+        if ($AUTOLOAD =~ /.*::(.*)/ and exists $self->{$1}) {
+            return $self->{$1}
+        }
+        croak "Undefined subroutine &$AUTOLOAD called"; }
+
+1.1.3. CORE and CORE::GLOBAL
+Two of the most misunderstood pieces of Perl arcana are the CORE and CORE::GLOBAL packages. These two packages have to do with the replacement of built-in functions. You can override a built-in by importing the new function into the caller's namespace, but it is not as simple as defining a new function.
+
+For instance, to override the glob function in the current package with one using regular expression syntax, we either have to write a module or use the subs pragma to declare that we will be using our own version of the glob typeglob:
+
+    use subs qw(glob);
+
+    sub glob {
+        my $pattern = shift;
+        local *DIR;
+        opendir DIR, "." or die $!;
+        return grep /$pattern/, readdir DIR;
+    }
+
+This replaces Perl's built-in glob function for the duration of the package:
+
+    print "$_\n" for glob("^c.*\\.xml");
+
+    ch01.xml
+    ch02.xml
+    ...
+
+However, since the <*.*> syntax for the glob operator is internally resolved to a call to glob, we could just as well say:
+
+    print "$_\n" for <^c.*\\.xml>;
+
+Neither of these would work without the use subs line, which prepares the Perl parser for seeing a private version of the glob function.
+
+If you're writing a module that provides this functionality, all is well and good. Just put the name of the built-in function in @EXPORT, and the Exporter will do the rest.
+
+Where do CORE:: and CORE::GLOBAL:: come in, then? First, if we're in a package that has an overriden glob and we need to get at Perl's core glob, we can use CORE::glob( ) to do so:
+
+    @files = <ch.*xml>;      # New regexp glob
+    @files = CORE::glob("ch*xml"); # Old shell-style glob
+
+CORE:: always refers to the built-in functions. I say "refers to" as a useful fictionCORE:: merely qualifies to the Perl parser which glob you mean. Perl's built-in functions don't really live in the symbol table; they're not subroutines, and you can't take references to them. There can be a package called CORE, and you can happily say things like $CORE::a = 1. But CORE:: followed by a function name is special.
+
+Because of this, we can rewrite our regexp-glob function like so:
+
+    package Regexp::Glob;
+    use base 'Exporter';
+    our @EXPORT = qw(glob);
+
+    sub glob {
+        my $pattern = shift;
+        return grep /$pattern/, CORE::glob("*");
+    }
+    1;
+
+There's a slight problem with this. Importing a subroutine into a package only affects the package in question. Any other packages in the program will still call the built-in glob:
+
+    use Regexp::Glob;
+    @files = glob("ch.*xml");      # New regexp glob
+
+    package Elsewhere;
+    @files = glob("ch.*xml");      # Old shell-style glob
+
+Our other magic package, CORE::GLOBAL::, takes care of this problem. By writing a subroutine reference into CORE::GLOBAL::glob, we can replace the glob function throughout the whole program:
+
+    package Regexp::Glob;
+
+    *CORE::GLOBAL::glob = sub {
+        my $pattern = shift;
+        local *DIR;
+        opendir DIR, "." or die $!;
+        return grep /$pattern/, readdir DIR;
+    };
+
+    1;
+
+Now it doesn't matter if we change packagesthe glob operator and its <> alias will be our modified version.
+
+So there you have it: CORE:: is a pseudo-package used only to unambiguously refer to the built-in version of a function. CORE::GLOBAL:: is a real package in which you can put replacements for the built-in version of a function across all namespaces.
+
+1.1.4. Case Study: Hook::LexWrap
+Hook::LexWrap is a module that allows you to add wrappers around subroutinesthat is, to add code to execute before or after a wrapped routine. For instance, here's a very simple use of LexWrap for debugging purposes:
+
+    wrap 'my_routine',
+       pre => sub { print "About to run my_routine with arguments @_" },
+       post => sub { print "Done with my_routine"; }
+
+The main selling point of Hook::LexWrap is summarized in the module's documentation:
+
+Unlike other modules that provide this capacity (e.g. Hook::PreAndPost and Hook::WrapSub), Hook::LexWrap implements wrappers in such a way that the standard "caller" function works correctly within the wrapped subroutine.
+
+It's easy enough to fool caller if you only have pre-hooks; you replace the subroutine in question with an intermediate routine that does the moral equivalent of:
+
+    sub my_routine {
+        call_pre_hook(  );
+        goto &Real::my_routine;
+    }
+
+As we saw above, the goto &subname form obliterates my_routine's stack frame, so it looks to the outside world as though my_routine has been controlled directly.
+
+But with post-hooks it's a bit more difficult; you can't use the goto & trick. After the subroutine is called, you want to go on to do something else, but you've obliterated the subroutine that was going to call the post-hook.
+
+So how does Hook::LexWrap ensure that the standard caller function works? Well, it doesn't; it actually provides its own, making sure you don't use the standard caller function at all.
+
+Hook::LexWrap does its work in two parts. The first part assigns a closure to the subroutine's glob, replacing it with an imposter that arranges for the hooks to be called, and the second provides a custom CORE::GLOBAL::caller. Let's first look at the custom caller:
+
+    *CORE::GLOBAL::caller = sub {
+        my ($height) = ($_[0]||0);
+        my $i=1;
+        my $name_cache;
+        while (1) {
+            my @caller = CORE::caller($i++) or return;
+            $caller[3] = $name_cache if $name_cache;
+            $name_cache = $caller[0] eq 'Hook::LexWrap' ? $caller[3] : '';
+            next if $name_cache || $height-- != 0;
+            return wantarray ? @_ ? @caller : @caller[0..2] : $caller[0];
+        }
+    };
+
+The basic idea of this is that we want to emulate caller, but if we see a call in the Hook::LexWrap namespace, then we ignore it and move on to the next stack frame. So we first work out the number of frames to back up the stack, defaulting to zero. However, since CORE::GLOBAL::caller itself counts as a stack frame, we need to start the counting internally from one.
+
+Next, we do a slight bit of trickery. Our imposter subroutine is compiled in the Hook::LexWrap namespace, but it has the name of the original subroutine it's emulating. So if we see something in Hook::LexWrap, we store its subroutine name away in $name_cache and then skip over it, without decrementing $height. If the thing we see is not in Hook::LexWrap, but comes directly after something that is, we replace its subroutine name with the one from the cache. Finally, once $height gets down to zero, we can return the appropriate bits of the @caller array.
+
+By doing this, we've created our own replacement caller function, which hides the existence of stack frames in the Hook::LexWrap package, but in all other ways behaves the same as the original caller. Now let's see how our imposter subroutine is built up.
+
+Most of the wrap routine is actually just about argument checking, context propagation, and return value handling; we can slim it down to the following for our purposes:
+
+    sub wrap (*@) {
+        my ($typeglob, %wrapper) = @_;
+        $typeglob = (ref $typeglob || $typeglob =~ /::/)
+            ? $typeglob
+            : caller(  )."::$typeglob";
+        my $original = ref $typeglob eq 'CODE'
+                       ? $typeglob
+                       : *$typeglob{CODE};
+        $imposter = sub {
+            $wrapper{pre}->(@_) if $wrapper{pre};
+            my @return = &$original;
+            $wrapper{post}->(@_) if $wrapper{post};
+            return @return;
+        };
+        *{$typeglob} = $imposter;
+    }
+
+To make our imposter work, we need to know two things: the code we're going to run and where it's going to live in the symbol table. We might have been either handed a typeglob (the tricky case) or the name of a subroutine as a string. If we have a string, the code looks like this:
+
+    $typeglob = $typeglob =~ /::/ ? $typeglob : caller(  )."::$typeglob";
+    my $original = *$typeglob{CODE};
+
+The first line ensures that the now badly named $typeglob is fully qualified; if not, it's prefixed with the calling package. The second line turns the string into a subroutine reference using the glob reference syntax.
+
+In the case where we're handed a glob like *to_wrap, we have to use some magic. The wrap subroutine has the prototype (*$); here is what the perlsub documentation has to say about * prototypes:
+
+A "*" allows the subroutine to accept a bareword, constant, scalar expression, typeglob, or reference to a typeglob in that slot. The value will be available to the subroutine either as a simple scalar or (in the latter two cases) as a reference to the typeglob.
+
+So if $typeglob turns out to be a typeglob, it's converted into a glob reference, which allows us to use the same syntax to write into the code part of the glob.
+
+The $imposter closure is simple enoughit calls the pre-hook, then the original subroutine, then the post-hook. We know where it should go in the symbol table, and so we redefine the original subroutine with our new one.
+
+So this relatively complex module relies purely on two tricks that we have already examined: first, globally overriding a built-in function using CORE::GLOBAL::, and second, saving away a subroutine reference and then glob assigning a new subroutine that wraps around the original.
+
+1.1.5. Introspection with B
+There's one final category of introspection as applied to Perl programs: inspecting the underlying bytecode of the program itself.
+
+When the perl interpreter is handed some code, it translates it into an internal code, similar to other bytecode-compiled languages such as Java. However, in the case of Perl, each operation is represented as the node on a tree, and the arguments to each operation are that node's children.
+
+For instance, from the very short subroutine:
+
+    sub sum_input {
+        my $a = <>;
+        print $a + 1;
+    }
+
+Perl produces the tree in Figure 1-5.
+
+Figure 1-5. Bytecode tree
+
+The B module provides functions that expose the nodes of this tree as objects in Perl itself. You can examineand in some cases modifythe parsed representation of a running program.
+
+There are several obvious applications for this. For instance, if you can serialize the data in the tree to disk, and find a way to load it up again, you can store a Perl program as bytecode. The B::Bytecode and ByteLoader modules do just this.
+
+Those thinking that they can use this to distribute Perl code in an obfuscated binary format need to read on to our second application: you can use the tree to reconstruct the original Perl code (or something quite like it) from the bytecode, by essentially performing the compilation stage in reverse. The B::Deparse module does this, and it can tell us a lot about how Perl understands different code:
+
+    % perl -MO=Deparse -n -e '/^#/ || print'
+
+    LINE: while (defined($_ = <ARGV>)) {
+        print $_ unless /^#/;
+    }
+
+This shows us what's really going on when the -n flag is used, the inferred $_ in print, and the logical equivalence of X || Y and Y unless X.[*] (Incidentally, the Omodule is a driver that allows specified B::* modules to do what they want to the parsed source code.)
+
+[*] The -MO=Deparse flag is equivalent to use O qw(Deparse);.
+
+To understand how these modules do their work, you need to know a little about the Perl virtual machine. Like almost all VM technologies, Perl 5 is a software CPU that executes a stream of instructions. Many of these operations will involve putting values on or taking them off a stack; unlike a real CPU, which uses registers to store intermediate results, most software CPUs use a stack model.
+
+Perl code enters the perl interpreter, gets translated into the syntax tree structure we saw before, and is optimized. Part of the optimization process involves determining a route through the tree by joining the ops together in a linked list. In Figure 1-6, the route is shown as a dotted line.
+
+Figure 1-6. Optimized bytecode tree
+
+Each node on the tree represents an operation to be done: we need to enter a new lexical scope (the file); set up internal data structures for a new statement, such as setting the line number for error reporting; find where $a lives and put that on the stack; find what filehandle <> refers to; read a line from that filehandle and put that on the stack; assign the top value on the stack (the result) to the next value down (the variable storage); and so on.
+
+There are several different kinds of operators, classified by how they manipulate the stack. For instance, there are the binary operatorssuch as addwhich take two values off the stack and return a new value. readline is a unary operator; it takes a filehandle from the stack and puts a value back on. List operators like print take a number of values off the stack, and the nullary pushmark operator is responsible for putting a special mark value on the stack to tell print where to stop.
+
+The B module represents all these different kinds of operators as subclasses of the B::OP class, and these classes contain methods allowing us to get the next module in the execution order, the children of an operator, and so on.
+
+Similar classes exist to represent Perl scalar, array, hash, filehandle, and other values. We can convert any reference to a B:: object using the svref_2object function:
+
+    use B;
+
+    my $subref = sub {
+        my $a = <>;
+        print $a + 1;
+    };
+
+    my $b = B::svref_2object($subref); # B::CV object
+
+This B::CV object represents the subroutine reference that Perl can, for instance, store in the symbol table. To look at the op tree inside this object, we call the START method to get the first node in the linked list of the tree's execution order, or the ROOT method to find the root of the tree.
+
+Depending on which op we have, there are two ways to navigate the op tree. To walk the tree in execution order, you can just follow the chain of next pointers:
+
+    my $op = $b->START;
+
+    do {
+        print B::class($op). " : ". $op->name." (".$op->desc.")\n";
+    } while $op = $op->next and not $op->isa("B::NULL");
+
+The class subroutine just converts between a Perl class name like B::COP and the underlying C equivalent, COP; the name method returns the human-readable name of the operation, and desc gives its description as it would appear in an error message. We need to check that the op isn't a B::NULL, because the next pointer of the final op will be a C null pointer, which B handily converts to a Perl object with no methods. This gives us a dump of the subroutine's operations like so:
+
+    COP : nextstate (next statement)
+    OP : padsv (private variable)
+    PADOP : gv (glob value)
+    UNOP : readline (<HANDLE>)
+    COP : nextstate (next statement)
+    OP : pushmark (pushmark)
+    OP : padsv (private variable)
+    SVOP : const (constant item)
+    BINOP : add (addition (+))
+    LISTOP : print (print)
+    UNOP : leavesub (subroutine exit)
+
+As you can see, this is the natural order for the operations in the subroutine. If you want to examine the tree in top-down order, something that is useful for creating things like B::Deparse or altering the generated bytecode tree with tricks like optimizer and B::Generate, then the easiest way is to use the B::Utils module. This provides a number of handy functions, including walkoptree_simple. This allows you to set a callback and visit every op in a tree:
+
+    use B::Utils qw( walkoptree_simple );
+    ...
+    my $op = $b->ROOT;
+
+    walkoptree_simple($op, sub{
+        $cop = shift;
+        print B::class($cop). " : ". $cop->name." (".$cop->desc.")\n";
+    });
+
+Note that this time we start from the ROOT of the tree instead of the START; traversing the op tree in this order gives us the following list of operations:
+
+    UNOP : leavesub (subroutine exit)
+    LISTOP : lineseq (line sequence)
+    COP : nextstate (next statement)
+    UNOP : null (null operation)
+    OP : padsv (private variable)
+    UNOP : readline (<HANDLE>)
+    PADOP : gv (glob value)
+    COP : nextstate (next statement)
+    LISTOP : print (print)
+    ...
+
+Working with Perl at the op level requires a great deal of practice and knowledge of the Perl internals, but can lead to extremely useful tools like Devel::Cover, an op-level profiler and coverage analysis tool.
+
+1.2. Messing with the Class Model
+Perl's style of object orientation is often maligned, but its sheer simplicity allows the advanced Perl programmer to extend Perl's behavior in interestingand sometimes startlingways. Because all the details of Perl's OO model happen at runtime and in the openusing an ordinary package variable (@INC) to handle inheritance, for instance, or using the symbol tables for method dispatchwe can fiddle with almost every aspect of it.
+
+In this section we'll see some techniques specific to playing with the class model, but we will also examine how to apply the techniques we already know to distort Perl's sense of OO.
+
+1.2.1. UNIVERSAL
+In almost all class-based OO languages, all objects derive from a common class, sometimes called Object. Perl doesn't quite have the same concept, but there is a single hard-wired class called UNIVERSAL, which acts as a last-resort class for method lookups. By default, UNIVERSAL provides three methods: isa, can, and VERSION.
+
+We saw isa briefly in the last section; it consults a class or object's @ISA array and determines whether or not it derives from a given class:
+
+    package Coffee;
+    our @ISA = qw(Beverage::Hot);
+
+    sub new { return bless { temp => 80 }, shift }
+
+    package Tea;
+    use base 'Beverage::Hot';
+
+    package Latte;
+    use base 'Coffee';
+
+    package main;
+    my $mug = Latte->new;
+
+    Tea->isa("Beverage::Hot"); # 1
+    Tea->isa("Coffee"); # 0
+
+    if ($mug->isa("Beverage::Hot")) {
+        warn 'Contents May Be Hot';
+    }
+
+ isa is a handy method you can use in modules to check that you've been handed the right sort of object. However, since not everything in Perl is an object, you may find that just testing a scalar with isa is not enough to ensure that your code doesn't blow up: if you say $thing->isa(...) on an unblessed reference, Perl will die.
+
+The preferred "safety first" approach is to write the test this way:
+
+    my ($self, $thing) = @_;
+    croak "You need to give me a Beverage::Hot instance"
+     unless eval { $thing->isa("Beverage::Hot"); };
+
+This will work even if $thing is undef or a non-reference.
+
+Checking isa relationships is one way to ensure that an object will respond correctly to the methods that you want to call on it, but it is not necessarily the best one. Another idea, that of duck typing, states that you should determine whether or not to deal with an object based on the methods it claims to respond to, rather than its inheritance. If our Tea class did not derive from Beverage::Hot, but still had temperature, milk, and sugar accessors and brew and drink methods, we could treat it as if it were a Beverage::Hot. In short, if it walks like a duck and it quacks like a duck, we can treat it like a duck.[*]
+
+[*] Of course, one of the problems with duck typing is that checking that something can respond to an action does not tell us how it will respond. We might expect a TRee object and a Dog to both have a bark method, but that wouldn't mean that we could use them in the same way.
+
+The universal can method allows us to check Perl objects duck-style. It's particularly useful if you have a bunch of related classes that don't all respond to the same methods. For instance, looking back at our B::OP classes, binary operators, list operators, and pattern match operators have a last accessor to retrieve the youngest child, but nullary, unary, and logical operators don't. Instead of checking whether or not we have an instance of the appropriate classes, we can write generically applicable code by checking whether the object responds to the last method:
+
+    $h{firstaddr} = sprintf("%#x", $ {$op->first}) if $op->can("first");
+    $h{lastaddr}  = sprintf("%#x", $ {$op->last})  if $op->can("last");
+
+Another advantage of can is that it returns the subroutine reference for the method once it has been looked up. We'll see later how to use this to implement our own method dispatch in the same way that Perl would.
+
+Finally, VERSION returns the value of the class's $VERSION. This is used internally by Perl when you say:
+
+    use Some::Module 1.2;
+
+While I'm sure there's something clever you can do by providing your own VERSION method and having it do magic when Perl calls it, I can't think what it might be.
+
+However, there is one trick you can play with UNIVERSAL: you can put your own methods in it. Suddenly, every object and every class name (and remember that in Perl a class name is just a string) responds to your new method.
+
+One particularly creative use of this is the UNIVERSAL::require module. Perl's require keyword allows you to load up modules at runtime; however, one of its more annoying features is that it acts differently based on whether you give it a bare class name or a quoted string or scalar. That is:
+
+    require Some::Module;
+
+will happily look up Some/Module.pm in the @INC path. However, if you say:
+
+    my $module = "Some::Module";
+    require $module;
+
+Perl will look for a file called Some::Module in the current directory and probably fail. This makes it awkward to require modules by name programatically. You have to end up doing something like:
+
+    eval "require $module";
+
+which has problems of its own. UNIVERSAL::require is a neat solution to thisit provides a require method, which does the loading for you. Now you can say:
+
+    $module->require;
+
+Perl will treat $module as a class name and call the class method, which will fall through to UNIVERSAL::require, which loads up the module.
+
+Similarly, the UNIVERSAL::moniker module provides a human-friendly name for an object's class, by lowercasing the text after the final :::
+
+    package UNIVERSAL;
+
+    sub moniker {
+        my ($self) = @_;
+            my @parts = split /::/, (ref($self) || $self);
+        return lc pop @parts;
+    }
+
+This allows you to say things like:
+
+    for my $class (@classes) {
+        print "Listing of all ".$class->plural_moniker.":\n";
+        print $_->name."\n" for $class->retrieve_all;
+        print "\n";
+    }
+
+Some people disagree with putting methods into UNIVERSAL, but the worst that can happen is that an object now unexpectedly responds to a method it would not have before. And if it would not respond to a method before, then any call to it would have been a fatal error. At worst, you've prevented the program from breaking immediately by making it do something strange. Balancing this against the kind of hacks you can perpetrate with it, I'd say that adding things to UNIVERSAL is a useful technique for the armory of any advanced Perl hacker.
+
+1.2.2. Dynamic Method Resolution
+If you're still convinced that Perl's OO system is not the sort of thing that you want, then the time has come to write your own. Damian Conway's Object Oriented Perl is full of ways to construct new forms of objects and object dispatch.
+
+We've seen the fundamental techniques for doing this; it's now just a matter of combining them. For instance, we can combine AUTOLOAD and UNIVERSAL to respond to any method in any class at all. We could use this to turn all unknown methods into accessors and mutators:
+
+    sub UNIVERSAL::AUTOLOAD {
+        my $self = shift;
+        $UNIVERSAL::AUTOLOAD =~ /.*::(.*)/;
+        return if $1 eq "DESTROY";
+        if (@_) {
+           $self->{$1} = shift;
+        }
+        $self->{$1};
+    }
+
+Or we could use it to mess about with inheritance, like Class::Dynamic; or make methods part of an object's payload, like Class::Classless or Class::Object. We'll see later how to implement Java-style final attributes to prevent methods from being overriden by derived classes.
+
+1.2.3. Case Study: Singleton Methods
+On the infrequent occasions when I'm not programming in Perl, I program in an interesting language called Ruby. Ruby is the creation of Japanese programmer Yukihiro Matsumoto, based on Perl and several other dynamic languages. It has a great number of ideas that have influenced the design of Perl 6, and some of them have even been implemented in Perl 5, as we'll see here and later in the chapter.
+
+One of these ideas is the singleton method, a method that only applies to one particular object and not to the entire class. In Perl, the concept would look something like this:
+
+    my $a = Some::Class->new;
+    my $b = Some::Class->new;
+
+    $a->singleton_method( dump => sub {
+      my $self = shift;
+      require Data::Dumper; print STDERR Date::Dumper::Dumper($self)
+    });
+
+    $a->dump; # Prints a representation of the object.
+    $b->dump; # Can't locate method "dump"
+
+$a receives a new method, but $b does not. Now that we have an idea of what we want to achieve, half the battle is over. It's obvious that in order to make this work, we're going to put a singleton_method method into UNIVERSAL. And now somehow we've got to make $a have all the methods that it currently has, but also have an additional one.
+
+If this makes you think of subclassing, you're on the right track. We need to subclass $a (and $a only) into a new class and put the singleton method into the new class. Let's take a look at some code to do this:
+
+    package UNIVERSAL;
+
+    sub singleton_method {
+        my ($object, $method, $subref) = @_;
+
+        my $parent_class = ref $object;
+        my $new_class = "_Singletons::".(0+$object);
+        *{$new_class."::".$method} = $subref;
+
+        if ($new_class ne $parent_class) {
+            @{$new_class."::ISA"} = ($parent_class);
+            bless $object, $new_class;
+        }
+    }
+
+First, we find what $a's original class is. This is easy, since ref tells us directly. Next we have to make up a new classa new package name for our singleton methods to live in. This has to be specific to the object, so we use the closest thing to a unique identifier for objects that Perl has: the numeric representation of its memory address.
+
+0+$object
+We don't talk a lot about memory locations in Perl, so using something like 0+$object to find a memory location may surprise you. However, it should be a familiar concept. If you've ever accidentally printed out an object when you expected a normal scalar, you should have seen something like Some::Class=HASH(0x801180). This is Perl's way of telling you that the object is a Some::Class object, it's based on a hash, and it lives at that particular location in memory.
+
+However, just like the special variable $!, objects have a string/integer duality. If you treat an object as an ordinary string, you get the output we have just described. However, if you treat it as a number, you just get the 0x8801180. By saying 0+$object, we're forcing the object to return its memory location, and since no two objects can be at the same location, we have a piece of data unique to the object.
+
+We inject the method into the new class with glob assignment, and now we need to set up its inheritance relationship on $a's own class. Since Perl's inheritance is handled by package variables, these are open for us to fiddle with dynamically. Finally, we change $a's class by re-blessing it into the new class.
+
+The final twist is that if this is the second time the object has had a singleton method added to it, then its class will already be in the form _Singleton::8393088. In this case, the new class name would be the same as the old, and we really don't want to alter @ISA, since that would set up a recursive relationship. Perl doesn't like that.
+
+In only 11 lines of code we've extended the way Perl's OO system works with a new concept borrowed from another language. Perl's model may not be terribly advanced, but it's astonishingly flexible.
+
+1.3. Unexpected Code
+The final set of advanced techniques in this chapter covers anything where Perl code runs at a time that might not be obvious: tying, for instance, runs code when a variable is accessed or assigned to; overloading runs code when various operations are called on a value; and time shifting allows us to run code out of order or delayed until the end of scope.
+
+Some of the most striking effects in Perl can be obtained by arranging for code to be run at unexpected moments, but this must be tempered with care. The whole point of unexpected code is that it's unexpected, and that breaks the well-known Principle of Least Surprise: programming Perl should not be surprising.
+
+On the other hand, these are powerful techniques. Let's take a look at how to make the best use of them.
+
+1.3.1. Overloading
+Overloading, in a Perl context, is a way of making an object look like it isn't an object. More specifically, it's a way of making an object respond to methods when used in an operation or other context that doesn't look like a method call.
+
+The problem with such overloading is that it can quickly get wildly out of hand. C++ overloads the left bit-shift operator, <<, on filehandles to mean print:
+
+    cout << "Hello world";
+
+since it looks like the string is heading into the stream. Ruby, on the other hand, overloads the same operator on arrays to mean push. If we make flagrant use of overloading in Perl, we end up having to look at least twice at code like:
+
+    $object *= $value;
+
+We look once to see it as a multiplication, once to realize it's actually a method call, and once more to work out what class $object is in at this point and hence what method has been called.
+
+That said, for classes that more or less represent the sort of things you're overloadingnumbers, strings, and so onthen overloading works fine. Now, how do we do it?
+
+1.3.1.1 Simple operator overloading
+The classic example of operator overloading is a module that represents time. Indeed, Time::Seconds, from the Time::Piece distribution does just this. Let's make some new Time::Seconds objects:
+
+    my $min  = Time::Seconds->new(60);
+    my $hour = Time::Seconds->new(3600);
+
+The point of Time::Seconds is that, as well as merely representing a number of seconds, you can convert between different units of duration:
+
+    my $longtime = Time::Seconds->new(123456);
+    print $longtime->hours; # 34.2933..
+    print $longtime->days;  # 1.42888..
+
+These objects definitely represent a numbera number of seconds. Normally, we'd have to add them together with some ugly hack like this:
+
+    my $new = $min->add($hour);
+
+And even then it's not clear whether or not that alters the original $min. So one natural use of operator overloading would be to enable us to say $min + $hour, and get back an object representing 3,660 seconds. And that is precisely what happens:
+
+    my $new = $min + $hour;
+    print $new->seconds; # 3660
+
+This is done by the following bit of code in the Time::Seconds module:
+
+    use overload '+' => \&add;
+    # ...
+    sub add {
+        my ($lhs, $rhs) = _get_ovlvals(@_);
+        return Time::Seconds->new($lhs + $rhs);
+    }
+
+    sub _get_ovlvals {
+        my ($lhs, $rhs, $reverse) = @_;
+        $lhs = $lhs->seconds;
+
+        if (UNIVERSAL::isa($rhs, 'Time::Seconds')) {
+        $rhs = $rhs->seconds;
+        } elsif (ref($rhs)) {
+        die "Can't use non Seconds object in operator overload";
+        }
+
+        if ($reverse) { return $rhs, $lhs; }
+        return $lhs, $rhs;
+    }
+
+The overload pragma is the key to it all. It tells Perl to look more carefully at operations involving objects of that class, and it registers methods for the given operators in a look-up table. When an object is involved in an overloaded operation, the operation is looked up in the table and the resulting method called. In this case, $obj + $other will call $obj->add($other, 0).
+
+The reason Perl passes three parameters to the method is that in the case of $other + $obj, where $other is not an object that overloads +, we still expect the add method to be called on $obj. In this case, however, Perl will call $obj->add($other, 1), to signify that the arguments have been reversed.
+
+The _get_ovlvals subroutine looks at the two arguments to an operator and tries to coerce them into numbersother Time::Seconds objects are turned into numbers by having the seconds method called on them, ordinary numbers are passed through, and any other kind of object causes a fatal error. Then the arguments are reordered to the original order.
+
+Once we have two ordinary numbers, we can add them together and return a new Time::Seconds object based on the sum.
+
+The other operators are based on this principle, such as <=>, which implements all of the comparison operators:
+
+    use overload '<=>' => \&compare;
+    sub compare {
+        my ($lhs, $rhs) = _get_ovlvals(@_);
+        return $lhs <=> $rhs;
+    }
+
+Time::Seconds also overloads assignment operators += and -=:
+
+    use overload '-=' => \&subtract_from;
+    sub subtract_from {
+        my $lhs = shift;
+        my $rhs = shift;
+        $rhs = $rhs->seconds if UNIVERSAL::isa($rhs, 'Time::Seconds');
+        $$lhs -= $rhs;
+        return $lhs;
+    }
+
+This allows you to say $new += 60 to add another minute to the new duration.
+
+Finally, to avoid having to write such subroutines for every kind of operator, Time::Seconds uses a feature of overload called fallback. This instructs Perl to attempt to automatically generate reasonable methods from the ones specified: for instance, the $x++ operator will be implemented in terms of $x += 1, and so on.Time::Seconds sets fallback to undef, which means that Perl will try to use an autogenerated method but will die if it cannot find one.
+
+    use overload 'fallback' => 'undef';
+
+Alternate values for fallback include some true value, which is the most general fallback: if it cannot find an autogenerated method, it will do what it can, assuming if necessary that overloading does not exist. In other words, it will always produce some value, somehow.
+
+If you're using overloading just to add a shortcut operator or two onto an otherwise object-based classfor example, if you wanted to emulate C++'s (rather dodgy) use of the << operator to write to a filehandle:
+
+    $file << "This is ugly\n";
+
+then you should use the default value of fallback, which is false. This means that no automatic method generation will be tried, and any attempts to use the object with one of the operations you have not overloaded will cause a fatal error.
+
+However, as well as performing arithmetic operations on Time::Seconds objects, there's something else you can do with them:
+
+    print $new; # 3660
+
+If we use the object as an ordinary string or a number, we don't get object-like behavior (the dreaded Time::Seconds=SCALAR(0xf00)) but instead it acts just like we should expect from something representing a number: it looks like a number. How does it do that?
+
+1.3.1.2 Other operator overloading
+As well as being able to overload the basic arithmetic and string operators, Perl allows you to overload the sorts of things that you wouldn't normally think of as operators. The two most useful of these we have just seen with Time::Secondsthe ability to dictate how an object is converted to a string or integer when used as such.
+
+This is done by assigning methods to two special operator namesthe "" operator for stringification and the 0+ operator for numification:
+
+    use overload '0+' => \&seconds,
+                 '""' => \&seconds;
+
+Now anytime the Time::Seconds object is used as a string or a number, the seconds method gets called, returning the number of seconds that the object contains:
+
+    print "One hour plus one minute is $new seconds\n";
+    # One hour plus one minute is 3660 seconds.
+
+These are the most common methods to make an overloaded object look and behave like the thing it's meant to represent. There are a few other methods you can play with for more obscure effects.
+
+For instance, you can overload the way that an object is dereferenced in various ways, allowing a scalar reference to pretend that it's a list reference or vice versa. There are few sensible reasons to do thisthe curious Object::MultiType overloads the @{ }, %{ }, &{ }, and *{ } operators to allow a single object to pretend to be an array, hash, subroutine, or glob, depending on how it's used.
+
+1.3.1.3 Non-operator overloading
+One little-known extension of the overload mechanism is hidden away in the documentation for overload:
+
+For some application Perl parser [sic] mangles constants too much. It is possible to hook into this process via overload::constant( ) and overload::remove_constant( ) functions.
+
+These functions take a hash as an argument. The recognized keys of this hash are
+
+integer
+
+to overload integer constants,
+
+float
+
+to overload floating point constants,
+
+binary
+
+to overload octal and hexadecimal constants,
+
+q
+
+to overload "q"-quoted strings, constant pieces of "qq"- and "qx"-quoted strings and here-documents,
+
+qr
+
+to overload constant pieces of regular expressions.
+
+That is to say, you can cause the Perl parser to run a subroutine of your choice every time it comes across some kind of constant. Naturally, this is again something that should be used with care but can be used to surprising effect.
+
+The subroutines supplied to overload::constant pass three parameters: the first is the raw form as the parser saw it, the second is the default interpretation, and the third is a mnemonic for the context in which the constant occurs. For instance, given "camel\nalpaca\npanther", the first parameter would be camel\nalpaca\npanther, whereas the second would be:
+
+    camel
+    alpaca
+    panther
+
+As this is a double-quoted (qq) string, the third parameter would be qq.
+
+For instance, the high-precision math libraries Math::BigInt and Math::BigFloat provide the ability to automatically create high-precision numbers, by overloading the constant operation.
+
+    % perl -MMath::BigFloat=:constant -le 'print ref (123456789012345678901234567890\
+        >1234567890)'
+    Math::BigFloat
+
+This allows the libraries to get at all the numbers in a program, providing high-precision math without the explicit creation of overloaded Math::BigFloat objects. The code that does it is stunningly simple:
+
+    sub import {
+        my $self = shift;
+        # ...
+        overload::constant float => sub { $self->new(shift); };
+    }
+
+When the parser sees a floating point number (one too large to be stored as an integer) it passes the raw string as the first parameter of the subroutine reference. This is equivalent to calling:
+
+    Math::BigFloat->new("1234567890123456789012345678901234567890")
+
+at compile time.
+
+The Math::Big* libraries can get away with this because they are relatively well behaved; that is, a Perl program should not notice any difference if all the numbers are suddenly overloaded Math::BigInt objects.
+
+On the other hand, here's a slightly more crazy use of overloading...
+
+I've already mentioned Ruby as being another favorite language of mine. One of the draws about Ruby is that absolutely everything is an object:
+
+    % irb
+    irb(main):001:0> 2
+    => 2
+    irb(main):002:0> 2.class
+    => Fixnum
+    irb(main):003:0> 2.class.class
+    => Class
+    irb(main):004:0> 2.class.class.class
+    => Class
+    irb(main):005:0> 2.methods
+    => ["<=", "to_f", "abs", "-", "upto", "succ", "|", "/", "type",
+    "times", "%", "-@", "&", "~", "<", "**", "zero?", "^", "<=>", "to_s",
+    "step", "[&thinsp;&thinsp;]", ">", "=&thinsp;&thinsp;=", "modulo", "next", "id2name",    "size", "<<",
+    "*", "downto", ">>", ">=", "divmod", "+", "floor", "to_int", "to_i",
+    "chr", "truncate", "round", "ceil", "integer?", "prec_f", "prec_i",
+    "prec", "coerce", "nonzero?", "+@", "remainder", "eql?",
+    "=&thinsp;&thinsp;=&thinsp;&thinsp;=",
+    "clone", "between?", "is_a?", "equal?", "singleton_methods", "freeze",
+    "instance_of?", "send", "methods", "tainted?", "id",
+    "instance_variables", "extend", "dup", "protected_methods", "=~",
+    "frozen?", "kind_of?", "respond_to?", "class", "nil?",
+    "instance_eval", "public_methods", "_&thinsp;_send_&thinsp;_", "untaint", "_&thinsp;_
+    id_&thinsp;_",
+    "inspect", "display", "taint", "method", "private_methods", "hash",
+    "to_a"]
+
+I like that you can call methods on a 2. I like that you can define your own methods to call on a 2. Of course, you can't do that in Perl; 2 is not an object.
+
+But we can fake it. Ruby.pm was a proof-of-concept module I started work on to demonstrate that you can do this sort of thing in Perl. Here's what it looks like:
+
+        use Ruby;
+        print 2->class; # "FixInt"
+        print "Hello World"->class->class # "Class"
+        print 2->class->to_s->class # "String"
+        print 2->class->to_s->length # "6"
+        print ((2+2)->class) # "FixInt"
+
+        # Or even:
+        print 2.class.to_s.class # "String"
+
+How can this possibly work? Obviously, the only thing that we can call methods on are objects, so constants like 2 and Hello World need to return objects. This tells us we need to be overloading these constants to return objects. We can do that easily enough:
+
+        package Ruby;
+        sub import {
+        overload::constant(integer => sub { return Fixnum->new(shift) },
+                           q       => sub { return String->new(shift) },
+                           qq      => sub { return String->new(shift) });
+        }
+
+We can make these objects blessed scalar references:
+
+        package Fixnum;
+        sub new { return bless \$_[1], $_[0] }
+
+        package String;
+        sub new { return bless \$_[1], $_[0] }
+
+This allows us to fill the classes up with methods that can be called on the constants. That's a good start. The problem is that our constants now behave like objects, instead of like the strings and numbers they represent. We want "Hello World" to look like and act like "Hello World" instead of like "String=SCALAR(0x80ba0c)".
+
+To get around this, we need to overload againwe've overloaded the constants to become objects, and now we need to overload those objects to look like constants again. Let's look at the string class first. The first thing we need to overload is obviously stringification; when the object is used as a string, it needs to display its string value to Perl, which we do by dereferencing the reference.
+
+    use overload '""' => sub { ${$_[0]} };
+
+This will get us most of the way there; we can now print out our Strings and use them anywhere that a normal Perl string would be expected. Next, we take note of the fact that in Ruby, Strings can't be coerced into numbers. You can't simply say 2 + "10", because this is an operation between two disparate types.
+
+To make this happen in our String class, we have to overload numification, too:
+
+    use Carp;
+    use overload "0+" => sub { croak "String can't be coerced into Fixnum"};
+
+You might like the fact that Perl converts between types magically, but the reason why Ruby can't do it is because it uses the + operator for both numeric addition and string concatenation, just like Java and Python. Let's overload + to give us string concatenation:
+
+    use overload "+"  => sub { String->new(${$_[0]} . "$_[1]") };
+
+There are two things to note about this. The first is that we have to be sure that any operations that manipulate strings will themselves return String objects, or otherwise we will end up with ordinary strings that we can no longer call methods on. This is necessary in the Fixnum analogue to ensure that (2+2)->class still works. The other thing is that we must explicitly force stringification on the right-hand operand, for reasons soon to become apparent.
+
+Turning temporarily to the numeric class, we can fill in two of the overload methods in the same sort of way:
+
+    use overload '""' => sub { croak "failed to convert Fixnum into String" },
+                 "0+" => sub { ${ $_[0] } },
+
+However, methods like + have to be treated carefully. We might first try doing something like this:
+
+    use overload '+'  => sub { ${ $_[0] } + $_[1] };
+
+However, if we then try 2 + "12" then we get the bizarre result 122, and further prodding finds that this is a String. Why?
+
+What happens is that Perl first sees Fixnum + String and calls the overloaded method we've just created. Inside this method, it converts the Fixnum object to its integer value and now has integer + String.
+
+The integer is not overloaded, but the String object is. If Perl can see an overloaded operation, it will try and call it, reordering the operation as String + integer. Since String has an overloaded + method, too, that gets called, creating a new string, which catenates the String and the integer. Oops.
+
+Ideally, we would find a way of converting the right-hand side of the + operation on a Fixnum to an honest-to-goodness number. Unfortunately, while Perl has an explicit stringification operator, "", which we used to avoid this problem in the String case, there isn't an explicit numification operator; overload uses 0+ as a convenient mnemonic for numification, but this is merely describing the operation in terms of the + operator, which can be overloaded. So to fix up our + method, we have to get a little technical:
+
+    use overload '+' => \&sum;
+
+    sub sum {
+        my ($left, $right) = @_;
+        my $rval;
+        if (my $numify = overload::Method($right, "0+")) {
+            $rval = $right->$numify;
+        } else {
+            $rval = $right;
+        }
+        Fixnum->new($$left + $rval);
+    }
+
+To explicitly numify the right-hand side, we ask overload if that value has an overloaded numification. If it does, Method will return the method, and we can call it and explicitly numify the value into $rval. Once we've got two plain old numbers, we add them together and return a new number out of the two.
+
+Next, we add overload fallback => 1; to each class, to provide do-what-I-mean (DWIM) methods for the operators that we don't define. This is what you want to do for any case where you want an object to completely emulate a standard built-in type, rather than just add one or two overloaded methods onto something that's essentially an object.
+
+Finally, as a little flourish, we want to make the last line of our example work:
+
+    print 2.class.to_s.class # "String"
+
+One of the reasons Ruby's concatenation operator is + is to free up . for the preferred use in most OO languages: method calls. This isn't very easy to do in Perl, but we can fake it enough for a rigged demo. Obviously we're going to need to overload the concatenation operator. The key to working out how to make it work is to realize what those things like class are in a Perl context: they're bare words, or just ordinary strings. Hence if we see a concatenation between one of our Ruby objects and an ordinary string, we should call the method whose name is in the string:
+
+    use overload "." => sub { my ($obj,$meth)=@_; $obj->$meth };
+
+And presto, we have Ruby-like objects and Ruby-like method calls. The method call magic isn't perfectwe'll see later how it can be improvedbut the Ruby-like objects can now respond to any methods we want to put into their classes. It's not hard to build up a full class hierarchy just like Ruby's own.
+
+Limitations
+Of course, our overloading shenanigans do not manage to deal with, for instance, turning arrays into objects. Although Perl is pretty flexible, that really can't be done without changing the way the method call operator works.
+
+That doesn't necessarily stop people; the hacker known only as "chocolateboy" has created a module called autobox, which requires a patch to the Perl core, but which allows you to treat any built-in Perl data type as an object.
+
+1.3.2. Time Shifting
+The final fundamental advanced technique we want to look at is that of postponing or reordering the execution of Perl code. For instance, we might want to wait until all modules have been loaded before manipulating the symbol table, we might want to construct some code and run it immediately with eval, or we might want to run code at the end of a scope.
+
+There are Perl keywords for all of these concepts, and judicious use of them can be effective in achieving a wide variety of effects.
+
+1.3.2.1 Doing things now with eval/BEGIN
+The basic interface to time-shifting is through a series of named blocks. These are like special subroutines that Perl stores in a queue and runs at strategic points during the lifetime of a program.
+
+A BEGIN block is executed as soon as Perl compiles the code:
+
+    print "I come second!\n";
+    BEGIN { print "I come first!\n"; }
+
+The second line appears first because Perl does not ordinarily run code as it sees it; it waits until it has compiled a program and all of its dependencies into the sort of op tree we saw in our section on B, and then runs it all. However, BEGIN forces Perl to run the code as soon as the individual block has been compiledbefore the official runtime.
+
+In fact, the use directive to load a module can be thought of as:
+
+    BEGIN { require Module::Name; Module::Name->import(@stuff); }
+
+because it causes the module's code to be loaded up and its import method to be run immediately.
+
+One use of the immediate execution nature of the BEGIN block is in the AnyDBM_File module. This module tries to find an appropriate DBM module to inherit from, meaning that so long as one of the five supported DBM modules is available, any code using DBMs ought to work.
+
+Unfortunately, some DBM implementations are more reliable than others, or optimized for different types of application, so you might want to specify a preferred search order that is different from the default. But when? As AnyDBM_File loads, it sets up its @ISA array and requires the DBM modules.
+
+The trick is to use BEGIN; if AnyDBM_File sees that someone else has put an @ISA array into its namespace, it won't overwrite it with its default one. So we say:
+
+    BEGIN { @AnyDBM_File::ISA = qw(DB_File GDBM_File NDBM_File); }
+    use AnyDBM::File;
+
+This wouldn't work without the BEGIN, since the statement would then only be executed at runtime; way after the use had set up AnyDBM_File.
+
+As well as a BEGIN, there's also an END block, which stores up code to run right at the end of the program, and, in fact, there are a series of other special blocks as well, as shown in Figure 1-7.
+
+Figure 1-7. Named blocks
+
+The CHECK blocks and the INIT blocks are pretty much indistinguishable, running just before and just after execution begins. The only difference is that executing perl with the -c switch (compilation checks) will run CHECK blocks but not INIT blocks. (This also means that if you load a module at runtime, its CHECK and INIT blocks won't be run, because the transition between the global compilation phase and the global runtime execution has already passed.) Let's take a look at what we can do with a CHECK block.
+
+1.3.2.2 Doing things later with CHECK
+Earlier, we talked about messing with inheritance relationships and stealing ideas from other languages. Let's now implement a new module, which gives us the Java concept of final methods. A final method is one that cannot be overriden by inheritance:
+
+    package Beverage::Hot;
+    sub serve :final { # I have exclusive rights to defining this method!
+        my ($self, $who) = @_;
+        if ($who->waitress) { $who->waitress->serve($self, $who); }
+        else                { $who->take($self); }
+    }
+
+    package Tea;
+    use base 'Beverage::Hot';
+
+    sub serve { # Compile-time error.
+    }
+
+We'll do this by allowing a user to specify a :final attribute on a method. This attribute will mark a method for later checking. Once compile time has finished, we'll check out all the classes that derive from the marked class, and die with an error if the derived class implements the final method.
+
+Attributes
+The idea of attributes came in Perl 5.005, with the attrs module. This was part of threading support and allowed you to mark a subroutine as being a method or being locked for threadingthat is, it only allows one thread to access the subroutine or the method's invocant at once. In 5.6.0, the syntax was changed to the now-familiar sub name :attr, and it also allowed user-defined attributes.
+
+Perhaps the easiest way to get into attribute programming for anything tricky is to use Damian Conway's Attribute::Handlers module: this allows you to define subroutines to be called when an attribute is seen.
+
+The first thing we want to do is take a note of those classes and methods marked final. We need to switch to the UNIVERSAL class, so that our attribute is visible everywhere. We'll also use a hash, %marked, to group the marked methods by package:
+
+    package UNIVERSAL;
+    use Attribute::Handlers;
+    sub final :ATTR {
+        my ($pack, $ref) = @_;
+        push @{$marked{$pack}}, *{$ref}{NAME};
+    }
+
+The Attribute::Handlers package arranges for our handler to be called with various parameters, of which we are only interested in the first twothe package that has the marked subroutine in it and the glob reference for the subroutine itselfbecause we can get the subroutine's name from that. (NAME is one of the magic names we can use to access a glob's slotit returns the name of the symbol table entry. *{Tea::serve}{NAME} would return serve.)
+
+Now we've got our list of marked methods. We need to find a way to interrupt Perl just before it runs the script but after all the modules that we plan to use have been compiled and all the inheritence relationships set up, so that we can check nobody has been naughty and overriden a finalized method.
+
+The CHECK keyword gives us a way to do this. It registers a block of code to be called after compilation has been finished but before execution begins.[*]
+
+[*] Incidentally, the O compiler module we mentioned earlier works by means of CHECK blocksafter all the code has been compiled, O has the selected compiler backend visit the opcode tree and spit out whatever it wants to do, then exits before the code is run.
+
+To enable us to test the module, it turns out we want to have our CHECK block call another function. This is because we can then run the checker twice, once without an offending method and once with:
+
+    CHECK { Attribute::Final->check }
+
+What will our checking method do, though? It needs to visit all the classes that derive from those classes we have in our %marked hash, and to do that, it has to know all the packages in the system. So first we'll write a little function to recursively walk over the symbol table, collecting names of packages it sees.
+
+The symbol table is just a hash, and we can find glob names by looking at the keys of the hash. To make matters even easier, package names are just hash keys that end in ::. So our collector function looks like this:
+
+    sub fill_packages {
+        no strict 'refs';
+        my $root = shift;
+        my @subs = grep s/::$//, keys %{$root."::"};
+        push @all_packages, $root;
+        for (@subs) {
+            next if $root eq "main" and $_ eq "main"; # Loop
+            fill_packages($root."::".$_);
+        }
+    }
+
+The next line avoids the potential trap of looping forever, because the main:: package contains an entry to itself. Now we can start looking at the check function. It only has to deal with those packages that have some kind of inheritance relationship, so if a package does not have an @ISA, then we can discard it:
+
+    sub check {
+        no strict 'refs';
+        fill_packages("main") unless @all_packages;
+        for my $derived_pack (@all_packages) {
+            next unless @{$derived_pack."::ISA"};
+            ...
+        }
+    }
+
+Next, we have a list of marked packages that contain final methods. We want to look specifically at circumstances where a derived package derives from a marked package:
+
+    for my $derived_pack (@all_packages) {
+        next unless @{$derived_pack."::ISA"};
+        for my $marked_pack (keys %marked) {
+            next unless $derived_pack->isa($marked_pack);
+            ...
+
+At this point, we know we have a suspect package. It has the right kind of inheritance relationship, but does it override the finalized method?
+
+            for my $meth (@{$marked{$marked_pack}}) {
+                my $glob_ref = \*{$derived_pack."::".$meth};
+                if (*{$glob_ref}{CODE}) {
+
+If the code slot is populated, then we have indeed found a naughty method. At this point, all that's left to do is report where it came from. We can do that with the B technique: by turning the glob into a B::GV object, we gain access to the otherwise unreachable FILE and LINE methods, which tell us where the glob entry was constructed.
+
+                    my $name = $marked_pack."::".$meth;
+                    my $b = B::svref_2object($glob_ref);
+                    die "Cannot override final method $name at ".
+                        $b->FILE. ", line ".$b->LINE."\n";
+
+And that is the essence of working with CHECK blocks: they allow us to do things with the symbol table once everything is in place, once all the modules have been loaded, and once the inheritance relationships and other factors have been set up. If you ever feel you need to do something in a module but you don't want to do it quite yet, putting it in a CHECK block might just be the right technique.
+
+1.3.2.3 Doing things at the end with DESTROY
+We've referred to the special DESTROY method, which is called when an object goes out of scope. Generally this is used for writing out state to disk, breaking circular references, and other finalization tasks. However, you can use DESTROY to arrange for things to be done at the end of a scope:
+
+    sub do_later (&) { bless shift, "Do::Later" }
+    sub Do::Later::DESTROY { $_[0]->(  ) };
+
+    {
+       my $later = do_later { print "End of block!\n"; };
+       ...
+    }
+
+So long as $later sticks around, the code doesn't get called. When it goes out of scope, gets undefined, or the final reference to it goes away, then the code block is called. Hook::LexWrap, one of the modules we looked at earlier in the chapter, actually uses a similar trick to turn off the wrapping of a subroutine at the end of a lexical scope:
+
+        my $unwrap;
+        $imposter = sub {
+            if ($unwrap) { goto &$original }
+            ...
+        }
+        ...
+        return bless sub { $unwrap=1 }, 'Hook::LexWrap::Cleanup';
+
+While you keep hold of the return value from wrap, the imposter calls the wrapping code. However, once that value goes out of scope, the closure sets $unwrap to a true value, and from then on the imposter simply jumps to the original routine.
+
+1.3.2.4 Case study: Acme::Dot
+One example that puts it all togethermessing about with the symbol table, shifting the timing of code execution, and overloadingis my own Acme::Dot module.
+
+If you're not familiar with CPAN's Acme::* hierarchy, we'll cover it in more detail in Chapter 10, but for now you should know it's for modules that are not entirely serious. Acme::Dot is far from serious, but it demonstrates a lot of serious advanced techniques.
+
+The idea of Acme::Dot was to abstract the $variable.method overloaded . operator from Ruby.pm and allow third-party modules to use it. It also goes a little further, allowing $variable.method(@arguments) to work. And, of course, it does so without using source filters or any other non-Perl hackery; that would be cheatingor at least inelegant.
+
+So, how do we make this work? We know the main trick, from Ruby.pm, of overloading concatentation on an object. However, there are two niggles. The first is that previously, where $foo.class was a variable "concatenated" with a literal string, $foo.method(@args) is going to be parsed as a subroutine call. That's fine, for the time being; we'll assume that there isn't going to be a subroutine called method kicking around anywhere for now, and later we'll fix up the case where there is one. We want Perl to call the undefined subroutine method, because if an undefined subroutine gets called, we can catch it with AUTOLOAD and subvert it.
+
+In what way do we need to subvert it? In the Ruby.pm case, we simply turned the right-hand side of the concatenation (class in $var.class) and used that as a method name. In this case, we need to not only know the method name, but the method's parameters, as well. So, our AUTOLOAD routine has to return a data structure that holds the method name and the parameter. A hash is a natural way of doing this, although an array would do just as well:
+
+    sub AUTOLOAD {
+         $AUTOLOAD =~ /.*::(.*)/;
+         return if $1 eq "DESTROY";
+         return { data => \@_, name => $1 }
+    }
+
+As usual, we take care to avoid clobbering DESTROY. Now that we have the arguments and the name, we can write our overload subroutine to fire the correct method call on concatenation. On the left will be the object, and on the right will be the result of our AUTOLOAD routinethe data structure that tells us which method to fire and with what parameters.
+
+    use overload "." => sub {
+        my ($obj, $stuff) = @_;
+        @_ = ($obj, @{$stuff->{data}});
+        goto &{$obj->can($stuff->{name})};
+    }, fallback => 1;
+
+Just as in Ruby, we use the goto trick to avoid upsetting anything that relies on caller.[*]Now we have the easy part done.
+
+[*] Although, to be honest, I don't believe there really is (or ought to be) anything that relies on the behavior of callerat least, nothing that isn't doing advanced things itself.
+
+I say this is the easy part because we know how to do this for one package. So far we've glossed over the fact that the methods and the overload routine are going to live in one class, and the AUTOLOAD subroutine has to be present wherever the $var.method method calls are going to be made. To make matters worse, our Acme::Dot module is going to be neither of these packages. We're going to see something like this:
+
+    package My::Class;
+    use Acme::Dot;
+    use base 'Class::Accessor';
+    _ _PACKAGE_ _->mk_accessors(qw/name age/);
+
+    package End::User;
+    use My::Class;
+
+    my $x = new My::Class;
+    $x.name("Winnie-the-Pooh");
+
+It's the OO class that needs to use Acme::Dot directly, and it will have the overload routine. We can take care of this easily by making Acme::Dot's import method set up the overloading in its caller:
+
+    my ($call_pack);
+
+    sub import {
+        no strict 'refs';
+        $call_pack = (caller(  ))[0];
+        eval <<EOT
+     package $call_pack;
+    use overload "." => sub {
+        my (\$obj, \$stuff) = \@_;
+        \@_ = (\$obj, \@{\$stuff->{data}});
+        goto \&{\$obj->can(\$stuff->{name})};
+    }, fallback => 1;
+
+    EOT
+        ;
+    }
+
+However, there's the third package, the End::User package, which actually never sees Acme::Dot at all. It just uses My::Class and expects to get the dot-operator functionality as part of that class. Meanwhile, our poor Acme::Dot class has to somehow find out which class is the end user and install an AUTOLOAD routine into it.
+
+Thankfully, we know that the end-user class will call My::Class->import, so we can use glob assignment to make My::Class::import convey some information back to Acme::Dot. We can modify Acme::Dot's import routine a little:
+
+    my ($call_pack, $end_user);
+
+    sub import {
+        no strict 'refs';
+        $call_pack = (caller(  ))[0];
+        *{$call_pack."::import"} = sub { $end_user = (caller(  ))[0]; };
+        eval <<EOT
+     package $call_pack;
+    use overload "." => sub {
+        my (\$obj, \$stuff) = \@_;
+        \@_ = (\$obj, \@{\$stuff->{data}});
+        goto \&{\$obj->can(\$stuff->{name})};
+    }, fallback => 1;
+
+    EOT
+        ;
+    }
+
+As you can see, we've now glob assigned My::Class's import routine and made it save away the name of the package that used it: the end-user class.
+
+And now, since everything is set up, we are at the point where we can inject the AUTOLOAD into the end user's class. We use a CHECK block to time-shift this to the end of compilation:
+
+    CHECK {
+       # At this point, everything is ready, and $end_user contains
+       # the calling package's calling package.
+       no strict;
+       if ($end_user) {
+           *{$end_user."::AUTOLOAD"} = sub {
+                $AUTOLOAD =~ /.*::(.*)/;
+                return if $1 eq "DESTROY";
+                return { data => \@_, name => $1 }
+           }
+       }
+    }
+
+And that is essentially how Acme::Dot operates. It isn't perfect; if there's a subroutine in the end-user package with the same name as a method on the object, AUTOLOAD won't be called, and we will run into problems. It's possible to work around that, by moving all the subroutines to another package, dispatching everything via AUTOLOAD and using B to work out whether we're in the context of a concatenation operator, but...hey, it's only an Acme::* module. And I hope it's made its point already.
+
+1.4. Conclusion
+We've now looked at many of the advanced techniques used in pure Perl modules, most of them involving how to manipulate the way Perl operates. We've divided those roughly into sections on messing with the symbol table, messing with the class model, and making code run where code might not be expected.
+
+In a sense, everything else in this book will be built on the techniques that we've seen here. However, Perl is a pragmatic language, and instead of looking in the abstract at techniques that might be useful, we're going to see how these tricks are already being used in real-life codein CPAN modulesand how they can make your programming life easier.
+

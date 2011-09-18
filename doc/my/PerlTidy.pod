@@ -1,0 +1,149 @@
+=encoding utf8
+
+# ============== POD 内容介绍===============
+# Perl::Tidy 模块的使用 
+# =========================================
+
+# 日期：Tue Aug 30 16:07:53 2011
+# 作者: 宋志泉 songzhiquan@hotmail.com
+
+=head1 统一一致的编码风格易于代码的维护
+
+有规律的缩进和对齐，会让代码看起来清晰明了。Perltidy 模块可以节省您大量的
+时间用于令人厌烦的编辑，只需花很少的时间学习使用这个模块。Perltidy 高度可
+配置化，但其默认配置能够另大多数程序员满意。只需一些配置就能改变风格。
+
+使用 non-cuddled-else （else 和前后大括号在同一行) 风格
+
+ % perltidy -ce souce.pl
+ ...
+ } else {
+ ...
+
+
+
+=head2 默认使用方式
+ 
+ % perltidy source.pl
+ % perltidy *.pl
+
+perltidy 命令会根据原来的文件名，将重新格式化后的代码存入后缀
+为 .tdy 的文件。 
+
+  % perltidy <somefile.pl >newfile.pl
+  % perltidy somefile.pl st >otherfile.pl
+
+使用重定向方式，可以手动选择输出文件名和配置文件
+
+也可以使用 C<-o> 选项控制输出文件的名字
+
+ % perltidy testfile.pl -o=testfile.new.pl
+
+ % perltidy -b source.pl
+
+C<-b> 选项会创建一个 .bak 后缀的文件保存原始的文件内容，
+然后把当前经过格式化的代码替换掉当前文件。
+这样，后续的测试仍然可以使用原来的方式进行，不用重新组织文件。
+但备份的原始代码还要根据需要另行保存。如果连续两次执行此命令，源文件
+就被替换掉了。
+
+如果配置文件稳定，就可以使用这种方式自动格式化，而不用
+干预结果了。
+
+=head2 命令行配置
+
+把默认四个空格的缩进改为两个
+ 
+ % perltidy -i=4 source.pl
+ % perltidy --indent-columns=3
+
+把结果打印到标准输出而非默认的 tdy 文件。
+
+ % perltidy -st source.pl
+
+如果不喜欢花括号跟在行尾
+  
+ % perltidy -bl -bli source.pl
+
+ use warnings;
+ use strict;
+ while (<>)
+   {
+     if (/\d/) { print "contains number\n"; }
+     else      { print "number-free\n" }
+   }
+
+=item -bl, braces left
+
+B<if> 块在 -bl 配置下的样子
+ 
+ if ( $editor =~ /emacs/i )
+ {
+     print "why are not you using vi?\n";
+ }
+
+=item -bt, -pt, -sbt: Container tightness 括号两边的空格
+
+ if ( ( my $len_tab = length( $tabstr ) ) > 0 ) { # -pt=0
+ if ( ( my $len_tab = length($tabstr) ) > 0 ) {   # -pt=1 (default)
+ if ((my $len_tab = length($tabstr)) > 0 ) { # -pt=2
+
+用默认参数吧，这样也挺好的。
+
+=back
+
+确定了我们喜欢的格式以后，可以把这些配置保存到配置文件 .perltidyrc 中，
+就可一劳永逸。做法很简单，另外给出 -dump-options 选项：
+
+ % perltidy -st -bl -bli -dump-options
+
+这样，当前的格式化选项和其他默认设置，都会一并存入配置文件
+
+此外，还能为特定的项目创建一个专有的配置档，使用时指定 --profile 即可。
+
+ % perltidy --profile=projecttidy source.pl
+
+不仅如此，我们还能定义一个名为 PERLTIDY 的环境变量，根据此变量指定的配置
+文件，覆盖默认定义在 /usr/local/etc/perltidyrc 
+
+配置好之后，如果要临时取消应用该配置，只需要在命令行提供 --noprofile 开关
+
+ % perltidy --noprofile source.pl
+=head3 水平制表符或者空格
+
+默认情况下，Perltidy使用空格作为缩排填充字符。但如果您想使用一定
+数量的空格替换成TAB 可以在命令行中使用 -et=n, n 就是一个制表符
+替换的空格数量。
+=head3 语法检查 Perltidy 能处理一些简单的语法错误
+
+会另行创建一个 .ERR 文件列出错误所在。
+
+ % perltidy bork3n.pl
+ ## Please see file b0rk3n.pl.ERR
+
+=head2 在测试环节自动格式化
+
+可以自动运行 perltidy 格式化代码。
+
+=head3 符合最佳实践的 perltidy 配置
+
+ -l=78 # 最大代码行宽度为 78 列
+ -i=4  # 缩排层次为 4 列
+ -ci=4 # 延续缩排层次为 4 列
+ -st   # 输出是到 STDOUT
+ -se   # 错误是到 STDERR
+ -vt=2 # 最大垂直紧密性
+ -cti=0 # 闭合括号不做额外缩排
+ -pt=1 # 中等小括号紧密性 这是默认配置啊
+ -bt=1 # 中等大括号紧密性
+ -sbt=1 # 中等中括号紧密性
+ -bbt=1 # 中等块大括号紧密性
+ -nsfs # 分号前没有空格
+ -nolq # 冗长引号字符串不要往外缩排
+ -wbb="% + - * / x != == >= <= =~ !~ < > | & **= += *= &= <<= &&= -= /= |= >>= 
+ ||= .= %= ^= x=" # 在所有运算符前断开
+
+=cut
+# vim:tw=78:ts=8:ft=pod:norl:
+
+

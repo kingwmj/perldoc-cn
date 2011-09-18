@@ -1,0 +1,2 @@
+perl mirrorDIR.pl
+pause

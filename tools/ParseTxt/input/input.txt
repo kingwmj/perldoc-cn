@@ -1,0 +1,19 @@
+1.1 
+The Birth of Perl 6
+Back on July 18, 2000, the second day of the fourth Perl Conference (TPC 4), a small band of Perl geeks gathered to prepare for a meeting of the Perl 5 Porters later that day. The topic at hand was the current state of the Perl community. Four months had passed since the 5.6.0 release of Perl, and although it introduced some important features, none were revolutionary.
+
+There had been very little forward movement in the previous year. It was generally acknowledged that the Perl 5 codebase had grown difficult to maintain. At the same time, infighting on the perl5-porters list had grown so intense that some of the best developers decided to leave. It was time for a change, but no one was quite sure what to do. They started conservatively with plans to change the organization of Perl development.
+
+An hour into the discussion, around the time most people nod off in any meeting, Jon Orwant (the reserved, universally respected editor of the Perl Journal) stepped quietly into the room and snapped everyone to attention with an entirely uncharacteristic and well-planned gesture. Smash! A coffee mug hit the wall. "We are *@$!-ed (Crash!) unless we can come up with something that will excite the community (Pow!), because everyone's getting bored and going off and doing other things! (Bam!)" (At least, that's basically how Larry tells it. As is usually the case with events like this, no one remembers exactly what Jon said.)
+
+Awakened by this display, the group started to search for a real solution. The language needed room to grow. It needed the freedom to evaluate new features without the obscuring weight of legacy code. The community needed something to believe in, something to get excited about.
+
+Within a few hours the group settled on Perl 6, a complete rewrite of Perl. The plan wasn't just a language change, just an implementation change, or just a social change. It was a paradigm shift. Perl 6 would be the community's rewrite of Perl, and the community's rewrite of itself.
+
+Would Perl 6, particularly Perl 6 as a complete rewrite, have happened without this meeting? Almost certainly. The signs appeared on the lists, in conferences, and in journals months in advance. If it hadn't started that day, it would have happened a week later, or perhaps a few months later, but it would have happened. It was a step the community needed to take.
+
+
+11.1 PASM Opcodes
+For complete details on each opcode and the latest changes, read the documentation in docs/ops/, or look at all the .ops files in the ops/ directory.
+
+We've followed a few conventions. DEST is always the register where the result of the operation is stored. Sometimes the original value of DEST is one of the source values. VAL indicates that the actual value might be a literal integer, float, or string, or a register containing an integer, float, string, or PMC. See the .ops files for the combinations allowed with a particular operation.

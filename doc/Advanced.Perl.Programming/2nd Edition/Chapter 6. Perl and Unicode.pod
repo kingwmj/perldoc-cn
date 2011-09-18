@@ -1,0 +1,624 @@
+Chapter 6. Perl and Unicode
+Over the last couple of major releases, Perl has gained more advanced support for Unicode data manipulation. With the Perl 5.8 series, this support is now mature, so it's worth taking some time to look at what Unicode means for your applications and what tools Perl hands you to deal with it.
+
+6.1. Terminology
+It's a good idea to take a little time out, before we think about what Unicode is and what problem it solves, to clarify in our minds a few terms that have been widely used and abused in the programming world. In particular, the term character set is more troublesome than it might appear.
+
+We often talk about the ASCII character set, but this relates to many different ideasit could mean the actual suite of characters involved, or the order in which they are placed in that suite, or the way that a piece of text is represented in bytes. In fact, when people talk about text from an ASCII system, it may not even be ASCII. The potential for confusion comes because ASCII is a seven-bit character set, whereas for the past 25 years or so, computers have had eight-bit bytes. ASCII only defines the meaning of the first 128 entries in the set, so what should be done with the other 128? Rather than leave them unused and wasted, nearly every ASCII system chooses to define them in some way, usually with accented characters and extra symbols. Many manufacturers chose to make their machines use one of the range of national sets as defined by ISO standard 8859. Of these sets, ISO-8859-1--generally called "Latin 1"--was the most popular because it provides all the accented letters needed by most Western European languages. It is also the default encoding assumed by protocols such as HTTP. So prior to Unicode, many computers supposedly using ASCII actually produced text using all 8 bits and assumed that any machine that they exchanged data with also happened to associate the same meaning for the 128 non-ASCII characters. You can see the potential for mistakes here, and that's just with the data. There's also ambiguity about what the term character set means, so really we want avoid it altogether and replace it with some more precise terms:
+
+character
+
+A character is somewhat easier to define; it is the abstract description of a symbol, devoid of any formatting expectations. There are any number of ways that one might format the character that Unicode calls LATIN SMALL LETTER A: a, a, a, a, and so on. However, they all represent the same character. This is distinct from a glyph.
+
+glyph
+
+A glyph is the physical, visual representation of a character. A glyph concerns itself with shape, typeface, point size, boldness, slant, and so on; a character does not. "a" and "a" are the same character, but different glyphs.
+
+Unicode does not concern itself with glyphs in any way; it does not determine how its characters should look, just what they are. On the other hand, character repertoires such as the Japanese standards JIS do specify not just the collection of characters used, but also their appearance.
+
+character repertoire
+
+A character repertoire is a collection of characters. Latin 1 has a character repertoire of 256 characters. The character repertoire itself does not specify the order in which the characters appear, nor does it map characters to codepoints. (See below.)
+
+character code
+
+The order and the mapping is specified by the character code. This is what tells us that, for instance, the Unicode character LATIN SMALL LETTER B comes directly after LATIN SMALL LETTER A.
+
+codepoint
+
+A character's codepoint is the number relating to the position of a character in a given character code. The Perl function to get a character's codepoint is ord.
+
+character encoding
+
+When dealing with a 256-character repertoire such as Latin 1, it is easy to see how the codepoints should be represented to a computereach codepoint is simply encoded as one byte. When we get to 65,536 characters and above, on the other hand, we need to specify rather precisely how we're going to represent each character as a sequence of bytes. This is the character encoding of our data.
+
+Unicode typically uses a set of well-specified character encodings it calls Unicode Transformation Formats or UTFs. We'll look at the most commonly used UTFs later on in the chapter.
+
+6.2. What Is Unicode?
+In the bad old days of data handling, if you wanted to work with text in a different language, you'd probably have to deal with a different character set. This could mean a different character repertoire, or a different character encoding, or both. Applications that needed to process Japanese data had to deal with at least two major character sets in any of three encodingsmore if you needed to deal with Latin 1, as well. Each encoding would need special-case code to handle it, and programming was not fun.
+
+Unicodeor, more formally, the Unicode Standardis an attempt to put that right. The core of the Unicode Standard defines a universal character repertoire; it then also defines standard encodings for that repertoire. The Unicode Standard is augmented by a series of Unicode Technical Reports (UTRs), which provide additional information: more encodings, additions, and corrections to the standard; algorithms for collation; and so on.
+
+The Unicode effort started in the late '80sthe term Unicode was first used in 1987by programmers working at Xerox and Apple. The first edition of the Unicode Standard was released in 1990.
+
+Unicode is based on four primary design principles (quoted from Tony Graham's book Unicode: A Primer):
+
+Universal. The character repertoire should be large enough to encompass all characters likely to be used in general text interchange.
+
+Efficient. Plain text, composed of a sequence of fixed-width characters, is simple to parse, and software does not need to maintain state, look for special escape sequences, or search forward or backward through text to identify characters.
+
+Uniform. A fixed-length character code allows efficient sorting, searching, display and editing of text.
+
+Unambiguous. Any given 16-bit value always represents the same character.
+
+These goals were obtained by a combination of an extensive character repertoire and a fixed-width native coding scheme, UTF-16.
+
+6.2.1. What Is UCS?
+At the same time as the Unicode teams at Apple and Xerox were putting together a universal character set, the ISO standards organization was developing an international character set standard, ISO 10646. Realizing the futility of having two standard, universal character sets, the Unicode team and the ISO working group (ISO/IEC JTC1/SC2/WG2) agreed in 1991 to join forces. This has ensured that the industry standard, Unicode, and the international standard, ISO 10646, have remainedto all intents and purposesidentical.
+
+However, since we have two cooperating standards, we have two sets of terminology to deal withunfortunately, ISO standards tend to use different terms from industry standards. Hence, the Unicode character repertoire, as defined by the Unicode Standard, is known as the Universal Character Set, or UCS in ISO legalese. UCS is also slightly different: while it is character-for-character identical with the Unicode character repertoire, it allows for much more expansion.
+
+As far as the Unicode Standard is concerned, the character repertoire consists of a maximum of 65,536 characters. This was initially thought to be far more than required for all the world's languages. By the time the second edition of the Unicode Standard was published, there were still 18,000 unassigned codepoints; by Unicode 3.0, there were 8,000 code points to go. This is obviously not enough, especially with the thousands of rare Chinese and Japanese characters that have been submitted for inclusion. The Unicode way of coping with this is to extend to two characters by means of the surrogate pair extension mechanism. In ISO 10646, however, the 65,536 characters form something called the Basic Multilingual Plane (BMP) and the UCS is made up of multiple planes.
+
+The UCS is conceptually a series of cubes, or groups. There are 256x256 cells in a plane, and 256 planes in a group. There are 128 groups in total, allowing UCS to encode a massive 256x256x256x128 = 2,147,483,648 characters. These will never all be assigned, of course; Unicode's native encoding format UTF-16, with its surrogate pair mechanism, can only encode 16 planes (1,048,576 characters).
+
+The ISO standard also defines two encoding mechanisms for UCS: UCS-2 and UCS-4. UCS-2 is conceptually identical to UTF-16. We will examine both encodings in the section on UTFs later in this chapter.
+
+6.2.2. What is the Unicode Consortium?
+After the ISO and Unicode efforts merged, a consortium of interested parties was set up to manage and develop the Unicode portion of the combined standard. The Unicode Consortium was founded in 1990 and incorporated as Unicode, Inc., in 1991.
+
+The technical work of the consortium is carried out by the Unicode Technical Committee (UTC), which publishes the Unicode Standard and also issues Unicode Technical Reports.
+
+The consortium also maintains many mailing lists, FAQs, and other resources available from http://www.unicode.org/, the Unicode Consortium web site.
+
+Membership in the consortium is open to anyone, and there are a variety of membership levels. Perl is a member of the consortium, represented at associate member level, the first programming language to be independently represented to the consortium.
+
+6.2.3. Why Should I Care?
+The most important thing that this chapter can teach you about Unicode is that you should find out more about it and start being aware of it in your own programs. Unicode is coming.
+
+If you're already working with data in various languages, you'll know the hell you need to go through to get everything working. Unicode makes it a lot easier.
+
+If you're not already working with different languages, you will. Unicode can help you internationalize and localize your programs; Unicode awareness and support can make multinationalization a great deal more straightforwardonce your program is Unicode-aware, common tasks such as sorting, searching, and regular expression matching just work in any language.
+
+And if you don't think you will ever work with different languages, you still need to know about Unicode. Will you be receiving data from external sources? There's a growing possibility this data will be in Unicode, and you're going to need to know how to handle it.
+
+If you're a Perl module author, there's absolutely no excuse; you have no idea how people will use your module or what data they might throw at it. If it can't cope with that data, it's broken, and people will blame you.
+
+Finally, even if you're sure you'll never ever touch data that's not in good ol' ASCII, it does you good to know about Unicode anyway, since it is the way the world's going. Unicode support is very easy to achieve, especially in Perl, and it makes you a better programmer. The Perl value of laziness is important, but good laziness means you'll take the time to make your programs Unicode-aware first, so you won't need to make any changes when the time comes to support non-ASCII data.
+
+6.3. Unicode Transformation Formats
+As we've mentioned, with hundreds of thousands of characters in a character repertoire now, it's no longer possible to fit one character into one byte. We've introduced the concept of UTF-16, the native character encoding for Unicode, but there are several other standard encodings. Those starting with UTF are defined by the Unicode Standard or associated Unicode Technical Reports; the two UCS encodings are defined by the ISO 10646 standard.
+
+6.3.1. UCS-2
+UCS-2 is the two-byte ISO 10646 encoding. Recall that ISO defines the UCS in terms of groups and planes, where planes consist of 256 rows and 256 columns. In UCS-2, the first byte encodes the row, and the second encodes the column. Hence, UCS-2 can only encode the 65,536 characters in the Basic Multilingual Plane; furthermore, ISO does not recognize the surrogate pair extension mechanism, so UCS-2 cannot be used to access any characters outside the BMP.
+
+6.3.2. UTF-8
+Formerly known as File System Safe UCS Transformation Format, UTF-8 is the Unicode encoding supported natively by Perl. It is an integral part of the Unicode Standard and is recognized by the ISO standard.
+
+Unlike all the other UTFs, UTF-8 is a variable-width encoding; this is regarded as a compromise, as you may remember that one of the Unicode design goals was that encodings should be fixed width.
+
+One redeeming feature of UTF-8, however, is that it is a superset of seven-bit ASCII. That is, data that is purely seven-bit ASCIIcontaining no bytes 128 or aboveis valid UTF-8. Additionally, UTF-8 encodes codepoints 128 and above using only bytes 128 and above, so that the bytes 0 to 127 in a UTF-8 encoded string only ever correspond to the codepoints 0 to 127 (the ASCII characters). This means that any application that gives special meaning to some ASCII characters but is unaware of UTF-8 cannot be confused or tricked, such as a filesystem that allows bytes 0 to 255 in filenames and treats "/" as a directory separator.
+
+UTF-8's encoding algorithm is slightly complex, because the algorithm used depends on the codepoint. For codepoints up to 128 (U+007F), the character is encoded as in ASCII: one byte per codepoint. From U+0080 up to U+07FF, the codepoint is converted to its bit pattern, and this bit pattern is split over two bytes. For instance, U+0169 LATIN CAPITAL LETTER U WITH TILDE has the bit sequence 0000000101101001. The six least significant bits and the next five significant bits are 101001 and 00101. We prefix the five with 110 to make 11000101, and the six with 10 to make 10101001. Hence, our character in UTF-8 is encoded as 11000101 10101001; that is, character 197 and character 169. The following Perl code demonstrates this technique and extends it to characters requiring three or four bytes to encode:
+
+    $d = "";
+    if ($uv < 0x800) {
+        $d .= chr(( $uv >> 6)   | 0xc0);
+        $d .= chr(( $uv & 0x3f) | 0x80);
+        return $d;
+    }
+    if ($uv < 0x10000) {
+        $d .= chr(( $uv >> 12)         | 0xe0);
+        $d .= chr((($uv >>  6) & 0x3f) | 0x80);
+        $d .= chr(( $uv        & 0x3f) | 0x80);
+        return $d;
+    }
+    if ($uv < 0x200000) {
+        $d .= chr(( $uv >> 18)         | 0xf0);
+        $d .= chr((($uv >> 12) & 0x3f) | 0x80);
+        $d .= chr((($uv >>  6) & 0x3f) | 0x80);
+
+        $d .= chr(( $uv        & 0x3f) | 0x80);
+        return $d;
+    }
+
+6.3.3. UTF-16BE
+Unicode's own native encoding is the two-byte UTF-16. This is available in big-endian and little-endian flavors; data sent over a network is expected to be in network order (big-endian).
+
+UTF-16 is very similar to UCS-2; in fact, any UCS-2 encoded data is valid UTF-16BE. However, UTF-16 is extended to characters beyond the BMP by the use of surrogate pairs.
+
+The surrogate pair mechanism uses two characters, one from the High Surrogate Zone, which ranges from U+D800 to U+DBFF, and one from the Low Surrogate Zone, which stretches from U+DC00 up to U+DFFF. The codepoint of a pair of characters so used is calculated as (HIGH - 0xD800) * 0x400 + (LOW - 0xDC00) * 0x10000. With 1024 high and 1024 low surrogates, the surrogate pair mechanism extends UTF-16 with another 1,048,576 characters.
+
+6.3.4. UTF-16LE
+UTF-16LE is the little-endian version of UTF-16BE.
+
+6.3.5. UCS-4
+UCS-4 is the four-byte ISO 10646 encoding. Whereas UCS-2 encoded just the row and column coordinates of a character cell in the BMP, UCS-4 encodes the four-dimensional coordinates of group, plane, row, and column; within the BMP, the first two bytes of each character will be zero. The advantage of UCS-4 is that it can encode every single codepoint in the UCS; the disadvantage is that every single character requires four bytes.
+
+6.3.6. UTF-32
+UTF-32 is, roughly speaking, the Unicode equivalent of ISO's UCS-4. The only difference is that UTF-32 is restricted to encoding the same range of codepoints as UTF-16; it even uses the surrogate pairs mechanism to extend its range beyond those codepoints. It can therefore be thought of as a wide form of UTF-16, and, like UTF-16, comes in big-endian and little-endian flavors. Nobody seems to know what it's for.
+
+6.3.7. UTF-EBCDIC
+UTF-EBCDIC is the encoding method designed for EBCDIC systems; it is specified in Unicode Technical Report 15. It's not intended as an open interchange format and should only be used internally to EBCDIC machines. Unless you're exchanging data with or using an EBCDIC system, you're unlikely to need this.
+
+6.3.8. UTF-7
+UTF-7 is another of those UTFs you'll probably never need. It's used in environments where eight-bit cleanliness is not guaranteed, such as passing mail through a VAX. Ergh. But fear not, Perl versions 5.8.1 and higher know how to translate it.
+
+6.4. Handling UTF-8 Data
+So much for theory. Let's now look at what Unicode means for Perl.
+
+Let's suppose we've got some text encoded in UTF-8, and we want to mess about with it in Perl. You'd think we could just open the file and it would all magically work, but fortunately, Perl's not that clever. I say fortunately because we don't actually want Perl to automatically treat data as UTF-8; imagine, for instance, handling a piece of binary data, such as a JPEG image, and Perl obliviously tries to treat it as UTF-8.
+
+Instead, Perl has two distinct processing modes for databyte mode and character mode. The default is byte mode, and this works equally well for binary data and text encoded in a system that requires one byte per character, such as ordinary Latin 1. Character mode, on the other hand, treats the data as UTF-8. What does this mean in practice? Well, let's suppose we have the following text file, encoded in UTF-8:
+
+The UTF-8 representation of that string is:
+
+    C3 9C C3 B1 C3 AE C3 A7 C3 B6 C3 B0 C3 A8 0A
+
+(0x0A is the newline at the end.)
+
+So we can see that the file itself is 15 bytes long. And if we don't inform Perl, we get 15 bytes:
+
+    % perl -e 'open IN, "foo.utf8"; $a = <IN>; print length ($a)'
+    15
+
+But we also know that, although there are 15 bytes in the file, there are only 8 UTF-8 characters. So we tell Perl to open the file as UTF-8, and now:
+
+    % perl -e 'open IN, "<:utf8", "foo.utf8"; $a = <IN>; print length ($a)'
+    8
+
+Once you have your UTF-8 data correctly treated as UTF-8, everything works as you would expect; Perl converts the UTF-8 data to its internal Unicode format[*] on input, and you can use length (as demonstrated), substr, index, and all other built-in Perl functions on character data, and they'll use character positions instead of byte positions.
+
+[*] Perl's internal Unicode format happens to be UTF-8, but you don't need to know these implementation details to be able to use Unicode in Perl unless you write XS code. Use a recent 5.8.x release and simply treat the internals as a black box.
+
+If you get your input and output correct, most of the rest of your problems go away. Convert your input to Unicode right away, as it enters the program. Convert your output to the desired encoding at the last possible point, just as it leaves your program. This ensures all the data inside your program is Unicode and doesn't need to be converted. If you add conversions somewhere inside your dataflow, you run the risk of performing the conversions more than once, or wrongly concatenating data in two different encodings. The most common symptom of this kind of problem is outputting double encodingthat is, the UTF-8 encoding of the UTF-8 encoding of a Unicode string. This is similar to entity-encoding text in a web page that's already entity-encoded, so a literal > would give you &amp;lt; in the HTML source instead of the correct &lt;. Convert at the boundaries and let Perl keep track of things internallyit's what it's good at.
+
+6.4.1. Entering Unicode Characters
+We've looked at how to read in UTF-8 data from external sources (filehandles); how about generating Unicode from inside our program? There are three main ways to do this.
+
+The first way is perhaps the most obvious: functions like chr are automatically extended to produce Unicode strings when they need to. In fact, for lack of a decent Unicode editor, I generated some of my test files for this chapter using code like this:
+
+    binmode(STDOUT, ":utf8");
+    print chr $_ for
+    (0x30b8, 0x30a7, 0x30c3, 0x30cb, 0x306f, 0x5927, 0x597d, 0x304d, 0xff01);
+
+In the same way that we told Perl to treat data from a particular input filehandle as UTF-8, we also need to tell it that a particular output filehandle expects UTF-8 data. The call to binmode in the previous example sets this UTF-8 handling on a filehandle that's already open.
+
+The second way of entering Unicode data is as string literals. In this case the \x notation is extended beyond \xFF by means of curly braces:
+
+    binmode(STDOUT, ":utf8");
+    print "\x{30B8}\x{30A7}...";
+
+And third, if your Unicode characters happen to have names defined in the Unicode Standard, you can use the \N literal notation in conjunction with the charnames pragma.
+
+    use charnames ":full";
+    binmode(STDOUT, ":utf8");
+
+    print "I \N{HEAVY BLACK HEART} Unicode\n";
+
+Writing the full names can be tedious sometimes, particularly when you're entering characters from particular alphabets. Instead, charnames provides a shorter form to access characters from particular Unicode blocks:
+
+    use charnames ":short";
+    binmode(STDOUT, ":utf8");
+
+    print "\N{hebrew:alef} \N{greek:omega}\n";
+
+This only works where the Unicode name is of the form SCRIPT LETTER NAME or SCRIPT CAPITAL/SMALL LETTER NAME. Capitals can be obtained, intuitively, by starting the character name with a capital:
+
+    use charnames ":short";
+    binmode(STDOUT, ":utf8");
+
+    print "\N{greek:Sigma}\N{greek:iota}\N{greek:mu}\N{greek:omicron}\N{greek:nu}";
+
+But as you can see, this also gets tedious if you're working in the same alphabet. The charnames pragma allows you to import particular alphabets, like so:
+
+    use charnames qw(greek hebrew);
+    binmode(STDOUT, ":utf8");
+
+    print "\N{Sigma}\N{iota}\N{mu}\N{omicron}\N{nu}\n";
+    print "\N{alef}\N{bet}\N{gimel}\n";
+
+On a Unicode terminal, this may output:
+
+Notice that although Perl outputs the Hebrew characters in alphabetical order, the terminal is responsible for handling the right-to-left aspects of the Hebrew output.
+
+Of course, perhaps the most intuitive way of all for getting Unicode characters into Perl literals is simply to dump them into the middle of a string. You can do this, so long as you use the utf8 pragma. Perl allows you to use Unicode characters for string literals, comments, and, if you feel so inclined, the names of Perl identifiers.
+
+6.4.2. Unicode Regular Expressions
+Perl's regular expression engine supports what it calls polymorphic regular expressions; when matching against Unicode data, regular expression operators have character semantics, and when matching against non-Unicode data, the same regular expressions have byte semantics. No change to your code is needed to make regular expressions do the right thing in each context.
+
+What does it mean for a regular expression to have character semantics? The first and most obvious thing is that operators such as . don't just match a single byte, but match an entire Unicode character:
+
+    use charnames qw(katakana);
+    binmode(STDOUT, ":utf8");
+
+    $x = "\N{sa}\N{i}";
+
+    $x =~ /(.)$/;
+    print $1;
+
+This prints , the last character in the string, instead of the last byte in the UTF-8 representation, which is \xA4. So far so goodPerl does what you mean.
+
+If this isn't what you mean, and you do want to slice up a string into its component bytes, you have two ways of doing so; the first is the lexically scoped use bytes pragma, which pretends we are in 5.005 land, where Unicode does not even exist:
+
+    use charnames qw(katakana);
+    binmode(STDOUT, ":utf8");
+
+    $x = "\N{sa}\N{i}";
+
+    {
+      use bytes;
+      $x =~ /(.)$/;
+      printf "\\x%X\n", $1;
+    }
+
+This one does, indeed, print out \xA4. Your other alternative is to use the new \C match operator, which matches an individual byte.[*] Both of these methods require some caution, as they make it easy to generate ill-formed UTF-8.
+
+[*] \C was named, perhaps unwisely, after C's char data typechar, of course, is a byte, not a character.
+
+Other properties of Unicode regular expressions are much friendlier. For instance, character classes such as \d and \w take their definitions from the Unicode Standard; we now know about more numbers than just our Arabic digits:
+
+    use charnames qw(:full);
+    binmode(STDOUT, ":utf8");
+
+    $x = "Some numbers: \N{DEVANAGARI DIGIT TWO}\N{DEVANAGARI DIGIT SIX}";
+
+    print "Found a number: $1" if $x =~ /(\d+)/;
+
+    Found a number:
+
+Sadly, there's no easy way to get at the digit value yet, and non-Arabic numbers do not convert between strings and numbers in the usual Perl way. You cannot (yet) say "\N{DEVANAGARI DIGIT TWO}" + 3 to get 5.
+
+The Unicode Standard also declares that particular characters have particular properties, and regular expressions can match against these properties using the \p{...} notation. For instance, $, , and  all have the Unicode CurrencySymbol property so /\p{CurrencySymbol}/ matches against them. A negated version, \P{...}, matches all characters that don't have the named property.
+
+Finally, Perl provides the \X shortcut for matching complete decomposed characters. Many characters in the Unicode character repertoire can combine with a myriad variety of accents, marks, voicings, and other decorations; naturally, it's not practical for the character repertoire to include all possible combinations of marks on each character. Instead, base characters can be followed by combining characters that should all be treated as a single unit. For example, as Table 6-1 shows, the polytonic Greek character  can be broken down (decomposed) into three constituent parts.
+
+Table 6-1. Decomposing Unicode characters u
+ +
+ ̈
+ +
+ ´
+
+GREEK SMALL LETTER UPSILON
+   COMBINING DIAERESIS
+   COMBINING ACUTE ACCENT
+
+\X allows you to match these single decomposed units:
+
+    % perl -le 'my $x = chr(0x03c5).chr(0x0308).chr (0x0301); $x=~/(\X)/ and print length $1'
+
+    3
+
+In general, you should use \X rather than . to pick out individual, meaningful characters; for example, I was recently asked to write some code that displayed names vertically by putting a newline in between each character.[*] Doing this with print "$_\n" for $name =~/(.)/g led to the occasional surprise with decomposed data:
+
+[*] Thankfully, I was guaranteed that the names would not be in any of the right-to-left or top-to-bottom scripts, which would have led to a whole world of pain.
+
+    L
+    o
+    i
+    ̈
+    s
+
+The right answer, of course, was to use /(\X)/g:
+
+    L
+    o
+    ï
+    s
+
+ The most important thing for most people to know about handling Unicode data in Perl, however, is that if you don't ever use any Unicode dataif none of your files are marked as UTF-8 and you don't use UTF-8 localesthen you can happily pretend that you're back in Perl 5.005_03 land; the Unicode features will in no way interfere with your code unless you're explicitly using them. Sometimes the twin goals of embracing Unicode but not disturbing old-style byte-oriented scripts has led to compromise and confusion, but it's the Perl way to silently do the right thing, which is what Perl ends up doing.
+
+6.5. Encode
+Life would be so much easier if everything in the world was already Unicode. We'd have this one standard data interchange format, data processing would be trivial, world peace would be easily achievable, and Perl programmers could get back to finding cures for cancer and watching Buffy the Vampire SlayerDVDs.
+
+Sadly, that hasn't happened yet, and we still have to deal with a wide variety of character encodings in existing data. Based on initial work by Nick Ing-Simmons, Dan Kogai has produced the Encode family of modules, which do an admirable job of converting data between various character encodings and Perl's own internal format. We'll examine these modules in a little more detail later in the chapter.
+
+Suppose I have some text in Shift JIS, the standard Japanese encoding for Windows machines, and I want to manipulate it in Perl. I can read the bytes from a file into the scalar $text, but Perl sees opaque bytes, rather than a sequence of Unicode characters. So I need to start by changing it into Perl's internal format, using the Encode function decode:
+
+    use Encode;
+    my $intern = decode("shiftjis", $text);
+
+The text in $intern is Unicode characters, which Perl can understand. Internally, Perl stores them as UTF-8, but unless you're dealing directly with Perl's internals, the representation of Unicode characters isn't important. Because ASCII is a strict subset of UTF-8, $intern is also a valid ASCII string if the input happened to contain only characters in the ASCII range (though, given that it was initially Japanese, this is unlikely here). Indeed, on a UTF-8 terminal, I can now print out $intern as Unicode text:
+
+    binmode(STDOUT, ":utf8");
+    print $intern;
+
+Or, I can perform the same conversion on the command line using the -C command-line option to set STDOUT to UTF-8:
+
+    % perl -C2 -MEncode -MFile::Slurp\
+    -e 'print decode("shiftjis", read_file("japanese.sjis"));'
+
+ The -C command-line option sets UTF-8 handling on STDIN, STDOUT, STDERR, @ARGV, and the PerlIO layer. The PERL_UNICODE environment variable is equivalent and takes the same options as -C. These are available in Perl Versions 5.8.1 and higher. Read more in the perlrun documentation file.
+
+There's also a corresponding function called encode for turning data from Perl's internal representation into another representation; we can use these two functions to make a cheap and cheerful character set convertor:
+
+    #!/usr/bin/perl -n0 -MEncode
+    BEGIN{($from, $to) = splice @ARGV,0,2};
+
+    print encode($to, decode($from, $_));
+
+This allows us to say, for instance:
+
+    % transcode shiftjis euc-jp < japanese.sjis > japanese.euc
+
+to convert a file between two of the more common Japanese encodings. (Transcoding is the jargon for converting from one encoding to another.)
+
+ The conversion direction of the two functions encode and decode isn't instantly memorable. It may help to remember that the Perl interpreter only understands UTF-8 and subsets of UTF-8 (ASCII, Latin 1), and so anything else needs decoding before the interpreter can understand it as text.
+
+How do we know what encodings are available? Well, we can ask Encode to tell us:
+
+    % perl -MEncode -le 'print for Encode->encodings(":all")'
+
+    7bit-jis
+    AdobeStandardEncoding
+    AdobeSymbol
+    AdobeZdingbat
+    ascii
+    ...
+
+We use the :all parameter to include not just the standard set of encodings that Encode provides, but also those defined in any Encode::* modules that it's been able to find; for instance, many of the Japanese encodings are stored in Encode::JP.
+
+There's also a handy shorthand for transcoding, called from_to. The only thing to note about this is that it converts the string in-place, modifying its input.
+
+6.5.1. The PerlIO Trick
+Perl 5.8.0 came with a very neat feature called PerlIO, which is a complete standard I/O library written exclusively for Perl. Normally, this would only excite really hard-core Perl maintainers (I must confess to being pretty baffled by most of it), but it provides a number of useful hooks to allow Perl modules to play about with any data going through the I/O system.
+
+The upshot is that you can tell Perl to automatically encode and decode data as it's read from and written to a filehandle. If we want to transcode a file from Shift-JIS to EUC, we can just say:
+
+    use Encode;
+    open IN,  "<:encoding(shiftjis)", "data.jis" or die $!;
+    open OUT, ">:encoding(euc-jp)",   "data.euc" or die $!;
+    print OUT <IN>;
+
+Anything read from IN will be decoded from Shift-JIS into Perl's internal format; similarly, anything written to OUT will be encoded as EUC.
+
+6.5.2. The Gory Details
+ You should probably not read this section unless you're either working with XS code that handles Unicode data, or if you're doing extremely clever things with Unicode and you can't get Encode to do what you want.
+
+There are two dirty secrets about Encode and handling Unicode data in Perl. The first dirty secret is that Perl knows very little about Unicode, but it knows a lot about UTF-8. That's to say, Perl primarily cares about whether or not a string is UTF-8 encoded, and it cares little about the string's actual character code; knowing that a string is encoded in UTF-8 does not tell you whether it's Unicode, Latin 1, or anything else. Perl does not keep track of the character code anywhere, but assumes, for the purposes of regular expression matching, that things that are marked as UTF-8 will be Unicode. Many of the problems that people have with Unicode come about by thinking that once they've got data in UTF-8, they can do Unicode things with it; that's not the case. Similarly, you can't assume anything about the character coding of a string that isn't UTF-8. It might be Latin 1, but it might be something else entirely.
+
+ UTF-8 is just a character encoding, and it implies nothing about character repertoires.
+
+The other dirty secret is how Perl decides how to treat a string. There isn't a global setting as to whether we're in byte or character mode; the decision about what to do with a string is made on a string-by-string basis. Each Perl string has a flag inside it that determines whether it's in UTF-8 encoding or not. There's only one flag to determine both whether a string is internally stored as UTF-8, and whether a string is to be treated with Unicode semantics by the regular expression engine and functions such as lc. So, if a string is converted to UTF-8 internally, it will be treated as Unicode.[*]
+
+[*] Arguably this is a bug, but it's one we have to live with until Perl 6.
+
+This has historically led to some interesting conundrums with what to do when data of one type meets data of another. Take this piece of Perl code:
+
+    my $acute = chr(193);
+    print $acute;
+
+    $identity = $acute . chr(194); chop $identity;
+    print $identity;
+
+    $itentity = $acute . chr(257); chop $identity;
+    print $itentity;
+
+Character 193 in Latin 1 is a capital A with acute accent (Á), so when I run this, I would expect to see ÁÁÁ. This works nicely on Perl 5.8.0, but on Perl 5.6.0, I see ÁÁÃ.
+
+This is a leakage of what's going on inside Perl's Unicode support. When our non-UTF-8 string ($acute) meets the UTF-8 string chr(257), Perl has to recode the original character in UTF-8 before concatenating it. This is to avoid situations where the original string contains valid UTF-8 representations of a completely different character. It's similar to the situation where you have to escape text before putting it inside HTML, as symbols like <, >, and & have different meanings there.
+
+So our Á is now encoded in UTF-8, and when Perl 5.6.0 comes to print it out, it prints the UTF-8 bytes. The first byte is character 195, Ã. Oops. Perl 5.8.0 corrects this by attempting to downgrade strings from UTF-8 to Latin 1 when they're output to filehandles not explicitly marked as UTF-8, but it gives you an idea of the shenanigans that are required to make the byte-character duality work.
+
+What does this mean for troubleshooting Unicode problems? Well, the most common problems occur when a scalar's internal UTF-8 flag is incorrectly set and Perl treats the string with the wrong semantics. If the flag is wrongly turned off, then Perl treats what should be a Unicode string as a sequence of bytes. These bytes are the UTF-8 encoding of the Unicode characters, because Perl's internal representation of Unicode has been accidentally exposed. If the flag is wrongly turned on, then Perl provides Unicode semantics for that scalar and treats whatever sequence of bytes were in the scalar as UTF-8. Perl's internals will expect the bytes to be valid UTF-8, and will issue loud warnings if they are not. The easiest way to get this internal flag incorrect is by marking a filehandle as UTF-8 when it is not, or forgetting to mark it when it is.
+
+For instance, writing this chapter, I had my sample file containing , encoded in UTF-8, and I ran the following code in a UTF-8-aware terminal:
+
+    open IN, "<:utf8", "foo.utf8" or die $!;
+    $a = <IN>;
+    print $a;
+
+I was mildly surprised to get gibberish thrown back at mesince I know how the internals store Unicodeuntil I remembered what was going on: standard output was not marked as expecting UTF-8, so Perl automatically downgraded the string to Latin 1 on printing it. The downgraded string was not valid UTF-8, so my terminal went mad. The upshot is that this new-fangled Unicode-aware Perl code didn't work on a new-fangled Unicode-aware terminal, although it works just fine on an old-fashioned Latin 1 terminal.
+
+The Encode module allows you to generate the UTF-8 encoding of any Perl string with encode("utf8", $string).
+
+    use Encode;
+
+    open IN, "<:utf8", "foo.utf8" or die $!;
+    $a = <IN>;
+    $b = encode("utf8", $a);
+    print $b;
+
+This made my UTF-8 terminal happy again, because Perl's output is a string of bytes that is valid UTF-8. Perls doesn't know (or care) that the characters $b contains happen to be UTF-8. They're just characters between 0 and 255, and as standard output is taking bytes (the default), it will output one byte per character. If we were to ask Perl for the lengths of the two strings, we'd see that $a had 8 characters and $b had 15. As internals gurus we know that they are probably stored in memory as the same sequence of bytes, but the interface Perl presents to the programmer is that strings are built from characters, and how those characters are stored should remain hidden.
+
+If you have the opposite problemdata that you believe to be Unicode but which Perl is still storing as a sequence of UTF-8 bytesyou can convert a string to Unicode using decode("utf8", $string). These functions can be handy for ensuring that data coming into or going out of your routines will be in the form you expect.
+
+So far we haven't worked out how to determine whether any given string uses byte or character semantics, because the Perl way is that you shouldn't have to care and Perl should transparently do the right thing. But since we're discussing how to deal with situations where Perl is not doing the right thing, let's look at how to deal with the UTF-8 flag directly.
+
+Encode provides three internal-use functions that we can import on demand: is_utf8, _utf8_on, and _utf8_off.
+
+Let's suppose we've just read some data from an I/O socket, using read. By default, Perl will assume that this data has byte semantics. The only thing that can determine whether the string is bytes or UTF-8 encoded characters is the specification for the protocol that we're readingare we expecting to see UTF-8 data? If we are, then we can take advantage of our knowledge that Perl stores its Unicode strings internally as UTF-8. We just need some way of telling Perl to treat the data that it just read as Unicode. _utf8_on comes to our rescue here:
+
+    use Encode qw(_utf8_on);
+    my ($length, $data);
+    read(SOCKET, $length, 2);
+    read(SOCKET, $data, $length);
+    _utf8_on($data);
+
+Now we can use $data with the correct semantics. There is another way to achieve the same effect without using Encode; whether it is considered more or less ugly is a matter of taste. It relies on the new U modifier to packpack("U", $number) is now equivalent to chr($number). The difference is that if U is the first template in the call to pack, it is guaranteed to return a UTF-8-on string:
+
+    use Encode qw(is_utf8);
+
+    $s1 = chr(70);
+    print "String 1 is ", (is_utf8($s1) ? "" : "not "), "UTF-8 encoded\n";
+
+    $s2 = pack("C", 70);
+    print "String 2 is ", (is_utf8($s2) ? "" : "not "), "UTF-8 encoded\n";
+
+    $s3 = pack("U", 70);
+    print "String 3 is ", (is_utf8($s3) ? "" : "not "), "UTF-8 encoded\n";
+
+This produces:
+
+    String 1 is not UTF-8 encoded
+    String 2 is not UTF-8 encoded
+    String 3 is UTF-8 encoded
+
+To force a string to be treated as containing Unicode characters, we create a pack format that begins with U, but packs zero characters. Internally, pack creates a string with the UTF-8 flag set. Then we fill the string up with ordinary characters using the C* patternthis special pattern tells pack to ignore whether the scalars are internally encoded as UTF-8 and to directly use the raw bytes stored, so it will fill up the string with whatever UTF-8 encoded bytes you throw in. You're directly manipulating the internal representation of scalars here, so you need to be sure of what you're doingpack won't check that the UTF-8 sequence it is building is valid. In this case, as long as we pass in valid UTF-8 byte sequences, all will be fine. The end result is to turn on Perl's internal UTF-8 flag without changing the raw bytes, which makes Perl treat those bytes as Unicode characters. The code to do this looks like this:
+
+    $string = pack("U0C*", unpack("C*", $string));
+
+Another useful feature is the bytes pragma, which lexically turns off any kind of UTF-8 processing and allows you to see any string as its byte representation, no matter what:
+
+    open IN, "<:utf8", "foo.utf8" or die $!;
+    $a = <IN>;
+    chomp $a;
+
+    print length $a; # 8
+
+    {
+      use bytes;
+      print length $a; # 15
+    }
+
+This can be handy if we're dealing with data that has to be sent over a network connection, or packed into a fixed-length structure.
+
+6.6. Unicode for XS Authors
+If you write XS routines, Unicode means a whole new set of rules for processing strings. Standard C tricks for iterating over the characters in a string no longer work in the Unicode world. Instead, Perl provides a series of functions and macros that make handling Unicode strings a little easier.
+
+6.6.1. Traversing Strings
+The first problem everyone comes across is that they have a large amount of legacy code that assumes that everything is in some seven- or eight-bit character encoding, and they can write:
+
+    while (*s++) {
+       /* Do something with *s here */
+    }
+
+Along comes a string that has its data encoded in UTF-8, and it all goes horribly wrong. What can we do about this situation?
+
+First, we should take note that this situation means we can no longer pass raw char* strings around; we need to know whether or not such a C string is encoded in UTF-8. The most obvious way to do that is to pass around SVs instead of char*s, but where this isn't possible, you either need to use an explicit interface convention between the functions of your XS code, or pass around a boolean denoting the UTF-8 encoding of the string.
+
+Once we have a string and know whether it's supposed to be encoded in UTF-8, we can use some of Perl's Unicode handling functions to help us walk along it. The most obviously useful one is utf8_to_uvchr, which pulls a code point out of a string:
+
+    STRLEN len;
+    while (*s) {
+
+         UV c = utf8_to_uvchr(s, &len);
+         printf("Saw a character with codepoint %d, length %d\n", c, len);
+         s += len;
+    }
+
+Perl deals with Unicode codepoints as UVs, unsigned integer values. This actually gives Perl support for UTF-8 characters beyond the range that the Unicode Standard provides, but that's OK. Maybe they'll catch up with us one day.
+
+If you want to avoid extra work in the case of invariant charactersthose that look just the same in UTF-8 and in byte encodingsyou can use the UTF8_IS_INVARIANT( ) macro to test for this:
+
+    while (*s) {
+         if (UTF8_IS_INVARIANT(*s)) {
+            /* Use *s just like in the good old ASCII days */
+            s++;
+         } else {
+            STRLEN len;
+            UV c = utf8_to_uvchr(s, &len);
+            /* Do the Unicode thing. */
+            s += len;
+         }
+    }
+
+If you're not interested in looking at the Unicode characters, you can just skip over them, but you have to do this in a sensible way. If you just skip the first byte in the character, you can end up horribly misaligned and seeing characters that aren't there. Instead, use the UTF8SKIP( ) macro to fetch the length of the character, and use that to skip over it:
+
+    while (*s) {
+         if (UTF8_IS_INVARIANT(*s)) {
+            /* Use *s just like in the good old ASCII days */
+            s++;
+         } else {
+            /* Don't care about these scary high characters */
+            s += UTF8SKIP(*s);
+         }
+    }
+
+6.6.2. Encoding Strings
+As well as getting data out of strings, we might occasionally find ourselves wanting to put Unicode characters into a string. We can do this in a number of ways. First, we can enter characters one codepoint at a time, much in the same way as we traversed strings one character at a time. When getting Unicode codepoints out of strings, we used utf8_to_uvchr, so it should be no surprise that to put Unicode codepoints into strings, we can use uvchr_to_utf8. As UTF-8 is a variable-length encoding, we cannot infer the number of bytes needed to store our string from the number of characters, so allocating the correct amount of memory is tricky. The easiest thing to do is loop twice, once to work out the number of bytes needed, and once to act.
+
+    /* Convert an array of numbers into a Unicode string */
+    I32 len, i;
+    STRLEN strlen = 0;
+    SV* sv;
+    char* s;
+
+    len = av_len(av) + 1;
+
+    for (i = 0; i < len; i++) {
+        SV** sav = av_fetch(av, i, 0);
+        if (! sav) continue;
+        strlen += UNISKIP(SvUV(*sav));
+    }
+
+    /* Allocate space for the string */
+    sv = newSV(strlen);
+    s = SvPVX(sv);
+
+    for (i = 0; i < len; i++) {
+        SV** sav = av_fetch(av, i, 0);
+        if (! sav) continue;
+        s = uvchr_to_utf8(s, SvUV(*sav));
+    }
+
+    /* Perl internally expects a NUL byte after every buffer, so write one */
+
+    s = '\0';
+
+    /* Tell Perl how long our scalar is, that it has a valid string
+    buffer, and that the buffer holds UTF-8 */
+
+    SvCUR_set(sv, strlen);
+    SvPOK_on(sv);
+    SvUTF8_on(sv);
+
+As can be seen from this example, uvchr_to_utf8 returns the advanced pointer after the new character has been added. This is the recommended UTF-8-aware way of adding a character to a buffer, unlike *s++ = c;, which assumes all characters are the same size. The UNISKIP function returns the number of bytes required to UTF-8-encode a Unicode codepoint.
+
+If we have a string that is Unicode but stored as bytes instead of UTF-8, you can use the sv_utf8_upgrade function, which converts an existing SV to UTF-8. Conversely, if you have a string that is valid UTF-8 but Perl doesn't know that fact yet, you can use the SvUTF_on(sv) macro to turn on the UTF-8 flag:
+
+    sv_gets(sv, fp, 0);
+    /* But we expect that to be Unicode */
+    SvUTF8_on(sv);
+
+Of course, the problem here is that we haven't checked that the data really is valid UTF-8 before telling Perl that it is. We can do this with is_utf8_string to avoid problems later:
+
+    STRLEN len;
+    char *s;
+
+    sv_gets(sv, fp, 0);
+    s = SvPV(sv, len);
+    if (is_utf8_string(s, len)) {
+       SvUTF8_on(sv);
+    } else {
+       /* Not really UTF-8--what is going on? */
+    }
+
+Transcoding with XS is quite tricky, and you would be best doing that stage in Perl. There are plans to allow easy transcoding from C in the future, but for the moment, the only available option is to do something like this to get an Encode::XS object:
+
+    ENTER;
+    SAVETMPS;
+
+    PUSHMARK(sp);
+    XPUSHp("euc-jp", 6);
+    PUTBACK;
+    call_pv("Encode::find_encoding", G_SCALAR);
+    SPAGAIN;
+    encoding_obj = POPs;
+    PUTBACK;
+
+And then use this object to perform decoding and encoding:
+
+    PUSHMARK(sp);
+    XPUSHs(encoding_obj);
+    XPUSHs(euc_data);
+    XPUSHi(0);
+    PUTBACK;
+    if (call_method("decode", G_SCALAR) != 1) {
+        Perl_die(aTHX_ "panic: decode did not return a value");
+    }
+    SPAGAIN;
+    uni = POPs;
+    PUTBACK;
+
+It isn't pretty, but it works. The code in ext/PerlIO/encoding/encoding.xs in the Perl source tree is probably the only example of this around at the moment.
+
+6.7. Conclusion
+Perl's Unicode support has developed slowly and steadily over the past few versions, but it is now at a point where one can write major programs with core Unicode components. Hopefully this chapter has shown you some of the things that Perl's Unicode support can allow you to do and how deploying Unicode can save a lot of hassle with alternate character repertoires.
+
+We've looked at the differences between Unicode and legacy encodings, and the various different UTF encodings. As we have noted, Perl speaks UTF-8 internally but tries hard to allow users to use Unicode features without knowing anything about the internal representation.
+
+Perl's support for Unicode extends to distinguishing between character and byte semantics, providing Unicode character escapes and names, and transcoding modules to allow easy input of legacy data.
+
+We've also seen what to do if Unicode doesn't behave as you might expect, and how to convert old XS code to support Unicode data.
+

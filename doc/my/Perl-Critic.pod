@@ -1,0 +1,67 @@
+=encoding utf8
+
+# ============== POD 内容介绍===============
+# Perl::Critic 模块的使用 
+# =========================================
+
+# 日期：Tue Aug 30 17:46:14 2011
+# 作者: 宋志泉 songzhiquan@hotmail.com
+
+=head1 使用PerlCritic的意义
+
+Perl以高度的灵活性和表现形式著称于世。实现方式灵活固然好，但有时为了稳妥
+还是得循规蹈矩，建造的高楼越高，对规范的要求越严。
+
+有无规范是一回事，是否强制执行又是另一回事。敏捷开发的模式，代码互审，
+结对编程，但仍然无法避免认为因素的疏漏。我们真正需要的是一个自动化的系统，
+由他负责审阅代码并指出什么地方不合要求。
+
+PerlCritic 就是这样一个系统，他对给定的Perl源代码做静态分析，发现问题就
+输出警告，虽然他本身无法自动解决问题，但至少对管理代码有帮助。
+
+=head3 在互联网上使用
+
+将源文件上传到 L<http://perlcritic.com>, 有在线系统来检查是否符合标准的
+PerlCritic 规约。
+
+=head3 在命令行方式下
+
+ % perlcritic MyPrinter.pm
+ code before sticture are enabled at line 3, column 1.
+    see page 429 of PBP. (Serverity: 5)
+
+在错误消息中， perlcritic 会指出问题所在行的行号，此外，如果这个问题在
+Damian Conway 的 PerlBest Practices 一书中有涉及的话，它也会一并给出页码。
+最后，会对此问题的 severity 严重程度 评级。
+
+代码问题的严重程度共分五级， 5分最严重，1分最轻微。默认 perlcritic 只显示
+级别为 5 的问题，一般看到5分的警告要立即修正。
+
+要查看低级别的问题，可以使用 --severity 开关选项：
+
+ % perlcritic --severity 1 MyPrinter.pm
+
+Perl::Critic 把一系列规约集合到一起形成可选的主题 (theme), 我们可以指定
+主题名字做不同策略的检查，可以使用 pbp 主题：
+
+ % perlcritic --brutal --theme=pbp
+
+我们也可以自己修订主题，比如大体上沿用 pbp 主题，但跳过有关代码格式修饰
+或是处理维护发布过程的部分。
+
+ % perlcritic --brutal --theme=\
+   'pbp && ! (cosmetic || maintenance)' MyPrinter.pm
+
+perlcritic 提供了诸多命令行选项，我们可以用正则表达式灵活的约束或包含某些
+策略主题，指定最终输出的建议数量，或者自定义输出格式。显示代码统计报告。
+任何在命令行可用的配置选项都可以写入 .perlcriticrc 文件， 这样就不必重复
+输入，并且效果完全一样。
+
+=head2 使用默认配置检查所有级别的错误
+
+从使用默认配置开始，逐步严格要求自己的代码到规范的地步。
+
+=cut
+# vim:tw=78:ts=8:ft=pod:norl:
+
+

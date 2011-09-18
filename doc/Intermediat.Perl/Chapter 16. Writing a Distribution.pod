@@ -1,0 +1,637 @@
+Chapter 16. Writing a Distribution
+In Chapter 15, we created a fictional Island::Plotting::Maps module and built the right support for Exporter so that we could include use Island::Plotting::Maps in a program.
+
+While the resulting .pm file was useful, it wasn't very practical. We have a lot more work to do before we can share our work, whether that means simply installing it ourselves on another one of our machines or giving it to someone else to use.
+
+Installation location
+
+How does everything get in the right place so Perl can find it? Where is our code going to be stored on the system? Can users make it available to everyone on the system because they have root or administrator privileges, or do they have to install it in their own directories?
+
+Documentation
+
+Where is the documentation for the module? How is the documentation installed so the user can read it?
+
+Archive completeness
+
+Is there anything extra that the users of our software will need? What else do I have to include with my code to make it usable?
+
+Testing
+
+How do we know our software works? Have we verified that it does what we say it does? How do we know it works the same on other operating systems or versions of Perl?
+
+C-language interfaces
+
+If our module contains C or C++ code (not covered here), how can the developer describe how to compile and link the code in the developer's environment or the end user environment?
+
+16.1. There's More Than One Way To Do It
+A distribution contains the module (or collection of related modules), plus all the support files required to document, test, ship, and install the module. While you could potentially construct all these files by hand, it's much simpler to use something to do it for you.
+
+In the beginning,[*] we had to create modules by hand. Soon after, the h2xs program grew into a module distribution creator, and that worked well for a while. Andy Lester created Module::Starter to make a better starter distribution, Jim Keenan created ExtUtils::ModuleMaker to make a better h2xs, and many other module creation systems popped up.[]
+
+[*] Well, since Perl 5 at least, when the third party module system came into being.
+
+[] brian simply creates a template directory he processes with ttree from Template::Toolkit. You can read about it in the December 2004 issue of The Perl Journal at http://www.tpj.com/documents/s=9622/tpj0412e/0412e.html.
+
+No matter which way we create our distribution or which tools we use, the process is the same. We run a Perl script that creates a file that pulls together all the information it needs to prepare and install the code. From there, we can test and install the modules.
+
+If we are using the traditional Makefile.PL, we start the installation with:
+
+$ perl Makefile.PL
+
+After that, we can test and install the module by telling make to perform the actions for those targets.[]
+
+[] We can specify the test and install targets in the same make invocation. If make encounters an error, it won't go on.
+
+$ make all test install
+
+We may not want to use a Makefile.PL, though. It relies on the external program make, which, since it started life as a Unix tool, may not be available on all systems.[§] Ken Williams created the pure-Perl Module::Build system as a make replacement. Since we know that we must already have Perl installed and that Perl is portable, we can use it to install modules.
+
+[§] There is an nmake for Windows that is available from Microsoft.
+
+The Module::Build process looks the same, except that we start with a Build.PL file.
+
+$ perl Build.PL
+
+From there, we do the same sort of thing we did before.
+
+perl Build
+perl Build test
+perl Build install
+
+There are reasons to decide to use one or the other. The Makefile.PL method has been around for a long time, and it mostly works, except in odd cases. Its underpinnings depend on ExtUtils::Makemaker, which comes with Perl. Unfortunately, ExtUtils::Makemaker has become a bear to maintain, since it has to handle all of the special cases for the many, many systems on which Perl works. The Module::Build method is much newer, so it's still maturing and not as many people use it.[*] However, since Module::Build doesn't require an external program, it's easier for some people to use.
+
+[*] Yet. Module::Build will be part of the Perl standard distribution starting with Perl 5.10 and is likely the future for Perl modules.
+
+16.2. Using h2xs
+We'll explain the Makefile.PL process using the awkwardly named h2xs.[] We use h2xs to create a set of template files that are a starting point for our distribution files. We simply need to say H2xs -XAn, followed by the name of the modulein this case, Island::Plotting::Maps.[] Here's what the output looks like:[§]
+
+[] The name h2xs has an interesting pedigree. Back in the early days of Perl 5, Larry invented the XS language to describe the glue code that Perl needs to talk to C-language functions and libraries. Originally, this code was written entirely by hand, but the h2xs tool was written to scan simple C-include header files (ending in .h) and generate most of the XS directly. Hence, h 2 (to) XS. Over time, more functions were added, including generating template files for the rest of the distribution. Now here we are, about to describe how to use h2xs for things that aren't either h or XS. Amazing.
+
+[] If there's more than one module in the distribution, it should be the name of the most important module. Others can be added later.
+
+[§] The exact behavior and output of h2xs may vary depending upon the version of Perl.
+
+Defaulting to backwards compatibility with perl 5.8.7
+If you intend this module to be compatible with earlier perl versions, please
+specify a minimum perl version with the -b option.
+
+Writing Island-Plotting-Maps/lib/Island/Plotting/Maps.pm
+Writing Island-Plotting-Maps/Makefile.PL
+Writing Island-Plotting-Maps/README
+Writing Island-Plotting-Maps/t/Island-Plotting-Maps.t
+Writing Island-Plotting-Maps/Changes
+Writing Island-Plotting-Maps/MANIFEST
+
+16.2.1. MANIFEST
+The h2xs program created a directory and several files. These are mostly the same files that the other module creation tools set up for us, so even if you decide not to use h2xs, you still need to understand these files. Let's examine the MANIFEST file, which contains the list of files that the distribution will contain. At the start, our MANIFEST contains:[**]
+
+[**] Again, there may be slight variations based on tool and Perl versions.
+
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Island-Plotting-Maps.t
+lib/Island/Plotting/Maps.pm
+
+The MANIFEST file is really a table of contents for our distribution. When we decide to bundle the archive, all of the files in MANIFEST go into the archive. When the end user unpacks the distribution, the module installer tool verifies that all of the files in MANIFEST are in the archive. In fact, we're ready to make an archive right now. First, we need to run the Makefile.PL. After that, we find a new file, Makefile, in our directory.
+
+$ perl Makefile.PL
+$ make tardist
+
+If we don't want to make a tar achive, we can create a zip file.
+
+$ make ziptest
+
+While maintaining a MANIFEST sounds like it might be painful, we know that we won't accidentally include our "notes to self" in the distribution just because those files happened to be in the wrong directory. Later, we'll show you how to update MANIFEST.
+
+16.2.2. README
+The next file is README, which is a standard name for the first bit of information you want all users of your module to read. It's customary to include at least a brief description of the module, installation instructions, and licensing details.
+
+Island-Plotting-Maps version 0.01
+=  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==
+
+The README is used to introduce the module and provide instructions on
+how to install the module, any machine dependencies it may have (for
+example C compilers and installed libraries) and any other information
+that should be provided before the module is installed.
+
+A README file 
+ is required for CPAN modules since CPAN extracts the
+README file from a module distribution so that people browsing the
+archive can use it get an idea of the modules uses. It is usually a
+good idea to provide version information here so that people can
+decide whether fixes for the module are worth downloading.
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+DEPENDENCIES
+
+This module requires these other modules and libraries:
+
+  blah blah blah
+
+COPYRIGHT AND LICENSE
+
+Put the correct copyright and license information here.
+
+Copyright (C) 2005 by Ginger Grant
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl Version 5.8.7 or,
+at your option, any later version of Perl 5 you may have available.
+
+Obviously, you will want to edit this file to be whatever you want it to be. The phrase "blah blah blah" is often used in the templates to indicate things that must be changed.[*] If we leave unchanged the blah blah blah and other placeholder notes from h2xs, potential users will suspect that bugs in our code have also escaped our scrutiny, so we should proofread this stuff (along with our code) before we distribute our module.
+
+[*] When you're bored, you might find it amusing to do a search on CPAN for all places in which blah blah blah occurs.
+
+Pay special attention to the copyright and license section. (It should have your name in place of Ginger's name, unless your machine is very confused about who is sitting at the keyboard.) Your employer may require you to change the copyright notice to include your company name rather than your name, for example. Or, if you're including someone else's code in your module, you may need to mention their copyright (or lack thereof) as well.
+
+The README file also has a special responsibility: the master CPAN archiving tools pull out the README file as a separate entry automatically, permitting the search engines on the various worldwide archives to index them. The CPAN installation tools can download it and display it without downloading the entire distribution. In the CPAN.pm shell, for example, you can say:[]
+
+[] Well, you would be able to do this, if there were actually a module on CPAN named Island::Plotting::Maps.
+
+$ perl -MCPAN -eshell
+cpan> readme Island::Plotting::Maps
+
+In CPANPLUS, the successor to CPAN.pm, we do something similar:
+
+$ perl -MCPANPLUS -eshell
+cpanp> r Island::Plotting::Maps
+
+Depending on your version of Perl, you might have the cpan or cpanp programs:
+
+$ cpan
+cpan> readme Island::Plotting::Maps
+
+16.2.3. Changes
+The Changes file tracks the evolution of our code. Users typically check this file to see what's new with the module and to decide if they want to upgrade.[*] In this file, we note any bugs we fixed, features we added, and how important the changes are (i.e., should everyone upgrade right away?).
+
+[*] Why not upgrade? Some people are content, and rightfully so, with something they already know works. Why chance breaking anything if you don't need to?
+
+$ cat Changes
+Revision history for Perl extension Island::Plotting::Maps.
+
+0.01  Wed Oct 16 15:53:23 2002
+        - original version; created by h2xs 1.22 with options
+                -XAn Island::Plotting::Maps
+
+We need to maintain this file manually unless our interactive development environment has automated tools for such maintenance. We can also use this file to help us track changes and their effects: if we realize that a certain bug turned up three releases back, we can look here to remind ourselves of new features or bug fixes that we introduced in that release.
+
+16.2.4. META.yml
+Recent versions of the module tools create a file named META.yml that presents the module information in a human-readable form that is also easy to parse. It uses the YAML format we told you about in Chapter 6.
+
+# http://module-build.sourceforge.net/META-spec.html
+#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
+name:         HTTP-Size
+version:      0.91
+version_from: lib/Size.pm
+installdirs:  site
+requires:
+        HTML::SimpleLinkExtor:         0
+        HTTP::Request:                 0
+        URI:                           0
+
+distribution_type: module
+generated_by: ExtUtils::MakeMaker version 6.17
+
+In this case, ExtUtils::MakeMaker automatically created this file for me. When we create the distribution archive, the Makefile creates this file, ensures that it's in MANIFEST, and includes it in distribution. Other tools and services, including the ones we cover in Chapter 19, can use this file to discover things about the module without having to run any of the distribution code. There is a lot more to this file, and its format documentation reference is right there in the file.
+
+16.2.5. The Prototype Module Itself
+Finally we come to the most important part of the distribution, which is the actual code:
+
+package Island::Plotting::Maps;
+
+It looks good so far. The module automatically starts with an appropriate package directive. Following that, we get the standard, good-practice pragmas.
+
+use 5.008007;
+use strict;
+use warnings;
+
+Now we're declaring that the module is compatible with Perl 5.8.7 or later and that the compiler restrictions and warnings are enabled automatically. We like to encourage good practices. Obviously, we're free to delete or modify anything inappropriate. If we know that our module works with earlier versions of Perl, we can modify the use 5.008007; line (or delete it altogether).
+
+Next comes the mechanism by which we can make our functions and variables show up in the package that called the module. The Exporter function takes care of all of that for us by providing the import method that we talked about in Chapter 15.
+
+require Exporter;
+
+our @ISA = qw(Exporter);
+
+This is fine for non-object-oriented modules, but object-oriented modules typically don't export anything since they require the user to call methods on an object. We'll replace the Exporter lines with one that declares the class that we inherit from, if any.
+
+use base qw(Geo::Maps);
+
+We have to include some information for Exporter, and h2xs sets that up for us. We have to fill in (or not fill in) three variables:
+
+our %EXPORT_TAGS = ( 'all' => [ qw(
+
+) ] );
+
+our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
+
+our @EXPORT = qw(
+
+);
+
+The @EXPORT array contains the names of all the variables and subroutines that use will automatically import into the caller by default. All of those show up in the calling package unless we tell use otherwise.
+
+use Island::Plotting::Maps;  # import everything in @EXPORT
+
+We won't get anything imported if we give use an empty import list.
+
+use Island::Plotting::Maps (  );  # import nothing
+
+The @EXPORT_OK array contains the names of all the variables and subroutines that use can import if the user asks for them by name (and @EXPORT_OK implicitly contains @EXPORT). If the variables or subroutines are not in one of these arrays, use won't be able to import them.
+
+use Island::Plotting::Maps (  );  # import nothing
+
+The %EXPORT_TAGS hash lets us give names to sets of variables and functions so we can export groups of symbols without making the user type too much. The keys to %EXPORT_TAGS are the group labels, and the hash values are anonymous arrays of symbols that belong to that tag. In the use statement's import list, we include the tag name preceded by a colon.[*]
+
+[*] Technically, you don't need :all because /^/ (include all symbols that match at least a beginning of string) does the same. Many people are familiar with typing :all, and it's far more self-documenting than /^/ is, so include it if you can.
+
+use Island::Plotting::Maps qw(:all)
+
+After the Exporter setup, we get the version number for our new module.
+
+our $VERSION = '0.01';
+
+This version number is important for many reasons, and we need to pay special attention to it. Choose the version number carefully, because many other things use it and depend on it:
+
+Unique identification
+
+The version number identifies a particular release of a particular module as it floats around the Internet.
+
+Filename generation
+
+The archive of the distribution includes the version number of the primary module by default. PAUSE won't let us upload the same filename twice, either, so if our code changes but our version number doesn't, we'll have some trouble there.
+
+Upgrade indication
+
+Generally, numbers that increase numerically supersede previous versions. For this test, the number is considered a floating-point number, so 2.10 (which is really 2.1) is less than 2.9 (which must be the same as 2.90, by the same logic). To avoid confusion, if we've have two digits after the decimal point in one release, we should have two digits in the next release.[]
+
+[] Perl Best Practices recommends using a three-part version string, such as qv(1.2.3), but their use is not widespread, requires version.pm (a non-core module as of Perl 5.8), does not integrate with common tools yet, and has lexical issues.
+
+Interface stability
+
+Generally, numbers that begin with 0 are alpha or beta, with external interfaces that may still be in flux. Also, most people use a major version number change (from 1.x to 2.x, etc.) to indicate a potential break in upward compatibility.
+
+Recognition by the various CPAN tools
+
+The CPAN distribution management tools use the version number to track a particular release, and the CPAN installation tools can determine missing or out-of-date distributions.
+
+Perl's own operators
+
+The use operator can be given a version number in addition to (or instead of) the import list, forcing the use operation to fail if the imported module is not equal to or greater than that version:
+
+use Island::Plotting::Maps 1.10 qw{ map_debugger };
+
+Generally, you can start with the 0.01 given by the template and increase it consistently with each new test release.[*] Now you're past the header information and down to the core of your module. In the template, it is indicated by a simple comment:
+
+[*] The perlmod page includes an example that extracts the CVS/RCS version number for the module's version number.
+
+# Preloaded methods go here.
+
+What? You didn't think the h2xs tool would even write the module for you, now did you? Anyway, this is where the code goes, usually as a series of subroutines, possibly preceded by some shared module data (using my declarations) and perhaps a few package variables (using our declarations in recent Perl versions). Following the code, you'll find your necessary true value:
+
+1;
+
+so the require (inside the use) doesn't abort.
+
+16.3. Embedded Documentation
+Immediately following the mandatory true value in the file, you'll find the _ _END_ _ marker. That's double underscore followed by END followed by another double underscore. It's at the beginning of the line and has a newline immediately following it:
+
+_ _END_ _
+
+This marker tells Perl that there's no Perl code anywhere later in the file and that the Perl parser can stop now.[] Following the _ _END_ _ marker, you'll find the embedded documentation for the module:
+
+[] The data immediately following the _ _END_ _ marker is available by reading from the DATA filehandle, which is a great way to include a small amount of constant data with your program. However, that's not why we're using it here.
+
+# Below is stub documentation for your module. You'd better edit it!
+
+=head1 NAME
+
+Island::Plotting::Maps - Perl extension for blah blah blah
+
+=head1 SYNOPSIS
+
+  use Island::Plotting::Maps;
+  blah blah blah
+
+=head1 ABSTRACT
+
+  This should be the abstract for Island::Plotting::Maps.
+  The abstract is used when making PPD (Perl Package Description) files.
+  If you don't want an ABSTRACT you should also edit Makefile.PL to
+  remove the ABSTRACT_FROM option.
+
+=head1 DESCRIPTION
+
+Stub documentation for Island::Plotting::Maps, created by h2xs. It looks like the
+author of the extension was negligent enough to leave the stub
+unedited.
+
+Blah blah blah.
+
+=head1 EXPORT
+
+None by default.
+
+=head1 SEE ALSO
+
+Mention other useful documentation such as the documentation of
+related modules or operating system documentation (such as manpages
+in UNIX), or any relevant external documentation such as RFCs or
+standards.
+
+If you have a mailing list set up for your module, mention it here.
+
+If you have a web site set up for your module, mention it here.
+
+=head1 AUTHOR
+
+Ginger Grant, <ginger@island.coconet>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2006 by Ginger Grant
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
+
+This documentation is in POD format . The perlpod manpage describes the POD format in detail. Like Perl itself, POD is said to mean various things, such as Perl Online Documentation or Plain Old Documentation, and so on. To most of us, it's just POD.
+
+As the template describes, you're expected to edit portions of this text to fit your particular module. In particular, leaving the blah blah blah is considered bad form.
+
+The POD information is extracted automatically by the installation process to create the native documentation format, such as Unix manpages or HTML. Also, the perldoc command can locate POD in the installed scripts and modules and format it for the screen.
+
+One nice thing about POD is that it can be interspersed with the Perl implementation code it describes. Each POD directive (a line beginning with an equals sign) switches from Perl mode (lines interpreted as Perl code) to POD mode (lines interpreted as documentation), and each line beginning with =cut switches back. For example, you had three subroutines in the Island::Plotting::Maps module. The resulting file with mixed code and documentation looks something like:
+
+package Island::Plotting::Maps;
+[... stuff down to the $VERSION setting above ...]
+
+=head1 NAME
+
+Island::Plotting::Maps - Plot maps on the island
+
+=head1 SYNOPSIS
+
+  use Island::Plotting::Maps;
+  load_map("/usr/share/map/hawaii.map");
+  scale_map(20, 20);
+  draw_map(*STDOUT);
+
+=head1 DESCRIPTION
+
+This module draws maps.  [ more here ]
+
+=over
+
+=item load_map($filename)
+
+This function [ more here ].
+
+=cut
+
+sub load_map {
+  my $filename = shift;
+  [ rest of subroutine ]
+}
+
+=item scale_map($x, $y)
+
+This function [ more here ].
+
+=cut
+
+sub scale_map {
+  my ($x, $y) = (shift, shift);
+  [ rest of subroutine ]
+}
+
+=item draw_map($filehandle)
+
+This function [ more here ].
+
+=cut
+
+sub draw_map {
+  my $filehandle = shift;
+  [ rest of subroutine ]
+}
+
+=back
+
+=head1 SEE ALSO
+
+"Map Reading for Dummies", "First Mates: why they're not the captain",
+and be sure to consult with the Professor.
+
+=head1 AUTHOR
+
+Ginger Grant, <ginger@island.coconet>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2006 by Ginger Grant
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
+
+1;
+
+As you can see, the documentation for the subroutines is now very near the subroutine definition, in the hope that as one gets updated, the other will be similarly changed. (Out-of-date documentation is often worse than no documentation at all, because at least with no documentation at all, the user is forced to look at the source code.) Many modules in the CPAN do this. The penalty is a very slight increase in compile-time activity because the Perl parser has to skip over the embedded POD directives.
+
+Whether you place your POD at the end of the file (as the template suggests) or intertwined with your code (as presented in the preceding paragraphs), the important thing to remember is always to document your code. Even if it's just for you, a few months later, when your brain has been 42,000 other places before you look at the code again, you'll be glad to have those notes. Documentation is important.
+
+16.4. Controlling the Distribution with Makefile.PL
+The Perl developers have chosen to rely on the standard Unix make utility to build and install Perl itself, and that same mechanism is used for additional modules. If you have a non-Unix system, a make-like utility should also be available. On Windows, for example, you may have dmake or another program. The command perl -V:make will tell you the name of your make utility program; if it says make='nmake', simply use nmake wherever you use make. In any case, you should call the controlling file a Makefile, even though its name may vary as well.
+
+However, crafting a Makefile is tricky but repetitive. And what better way to accomplish a tricky but repetitive task than with a program? Since you're talking about Perl add-on modules, you know that Perl is available, so how about a Perl program to generate the Makefile?
+
+That's exactly what happens. The distribution is required to contain a Makefile.PL, which is a Perl program to build a Makefile. Then from there, you use make (or something like it) to control all of the remaining tasks.
+
+The h2xs tool generates a template Makefile.PL that you probably won't even need to touch for single-module distributions:
+
+$ cat Makefile.PL
+use 5.008;
+use ExtUtils::MakeMaker;
+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
+# the contents of the Makefile that is written.
+WriteMakefile(
+    'NAME'                => 'Island::Plotting::Maps',
+    'VERSION_FROM'        => 'Maps.pm', # finds $VERSION
+    'PREREQ_PM'                => {  }, # e.g., Module::Name => 1.1
+    ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
+      (ABSTRACT_FROM => 'Maps.pm', # retrieve abstract from module
+       AUTHOR     => 'Ginger Grant <ginger@island.coconet>') : (  )),
+);
+
+Yes, this is a Perl program. The WriteMakefile routine is defined by the ExtUtils::MakeMaker module (included with Perl) to generate a Makefile. As the developer of the module, use this makefile to build and test your module and prepare a distribution file:
+
+$ perl Makefile.PL
+Checking if your kit is complete...
+Looks good
+Writing Makefile for Island::Plotting::Maps
+
+The ultimate user of your distribution will execute the identical command at his site. However, the Makefile will most likely be different, reflecting the differences in installation locations, local policies, and even the C compiler and linking instructions appropriate for their architecture. It's a nice system that has worked quite well over the years.
+
+The creation of the Makefile.PL (and resulting Makefile) is quite flexible. For example, you can run code to ask the person installing your module about the locations of other installed libraries or tools, or get options for variations in activity.[*]
+
+[*] Please keep the number of questions to a minimum, however. Most people are irritated when asked a series of questions, especially when they are just upgrading your module. If possible, store the answers in a configuration module that you install, so that a later invocation of your installer can pull the previous answers as defaults.
+
+The PREREQ_PM setting is important if your module depends on non-core Perl modules, especially if you plan to upload your code to the CPAN. Proper use of the prerequisites list can make installing your module nearly painless, and your user community will thank you.
+
+16.5. Alternate Installation Locations (PREFIX=...)
+The Makefile built by the default invocation of Makefile.PL presumes that the module will be installed in the system-wide Perl directory that all Perl programs can access directly with the built-in @INC path.
+
+However, if you are testing a module, you certainly don't want to install it into the system directories, possibly corrupting a previous version of your module and breaking production programs.
+
+Also, if you're not the system administrator, it's unlikely that you can change those central Perl directories, because that would be a great way to insert a Trojan horse for privileged users to stumble across.[]
+
+[] Even if you weren't the system administrator, you'd soon have all the powers of the system administrator.
+
+Luckily, the Makefile contains provisions for considering an alternate installation location for scripts, manpages, and libraries. The easiest way to specify an alternate location is with a PREFIX value as a parameter on the command line:
+
+$ perl Makefile.PL PREFIX=~/Testing
+Checking if your kit is complete...
+Looks good
+Writing Makefile for Island::Plotting::Maps
+
+Although the messages don't indicate anything different, the Makefile will now install scripts to $PREFIX/bin, manpages below $PREFIX/man, and libraries below $PREFIX/lib/site_perl. In this case, you've selected a subdirectory of your home directory called Testing as the value of $PREFIX.
+
+If you were a project librarian, managing code for a team of developers, you might instead say something like:
+
+$ perl Makefile.PL PREFIX=/path/to/shared/area
+
+which then builds the files into a shared area. Of course, you'd need write privileges to such a directory, and the rest of the team would have to add the bin subdirectory to their PATH, the man subdirectory to their MANPATH, and the lib/site_perl directory to their @INC path, as you'll see shortly.
+
+16.6. Trivial make test
+Testing. Testing. Testing. We talk more about testing in depth in Chapters 17 and 18, but here's a brief introduction.
+
+Testing is important. First, you should at least ensure that the code you've written even compiles before you install it and start playing with it. That test is free. You can invoke it directly from the newly created Makefile by simply typing make test, as in:
+
+$ make test
+cp Maps.pm blib/lib/Island/Plotting/Maps.pm
+PERL_DL_NONLAZY=1 /usr/local/bin/perl "-MExtUtils::Command::MM" "-e" "test_harness(0,
+'blib/lib', 'blib/arch')" t/*.t
+t/1....ok
+All tests successful.
+Files=1, Tests=1,  1 wallclock secs ( 0.08 cusr +  0.04 csys =  0.12 CPU)
+
+But what happened there?
+
+First, the .pm file was copied to the testing staging area: the area headed by blib (build library) below the current directory.[*] Next, the perl that invoked the Makefile.PL is called upon to run the test harnessa program that manages all test invocations and reports the results at the end.[]
+
+[*] Had there been XS files or other more complex build steps, these also would have happened here.
+
+[] The perl that invoked the Makefile.PL is used for all configuration decisions. If you have more than one version of Perl installed on your system, be sure to execute the Makefile.PL with the correct one. From there, full paths are always used, so there's no chance of mixing anything else up.
+
+The test harness runs all files in the t subdirectory that end in .t in their natural order. You have only one file (created by h2xs), which looks like this:
+
+$ cat t/1.t
+# Before 'make install' is performed this script should be runnable with
+# 'make test'. After 'make install' it should work as 'perl 1.t'
+
+#########################
+
+# change 'tests => 1' to 'tests => last_test_to_print';
+
+use Test::More tests => 1;
+BEGIN { use_ok('Island::Plotting::Maps') };
+
+#########################
+
+# Insert your test code below, the Test::More module is use( )ed here so read
+# its manpage ( perldoc Test::More ) for help writing this test script.
+
+It's a simple test program. The test pulls in the Test::More module, described further in Chapter 17. The import list for the module is treated specially; you're declaring that this test file consists of only one "test."
+
+The test is given in the following line and attempts to use the module. If this succeeds, you get an "OK" sign, and the overall test file succeeds. This would fail if the module had a syntax error, or if you forgot to have that true value at the end of the file.
+
+In this example, the test succeeds, so you get a message for it and a summary of the CPU time used for the test.
+
+16.7. Trivial make install
+Since you know the module can at least compile, let's be daring and install it. Of course, you're installing it only into the path specified by the PREFIX in the earlier step, but that's enough to show how it would have worked for the user's installation .[*] The installation is triggered with make install:
+
+[*] If you're playing along at home, be sure not to install this pretend module anywhere but in a temporary, testing directory. Although removing an installed module is generally difficult, you'll be able to simply delete the testing directory, along with its contents.
+
+$ make install
+Manifying blib/man3/Island::Plotting::Maps.3
+Installing /home/ginger/Testing/lib/site_perl/5.8.7/Island/Plotting/Maps.pm
+Installing /home/ginger/Testing/man/man3/Island::Plotting::Maps.3
+Writing /home/ginger/Testing/lib/site_perl/5.8.7/darwin/auto/Island/Plotting/Maps/.
+packlist
+Appending installation info to /home/ginger/Testing/lib/site_perl/5.8.7/darwin/
+perllocal.pod
+
+Note that you're installing the module below the $PREFIX/lib/site_lib directory (presuming a PREFIX of /home/ginger/Testing from earlier) and a manpage below $PREFIX/man (on Unix machines, in the Section 3 area for subroutines, for example). The manpage comes automatically when you extract the module's POD data and convert it to TRoff -man code, making it compatible with the Unix man command.[]
+
+[] On a non-Unix system, or even a few odd Unix systems, you'll see different behavior but roughly the same overall result.
+
+16.8. Trivial make dist
+After some testing, you may decide it's time to share your work with friends and associates. To do this, make a single distribution file. Many mechanisms are available to do this, but the most common one on most modern Unix platforms is the GNU gzip compressed tar archive, commonly named with a .tar.gz or .tgz extension.
+
+Again, with a simple make invocation (make dist), you end up with the required file:
+
+$ make dist
+rm -rf Island-Plotting-Maps-0.01
+/usr/local/bin/perl "-MExtUtils::Manifest=manicopy,maniread" \
+        -e "manicopy(maniread(  ),'Island-Plotting-Maps-0.01', 'best');"
+mkdir Island-Plotting-Maps-0.01
+mkdir Island-Plotting-Maps-0.01/t
+tar cvf Island-Plotting-Maps-0.01.tar Island-Plotting-Maps-0.01
+Island-Plotting-Maps-0.01/
+Island-Plotting-Maps-0.01/Changes
+Island-Plotting-Maps-0.01/Makefile.PL
+Island-Plotting-Maps-0.01/MANIFEST
+Island-Plotting-Maps-0.01/Maps.pm
+Island-Plotting-Maps-0.01/README
+Island-Plotting-Maps-0.01/t/
+Island-Plotting-Maps-0.01/t/1.t
+rm -rf Island-Plotting-Maps-0.01
+gzip --best Island-Plotting-Maps-0.01.tar
+
+Now there's a file named Island-Plotting-Maps-0.01.tar.gz in the directory. The version number in the name comes from the module's $VERSION variable.[*]
+
+[*] If there's more than one module, you need to designate the primary module in the Makefile.PL.
+
+16.9. Using the Alternate Library Location
+The libraries are installed relative to the PREFIX specified earlier. If Ginger used a PREFIX of /home/ginger/Testing, you need to add the appropriate directory below it to the search path. The use lib directive of:
+
+use lib '/home/ginger/Testing/lib/site_perl';
+
+does the right thing to find the version-specific directory below it, as well as the architecture-specific directory below it, if needed (usually for architecture-specific files, such as compiled binaries).
+
+You can also specify the include directory on the command line with a -M option:
+
+$ perl -Mlib=/home/ginger/Testing/lib/site_perl myproggy
+
+or a -I option:
+
+$ perl -I /home/ginger/Testing/lib/site_perl myproggy
+
+or even by setting the PERL5LIB environment variable (using sh-like syntax here):
+
+$ PERL5LIB=/home/ginger/Testing/lib/site_perl; export PERL5LIB
+$ ./myproggy
+
+However, the downside of any of these methods (other than the use lib method) is that they require you to do something more than just execute the file. If someone (or something) else (such as a coworker or a web server) executes your program, it's unlikely that the proper environment variable or command-line option will be present. Your program will fail because it can't find your locally installed module.
+
+Use use lib when you can. The other ways are useful mainly for trying out a new version of an old module before replacing the old module (and possibly breaking the programs that use it).
+
+16.10. Exercise
+You can find the answer to this exercise in "Answer for Chapter 16" in the Appendix.
+
+16.10.1. Exercise [30 min]
+Package up the Animal and Horse classes from Chapter 12 as a distribution. Be sure to add the proper POD documentation for the subroutine. Test the module, install it locally, and then build a distribution file. If you have time, unpack the distribution into a different directory, pick a new prefix, and install it again to verify that the distribution archive contains everything necessary.
+

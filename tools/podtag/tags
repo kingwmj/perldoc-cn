@@ -1,0 +1,8 @@
+!_TAG_FILE_FORMAT	2	/extended format/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted/
+!_TAG_PROGRAM_AUTHOR	Michael Schaap	/mscha@mscha.com/
+!_TAG_PROGRAM_NAME	pltags	//
+!_TAG_PROGRAM_VERSION	2.21	/supports multiple tags and extended format/
+file	pod2rtf.pl	/^=head1 X<变量> X<file> X<var>$/
+var	pod2rtf.pl	/^=head1 X<变量> X<file> X<var>$/
+变量	pod2rtf.pl	/^=head1 X<变量> X<file> X<var>$/

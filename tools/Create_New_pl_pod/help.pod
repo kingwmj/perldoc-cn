@@ -1,0 +1,37 @@
+=encoding utf8
+
+# ============== POD 内容介绍===============
+# 创建脚本模帮板帮助 
+# =========================================
+
+# 日期：Sat Sep  3 22:12:37 2011
+# 作者: 宋志泉 songzhiquan@hotmail.com
+
+=head1 模版创建
+
+先执行创建脚本 C<Create_New_pl.pl.bat> 生成可选模版。
+
+=head2 脚本生成
+
+编辑生成的 L<newfile.pl> , 选择使用的模块和功能组。
+功能组输出函数极其用法，模块生成使用模版。
+执行 C<newfile.pl.bat> 生成使用指定功能组和模块的脚本。
+
+=head3 更新 C<ModelTools.pm>
+
+将新学习的面向函数和面向对象的模块加进去。
+面向函数的功能生成事例函数，面向对象的新建对象，同时生成事例脚本。
+
+=head3 模版文件
+
+将备选模块的函数名和简单说明以注释的形式加进去。
+# file_find(); # File::Find 递归搜索目录
+
+=head3 利用 C<ModelTools.pm> 生成模版文件
+
+@{ModelTools::EXPORT_OK} 可以导出所有的子函数名称
+
+=cut
+# vim:tw=78:ts=8:ft=pod:norl:
+
+

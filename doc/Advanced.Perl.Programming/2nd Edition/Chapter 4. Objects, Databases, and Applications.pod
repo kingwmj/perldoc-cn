@@ -1,0 +1,991 @@
+Chapter 4. Objects, Databases, and Applications
+Perl programming is all about getting some data into our program, munging it around in various ways, and then spitting it back out again. So far we've looked at some interesting ways to do the munging and some great ways to represent the data, but our understanding of storing and loading data hasn't reached the same kind of level.
+
+In this chapter, we're going to look at four major techniques for storing and retrieving complex data, and finally at application frameworkstechnologies that pull together the whole process of retrieving, modifying, and acting on data, particularly for web applications, so that all the programmer needs to deal with is the business logic specific to the application.
+
+For each technique, there are many CPAN modules that implement it in many different ways. We only have the space to examine one module in each section to demonstrate its approach; this is not necessarily an endorsement of the module in question as the best available. After all, there's more than one way to do it.
+
+4.1. Beyond Flat Files
+The word database might conjure up thoughts of the DBI and big expensive servers running expensive software packages,[*] but a database is really just anything you can get data in to and back out of.
+
+[*] Or more likely, these days, commodity PCs running free software packages.
+
+Just a step up from the comma-separated text file is the humble DBM database. This exists as a C library in several incarnationsthe most well known being the Sleepycat Berkeley DB, available from http://www.sleepycat.com/download.html, and the GNU libgdbm, from http://www.gnu.org/order/ftp.html. When Perl is compiled and installed, it supplies Perl libraries to interface with the C libraries that it finds and to the SDBM library, which is shipped along with Perl. I prefer to use the Berkeley DB, with its Perl interface DB_File.
+
+DBMs store scalar data in key-value pairs. You can think of them as the on-disk representation of a hash, and, indeed, the Perl interfaces to them are through a tied hash:
+
+    use DB_File;
+    tie %persistent, "DB_File", "languages.db" or die $!;
+    $persistent{"Thank you"} = "arigatou";
+
+    # ... sometime later ...
+
+    use DB_File;
+    tie %persistent, "DB_File", "languages.db" or die $!;
+    print $persistent{"Thank you"} # "arigatou"
+
+DBMs, however, have a serious limitationsince they only store key-value pairs of scalar data, they cannot store more complex Perl data structures, such as references, objects, and the like. The other problem with key-value structures like DBMs is that they're very bad at expressing relationships between data. For this, we need a relational database such as Oracle or MySQL. We'll return to this subject later in the chapter to see a way of dealing with the limitations.
+
+4.2. Object Serialization
+Now we want to move on from the relatively simple key-value mechanism of DBMs to the matter of saving and restoring more complex Perl data structures, chiefly objects. These data structures are interesting and more difficult than scalars, because they come in many shapes and sizes: an object may be a blessed hashor it might be a blessed arraywhich could itself contain any number and any depth of nesting of hashes, including other objects, arrays, scalars, or even code references.
+
+While we could reassemble all our data structures from their original sources every time a program is run, the more complex our structures become, the more efficient it is to be able to store and restore them wholesale. Serialization is the process of representing complex data structures in a binary or text format that can faithfully reconstruct the data structure later. In this section we're going to look at the various techniques that have been developed to do this, again with reference to their implementation in CPAN modules.
+
+4.2.1. Our Schema and Classes
+To compare the different techniques here and in the rest of the chapter, we're going to use the same set of examples: some Perl classes whose objects we want to be somehow persistent. The schema and classes are taken from the example application used by Class::DBI: a database of CDs in a collection, with information about the tracks, artists, bands, singers, and so on.
+
+We'll create our classes using the Class::Accessor::Assert module, which not only creates constructors and accessors for the data slots we want, but also ensures that relationships are handled by constraining the type of data that goes in the slots. So, for instance, the CD class would look like this:
+
+    package CD;
+    use base "Class::Accessor::Assert";
+    _ _PACKAGE_ _->mk_accessors(qw(
+       artist=CD::Artist title publishdate=Time::Piece songs=ARRAY
+    ));
+
+This checks that artist is a CD::Artist object, that publishdate is a Time::Piece object, and that TRacks is an array reference. (Sadly, we can't check that it's an array of CD::Song objects, but this will do for now.) Notice that things are going to be slightly different between the schema and the Perl codefor instance, we don't need a separate class for CD::Track, which specifies the order of songs on a CD, because we can just do that with an array of songs.
+
+With that in mind, the rest of the classes look like this:
+
+    package CD::Song;
+    use base 'Class::Accessor';
+    _ _PACKAGE_ _->mk_accessors("name");
+
+    package CD::Person;
+    use base 'Class::Accessor::Assert';
+    _ _PACKAGE_ _->mk_accessors(qw(gender haircolor birthdate=Time::Piece));
+
+    package CD::Band;
+    use base 'Class::Accessor::Assert';
+    _ _PACKAGE_ _->mk_accessors( qw( members=ARRAY
+                                   creationdate=Time::Piece
+                                   breakupdate=Time::Piece ));
+
+    package CD::Artist;
+    use base 'Class::Accessor::Assert';
+    _ _PACKAGE_ _->mk_accessors(qw( name popularity person band ));
+
+    # Dispatch "band" accessors if it's a band
+    for my $accessor (qw(members creationdate breakupdate)) {
+        *$accessor = sub {
+           my $self = shift;
+           return $self->band->$accessor(@_) if $self->band
+        };
+    }
+
+    # And dispatch "person" accessors if it's a person
+    for my $accessor (qw(gender haircolor birthdate)) {
+        *$accessor = sub {
+           my $self = shift;
+           return $self->person->$accessor(@_) if $self->person
+        };
+    }
+
+Now we can create artists, tracks, and CDs, like so:
+
+    my $tom = CD::Artist->new({ name => "Tom Waits",
+                                person => CD::Person->new(  ) });
+
+    $tom->popularity(2);
+    $tom->haircolor("black");
+
+    my $cd = CD->new({
+       artist => $tom,
+       title => "Rain Dogs",
+       songs => [ map { CD::Song->new({title => $_ }) }
+                  ("Singapore", "Clap Hands", "Cemetary Polka",
+                   # ...
+                  ) ]
+    });
+
+The rest of the chapter addresses how we can store these objects in a database and how we can use the classes as the frontend to an existing database.
+
+4.2.2. Dumping Data
+One basic approach would be to write out the data structure in full: that is, to write the Perl code that could generate the data structure, then read it in, and revive it later. That is, we would produce a file containing:
+
+    bless( {
+      'title' => 'Rain Dogs'
+      'artist' => bless( {
+           'popularity' => 2,
+               'person' => bless( { 'haircolor' => 'black' }, 'CD::Person' ),
+                 'name' => 'Tom Waits'
+          }, 'CD::Artist' ),
+      'songs' => [
+        bless( { 'title' => 'Singapore'      }, 'CD::Song' ),
+        bless( { 'title' => 'Clap Hands'     }, 'CD::Song' ),
+        bless( { 'title' => 'Cemetary Polka' }, 'CD::Song' ),
+        # ...
+      ],
+    }, 'CD' )
+
+and later use do to reconstruct this data structure. This process is known as serialization, since it turns the complex, multidimensional data structure into a flat piece of text. The most common module used to do the kind of serialization shown above is the core module Data::Dumper.
+
+This process of serialization is also incredibly important during the debugging process; by dumping out a representation of a data structure, it's very easy to check whether it contains what you think it should. In fact, pretty much my only debugging tool these days is a carefully placed:
+
+    use Data::Dumper; die Dumper($whatever);
+
+If you're using the Data::Dumper module for serializing objects, however, there's a little more you need to know about it than simply the Dumper subroutine. First, by default, Dumper's output will not just be the raw data structure but will be an assignment statement setting the variable $VAR1 to the contents of the data structure.
+
+You may not want your data to go into a variable called $VAR1, so there are two ways to get rid of this: first, you can set $Data::Dumper::Terse = 1, which will return the raw data structure without the assignment, which you can then assign to whatever you like; second, you can provide a variable name for Data::Dumper to use instead of $VAR1. This second method is advisable since having an assignment statement rather than a simple data structure dump allows Data::Dumper to resolve circular data structures. Here's an example that sets up a circular data structure:
+
+    my $dum = { name => "Tweedle-Dum" };
+    my $dee = { name => "Tweedle-Dee" };
+    $dee->{brother} = $dum;
+    $dum->{brother} = $dee;
+
+If we dump $dum using the Data::Dumper defaults, we get:
+
+    $VAR1 = {
+              'brother' => {
+                             'brother' => $VAR1,
+                             'name' => 'Tweedle-Dee'
+                           },
+              'name' => 'Tweedle-Dum'
+            };
+
+This is fine for debugging but cannot reconstruct the variable later, since $VAR1 is probably undef while the hash is being put together. Instead, you can set $Data::Dumper::Purity = 1 to output additional statements to fix up the references:
+
+    $VAR1 = {
+              'brother' => {
+                             'brother' => {  },
+                             'name' => 'Tweedle-Dee'
+                           },
+              'name' => 'Tweedle-Dum'
+            };
+    $VAR1->{'brother'}{'brother'} = $VAR1;
+
+Naturally, this is something that we're going to need when we're using Data::Dumper to record real data structures, but it cannot be done without the additional assignments and, hence, a variable name. You have two choices when using Data::Dumper for serialization: either you can specify the variable name you want, like so:
+
+    open my $out, "> dum.pl" or die $!;
+    use Data::Dumper;
+    $Data::Dumper::Purity = 1;
+    print $out Dumper([ $dee ], [ "dee" ]);
+
+or you can just make do with $VAR1 and use local when you re-evalthe code.
+
+Data::Dumper has spawned a host of imitators, but none more successful than YAML (YAML Ain't Markup Language). This is another text-based data serialization format that is not Perl-specific and is also optimized for human readability. Using YAML's Dump or DumpFile on the Tom Waits CD gives us:
+
+    --- #YAML:1.0 !perl/CD
+    artist: !perl/CD::Artist
+      name: Tom Waits
+      person: !perl/CD::Person
+        haircolor: black
+      popularity: 2
+    songs:
+      - !perl/CD::Song
+        title: Singapore
+      - !perl/CD::Song
+        title: Clap Hands
+      - !perl/CD::Song
+        title: Cemetary Polka
+      ...
+    title: Rain Dogs
+
+This is more terse and, hence, easier to follow than the equivalent Data::Dumper output; although with Data::Dumper, at least you're reading Perl. Once you know that YAML uses key: value to specify a hash pair, element for an array element, indentation for nesting data structures, and ! for language-specific processing instructions, it's not hard.
+
+YAML uses a system of references and links to notate circular structures; Tweedle-Dum looks like this:
+
+    --- #YAML:1.0 &1
+    brother:
+      brother: *1
+      name: Tweedle-Dee
+    name: Tweedle-Dum
+
+The *1 is a reference to the target &1 at the top, stating that Tweedle-Dee's brother slot is the variable. This is much neater, as it means you can save and restore objects without messing about with what the variable name ought to be. To restore an object with YAML, use Load or LoadFile:
+
+    my $dum = YAML::Load(<<EOF);
+    --- #YAML:1.0 &1
+    brother:
+      brother: *1
+      name: Tweedle-Dee
+    name: Tweedle-Dum
+    EOF
+
+    print $dum->{brother}{brother}{name}; # Tweedle-Dum
+
+4.2.3. Storing and Retrieving Data
+As well as the text-based serialization methods, such as Data::Dumper and YAML, there are also binary serialization formats; the core module Storable is the most well known and widely used of these, but the CPAN module FreezeThaw deserves an honorable mention.
+
+Storable can store and retrieve data structures directly to a file, like so:
+
+    use Storable;
+    store $dum, "dum.storable";
+
+    # ... later ...
+
+    my $dum = retrieve("dum.storable");
+
+This technique is used by the CPANPLUS module to store a parsed representation of the CPAN module tree. This is perhaps the ideal use of serializationwhen you have a very large data structure that was created by parsing a big chunk of data that would be costly to reparse. For our examples, where we have many relatively small chunks of interrelated data, the process has a problem.
+
+4.2.4. The Pruning Problem
+The problem is that we serialize every reference or object that we store, but the serializations don't refer to each other. It's as if each object is the root of a tree, and everything else is subordinate to it; unfortunately, that's not always the case. As a simple example, let's take our two variables in circular reference. When we serialize and store them, our serializer sees the two variables like this:
+
+    $dum = {
+              'brother' => {
+                             'brother' => $dum,
+                             'name' => 'Tweedle-Dee'
+                           },
+              'name' => 'Tweedle-Dum'
+            };
+    $dee = {
+              'brother' => {
+                             'brother' => $dee,
+                             'name' => 'Tweedle-Dum'
+                           },
+              'name' => 'Tweedle-Dee'
+            };
+
+We've been serializing them one at a time, so the serializer is forced to serialize everything it needs to fully retrieve either one of these two variables; this means it has to repeat information. In the worst case, where all the data structures we store are interconnected, each and every piece of data we store will have to contain the data for the whole set. If there was some way to prune the data, so that the serializer saw:
+
+    $dum = {
+              'brother' => (PLEASE RETRIEVE $dee FOR THIS DATA),
+              'name' => 'Tweedle-Dum'
+            };
+    $dee = {
+              'brother' => (PLEASE RETRIEVE $dum FOR THIS DATA),
+
+              'name' => 'Tweedle-Dee'
+            };
+
+then all would be well. But that requires a lot more organization. We'll see techniques to handle that later in the chapter.
+
+4.2.5. Multilevel DBMs
+Besides the pruning problem, there's another problem with the file-based serialization we've been using so far. If we're dealing with more than one data structure which programs tend to dowe need to either put everything we want to deal with into one big array or hash and store and retrieve that, which is very inefficient, or we have a huge number of files around and we have to work out how we're going to manage them.
+
+DBM files are one solution, as they relate one thing (an ID or variable name for the data structure) to another (the data structure itself) and hence organize individual data structures in a single file in a random-access way. However, when we last left DBMs, we were lamenting the fact that they cannot store and retrieve complex data structures, only scalars. But now that we've seen a way of turning a complex data structure into a scalar and back again, we can use these serialization techniques to get around the limitations of DBMs.
+
+There are two ways of doing this: the new and reckless way, or the old and complicated way. We'll start with the new and reckless way since it demonstrates the idea very well.
+
+In recent versions of Perl, there's a facility for adding filter hooks onto DBM access. That is, when you store a value into the database, a user-defined subroutine gets called to transform the data and, likewise, when you retrieve a value from the database. Your subroutine gets handed $_, you do what you need to it, and the transformed value gets used in the DBM. This filter facility has many uses. For instance, you can compress the data that you're storing to save space:
+
+    use Compress::Zlib;
+
+    $db = tie %hash, "DB_File", "music.db" or die $!;
+    $db->filter_store_value(sub { $_ = compress($_)   });
+    $db->filter_fetch_value(sub { $_ = uncompress($_) });
+
+Or you can null-terminate your strings, for both keys and values, to ensure that C programs can use the same database file:
+
+    $db->filter_fetch_key  ( sub { s/\0$//    } ) ;
+    $db->filter_store_key  ( sub { $_ .= "\0" } ) ;
+    $db->filter_fetch_value( sub { s/\0$//    } ) ;
+    $db->filter_store_value( sub { $_ .= "\0" } ) ;
+
+Or you can do what we want to do, which is to use Storable's freeze and thaw functions to serialize any references we get passed:
+
+    use Storable qw(freeze thaw);
+
+    $db->filter_store_value( sub { $_ = freeze($_) } );
+    $db->filter_fetch_value( sub { $_ = thaw($_)   } );
+
+That's the easy way, but it has some disadvantages. First, it ties you down, as it were, to using Storable for your storage. It also requires the DBM filter facility, which came into Perl in version 5.6.0this shouldn't be much of a problem these days, but you never know. The most serious disadvantage, however, is that it's unfamiliar to other programmers, which means maintainance coders may not appreciate the significance of these two lines in your program.
+
+The way to scream to the world that you're using a multilevel DBM is to use the MLDBM module. Eventually, this ought to be rewritten to use the DBM filter hooks, but you don't need to care about that. MLDBM abstracts both the underlying DBM module and the seralization module, like so:
+
+    use MLDBM qw(DB_File Storable); # Use a Sleepycat DB and Storable
+
+    tie %hash, "MLDBM", "music.db" or die $!;
+
+    my $tom = CD::Artist->new({ name => "Tom Waits",
+                              person => CD::Person->new(  ) });
+    $martyn->popularity(1);
+
+    $hash{"album1"} = CD->new({
+          artist => $tom,
+          title  => "Rain Dogs",
+          tracks => [ map { CD::Song->new({title => $_ }) }
+                      ("Singapore", "Clap Hands", "Cemetary Polka", ...)
+                    ]
+    });
+
+We could also choose FreezeThaw or Data::Dumper to do the serialization, or any of the other DBM drivers for the storage.
+
+ One thing people expect to be able to do with MLDBM, but can't, is write to intermediate references. Let's say we have a simple hash of hashes:
+
+    use MLDBM qw(DB_File Storable); # Use a Sleepycat DB and Storable
+    tie %hash, "MLDBM", "hash.db" or die $!;
+    $hash{test} = { "Hello" => "World" };
+
+This works fine. But when we do:
+
+    $hash{test}->{Hello} = "Mother";
+
+the assignment seems to have no effect. In short, you can't store to intermediate references using MLDBM. If you think how MLDBM works, this is quite obvious. Our assignment has done a fetch, which has produced a new data structure by thawing the scalar in the database. Then we've modified that data structure. However, modifying the data structure doesn't cause a STORE call to write the new data to the database; STORE is only called when we write directly to the tied hash. So to get the same effect, we need the rather more ugly:
+
+    $hash{test} = { %{$hash{test}}, Hello => "Mother" };
+
+Since MLDBM uses a deep serializer, our example not only stores the CD object, but also the CD::Song objects and the CD::Artist object. When we retrieve album1 again, everything is available.
+
+4.2.6. Pixie
+The Pixie module from CPAN is an automated, ready-made implementation of all that we've been talking about in this section. It uses Storable to serialize objects, and then stores them in a data storea relational database using DBI by default, but you can also define your own stores.
+
+Pixie has two advantages over the hand-knit method we've used. First, and most important, it solves the pruning problem: it retrieves each new object in the data structure as it's referenced, rather than pulling everything in as a lump. If, for instance, we have a tree data structure where every object can see every other object, something based on MLDBM would have to read the entire tree structure into memory when we fetched any object in it. That's bad. Pixie doesn't do that.
+
+The other advantage, and the way Pixie gets around this first problem, is that it stores each new object in the data structure separately. So when we stored our Tom Waits CD with MLDBM, we serialized the whole thing, including all the CD::Song and CD::Artist objects, into a scalar and stored that. If we stored a different CD by the same artist, we'd serialize all of its data, including the CD::Artist object, into a scalar and store that as well. We now have two copies of the same artist data stored in two different albums. This can only get worse. In the worst case of a tree structure, every object we serialize and store will have to contain the entire contents of the tree. That's bad. Pixie doesn't do that, either.
+
+To demonstrate using Pixie, we'll use the default DBI data store. Before we can start storing objects, we first have to deploy the data storethat is, set up the tables that Pixie wants to deal with. We do this as a separate setup process before we use Pixie the first time:
+
+    use Pixie::Store::DBI;
+    Pixie::Store::DBI->deploy("dbi:mysql:dbname=pixie");
+
+The deploy method creates new tables, so it will fail if the tables already exist. Now if we have pure-Perl, pure-data objects, Pixie just works. Let's take our Rain Dogs CD again, since that's what I was listening to when I wrote this chapter:
+
+    my $cd = CD->new({
+       artist => $tom,
+       title => "Rain Dogs"
+       songs => [ map { CD::Song->new({title => $_ }) }
+                  ("Singapore", "Clap Hands", "Cemetary Polka",
+                   # ...
+                  ) ]
+    });
+
+    my $pixie = Pixie->new->connect("dbi:mysql:dbname=pixie");
+    my $cookie = $pixie->insert($cd);
+
+This will store the data and return a GUID (globally unique identifier)mine was EAAC3A08-F6AA-11D8-96D6-8C22451C8AE2, and yours hopefully will not be. Now I can use this GUID in a completely different program, and I get the data back:
+
+    use Pixie;
+    use CD;
+    my $pixie = Pixie->new->connect("dbi:mysql:dbname=pixie");
+    my $cd = $pixie->get("EAAC3A08-F6AA-11D8-96D6-8C22451C8AE2");
+
+    print $cd->artist->name; # "Tom Waits"
+
+Notice that Pixie has not only stored the CD object that we asked it about, but it has also stored the CD::Artist, CD::Person and all the CD::Song objects that related to it. It only retrieves them, however, when we make the call to the relevant accessor. It's very clever.
+
+For our purposes, that's all there is to Pixie, but that's because our purposes are rather modest. Pixie works extremely well when all the data belonging to an object is accessible from Perl spacea blessed hash or blessed array reference. However, objects implemented by XS modules often have data that's not available from PerlC data structures referred to by pointers, for instance. In that case, Pixie doesn't know what to do and requires help from the programmer to explain how to store and reconstruct the objects.
+
+We'll use a pure Perl example, however, to demonstrate what's going on. In our example, we have a bunch of Time::Piece objects in our storage. If these were instead DateTime objects, we'd have to store all this every time we store a date:
+
+    $VAR1 = bless( {
+                     'tz' => bless( {
+                                      'name' => 'UTC'
+                                    }, 'DateTime::TimeZone::UTC' ),
+                     'local_c' => {
+                                    'quarter' => 3,
+                                    'minute' => 13,
+                                    'day_of_week' => 7,
+                                    'day' => 19,
+                                    'day_of_quarter' => 81,
+                                    'month' => 9,
+                                    'year' => 2004,
+                                    'hour' => 13,
+                                    'second' => 3,
+                                    'day_of_year' => 263
+                                  },
+                      ...,
+
+                   }, 'DateTime' );
+
+This is not amazingly efficient, just to store what can be represented by an epoch time. Even though this is all pure Perl data, we can make it a bit tidier by making DateTime complicit with Pixie.
+
+To do this, we implement a few additional methods in the DateTime namespace. First we use a proxy object to store the essential information about the DateTimeobject:
+
+    sub DateTime::px_freeze {
+        my $datetime = shift;
+        bless [ $datetime->epoch ], "Proxy::DateTime";
+    }
+
+Now when Pixie comes to store a DateTime object, all it does instead is convert it to a Proxy::DateTime object that knows the epoch time and stores that instead.[*] Next, we need to be able to go from the proxy to the real DateTime object, when it is retrieved from the database. Remember that this needs to be a method on the proxy object, so it lives in the Proxy::DateTime namespace:
+
+[*] Design pattern devotees call this the "memento" pattern.
+
+    sub Proxy::DateTime::px_thaw {
+        my $proxy = shift;
+        DateTime->from_epoch(epoch => $proxy->[0]);
+    }
+
+Some objectslike blessed scalars or code refsare a bit more tricky to serialize. Because of this, Pixie won't serialize anything other than hash- or array-based classes, unless we explicitly tell it that we've handled the serialization ourselves:
+
+    sub MyModule::px_is_storable { 1 }
+
+And that, really, is all there is to it.
+
+4.3. Object Databases
+While the methods we've seen in the previous section work very well for storing and retrieving individual objects, there are times when we want to deal with a massive collection of data with the same degree of efficiency. For instance, our CD collection may run to thousands of objects, while a simple query applicationfor example, to determine which artist recorded a particular trackwould only use one or two of them. In this case, we don't want to load up the whole object store into memory before we run the query.
+
+In fact, what we could really deal with is the kind of fast, efficient indexing and querying that is the hallmark of traditional relational databases such as Oracle or MySQL, but which dealt with objects in the same way as Pixie. We want an object database.
+
+4.3.1. Object Database Pitfalls
+There are not many object databases on CPAN, and with good reason: writing object databases is incredibly difficult.
+
+First, you need to worry about how to pick apart individual objects and store them separately, so that you don't end up with the pruning problem.
+
+Second, you have to work out a decent way to index and query objects. Indexing and querying database rows in general is pretty easy, but objects? This is currently one of the areas that holds Pixie back from being an object database.
+
+Allied with that, you need to work out how you're going to map the properties of your object to storage in a sensible way to allow such indexing; serialization-based solutions don't care about what's inside an object, they just write the whole thing into a string.
+
+Fortunately, you don't really have to worry about these things; you can just use some of the existing solutions.
+
+4.3.2. Tangram
+Jean-Louis Leroy's Tangram is a mature and flexible but complex solution to mapping Perl objects onto database rows. Tangram is very explicit in terms of what the user must do to make it work. Except when it comes to filters, which we'll look at in a moment, Tangram is very short on DWIM.
+
+For instance, Tangram relies on the user to provide a lot of class information, which it uses to decide how to map the objects onto the database. This gives you much more flexibility about how the database is laid out, but if you don't particularly care about that, it requires you to do a lot of tedious scaffolding work.
+
+To get Tangram up and running on our CD database, we must first define the schema as a Perl data structure. This tells Tangram the classes we're interested in persisting, as well as which attributes to save and what data types they're going to be. Here's the schema for our classes:
+
+    use Tangram;
+    use Tangram::TimePiece;
+    use DBI;
+    use CD;
+    our $schema = Tangram::Relational->schema({
+        classes => [
+            CD => {
+                fields => {
+                    string => [ qw(title) ],
+                    timepiece => [ qw(publishdate) ],
+                    iarray  => {
+                        songs => {
+                            class => 'CD::Song',
+
+                            aggreg => 1,
+                            back => 'cd',
+                        },
+                    },
+                },
+           },
+           'CD::Song' => {
+               fields => {
+                   string => [ qw(name) ],
+               }
+           },
+           'CD::Artist' => {
+               abstract => 1,
+               fields => {
+                   string => [ qw(name popularity) ],
+                   iset => {
+                       cds => {
+                           class => 'CD',
+                           aggreg => 1,
+                           back => 'artist'
+                       },
+                   },
+               },
+           },
+           'CD::Person' => {
+               bases  => [ "CD::Artist" ],
+               fields => {
+                   string => [ qw(gender haircolor) ],
+                   timepiece => [ qw(birthdate) ],
+               },
+           },
+           'CD::Band' => {
+               bases  => [ "CD::Artist" ],
+               fields => {
+                   timepiece => [ qw(creationdate enddate) ],
+                   set => {
+                       members => {
+                           class => 'CD::Person',
+                           table => "artistgroup",
+                       },
+                   },
+               },
+           },
+        ]});
+           $dbh = DBI->connect($data_source,$user,$password);
+           Tangram::Relational->deploy($schema, $dbh);
+           $dbh->disconnect();
+
+With the schema built and deployed, we can store, retrieve, and search for objects via Tangram::Storage objects, and for so-called remote objects, which represent a class of objects of a particular type in storage.
+
+4.3.2.1 Tangram CRUD: create, read, update, delete
+We can create and insert objects, like so:
+
+    my ($cd, @songs, $band, @people);
+    my $tom = CD::Band->new
+        ({ name => "Tom Waits",
+          popularity => "1",
+          cds => Set::Object->new
+          (
+           $cd =
+           CD->new({title => "Rain Dogs",
+                    songs => [
+                  @songs = map {CD::Song->new({ name => $_ })}
+                  "Singapore", "Clap Hands", "Cemetary Polka", ...
+                             ],
+                  }),
+          ),
+        });
+
+    # stick it in
+    my $storage = Tangram::Storage->connect($schema, $data_source, $username, $password);
+    my $oid = $storage->insert($tom);
+    my $id = $storage->export_object($tom);
+
+Later, we can retrieve objects either by their object ID, or by class and ID:
+
+    # Object ID
+    $band = $storage->load($oid);
+
+    # Class and ID - polymorphic select
+    $band = $storage->import_object("CD::Artist", $id);
+
+The import_object method is polymorphic, meaning that it can load the CD::Artist object with ID $id, even though that object is actually a CD::Band object.
+
+However, selecting by storage ID is not enough to get us by. We also need to be able to query objects based on some specification of which objects we want.
+
+With Tangram, you first fetch a remote object, representing a database-side object. In its blank state, this remote object could represent any object in the database of that type. You then write expressions that refer to a subset of those objects with regular Perl operators:
+
+    my $r_artist = $storage->remote("CD::Artist");
+
+    my @artists = $storage->select
+        ( $r_artist,
+          $r_artist->{name} eq "Tom Waits" );
+    my $r_cd = $storage->remote("CD");
+
+It may look like that second parameter to select is going to return a single (false) value and the select isn't going to work; however, Tangram is more magical than that. First, the remote object doesn't represent a single artistit represents all the possible artists. Second, $r_artist->{name} returns an overloaded object, and just as we saw in the first chapter, we can use overloading to determine how objects behave in the presence of operators like eq. Here, the Tangram::Storage class overloads all the comparison operators to return Tangram::Filter objects; these objects store up all the comparisons and use them to represent a WHERE statement in the SQL select.
+
+Tangram's query filters are extremely expressive:
+
+    my $join = ($r_cd->{artist} eq $r_artist);
+    my $query =
+        ( $r_artist->{name}->upper(  )->like(uc("%beat%"))
+          | $r_cd->{title}->upper(  )->like(uc("%beat%")) );
+
+    my $filter = $join & $query;
+    my $cursor = $storage->cursor ( $r_cd, $filter );
+
+    my @cds=(  );
+    while ( my $cd = $cursor->current ) {
+        print("found cd = " ,$cd->title,
+              ", artist = ", $cd->artist->name, "\n");
+        $cursor->next;
+    }
+
+Note that in the above example, we built the query keeping join conditions and query fragments seperate, combining them to pass to the Tangram::Storage function. Tangram uses a single & for AND and a single | for OR (see Tangram::Expr). We also used a Tangram::Cursor to iterate over the returned results, rather than slurping them all in at once. Finally, the CD::Artist object corresponding to each CD object is fetched via a back-reference.
+
+A back-reference is an example of a third method of traversing a Tangram stored object structure: through the relationships of the object. Tangram ships with seven types of object relationship classes: many-to-one relationships (references), one-to-many relationships (intrusive or foreign key relationships, with three variants: Sets, Arrays, and Hashes), as well as many-to-many relationships (relationships connected via a link tableagain with three variants of Set, Array, and Hash).
+
+So, once we have the @artists, we can retrieve the associated information just by following the Perl object structure. This is implemented via on-demand storage references.
+
+    @cds = $artists[0]->cds->members;  # Set::Object
+    my @tracks = @{ $cds->[0]->songs };   # Array
+
+So, we've covered create and readwhat about updates? Updates are performed by $storage->update:
+
+    my ($pfloyd) = $storage->select
+        ( $r_artist,
+          $r_artist->{name} eq "Pink Floyd" );
+
+    $cd;
+    $pfloyd->cds->insert
+        ($cd=
+
+         CD->new({ title => "The Dark Side of The Moon",
+                   publishdate => Time::Piece->strptime("2000-04-06", "%y-%m-%d"),
+                   songs => [ map { CD::Song->new({ name => $_ }) }
+                              "Speak To Me/Breathe", "On The Run",
+                            "Time", "The Great Gig in the Sky",
+                              "Money", "Us And Them",
+                              "Any Colour You Like", "Brain Damage",
+                            "Eclipse",
+                          ],
+                 })
+        );
+    $pfloyd->popularity("legendary");
+    $storage->update($pfloyd);
+    $storage->id($cd);
+
+So far we've demonstrated three points about Tangram's update facilities. The final aspect of Tangram's CRUDdeleting objectsis done with $storage->erase( ):
+
+        my (@gonners) = $storage->select
+            ($r_artist,
+             $r_artist->{popularity} eq "one hit wonder");
+
+        $storage->erase(@gonners);
+
+Tangram has excellent transaction support, mature object caching abilities, functions to deal with short-term dirty read problems, and the orthogonal ability to perform schema migration using two database handles. Its debugging output, selected with the environment variable TANGRAM_TRACE or by setting the Perl variable $Tangram::TRACE to a filehandle, provides a clear picture of what queries are being run by your program.
+
+Its major downsides are that it does not support partially reading objects (only complete rows), it cannot easily be queried with raw SQL expressions, and it does not deal with indexing (the assumption being that the database administrator can set up appropriate indexes, or that creating such indexes happens independently of the normal schema deployment).
+
+4.4. Database Abstraction
+Tangram has given us a way to store and retrieve objects in a database. The other side of the coin is the situation of having an existing database and wanting to get a view of it in terms of Perl objects. This is a very subtle distinction, but an important one. In the case of Tangram (and indeed, Pixie), we didn't really care what the database schema was, because the database was just an incidental way for Tangram to store its stuff. It could create whatever tables and columns it wanted; what we really care about is what the objects look like. In the current case, though, we already have the database; we have a defined schema, and we want the database abstraction tool to work around that and tell us what the objects should look like.
+
+There are several good reasons why you might want to do this. For many people, database abstraction is attractive purely because it avoids having to deal with SQL or the relatively tedious process of interacting with the DBI; but there's a more fundamental reason.
+
+When we fetch some data from the database, in the ordinary DBI model, it then becomes divorced from its original database context. It is no longer live data. We have a hash reference or array reference of datawhen we change elements in that reference, nothing changes in the database at all. We need a separate step to put our changes back. This isn't the paradigm we're used to programming in. We want our data to do something, and data that do something are usually called objectswe want to treat our database rows as objects, with data accessors, instantiation and deletion methods, and so on. We want to map between relational databases and objects, and this is called, naturally, object relational mapping.
+
+SQLite
+SQLite (http://www.hwaci.com/sw/sqlite/) is a self-contained relational database that works on a simple file in the filesystem, and it's getting ever more sophisticated. It's also incredibly fast. Instead of having a separate database daemon that listens for and responds to queries, SQLite takes the DBM approach of providing a C library that acts on the data directly. If you install the DBD::SQLite module from CPAN, you'll have everything you need to use relational databases without the hassle of installing one of the bigger database engines:
+
+    use DBI;
+    my $dbh = DBI->connect("dbi:SQLite:dbname=music.db");
+    $dbh->do("CREATE TABLE cds ( ... )");
+
+4.4.1. Trivial Mapping
+We'll demonstrate some of the principles of an object-relational mapper by creating a very, very simple object-relational mapper that is read-onlyit doesn't allow us to make changes to the database. Then we'll show how to add this functionality, and look at Class::DBI, a very similar mapper that does it all for us.
+
+Before I heard of Class::DBI, I actually implemented something like this in production code. The basic idea looks like this:
+
+    package CD::DBI;
+    our $dbh = DBI->connect("dbd:mysql:music");
+
+    sub select {
+        my ($class, $sql, @params) = @_;
+        my $sth = $dbh->prepare($sql);
+        $sth->execute(@params);
+
+        my @objects;
+        while (my $obj = $sth->fetchrow_hashref(  )) {
+            push @objects, (bless $obj, $class);
+        }
+    }
+
+    package CD;
+    use base 'CD::DBI';
+
+    package CD::Artist;
+    use base 'CD::DBI';
+    #...
+
+    package main;
+
+    my @cds = CD->select("SELECT * FROM cd");
+
+fetchrow_hashref is a very useful DBI method that returns each row as a hash:
+
+    {
+        id => 180,
+        title => "Inside Out",
+        artist => 105,
+        publishdate => "1983-03-14"
+    }
+
+This looks rather like our CD objects, so we simply bless this into the right class, and all the accessors work as normal. This is actually very close to what we want. There are two things we can improve: artist now returns an ID instead of a CD::Artist object and any changes we make don't get written back to the database.
+
+So, to deal with the first problem, we can modify the artist accessor like so:
+
+    package CD;
+    sub artist {
+        my $self = shift;
+        my ($artist) = CD::Artist->select(
+            "SELECT * FROM artist WHERE id = ?",
+            shift->{artist}
+        );
+        return $artist;
+    }
+
+This time, we retrieve an individual record from the artist table and bless it into the CD::Artist class. We can write similar accessors for other relationships. For instance, to get all the tracks belonging to a specific CD:
+
+    sub tracks {
+        my $self = shift;
+        CD::Track->select("SELECT * FROM track WHERE cd = ?",
+                          $self->{id}
+                         );
+    }
+
+To make this whole system read-write instead of read-only, we need to update our accessors again, something like this:
+
+    package CD;
+    sub title {
+        my ($self, $title) = @_;
+        if ($title) {
+            $CD::DBI::dbh->do("UPDATE cd SET title = ? WHERE id = ?",
+                              undef, $title, $self->{id});
+        }
+        $self->SUPER::title($title);
+    }
+
+But here we're writing a lot of code; the purpose of using automated accessor generators was to avoid going through all this rigmarole. Perhaps there should be a module that generates database-aware accessors . . . .
+
+4.4.2. Class::DBI
+By far my favorite of the object-relational mapping modules is Michael Schwern and Tony Bowden's Class::DBI. It is very easy to learn and to set up, highly extensible, and supported by a wide range of auxilliary modules. It is also, not entirely coincidentally, rather like the simple mapper we just created. To set it up, we subclass Class::DBI to create a driver class specific to our database:
+
+    package CD::DBI;
+    use base 'Class::DBI';
+    _ _PACKAGE_ _->connection("dbi:mysql:musicdb");
+
+We do this so that when we implement the table classes, they all know where they're connecting to. Now let's take the first table, the artist table:
+
+    package CD::Artist;
+    use base 'CD::DBI';
+    _ _PACKAGE_ _->table("artist");
+    _ _PACKAGE_ _->columns(All => qw/artistid name popularity/);
+
+Here we're using our own CD::Artist class and the other classes we will generate, instead of the classes we wrote in the earlier chapter. The interface will be just the same as our original CD::Artist, because Class::DBI uses the same Class::Accessor way of creating accessors.
+
+It also adds a few more methods to the CD::Artist class to help us search for and retrieve database rows:
+
+    my $waits = CD::Artist->search(name => "Tom Waits")->first;
+    print $waits->artistid; # 859
+    print $waits->popularity; # 634
+
+    my $previous = CD::Artist->retrieve(858);
+    print $previous->name; # Tom Petty and the Heartbreakers
+
+    # So how many Toms are there?
+
+    my $toms = CD::Artist->search_like(name => "Tom %")->count;
+    print $toms; # 6
+
+    for my $artist ( CD::Artist->retrieve_all ) {
+        print $artist->name, ": ", $artist->popularity, "\n";
+    }
+
+We can also create a new artist by passing in a hash reference of attributes:
+
+    $buff = CD::Artist->create({
+       name => "Buffalo Springfield",
+       popularity => 10
+    });
+
+Class::DBI automatically creates data accessors for each of the columns of the table; we can update columns in the database by passing arguments to the accessors. Here's a program that uses Mac::AppleScript to ask iTunes for the currently playing artist, and then increments the artist's popularity:
+
+    use Mac::AppleScript qw(RunAppleScript;
+    my $current = RunAppleScript(<<AS);
+      tell application "iTunes"
+        artist of current track
+      end tell
+    AS
+
+    my $artist = CD::Artist->find_or_create({ name => $current });
+    $artist->popularity( $artist->popularity(  ) + 1 );
+    $artist->update;
+
+This uses find_or_create to first search for the name, then retrieve the existing row if there is one, or create a new one otherwise. Then we increment the popularitynormally we'd think about race conditions when updating a database like this, but in this case, we know that nothing else is going to be updating the library when the script is run. We explicitly update the row in the table with a call to update. I dislike doing this, so I often tell Class::DBI to do it automatically with autoupdate:
+
+    package CD::Artist
+    use base 'MusicDB::DBI';
+    _ _PACKAGE_ _->table("artist");
+    _ _PACKAGE_ _->columns(All => qw/artistid name popularity/);
+    _ _PACKAGE_ _->autoupdate(1);
+
+Now we can dispense with the update callsupdates to accessors are instantly reflected in the database.
+
+Class::DBI often wants me to set up things by hand that the computer should be able to do for me. For instance, I feel I shouldn't have to specify the columns in the table. Thankfully, there are numerous database-specific extensions for Class::DBI on CPAN that know how to interrograte the database for this information:
+
+    package CD::DBI;
+    use base 'Class::DBI::mysql';
+    _ _PACKAGE_ _->connection("dbi:mysql:musicdb");
+
+    _ _PACKAGE_ _->autoupdate(1);
+
+    package CD::Artist;
+    use base 'CD::DBI';
+    _ _PACKAGE_ _->set_up_table("artist");
+
+This uses the mysql extension to query the database for the columns in the table.
+
+Once we've set up all our tables, we can start declaring the relationships between them.
+
+4.4.2.1 Relationships
+Class::DBI supports several types of database relationships. The two most common are has_a and has_many. It also allows you to use or write plug-in modules to declare other relationship types.
+
+The diagram in Figure 4-1 illustrates the difference between has_a and has_many.
+
+Figure 4-1. has_a versus has_many
+
+We've already seen the use of a has_a relationship between CDs and artistseach CD has_a artist. We've also already written some code to implement a nice Perlish interface to it: when we ask a CD object for its artist, it takes the artist's primary key, finds the row in the artist table with that ID, and returns the appropriate object. However, in Class::DBI, instead of writing our own accessor, we just declare the relationship:
+
+    CD->has_a(artist => "CD::Artist");
+    CD::Track->has_a(song => "CD::Song");
+    # ...
+
+The nice thing about this is that we can also declare relationships to classes that are not Class::DBI based but that follow the same general pattern: find the column in the database, do something to it, and turn it into an object. For instance, the publishdate column needs to be turned into a Time::Piece object:
+
+    CD->has_a(publishdate => 'Time::Piece',
+                  inflate => sub { Time::Piece->strptime(shift, "%Y-%m-%d") },
+                  deflate => 'ymd',
+              );
+
+As before, we relate a column to a class, but we also specify a subroutine that goes from the data in the database to an object, and a method to go the other way, to serialize the object back into the database.
+
+A has_many relationship is also easy to set up; instead of writing the tracks accessor as we did before, we ask Class::DBI to do it for us:
+
+    CD->has_many(tracks => "CD::Track");
+
+Now, for instance, to dump all the tracks in the database, we can say:
+
+    for my $cd (CD->retrieve_all) {
+        print "CD: ".$cd->title."\n";
+        print "Artist: ".$cd->artist->name."\n";
+        for my $track ($cd->tracks) {
+            print "\t".$track->song->name."\n";
+        }
+        print "\n\n";
+    }
+
+For more complex relationships, such as the way an artist is either a person or a group, we can use a plug-in relationship like Class::DBI::Relationship::IsA:
+
+    use Class::DBI::Relationship::IsA;
+    CD::Artist->is_a(person       => 'CD::Person');
+    CD::Artist->is_a(artistgroup  => 'CD::Artistgroup');
+
+The is_a relationship does the right thing: it inherits the accessors of the class that we're referring to. If we ask a CD::Artist for haircolor, it transforms this into a call to $artist->person->haircolor.
+
+Plug-in relationships for Class::DBI are a relatively new concept, and there are not many on CPAN at the moment. HasVariant allows you to use one column to inflate to more than one kind of object; so, for instance, you could have your $cd->artist return a CD::Person or CD::Artistgroup directly depending on the data in the column. There's also HasManyOrdered, which is similar to has_many but allows you to specify how the results should be returned; we should, for instance, ensure that the tracks returned by $cd->tracks are returned in their track number on the CD.
+
+4.4.2.2 Class::DBI extensions
+The other great thing about Class::DBI is that there are so many additional modules that make it easier to use. For instance, in the same way that Class::DBI::mysql asked the database for its rows, you can set up all your classes at once by asking the database for its tables as well. The Class::DBI::Loader module does just this:
+
+    my $loader = Class::DBI::Loader->new(
+        dsn => "dbd:mysql:music",
+        namespace => "MusicDB"
+    );
+
+With our database, this will set up classes called MusicDB::CD, MusicDB::Artist, and so on. All we need to do is set up the reltionships between the classes.
+
+For very simple relationships, Class::DBI::Loader::Relationship can help set these up as well:
+
+    $loader->relationship("a cd has an artist");
+    $loader->relationship("a cd has tracks");
+    # ...
+
+There's also Class::DBI::DATA::Schema to define database tables from schemas placed in the DATA section of a class, Class::DBI::Plugin::RetrieveAll adds the functionality to easily do a SELECT * with various ordering and restrictions, and we'll meet a few more plug-in classes later in the chapter.
+
+4.4.3. Other Contenders
+I've just demonstrated Class::DBI here, but there are many more object-relational mapping tools on CPAN. I believe that Class::DBI has the cleanest and the simplest interface, which makes it ideal for demonstrating the principles of object-relational mapping, but there are those who would contend that this simplicity limits what it can do. Some of the other tools available make different trade-offs between complexity and power.
+
+For instance, one limitation of Class::DBI is the difficulty of creating complex multitable joins that are executed in one SQL statement, letting the database do the work. Class::DBI leaves it to programmers to do this kind of work in Perl or build their own abstracted SQL using Class::DBI hooks and extensions. On the other hand, something like DBIx::SearchBuilder excels at constructing SQL in advance. SearchBuilder is the foundation of the Request Tracker problem tracking system, perhaps one of the most widely deployed and complex enterprise Perl applications; so SearchBuilder is clearly up to the job.
+
+Other modules you should know about include SPOPS and Alzabo, both mature and fully featured relational mappers. There's also interesting work going on in Class::PINT to apply Tangram-style object persistence on top of Class::DBI.
+
+4.5. Practical Uses in Web Applications
+One of the more popular ways of creating web-based applications these days is called the MVC Patternit's a design pattern where you have three components: a model of your data, a view that displays it, and a controller that routes requests and actions between the other two. It's a design pattern that first appeared in graphical applications in the Smalltalk programming language, but has translated reasonably well over to the Web. The key point of MVC is that, if you do it properly, your data model, your view, and your controller can be completely independent components, and you only need to worry about what goes on at the edges.
+
+Now, the kind of templating system we looked at in the previous chapter looks very much like a view class: it abstracts out a way of presenting data. Similarly, the ways of treating database rows as objects look very much like model classes. Almost for free, using CPAN modules, we've got two of the three parts we need for a web application. The upshot is that, if you follow the MVC strategy, you have a very cheap way of writing web applications in which you delegate presentation to a templating library, you delegate data representation to an ORM library, and all you need to care about is what the darned thing actually does.
+
+While this strategy can be applied to pretty much any of the tools we've talked about in the past two chapters, I want to look particularly at using Class::DBI and Template Toolkit; partly for the sake of example, partly because I personally think they fit together extremely well, and partly for another reason that will become apparent shortly.
+
+4.5.1. Class::DBI and the Template Toolkit
+The magic coupling of CDBI and TT, as they're affectionately known, was first popularized around 2001 by Tony Bowden, who'd just taken over maintaining Class::DBI. The idea spread through the mailing lists and Perl-mongers groups until, in 2003, Kate Pugh wrote a perl.com article (http://www.perl.com/lpt/a/2003/07/15/nocode.html) expounding the concept. Why? Because, as Pugh says, CDBI and TT work extremely well together.
+
+Part of the reason for this is that, when templating database applications, you often want to display your objects and their attributes. Class::DBI allows you to get at their attributes by simple method calls, and Template Toolkit provides an easy way of making method calls in the templates. Your data goes straight from the database to the template without much need for any code in the middle.
+
+For instance, for the simple job of viewing a CD, we can have a CGI script like so:
+
+    use CD;
+    use CGI qw/:standard/;
+    use Template;
+    print header();
+
+    my $id = param("id");
+    if (!$id) {
+        print "<h1> You must supply an ID! </h1>"; exit;
+    }
+    my $obj = CD->retrieve($id);
+    Template->new()->process("view.tt", { cd => $obj });
+
+This takes the ID of a CD from the CGI form variables, retrieves the relevant CD, and passes it through to the template, which might look like this:
+
+    <html>
+       <head> <title>[% cd.name %]</title> </head>
+    <body>
+       <h1> [% cd.name %] </h1>
+       <h2> [% cd.artist.name %] </h2>
+
+    <ul>
+    [% FOR track = cd.tracks %]
+        <li> [% track.song.name %] </li>
+    [% END %]
+    </ul>
+    </body>
+    </html>
+
+To view a list of CDs, we simply pass more objects to the template. However, if we want to avoid hitting the user's browser with the data on several hundred CDs, we can restrict the number of items on a page with Class::DBI::Pager:
+
+    use CD;
+    package CD;
+    use Class::DBI::Pager;
+
+    package main;
+    use CGI qw/:standard/;
+    use Template;
+    print header();
+    use constant ITEMS_PER_PAGE => 20;
+
+    my $page = param("page") || 1;
+    my $pager = CD->page(ITEMS_PER_PAGE, $page);
+    my @cds = $pager->retrieve_all;
+    Template->new()->process("view.tt", { cds => \@cds, pager => $pager });
+
+Class::DBI::Pager is a mix-in for Class::DBI-based classes that allows you to ask for a particular page of data, given the number of items of data on a page and the page number you want. Calling page returns a Data::Page object that knows the first page, the last page, which items are on this page, and so on, and can be used in our template for navigation:
+
+    [% IF pager.previous_page %]
+    <A HREF="?page=[%pager.previous_page%]"> Previous page </A> |
+
+    [% END %]
+    Page [% pager.current_page %]
+    [% IF pager.next_page %]
+    | <A HREF="?page=[%pager.next_page%]"> Next page </A>
+    [% END%]
+
+The Class::DBI::FromCGI and Class::DBI::AsForm modules make it easy to construct forms for editing or creating records and then processing those changes in the database.
+
+Of course, similar tricks can be done with templating languages other than 'Template Toolkit, such as HTML::Mason, but TT allows relatively complex constructs, such as method calls, without requiring the template writer to learn a fully fledged programming language. In an ideal world, the database can be handed off to a database team to populate, the templates given to web designers to create, and all that you as a programmer need to write are the kind of short scripts given above.
+
+Or maybe even less ....
+
+4.5.2. Maypole
+At the beginning of 2004, a few ideas relating to CDBI and TT came together in my head, and I found myself writing lots of web applications that all did more or less the same sort of thingthey determined a set of CDBI objects to retrieve, got them out of a database, performed some action on them, and placed them into a template. I did what every good programmer should do on feeling that they've had to do something twiceI abstracted it out. The result was Maypole.
+
+Maypole has two complementary but very distinct goals. Its first goal is to be a way of rapidly designing web applications by providing all the common code and templates for a standard frontend to a database: if you need a way to simply add, delete, view, and update records in a relational database, you can do it in no more than 20 lines of Perl code.
+
+The second goal of Maypole is to be a generic controller method for all web applications. By default, it hooks into CDBI as a model class and TT as a template class to provide all the scaffolding code for a web application; all that you need to do is write the logic specific to what your application should do. And so the first goala web frontend to a databaseuses this generic controller with a load of metadata from the model class and a set of carefully designed default templates to produce an application that does the right thing.
+
+Let's demonstrate Maypole by putting a quick frontend onto our Class::DBI record database. The code is simple enough:
+
+    package CDPole;
+    use base 'Maypole::Application';
+    use CD;
+    CDPole->config->model("Maypole::Model::CDBI::Plain");
+
+    CDPole->setup([qw/ CD CD::Artist CD::Track /]);
+    CDPole->config->uri_base("http://localhost/cdpole/");
+    CDPole->config->template_root("/home/simon/modules/Apache-MVC/templates/");
+    1;
+
+We first say that we are based on Maypole::Application, a special class that determines whether this application should be CGI-based or Apache mod_perl-based, and sets up the inheritance appropriately. In our case, we're going to run this as a mod_perl application.
+
+Next, we say that we're using a plain Class::DBI data source. If we didn't say this, Maypole would default to using Class::DBI::Loader to automatically read the tables from our data source. We also tell the application about the classesthat is, the tablesthat we want to use. Finally, we configure the application, telling it where it will live and where the templates are. With no change to the default templates, our application looks like Figure 4-2.
+
+Figure 4-2. Viewing artists in Maypole
+
+Of course, we don't always want to use the default templates; in fact, we should hardly ever use them, although they are useful for having something up and running quickly to interface to a database. Maypole allows us to override the templates in several ways. To understand these, we need to look at the basic principles of how Maypole works. Now we are moving from the first goal, the database interface, to the second goal, the application framework.
+
+Maypole applications are made up of actions, which pull together some Perl code from the model side of the application with a template from the view side. The action we saw in the figure above was a list action on the artist class. Maypole, in effect, called CD::Artist->list( ) and put the results into a suitable list template. A more complicated action would be triggered by the URL http://localhost/cdpole/artist/edit/110. This would select artist ID 110 (Joni Mitchell), call CD::Artist->edit with that artist object as a parameter, and then find an edit template. We can view the whole Maypole process pictorially in Figure 4-3.
+
+Figure 4-3. The Maypole work flow
+
+To find the appropriate template, Maypole looks in three directories: first, a directory named after the table. So for /artist/edit/110, it would look for artist/edit. If this is not found, it looks in a directory specific to your application, which is called custom; that is, custom/edit. If again this is not found, Maypole falls back to the factory-supplied template in factory/edit.
+
+As well as designing your own templates, you can also design your own actions by specifying that a particular class's method is exported and can be called from the web. This is done with the :Exported attribute:
+
+    package CD::Artist;
+
+    sub all_tracks :Exported {
+        my ($self, $r, $artist) = @_;
+
+        $r->template_args->{tracks} = [ map { $_->tracks } $artist->cds ]
+    }
+
+This method receives the Maypole request object and the artist object. We get a list of all the tracks on all the CDs that this artist has recorded and feed that to the template. The artist/all_tracks template might look like this:
+
+    [% PROCESS macros %]
+    [% INCLUDE header %]
+    <h2> All tracks for [% artist.name %] </h2>
+
+    <ul>
+    [% FOR track = tracks %]
+    <li> [% maybe_link_view(track) %] </li>
+    [% END %]
+    </ul>
+    [% INCLUDE footer %]
+
+That's all it takes to add a new action to the application. These are the basics of Maypole and enough to construct reasonably sophisticated web applications. Maypole has a full manual available at http://maypole.perl.org/.
+
+We've seen Maypole in relation to Class::DBI and Template Toolkit, but its model and view classes are abstracted out such that you can use it with Alzabo or SPOPS, or with HTML::Mason or any other templating or database abstraction class you wish. This brings us onto the whole range of other application frameworks available for Perl.
+
+4.5.3. Other Application Frameworks
+Maypole is not the only player in the application framework space.
+
+OpenInteract is Chris Winters's application framework using the SPOPS database abstraction layer. It's a fully featured framework, with session handling, LDAP support, authentication, groups, caching, cookies, and all sorts of other bits in the core.
+
+PageKit is not tied to any object mapper, but it does require you to use either HTML::Template for your templates or XSLT.
+
+OpenFrame has no relation to OpenInteract. It is something more than a web application framework; it works around the concept of pipelines, similar to the Maypole workflow we saw above, but in a much more generic way. Unlike the other tools, it doesn't provide any link with a data store; you have to code all that up yourself.
+
+CGI::Application is an interesting idea that is parallel to these other kinds of application frameworks; it provides a way of reusing components of CGI applications (such as a package that provides a web-to-email form) so that you can recombine them in whatever way you want. It's another way of quickly creating web applications, but again it doesn't provide any MVC functionality or any direct link to a data store.
+
+4.6. Conclusion
+Storing and retrieving data is the backbone of programming, so it shouldn't be much of a surprise that there are so many techniques available to make it easier. We've looked at ways of storing keyed data using DBMs, extended that with serialization of objects to create a way to store objects in DBMs, then used Pixie to organize our object store. This brought us on to looking at Tangram as a more flexible and powerful object database. Next, we turned the problem over and tried to make databases look like objects, using Class::DBI. Finally, we showed how this view of databases works in concert with the templating techniques we looked at in Chapter 3 to create application frameworks like Maypole, allowing you to write large web applications with very little code.
+
