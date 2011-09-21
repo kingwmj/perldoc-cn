@@ -1,0 +1,423 @@
+X<debug>
+X<debugger>
+B<-w>
+L<perldebtut>
+B<-d>
+X<-d>
+B<-d>
+I<right before>
+I<about>
+C<eval>
+C<eval>
+C<;>
+C<+>
+C<program_name>
+C<expression>
+C<-e>
+C<Devel::Ptkdb>
+X<debugger command, h>
+C<h h>
+C<h h>
+C<o pager=...>
+X<debugger command, p>
+C<print {$DB::OUT} expr>
+C<print>
+C<x>
+C<DB::OUT>
+F</dev/tty>
+X<debugger command, x>
+C<print>
+L<Dumpvalue>
+L<"Configurable Options">
+C<maxdepth>
+I<N>
+I<N>
+C<dumpDepth>
+I<N>
+X<debugger command, V>
+C<main>
+C<$>
+C<~pattern>
+C<!pattern>
+C<x>
+X<debugger command, X>
+C<V currentpackage [vars]>
+X<debugger command, y>
+C<mY>
+I<level>
+I<vars>
+C<V>
+C<X>
+C<PadWalker>
+C<V>
+X<debugger command, T>
+X<backtrace>
+X<stack, backtrace>
+X<debugger command, s>
+X<step>
+X<debugger command, n>
+X<debugger command, r>
+C<PrintRet>
+C<n>
+C<s>
+X<debugger command, c>
+X<debugger command, l>
+C<incr+1>
+C<min>
+C<min>
+C<max>
+C<l ->
+C<->
+I<subname>
+X<debugger command, ->
+X<debugger command, v>
+X<debugger command, .>
+X<debugger command, f>
+C<eval>
+I<filename>
+C<eval>
+C<f (eval 7)>
+C<f eval 7\b>
+C<eval>
+C<eval>
+C<eval>
+X<debugger command, L>
+X<debugger command, S>
+X<debugger command, t>
+C<AutoTrace>
+X<debugger command, t>
+C<expr>
+L<perldebguts/"Frame Listing Output Examples">
+X<breakpoint>
+X<debugger command, b>
+X<breakpoint>
+X<debugger command, b>
+C<if>
+X<breakpoint>
+X<debugger command, b>
+I<subname>
+I<condition>
+X<breakpoint>
+X<debugger command, b>
+X<breakpoint>
+X<debugger command, b>
+I<filename>
+X<breakpoint>
+X<debugger command, b>
+X<breakpoint>
+X<debugger command, B>
+I<line>
+X<breakpoint>
+X<debugger command, B>
+X<debugger command, a>
+I<line>
+X<debugger command, A>
+X<debugger command, A>
+X<debugger command, w>
+X<debugger command, W>
+X<debugger command, W>
+X<debugger command, o>
+X<debugger command, o>
+C<1>
+X<debugger command, o>
+X<debugger command, o>
+C<o
+pager="less -MQeicsNfr">
+B<less>
+C<o option='this isn\'t bad'>
+C<o option="She said, \"Isn't
+it?\"">
+C<=value>
+C<=>
+C<option>
+L<"Configurable Options">
+X<debugger command, {>
+C<;{ ... }>
+C<do { ... }>
+X<debugger command, {>
+X<debugger command, {{>
+X<debugger command, !>
+X<debugger command, !>
+X<debugger command, !>
+C<o recallCommand>
+X<debugger command, !!>
+C<o shellBang>
+C<$ENV{SHELL}>
+X<debugger command, source>
+I<file>
+I<file>
+C<source>
+X<debugger command, H>
+I<number>
+X<debugger command, q>
+X<debugger command, ^D>
+C<exit>
+C<inhibit_exit>
+X<debugger command, R>
+C<exec()>
+B<-w>
+B<-I>
+B<-e>
+X<debugger command, |>
+X<debugger command, ||>
+C<|dbcmd>
+C<select>
+X<debugger command, =>
+X<debugger command, m>
+X<debugger command, M>
+X<debugger command, man>
+I<manpage>
+B<man>
+C<Config>
+B<man>
+B<-M>
+I<manpath>
+C<XXX>
+I<perlXXX>
+C<man debug>
+C<man op>
+B<man>
+B<perldoc>
+C<o>
+C<recallCommand>
+C<ShellBang>
+X<debugger option, recallCommand>
+X<debugger option, ShellBang>
+C<!>
+C<pager>
+X<debugger option, pager>
+C<|>
+C<$ENV{PAGER}>
+C<tkRunning>
+X<debugger option, tkRunning>
+C<signalLevel>
+C<warnLevel>
+C<dieLevel>
+X<debugger option, signalLevel>
+X<debugger option, warnLevel>
+X<debugger option, dieLevel>
+L</BUGS>
+C<dieLevel>
+C<eval'ed>
+C<eval>
+C<dieLevel>
+C<AutoTrace>
+X<debugger option, AutoTrace>
+C<t>
+C<PERLDB_OPTS>
+C<LineInfo>
+X<debugger option, LineInfo>
+C<|visual_perl_db>
+C<vi>
+C<emacs>
+C<ddd>
+C<inhibit_exit>
+X<debugger option, inhibit_exit>
+I<stepping off>
+C<PrintRet>
+X<debugger option, PrintRet>
+C<r>
+C<ornaments>
+X<debugger option, ornaments>
+L<Term::ReadLine>
+C<frame>
+X<debugger option, frame>
+C<frame & 2>
+C<frame & 4>
+C<frame & 8>
+C<stringify>
+C<tie>
+C<FETCH>
+C<frame
+& 16>
+C<maxTraceLen>
+X<debugger option, maxTraceLen>
+C<frame>
+C<windowSize>
+X<debugger option, windowSize>
+C<V>
+C<X>
+C<x>
+C<arrayDepth>
+C<hashDepth>
+X<debugger option, arrayDepth>
+X<debugger option, hashDepth>
+C<dumpDepth>
+X<debugger option, dumpDepth>
+C<compactDump>
+C<veryCompact>
+X<debugger option, compactDump>
+X<debugger option, veryCompact>
+C<compactDump>
+C<globPrint>
+X<debugger option, globPrint>
+C<DumpDBFiles>
+X<debugger option, DumpDBFiles>
+C<DumpPackages>
+X<debugger option, DumpPackages>
+C<DumpReused>
+X<debugger option, DumpReused>
+C<quote>
+C<HighBit>
+C<undefPrint>
+X<debugger option, quote>
+X<debugger option, HighBit>
+X<debugger option, undefPrint>
+C<quote>
+C<auto>
+C<">
+C<'>
+C<UsageOnly>
+X<debugger option, UsageOnly>
+C<$ENV{PERLDB_OPTS}>
+C<TTY>
+C<noTTY>
+C<ReadLine>
+C<NonStop>
+I<db.out>
+C<LineInfo>
+F</dev/tty>
+C<TTY>
+X<debugger option, TTY>
+C<noTTY>
+X<debugger option, noTTY>
+C<NonStop>
+C<TTY>
+C<Term::Rendezvous>
+C<new>
+C<IN>
+C<OUT>
+C<new>
+C<$ENV{PERLDB_NOTTY}>
+C<"$ENV{HOME}/.perldbtty$$">
+C<ReadLine>
+X<debugger option, ReadLine>
+C<NonStop>
+X<debugger option, NonStop>
+C<$ENV{PERLDB_OPTS}>
+B<myprogram>
+C<NonStop=1 frame=2>
+C<N f=2>
+C<Dump*>
+F<listing>
+C<LineInfo>
+C<Term::ReadLine>
+F</dev/ttyXX>
+L<perldebguts/"Debugger Internals">
+B<8>
+B<csh>
+C<!17>
+C<s/n/t
+expression>
+B<1>
+X<backtrace>
+X<stack, backtrace>
+C<T>
+C<$>
+C<@>
+C<.>
+C<main::infested>
+I<Ambulation.pm>
+C<&infested>
+C<Ambulation::legs>
+I<camel_flea>
+C<main::pests>
+I<camel_flea>
+C<T>
+C<use>
+C<require>
+C<eval>
+C<l>
+C<:>
+C<b>
+C<a>
+C<frame>
+L<perldebguts>
+C<use>
+I<not>
+C<require>
+C<AutoTrace>
+C<PERLDB_OPTS>
+C<$DB::single>
+C<n>
+C<s>
+C<$DB::trace>
+C<t>
+I<load>
+B<7>
+C<R>
+C<b
+compile subname>
+C<o>
+C<PERLDB_OPTS>
+F<.perldb>
+F<.perldb>
+C<DB>
+F<.perldb>
+C<PERLDB_OPTS>
+F<.perldb>
+C<afterinit>
+F<.perldb>
+F<.perldb>
+F<perl5db.pl>
+C<PERL5DB>
+C<PERL5DB>
+L<perldebguts>
+I<readline>
+F<modules/by-module/Term>
+B<vi>
+C<PadWalker>
+B<emacs>
+B<emacs>
+L<perlfaq3>
+B<vi>
+B<emacs>
+B<vi>
+B<vim>
+B<gvim>
+X<profile>
+X<profiling>
+X<profiler>
+B<-d>
+L<Devel::DProf>
+F<mycode.pl>
+F<tmon.out>
+B<dprofpp>
+C<Devel::NYTProf>
+L<perlperf>
+X<regular expression, debugging>
+X<regex, debugging>
+X<regexp, debugging>
+C<use re 'debug'>
+L<perldebguts/"Debugging Regular Expressions">
+X<memory usage>
+L<perldebguts/"Debugging Perl Memory Usage">
+B<-w>
+L<perldebtut>
+L<perldebguts>
+L<re>
+L<DB>
+L<Devel::DProf>
+L<dprofpp>
+L<Dumpvalue>
+L<perlrun>
+C<which $scriptname>
+C<shift>
+C<pop>
+B<-W>
+C<wait>
+C<accept>
+C<read>
+C<$SIG{INT}>
+C<$SIG{INT}>
+S<B<-M>
+I<manpath>>
+X<< debugger command, < >>
+X<< debugger command, < >>
+X<< debugger command, < >>
+X<< debugger command, << >>
+X<< debugger command, > >>
+X<< debugger command, > >>
+X<< debugger command, > >>
+X<<< debugger command, >>
+C<< ==> >>
