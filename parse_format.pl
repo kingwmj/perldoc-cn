@@ -10,8 +10,7 @@ use autodie;
 # 解析 格式化字符串 
 # =========================================
 
-use File::Slurp qw< read_file write_file >;
-use List::Util qw< shuffle >;
+use File::Slurp qw< read_file >;
 
 # 输出句柄
 open (my $fh, '>:utf8', 'debug.txt');
@@ -22,10 +21,14 @@ my $lt  = "\x{226e}"; # '<' => $lt
 my $gt  = "\x{226f}"; # '>' => $gt
 my @file = glob("en/*.pod");
 my @all_format;
-my $file = shuffle @file;
-say $file;
-#for my $file (@file) {
+#my $file = shuffle @file;
+#say $file;
+for my $file (@file) {
     my $text = read_file $file;
+
+    my @double_format = $text =~ m/[BCFILSX]<<+\s.*?\s>>+/mg;
+    push @all_format, @double_format;
+
     # 先将文本中的转义字符串替换掉
     my $touch_elt_times = $text =~ s/E<lt>/$elt/g;
     my $touch_glt_times = $text =~ s/E<gt>/$egt/g;
@@ -38,17 +41,32 @@ say $file;
         push @all_format, @format;
     }
 
-    my @double_format = $text =~ m/[BCFILSX]<<+\s.*?\s>>+/mg;
-    push @all_format, @double_format;
-#}
+}
 
-use List::MoreUtils qw< uniq >;
+use List::MoreUtils qw< uniq mesh >;
 uniq @all_format;
 foreach (@all_format) {
     $_ =~ s/$elt/E<lt>/g;
     $_ =~ s/$egt/E<gt>/g;
     $_ =~ s/$lt/</g;
     $_ =~ s/$gt/>/g;
-    say {$fh} $_;
+    $_ =~ s/\n/ /g;
+#    say {$fh} $_;
+}
+
+my @conceal;
+my $number = scalar @all_format;
+my $end_number = 0xe000 + $number - 1;
+foreach my $key (0xe000 .. $end_number) {
+    my $hex = sprintf("%0.4x", $key);
+    my $hex = "\\x{$key}";
+    eval("\$hex = qq($hex)");
+    push @conceal, $hex;
+#    say {$fh} $hex;
+}
+
+my %format_conceal = mesh @all_format, @conceal;
+foreach my $code (sort keys %format_conceal)  {
+    say {$fh} "$code => $format_conceal{$code}";
 }
 
