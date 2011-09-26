@@ -39,23 +39,18 @@ foreach my $podfile (@filelist) {
     # 输出句柄以 utf8 为编码
     open(my $fh_out, '>', $outfile) or die $!;
     say {$fh_out} "=encoding utf8\n";
-    my $blank_line = 0; # 空行计数
-    my @format;
-    while (<$fh_in>) {
-        chomp;
-
+    my $text = "";
+    while (my $line = <$fh_in>) {
+        chomp $line;
         # 预处理部分
-        s/\s+$//;     # 去除尾部空格
-        s/\t/$blank/; # 将制表符扩展为四个空格
-
-        # 将连续的空行合并成一行
-        $blank_line++   if     (/^$/);
-        $blank_line = 0 unless (/^$/);
-        next if ($blank_line > 1);
-
-        # 输出
-        say {$fh_out} $_;
-        say DEBUG  $_;
+        $line =~ s/\s+$//;      # 去除尾部空格
+        $line =~ s/\t/$blank/g; # 将制表符扩展为四个空格
+        if (($line =~ /^$/) or ($line =~ /^\s/)) {
+            say {$fh_out} "$text\n" unless ($text =~ /^$/);
+            $text = "";    
+        }
+        # 行内容保存起来
+        $text .= $line;
     }
 }
 
