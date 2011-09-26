@@ -47,6 +47,7 @@ my %header = (
     '=pod'       => "\x{2476}",
 );
 
+sub bylength { length($a) <=> length($b) };
 my @filelist = glob("../precess/*.pod");
 my @pods;
 foreach my $file ( @filelist ) {
@@ -62,6 +63,11 @@ foreach my $file ( @filelist ) {
             $line =~ s/\s#.*$//; # 将注释部分删除
             push @codes, $line;
         }
+    }
+    my $ref_conceal_codes = array2hash(@codes);
+    my %replace = (%header, %{$ref_conceal_codes});
+    foreach my $string (sort bylength keys %replace) {
+        say DEBUG $string;
     }
 }
 
@@ -83,7 +89,7 @@ sub array2hash {
     my $end_number = 0xe000 + $number - 1;
     foreach my $key (0xe000 .. $end_number) {
         my $hex = sprintf("%0.4x", $key);
-        my $hex = "\\x{$key}";
+        $hex = "\\x{$key}";
         # 将字符赋予变量
         eval("\$hex = qq($hex)");
         push @conceal, $hex;
