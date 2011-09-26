@@ -3,11 +3,12 @@
 use strict;
 use warnings;
 use 5.010;
-use File::Slurp qw< read_file >;
+use File::Slurp qw< read_file write_file >;
 use List::MoreUtils qw< uniq mesh >;
 use Lingua::Sentence;
+use utf8;
 
-open(DEBUG, '>', 'debug.pod');
+#open(DEBUG, '>', 'debug.pod');
 # 加载匹配词典
 my $dict_sentence = 'dict_sentence.txt'; # 短句词典
 my $dict_head = 'dict_head.txt'; # 标题词典
@@ -47,7 +48,7 @@ my %header = (
     '=pod'       => "\x{2476}",
 );
 
-sub bylength { length($a) <=> length($b) };
+sub bylength { length($b) <=> length($a) };
 my @filelist = glob("../precess/*.pod");
 my @pods;
 foreach my $file ( @filelist ) {
@@ -65,10 +66,21 @@ foreach my $file ( @filelist ) {
         }
     }
     my $ref_conceal_codes = array2hash(@codes);
-    my %replace = (%header, %{$ref_conceal_codes});
-    foreach my $string (sort bylength keys %replace) {
-        say DEBUG $string;
+    my %conceal = (%header, %{$ref_conceal_codes});
+    # 隐藏代码字符
+    foreach my $string (sort bylength keys %conceal) {
+        my $char = $conceal{$string};
+        $text =~ s/$string/$char/g;
     }
+    # 开始全文替换
+
+
+    # 恢复隐藏字符
+    foreach my $string (keys %conceal) {
+        my $char = $conceal{$string};
+        $text =~ s/$char/$string/g;
+    }
+    write_file('debug.pod', $text);
 }
 
 my $splitter = Lingua::Sentence->new("en");
