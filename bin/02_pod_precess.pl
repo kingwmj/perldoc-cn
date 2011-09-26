@@ -7,7 +7,6 @@ use autodie;
 use File::Basename qw< basename >;
 
 # 预处理 C<Pod> 中的内容
-# 将2个以上的空行合并成一个空行
 
 # 调试模式，设置输出句柄
 my $DEBUG = 1;
@@ -31,26 +30,33 @@ foreach my $dict ($dict_code) {
 
 my $blank = "\x{0020}" x 4;
 my @filelist = glob("../en/*.pod");
-
+mkdir "../precess" unless (-e "../precess");
 foreach my $podfile (@filelist) {
     my $filename = basename $podfile;
     my $outfile  = "../precess/$filename";
-	open(my $fh_in,  '<', $podfile) or die $!;
+	open(my $fh_in,  '<', $podfile);
     # 输出句柄以 utf8 为编码
-    open(my $fh_out, '>', $outfile) or die $!;
+    open(my $fh_out, '>', $outfile);
     say {$fh_out} "=encoding utf8\n";
+    my $count = 0;
     my $text = "";
     while (my $line = <$fh_in>) {
         chomp $line;
         # 预处理部分
         $line =~ s/\s+$//;      # 去除尾部空格
         $line =~ s/\t/$blank/g; # 将制表符扩展为四个空格
-        if (($line =~ /^$/) or ($line =~ /^\s/)) {
-            say {$fh_out} "$text\n" unless ($text =~ /^$/);
-            $text = "";    
+        if ($line =~ /^$/) {
+            say {$fh_out} "$text\n";
+            $text = "";
+            next;
+        }
+        # 如果以代码格式开始，原样输出非空行
+        if ($line =~ /^\s/) {
+            say {$fh_out} $text;
+            $text = "";
         }
         # 行内容保存起来
-        $text .= $line;
+        $text .= "$line ";
     }
 }
 

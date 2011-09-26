@@ -111,10 +111,6 @@ foreach my $word (sort keys %dict_unknown) {
 say "Parsing Over!";
 
 # 使用递归替换将代码中的格式字符串替换掉，结果生成单词表
-# 并存储到专门的数组中, 按照标记格式保存
-# 从长到短保存，用 Pod::simple 模块解析文本，保存为散列。
-# 以便进行恢复和高亮显示
-# 提取替换掉的内容到一个数组
 sub format_text {
     my $text = shift;
     # 将注释替换掉

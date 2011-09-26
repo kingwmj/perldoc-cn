@@ -52,8 +52,8 @@ foreach (@all_format) {
     $_ =~ s/$lt/</g;
     $_ =~ s/$gt/>/g;
     $_ =~ s/\n/ /g;
-#    say {$fh} $_;
 }
+
 # 生成和格式化字符串相同数量的字符列表
 my @conceal;
 my $number = scalar @all_format;
