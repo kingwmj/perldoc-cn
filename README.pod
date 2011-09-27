@@ -134,4 +134,14 @@ L<dict_format.txt> 就是生成的文本。
 按照段落先行解析，然后，在按照句子，短语，格式化文本解析，最后，按照
 单词解析，如果不能完全翻译，则将结果中的单词建立列表，进行翻译。
 
+=head2 在VIM语法文件POD.VIM中增加如下段落，可改变高亮
+
+" Tranlator special setup
+syn match podCN /^=CN.*$/
+syn match podEN /^=EN.*$/
+
+" Hilink setup
+highlight link podCN        Function
+highlight link podEN        Comment
+
 =cut

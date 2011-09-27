@@ -28,7 +28,7 @@ foreach my $dict ($dict_code) {
 	}
 }
 
-my $blank = "\x{0020}" x 4;
+my $blank = "\x{0020}";
 my @filelist = glob("../en/*.pod");
 mkdir "../precess" unless (-e "../precess");
 foreach my $podfile (@filelist) {
@@ -44,11 +44,16 @@ foreach my $podfile (@filelist) {
         chomp $line;
         # 预处理部分
         $line =~ s/\s+$//;      # 去除尾部空格
-        $line =~ s/\t/$blank/g; # 将制表符扩展为四个空格
         if ($line =~ /^$/) {
             say {$fh_out} "$text\n";
             $text = "";
             next;
+        }
+        # 如果代码不以空格开始进行替换
+        if ($line =~ /\S/) {
+            $line =~ s/\s+/$blank/g; # 两个以上空格替换成一个
+            $line =~ s/\s*,\s*/,$blank/g; # 逗号后加一个空格
+            $line =~ s/\s*\.\s*/./g; # 句号后不能留空格
         }
         # 如果以代码格式开始，原样输出非空行
         if ($line =~ /^\s/) {

@@ -1,0 +1,17 @@
+=EN DESCRIPTION
+=CN 描述 
+
+=EN Perl officially stands for Practical Extraction and Report Language, except when it doesn't. 
+=CN Perl语言官方提供的意思是，实用摘录和报表语言的缩写，但其领域远不止如此。
+
+=EN Perl was originally a language optimized for scanning arbitrary text files, extracting information from those text files, and printing reports based on that information. 
+=CN Perl起初用来扫描文本文档，从这些文件中扫描信息，然后基于这些信息输出报告。
+
+=EN It quickly became a good language for many system management tasks. 
+=CN 她很快变成一门许多系统管理员完成任务的利器。
+
+=EN Over the years, Perl has grown into a general-purpose programming language.
+=CN 经过多年以后，Perl已经成长为一种多用途的语言。
+
+=EN It's widely used for everything from quick "one-liners" to full-scale application development. 
+=CN 从单行命令到全面开发应用领域，Perl被广泛实用。

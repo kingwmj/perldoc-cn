@@ -10,10 +10,20 @@ use 5.014;
 
 # 日期：Wed Aug 31 10:48:23 2011
 # 作者: 宋志泉 songzhiquan@hotmail.com
-use List::MoreUtils;
-use Scalar::Util qw< readonly openhandle refaddr>;
-use List::Util qw< max min maxstr sum reduce first shuffle>;
-use List::MoreUtils qw< any all none notall pairwise each_array uniq>;
+    use List::MoreUtils qw{
+        any all none notall true false
+        firstidx first_index lastidx last_index
+        insert_after insert_after_string
+        apply indexes
+        after after_incl before before_incl
+        firstval first_value lastval last_value
+        each_array each_arrayref
+        pairwise natatime
+        mesh zip uniq distinct minmax part
+    };
+use Scalar::Util qw(blessed dualvar isweak readonly refaddr reftype tainted
+                        weaken isvstring looks_like_number set_prototype);
+use List::Util qw(first max maxstr min minstr reduce shuffle sum);
 use Devel::size qw< size total_size>;
 
 # readonly() 如果自变量是不可修改的，就返回真值
