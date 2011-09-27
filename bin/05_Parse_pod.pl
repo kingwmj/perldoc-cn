@@ -48,8 +48,8 @@ while (my ($en, $cn) = each %hash) {
 # 将中文翻译的结果中的标点符号全部替换成
 # 全角中文符号
 my %tokens = (
-    ',' => '',
-    '.' => '',
+    ',' => '，',
+    '.' => '。',
 );
 
 sub format_cn_string {
