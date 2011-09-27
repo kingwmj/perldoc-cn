@@ -1,5 +1,9 @@
 #!/usr/bin/perl
+
+# -------------------
 # 将POD翻译成中文格式
+# -------------------
+
 use strict;
 use warnings;
 use 5.010;
@@ -12,6 +16,7 @@ use utf8;
 # 加载匹配词典
 my $dict_sentence = 'dict_sentence.txt'; # 短句词典
 my $dict_head = 'dict_head.txt'; # 标题词典
+my %translate = file2hash($dict_sentence, $dict_head);
 
 # 将字典文件列表数据加载到替换散列中
 sub file2hash {
@@ -26,9 +31,8 @@ sub file2hash {
 			    $dict_hash{$key} = $value;
             }
 		}
-        close $fh_dict;
 	}
-    return \%dict_hash;
+    return %dict_hash;
 }
 
 # 标记语言散列
@@ -48,6 +52,7 @@ my %header = (
     '=pod'       => "\x{2476}",
 );
 
+# 按照键值长度输出
 sub bylength { length($b) <=> length($a) };
 my @filelist = glob("../precess/*.pod");
 my @pods;
@@ -95,19 +100,12 @@ foreach my $sentence (@pods) {
 
 # 生成和格式化字符串相同数量的字符列表
 sub array2hash {
-    my @all_format = @_;
+    my @array = @_;
     my @conceal;
-    my $number = scalar @all_format;
-    my $end_number = 0xe000 + $number - 1;
-    foreach my $key (0xe000 .. $end_number) {
-        my $hex = sprintf("%0.4x", $key);
-        $hex = "\\x{$key}";
-        # 将字符赋予变量
-        eval("\$hex = qq($hex)");
-        push @conceal, $hex;
-    }
+    my $number = scalar @array;
+    @conceal = map { sprintf("&&%0.4x", $_) } (1 .. $number);
     # 合并两个数据类型相同的数组
-    my %format_conceal = mesh @all_format, @conceal;
+    my %format_conceal = mesh @array, @conceal;
     return \%format_conceal;
 }
 
