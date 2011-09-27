@@ -7,32 +7,27 @@
 use strict;
 use warnings;
 use 5.010;
-use File::Slurp qw< read_file write_file >;
+use File::Slurp qw< read_file >;
 use List::MoreUtils qw< uniq mesh >;
 use Lingua::Sentence;
 use utf8;
 
 #open(DEBUG, '>', 'debug.pod');
 # 加载匹配词典
-my $dict_sentence = 'dict_sentence.txt'; # 短句词典
-my $dict_head = 'dict_head.txt'; # 标题词典
-my %translate = file2hash($dict_sentence, $dict_head);
+my $dict_sentence = '../dict/dict_sentence.txt'; # 短句词典
+my $dict_head = '../dict/dict_head.txt'; # 标题词典
 
 # 将字典文件列表数据加载到替换散列中
-sub file2hash {
-    my @filelist = @_;
-    my %dict_hash;
-    foreach my $file (@filelist) {
-        open(my $fh_dict, '<', $file);
-        while (<$fh_dict>) {
-            chomp;
-            if ($_ =~ /\|\|/) {
-		        my($key, $value) = split(/\|\|/, $_);
-			    $dict_hash{$key} = $value;
-            }
-		}
-	}
-    return %dict_hash;
+my %dict_hash;
+foreach my $file ($dict_sentence, $dict_head) {
+    my $text = read_file $file;
+    my @lines = split /\n/, $text;
+    foreach (@lines) {
+        if ($_ =~ /\|\|/) {
+            my ($key, $value) = split(/\|\|/, $_);
+		    $dict_hash{$key} = $value;
+        }
+    }
 }
 
 # 标记语言散列
@@ -75,6 +70,7 @@ foreach my $file ( @filelist ) {
     # 隐藏代码字符
     foreach my $string (sort bylength keys %conceal) {
         my $char = $conceal{$string};
+        $string = quotemeta $string;
         $text =~ s/$string/$char/g;
     }
     # 开始全文替换

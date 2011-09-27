@@ -34,6 +34,7 @@ mkdir "../precess" unless (-e "../precess");
 foreach my $podfile (@filelist) {
     my $filename = basename $podfile;
     my $outfile  = "../precess/$filename";
+    say "Format $podfile ......to $outfile";
 	open(my $fh_in,  '<', $podfile);
     # 输出句柄以 utf8 为编码
     open(my $fh_out, '>', $outfile);

@@ -19,6 +19,7 @@ if ($DEBUG) {
 my @filelist = glob("../data/*.pod");
 my %hash; # 所有的中英文对照资料
 foreach my $podfile (@filelist) {
+    say "Parse $podfile to data";
     open(my $fh, '<', $podfile);
     my(@en, @cn, %en_cn);
     while (my $line = <$fh>) {
@@ -38,6 +39,7 @@ foreach my $podfile (@filelist) {
 
 # 输出文档到 ../dict/dict_sentence.txt
 my $output_file = '../dict/dict_sentence.txt';
+say "output file is: $output_file";
 open(my $fh_out, '>', $output_file);
 while (my ($en, $cn) = each %hash) {
     say {$fh_out} "$en||$cn";
@@ -61,3 +63,5 @@ sub format_cn_string {
     return @array;
 }
 
+say "Script Running over, Pls enter to back.";
+__END__
