@@ -6,29 +6,21 @@ use 5.010;
 use autodie;
 use File::Basename qw< basename >;
 
-# 预处理 C<Pod> 中的内容
+# -----------------------
+# 预处理Pod中的内容
+# -----------------------
 
 # 调试模式，设置输出句柄
-my $DEBUG = 1;
+my $DEBUG = 0;
 if ($DEBUG) {
    open(DEBUG, '>', 'debug.pod');
 }
 
-# 将字典数据加载到 %dict_hash 散列中
-my (%dict_hash);
-my $dict_code = '../dict/dict_code.txt';
-foreach my $dict ($dict_code) {
-	open(my $fh_dict, '<', $dict);
-	while (<$fh_dict>) {
-		chomp;
-		if ($_ =~ /\|\|/) {
-			my($key, $value) = split(/\|\|/, $_);
-			$dict_hash{$key} = $value;
-		}
-	}
-}
-
+# 显式定义空格和制表符
 my $blank = "\x{0020}";
+my $tab = $blank x 4;
+
+# 以流格式打开所有POD文件进行预处理
 my @filelist = glob("../en/*.pod");
 mkdir "../precess" unless (-e "../precess");
 foreach my $podfile (@filelist) {
@@ -39,7 +31,6 @@ foreach my $podfile (@filelist) {
     # 输出句柄以 utf8 为编码
     open(my $fh_out, '>', $outfile);
     say {$fh_out} "=encoding utf8\n";
-    my $count = 0;
     my $text = "";
     while (my $line = <$fh_in>) {
         chomp $line;
@@ -52,7 +43,8 @@ foreach my $podfile (@filelist) {
         }
         # 如果代码不以空格开始进行替换
         if ($line =~ /\S/) {
-            $line =~ s/\s+/$blank/g; # 两个以上空格替换成一个
+            $line =~ s/^\s+/$blank/g; # 开头两个以上空格替换成一个
+            $line =~ s/\t/$tab/g;     # 将所有制表符替换成四个空格
             $line =~ s/\s*,\s*/,$blank/g; # 逗号后加一个空格
             $line =~ s/\s*\.\s*/./g; # 句号后不能留空格
         }
@@ -66,4 +58,4 @@ foreach my $podfile (@filelist) {
     }
 }
 
-close DEBUG;
+__DATA__

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use 5.010;
 use utf8;
+use Encode;
 use autodie;
 use File::Find qw< find >;
 use Lingua::EN::Splitter qw( words );
@@ -22,7 +23,7 @@ BEGIN {
 }
 
 # 调试句柄
-open (my $fh_debug, '>', 'debug.pod');
+open (my $fh_debug, '>:utf8', 'debug.pod');
 
 # 字符串定义
 my $blank = "\x{0020}"; # 空格
@@ -42,8 +43,8 @@ sub wanted {
 
 # 定义基本字典变量
 my $dict_dir = '../dict';
-my $file_dict_common  = "$dict_dir/dict_common.txt";
-my $file_dict_rare    = "$dict_dir/dict_rare.txt";
+my $file_dict_common  = "$dict_dir/dict_common.dict";
+my $file_dict_rare    = "$dict_dir/dict_rare.dict";
 
 # 定义存储字典内部变量
 my (%dict_hash, %dict_common, %dict_rare);
@@ -54,6 +55,8 @@ my $ref_dict_hash = dict2hash($file_dict_common, $file_dict_rare);
 # 将唯一释义的单词放置到 %dict_common 
 # 将多重释义的单词放置到 %dict_rare
 while (my ($word, $char) = each %{$ref_dict_hash}) {
+#    $char = decode('utf8', $char);
+    say {$fh_debug} "$word => $char" unless ($char =~ /$comma/);
     $dict_common{$word} = $char unless ($char =~ /$comma/);
     $dict_rare{$word}   = $char if     ($char =~ /$comma/);
 }
@@ -70,16 +73,12 @@ foreach my $file ( @filelist ) {
     my $text = read_file $file;
 
     # 提取所有不需要翻译字符串列表
-    my $ref_array_conceal_string = filter_conceal_string($text);
+    my $ref_array_conceal_string = filter_conceal_string($file);
 
     # 将不需要翻译的字符串列表替换掉
     foreach my $string (@{$ref_array_conceal_string}) {
-        $string = quotemeta $string;
-        $text =~ s/$string//g;
+        $text =~ s/\Q$string\E//g;
     }
-
-    # 集中显示POD
-    say {$fh_debug} $text;
 
     # 生成单词表
     $wordlist{$_}++ for @{ words($text) };
@@ -101,7 +100,7 @@ my (%dict_unknown);
 foreach my $key (sort keys %wordlist) {
 	if (not exists $dict_hash{$key}) {
         # 如果没有匹配上，就加入不匹配散列
-		$dict_unknown{$key} = '';
+		$dict_unknown{$key} = $blank;
 	}
 }
 

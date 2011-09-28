@@ -1,13 +1,14 @@
 #!perl
 # --------------------------------
 # 用中英文的格式对照表解析出来
-# 输出到 ../dict/dict_sentence.txt
+# 输出到 ../dict/dict_sentence.dict
 # --------------------------------
 use strict;
 use warnings;
 use 5.010;
+use utf8;
 use autodie;
-use List::MoreUtils qw < mesh zip >;
+use List::MoreUtils qw < mesh >;
 
 # 调试模式，设置输出句柄
 my $DEBUG = 0;
@@ -20,7 +21,7 @@ my @filelist = glob("../data/*.pod");
 my %hash; # 所有的中英文对照资料
 foreach my $podfile (@filelist) {
     say "Parse $podfile to data";
-    open(my $fh, '<', $podfile);
+    open(my $fh, '<:utf8', $podfile);
     my(@en, @cn, %en_cn);
     while (my $line = <$fh>) {
         chomp $line;
@@ -38,30 +39,9 @@ foreach my $podfile (@filelist) {
 }
 
 # 输出文档到 ../dict/dict_sentence.txt
-my $output_file = '../dict/dict_sentence.txt';
+my $output_file = '../dict/dict_sentence.dict';
 say "output file is: $output_file";
-open(my $fh_out, '>', $output_file);
+open(my $fh_out, '>:utf8', $output_file);
 while (my ($en, $cn) = each %hash) {
     say {$fh_out} "$en||$cn";
 }
-
-# 将中文翻译的结果中的标点符号全部替换成
-# 全角中文符号
-my %tokens = (
-    ',' => '，',
-    '.' => '。',
-);
-
-sub format_cn_string {
-    my @array = @_;
-    foreach my $string (@array) {
-        foreach my $token (keys %tokens) {
-            my $cn_token = $tokens{$token};
-            $string =~ s/$token/$cn_token/g;
-        }
-    }
-    return @array;
-}
-
-say "Script Running over, Pls enter to back.";
-__END__

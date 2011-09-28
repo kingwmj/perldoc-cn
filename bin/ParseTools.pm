@@ -12,7 +12,7 @@ use strict;
 use warnings;
 use 5.010;
 use autodie;
-use File::Slurp qw< read_file >;
+use File::Slurp qw< read_file write_file>;
 use List::MoreUtils qw< mesh uniq >;
 use Lingua::Sentence;
 
@@ -42,13 +42,15 @@ my %chars  = (
 );
 
 
+
 # 字典转换成散列 my $ref_dict_hash = dict2hash($file1, $file2);
 sub dict2hash {
     my @filelist = @_;
     my %dict_hash;
     foreach my $file (@filelist) {
-        my @lines = read_file $file;
+        my @lines = read_file($file, binmode => ':utf8');
         foreach my $line (@lines) {
+            chomp $line;
             if ($line =~ /\|\|/) {
                 my ($key, $value) = split /\|\|/, $line;
                 $dict_hash{$key} = $value;
@@ -60,14 +62,13 @@ sub dict2hash {
 
 # 将字符串数组转换成映射字符散列
 sub array2hash {
-    my @array = @_;
-    @array = uniq @array;
-    my @conceal;
+    my $ref_array = shift;
+    my @array = uniq @{$ref_array};
     my $number = scalar @array;
-    @conceal = map { sprintf("&&%0.4x", $_) } (1 .. $number);
+    my @conceal = map { sprintf("&&%0.4x", $_) } (1 .. $number);
     # 合并两个数据类型相同的数组
     my %array2hash = mesh @array, @conceal;
-    return \%array2hash;
+    return %array2hash;
 }
 
 # 将一个数组拆分成按照句子的数组
@@ -82,30 +83,13 @@ sub split2sentence {
 sub hash2dict {
     my ($ref_hash, $filename) = @_;
     my %dict_hash = %{$ref_hash};
-    open (my $fh, '>', $filename);
+    my $text;
     foreach my $key (sort keys %dict_hash) {
         my $value = $dict_hash{$key};
-        say {$fh} "$key||$value";
+        $text .= "$key||$value\n";
     }
+    write_file($filename, { binmode => ':utf8' }, $text);
     return 1;
-}
-
-# 将中文翻译的结果中的标点符号全部替换成
-sub format_cn_string {
-    my @array = @_;
-    # 全角中文符号
-    my %tokens = (
-        ',' => '，',
-        '.' => '。',
-    );
-    foreach my $string (@array) {
-        foreach my $token (keys %tokens) {
-            $token = quotemeta $token;
-            my $cn_token = $tokens{$token};
-            $string =~ s/$token/$cn_token/g;
-        }
-    }
-    return \@array;
 }
 
 # 将Pod文档中的不需要翻译的字符串数组提取成数组

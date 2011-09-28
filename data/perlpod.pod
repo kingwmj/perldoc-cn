@@ -1,17 +1,20 @@
+=encoding utf8
+
 =EN DESCRIPTION
-=CN ÃèÊö 
+=CN æè¿° 
 
 =EN Perl officially stands for Practical Extraction and Report Language, except when it doesn't. 
-=CN PerlÓïÑÔ¹Ù·½Ìá¹©µÄÒâË¼ÊÇ£¬ÊµÓÃÕªÂ¼ºÍ±¨±íÓïÑÔµÄËõĞ´£¬µ«ÆäÁìÓòÔ¶²»Ö¹Èç´Ë¡£
+=CN Perlè¯­è¨€å®˜æ–¹æä¾›çš„æ„æ€æ˜¯ï¼Œå®ç”¨æ‘˜å½•å’ŒæŠ¥è¡¨è¯­è¨€çš„ç¼©å†™ï¼Œä½†å…¶é¢†åŸŸè¿œä¸æ­¢å¦‚æ­¤ã€‚
 
 =EN Perl was originally a language optimized for scanning arbitrary text files, extracting information from those text files, and printing reports based on that information. 
-=CN PerlÆğ³õÓÃÀ´É¨ÃèÎÄ±¾ÎÄµµ£¬´ÓÕâĞ©ÎÄ¼şÖĞÉ¨ÃèĞÅÏ¢£¬È»ºó»ùÓÚÕâĞ©ĞÅÏ¢Êä³ö±¨¸æ¡£
+=CN Perlèµ·åˆç”¨æ¥æ‰«ææ–‡æœ¬æ–‡æ¡£ï¼Œä»è¿™äº›æ–‡ä»¶ä¸­æ‰«æä¿¡æ¯ï¼Œç„¶ååŸºäºè¿™äº›ä¿¡æ¯è¾“å‡ºæŠ¥å‘Šã€‚
 
 =EN It quickly became a good language for many system management tasks. 
-=CN ËıºÜ¿ì±ä³ÉÒ»ÃÅĞí¶àÏµÍ³¹ÜÀíÔ±Íê³ÉÈÎÎñµÄÀûÆ÷¡£
+=CN å¥¹å¾ˆå¿«å˜æˆä¸€é—¨è®¸å¤šç³»ç»Ÿç®¡ç†å‘˜å®Œæˆä»»åŠ¡çš„åˆ©å™¨ã€‚
 
 =EN Over the years, Perl has grown into a general-purpose programming language.
-=CN ¾­¹ı¶àÄêÒÔºó£¬PerlÒÑ¾­³É³¤ÎªÒ»ÖÖ¶àÓÃÍ¾µÄÓïÑÔ¡£
+=CN ç»è¿‡å¤šå¹´ä»¥åï¼ŒPerlå·²ç»æˆé•¿ä¸ºä¸€ç§å¤šç”¨é€”çš„è¯­è¨€ã€‚
 
 =EN It's widely used for everything from quick "one-liners" to full-scale application development. 
-=CN ´Óµ¥ĞĞÃüÁîµ½È«Ãæ¿ª·¢Ó¦ÓÃÁìÓò£¬Perl±»¹ã·ºÊµÓÃ¡£
+=CN ä»å•è¡Œå‘½ä»¤åˆ°å…¨é¢å¼€å‘åº”ç”¨é¢†åŸŸï¼ŒPerlè¢«å¹¿æ³›ä½¿ç”¨ã€‚
+
