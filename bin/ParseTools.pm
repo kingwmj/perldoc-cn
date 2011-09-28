@@ -4,8 +4,8 @@ require Exporter;
 
 our @ISA = qw( Exporter );
 our @EXPORT = qw< %header %chars >;
-our @EXPORT_OK = qw < dict2hash hash2dict array2hash split2sentence
-                      bylength format_cn_string >;
+our @EXPORT_OK=qw< dict2hash hash2dict array2hash split2sentence
+                   format_cn_string filter_conceal_string >;
 our @VERSION = 1.00;
 
 use strict;
@@ -47,12 +47,12 @@ sub dict2hash {
     my @filelist = @_;
     my %dict_hash;
     foreach my $file (@filelist) {
-        my $text = read_file $file;
-        my @lines = split /\n/, $text;
+        my @lines = read_file $file;
         foreach my $line (@lines) {
-        if ($line =~ /\|\|/) {
-            my ($key, $value) = split /\|\|/, $line;
-		    $dict_hash{$key} = $value;
+            if ($line =~ /\|\|/) {
+                my ($key, $value) = split /\|\|/, $line;
+                $dict_hash{$key} = $value;
+            }
         }
     }
     return \%dict_hash;
@@ -90,25 +90,65 @@ sub hash2dict {
     return 1;
 }
 
-# 按照键值长度输出
-sub bylength { length($b) <=> length($a) };
-
-# 全角中文符号
-my %tokens = (
-    ',' => '，',
-    '.' => '。',
-);
-
 # 将中文翻译的结果中的标点符号全部替换成
 sub format_cn_string {
     my @array = @_;
+    # 全角中文符号
+    my %tokens = (
+        ',' => '，',
+        '.' => '。',
+    );
     foreach my $string (@array) {
         foreach my $token (keys %tokens) {
+            $token = quotemeta $token;
             my $cn_token = $tokens{$token};
             $string =~ s/$token/$cn_token/g;
         }
     }
-    return @array;
+    return \@array;
+}
+
+# 将Pod文档中的不需要翻译的字符串数组提取成数组
+sub filter_conceal_string {
+    my $file = shift;
+    my $text = read_file $file;
+    my (@head, @double_format, @format, @code);
+    # 获取 =head =over =item 等结构数组
+    @head = $text =~ /^=\w+\s+/xmsg;
+
+    # 替换掉注释
+    $text =~ s/^(\s+.*?)#.*?$/$1/xmsg;
+    # 获取每行前有空格的代码原文格式数组
+    @code = $text =~ /^\s+.*?$/xmsg;
+
+    # 中间替换变量
+    my $elt = "\x{2264}"; # E<lt> => $elt
+    my $egt = "\x{2265}"; # E<gt> => $egt
+    my $lt  = "\x{226e}"; # '<' => $lt 
+    my $gt  = "\x{226f}"; # '>' => $gt
+    @double_format = $text =~ m/[BCFILSX]<<+\s.*?\s>>+/mg;
+
+    # 先将文本中的转义字符串替换掉
+    $text =~ s/E<lt>/$elt/g;
+    $text =~ s/E<gt>/$egt/g;
+    while (1) {
+        my @array = $text =~ m/[BCFILSX]<[^<>]+>/mg;
+        last if (scalar @format == 0);
+        $text =~ s/([BCFILSX])<([^<>]+)>/$1$lt$2$gt/mg;
+        push @format, @array;
+    }
+    # 恢复替换结果
+    my @all_format = (@double_format, @format);
+    uniq @all_format;
+    foreach (@all_format) {
+       $_ =~ s/$elt/E<lt>/g;
+       $_ =~ s/$egt/E<gt>/g;
+       $_ =~ s/$lt/</g;
+       $_ =~ s/$gt/>/g;
+       $_ =~ s/\n/ /g;
+   }
+   my @return_array = (@head, @code, @all_format);
+   return \@return_array;
 }
 
 1;
