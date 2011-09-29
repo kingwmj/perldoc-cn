@@ -10,12 +10,7 @@ use utf8;
 use autodie;
 use List::MoreUtils qw < mesh >;
 
-# 调试模式，设置输出句柄
-my $DEBUG = 0;
-if ($DEBUG) {
-   open(OUT, '>', 'debug.pod');
-}
-
+open(DEBUG, '>', 'debug.pod');
 # 从存档目录读取文件列表
 my @filelist = glob("../data/*.pod");
 my %hash; # 所有的中英文对照资料
@@ -47,3 +42,35 @@ while (my ($en, $cn) = each %hash) {
 }
 
 # 将precess文件夹中的文件进行进一步处理，拆分成更小的句子
+use ParseTools qw<split2sentence array2file>;
+use File::Basename qw<basename>;
+use File::Slurp qw<read_file write_file>;
+
+@filelist = glob("../precess/*.pod");
+foreach my $file (@filelist) {
+    # 进度指示器
+    say "Start Parsing $file ...";
+    my $basename = basename $file;
+    my $outfile = "../split/$basename";
+    my @lines = read_file $file;
+    my @new_lines;
+    foreach my $line (@lines) {
+        # 去除行末换行符
+        chomp $line;
+        $line =~ s/\s+$//;
+        # 忽略空行
+        next if (length($line) == 0);
+        say DEBUG $line;
+        # 如果非代码行和标题行，则进行拆分
+        if ($line =~ /^[^\s=]+/) {
+            my @split = split2sentence($line);
+            push @new_lines, @split;
+            next;
+        }
+        # 其余行不进行拆分
+        push @new_lines, $line;
+    }
+    mkdir "../split" unless (-e "../split");
+    array2file(\@new_lines, $outfile);
+}
+close DEBUG;

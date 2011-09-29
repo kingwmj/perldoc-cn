@@ -2,10 +2,10 @@ package ParseTools;
 
 require Exporter;
 
-our @ISA = qw( Exporter );
-our @EXPORT = qw< %header %chars >;
-our @EXPORT_OK=qw< dict2hash hash2dict array2hash split2sentence
-                   format_cn_string filter_conceal_string >;
+our @ISA = qw(Exporter);
+our @EXPORT = qw<>;
+our @EXPORT_OK=qw< dict2hash hash2dict array2hash array2file
+                   split2sentence filter_conceal_string >;
 our @VERSION = 1.00;
 
 use strict;
@@ -15,31 +15,6 @@ use autodie;
 use File::Slurp qw< read_file write_file>;
 use List::MoreUtils qw< mesh uniq >;
 use Lingua::Sentence;
-
-# 标记语言临时替换散列
-my %header = (
-    '=head1 '    => "\x{2460}",
-    '=head2 '    => "\x{2461}",
-    '=head3 '    => "\x{2462}",
-    '=head4 '    => "\x{2463}",
-    '=item '     => "\x{2465}",
-    '=begin '    => "\x{2469}",
-    '=for '      => "\x{2466}",
-    '=back'      => "\x{2467}",
-    '=encoding'  => "\x{2464}",
-    '=over'      => "\x{2468}",
-    '=end'       => "\x{2474}",
-    '=cut'       => "\x{2475}",
-    '=pod'       => "\x{2476}",
-);
-
-# 定义替换字符串
-my %chars  = (
-    "E<lt>" => "\x{2264}",
-    "E<gt>" => "\x{2265}",
-    "<"     => "\x{226e}",
-    ">"     => "\x{226f}",
-);
 
 # 字典转换成散列 my $ref_dict_hash = dict2hash($file1, $file2);
 sub dict2hash {
@@ -75,7 +50,7 @@ sub split2sentence {
     my @array = @_;
     my $splitter = Lingua::Sentence->new("en");
     my @split = map { $splitter->split_array($_) } @array;
-    return \@split;
+    return @split;
 }
 
 # 将散列保存为字典文件 hash2dict(\%hash, $dict_name);
@@ -88,6 +63,23 @@ sub hash2dict {
         $text .= "$key||$value\n";
     }
     write_file($filename, { binmode => ':utf8' }, $text);
+    return 1;
+}
+
+# 数组写到文件，每行之间空一行
+sub array2file {
+    my ($ref_array, $file) = @_;
+    my @array = @{$ref_array};
+    my $last_line = '';
+    open (my $fh_array2file, '>', $file);
+    foreach my $line (@array) {
+        chomp $line;
+        say {$fh_array2file} "\n" unless ($last_line =~ /^\s+/);
+        say {$fh_array2file} $line;
+        my $last_line = $line;
+        # 如果是代码行，则不需要插入空行
+    }
+    close $fh_array2file;
     return 1;
 }
 
@@ -104,7 +96,6 @@ sub filter_conceal_string {
     @code = grep { chomp; /^\s{1,}/ } @lines;
     # 替换掉注释
     foreach my $element (@code) {
-        chomp $element;
         $element =~ s/#.*//;
     }
 
@@ -135,7 +126,6 @@ sub filter_conceal_string {
        $_ =~ s/\n/ /g;
    }
    my @return_array = (@head, @code, @all_format);
-#   my @return_array = @all_format;
    return \@return_array;
 }
 

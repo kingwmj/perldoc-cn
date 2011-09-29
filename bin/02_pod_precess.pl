@@ -44,8 +44,8 @@ foreach my $podfile (@filelist) {
         # 如果代码不以空格开始进行替换
         if ($line =~ /\S/) {
             $line =~ s/\t/$tab/g;     # 将所有制表符替换成四个空格
-            $line =~ s/\s*,\s*/,$blank/g; # 逗号后加一个空格
-            $line =~ s/\s*\.\s*/./g; # 句号后不能留空格
+            $line =~ s/\s*,\s*/,$blank/g;  # 逗号后留空格
+            $line =~ s/\s*\.\s*/.$blank/g; # 句号后留空格
         }
         # 如果以代码格式开始，原样输出非空行
         if ($line =~ /^\s/) {

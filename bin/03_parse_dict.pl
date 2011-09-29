@@ -49,7 +49,7 @@ my $file_dict_code   = "$dict_dir/dict_code.dict";
 my (%dict_hash, %dict_common, %dict_code);
 
 # 将单词字典加载为散列
-my $ref_dict_hash = dict2hash($file_dict_common, $dict_code);
+my $ref_dict_hash = dict2hash($file_dict_common, $file_dict_code);
 my $ref_dict_common = dict2hash($file_dict_common);
 my $ref_dict_code   = dict2hash($file_dict_code);
 
@@ -57,7 +57,7 @@ my $ref_dict_code   = dict2hash($file_dict_code);
 foreach my $key (keys %{$ref_dict_code}) {
 	if (exists ${$ref_dict_common}{$key}) {
 		delete ${$ref_dict_common}{$key};
-		say DEBUG "exists $key in common dict";
+		say {$fh_debug} "exists $key in common dict";
 	}		
 }
 
@@ -107,5 +107,5 @@ foreach my $key (sort keys %wordlist) {
 # 输出不匹配结果
 my $file_dict_unknown = "$dict_dir/dict_rare.dict";
 hash2dict(\%dict_unknown, $file_dict_unknown);
-
+close $fh_debug;
 say "Parsing Over!";
