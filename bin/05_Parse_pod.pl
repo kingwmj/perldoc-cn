@@ -45,3 +45,5 @@ open(my $fh_out, '>:utf8', $output_file);
 while (my ($en, $cn) = each %hash) {
     say {$fh_out} "$en||$cn";
 }
+
+# 将precess文件夹中的文件进行进一步处理，拆分成更小的句子

@@ -22,7 +22,7 @@ use ModelTools qw<
 write_header(); # 脚本开始部分
 
 #file_basename(); # File::Basename qw<basename dirname>
-#file_find(); # File::Find qw<find>
+file_find(); # File::Find qw<find>
 
 write_end(); # 脚本结束部分
 

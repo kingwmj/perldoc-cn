@@ -30,7 +30,7 @@ foreach my $podfile (@filelist) {
 	open(my $fh_in,  '<', $podfile);
     # 输出句柄以 utf8 为编码
     open(my $fh_out, '>', $outfile);
-    say {$fh_out} "=encoding utf8\n";
+
     my $text = "";
     while (my $line = <$fh_in>) {
         chomp $line;

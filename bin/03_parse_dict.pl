@@ -50,6 +50,19 @@ my (%dict_hash, %dict_common, %dict_code);
 
 # 将单词字典加载为散列
 my $ref_dict_hash = dict2hash($file_dict_common, $dict_code);
+my $ref_dict_common = dict2hash($file_dict_common);
+my $ref_dict_code   = dict2hash($file_dict_code);
+
+# 遍历专有名词，如普通单词列表中有，则删除普通单词记录
+foreach my $key (keys %{$ref_dict_code}) {
+	if (exists ${$ref_dict_common}{$key}) {
+		delete ${$ref_dict_common}{$key};
+		say DEBUG "exists $key in common dict";
+	}		
+}
+
+# 重新保存普通单词列表
+hash2dict($ref_dict_common, $file_dict_common);
 
 # 解析文本，生成单词列表，同时生成代码单词表
 my (%wordlist);

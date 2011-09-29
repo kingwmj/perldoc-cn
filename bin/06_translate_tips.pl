@@ -9,7 +9,7 @@ use warnings;
 use 5.010;
 use ParseTools qw<dict2hash array2hash %header filter_conceal_string>;
 use File::Slurp qw<read_file write_file>;
-use List::MoreUtils qw<uniq mesh>;
+use List::MoreUtils qw<uniq mesh pairwise>;
 use File::Basename qw<basename>;
 use utf8;
 
@@ -53,60 +53,58 @@ foreach my $file ( @filelist ) {
         my $cn_sentence = $hash_dict_sentence{$en_sentence};
         my $en_sentence = qr/\Q$en_sentence\E/;
         my $times = $text =~ s/$en_sentence/$cn_sentence/g;
-#        say DEBUG "replaced $times times" if ($times > 0);
+        say DEBUG "replaced $times times" if ($times > 0);
     }
     # 将不需要翻译的内容先提取出来
     my $ref_conceal_array = filter_conceal_string($file);
     my $ref_conceal_hash = array2hash($ref_conceal_array);
     my %conceal_hash = %{$ref_conceal_hash};
     my $count = scalar %conceal_hash;
-    say "filter $count conceal string ..";
-    foreach my $key (keys %conceal_hash) {
-#        next if ($key eq '');
-#        say DEBUG "<$key>=<$conceal_hash{$key}>";
-    }
+    say DEBUG "filter $count conceal string ..";
 
     # 隐藏代码字符
     foreach my $string (sort bylength keys %conceal_hash) {
         next if ($string eq '');
         my $char = $conceal_hash{$string};
         my $times = $text =~ s/\Q$string/$char/g;
-#        say "Conceal string replaced $times times" if ($times > 0);
+        say DEBUG "Conceal string replaced $times times" if ($times > 0);
     }
     # 常用单词替换
     while (my ($word, $char) = each %{$ref_hash_dict_common}) {
         my $times = $text =~ s/\b$word\b/$char/g;
-#        say "common word replaced $times times" if ($times > 0);
+        say DEBUG "common word replaced $times times" if ($times > 0);
     }
     
     # 生僻单词替换
     while (my ($word, $char) = each %{$ref_hash_dict_rare}) {
         my $times = $text =~ s/\b$word\b/$word($char)/g;
-#        say "Rare word replaced $times times" if ($times > 0);
+        say DEBUG "Rare word touched $times times" if ($times > 0);
     }
     
     # 恢复隐藏字符
     foreach my $string (keys %conceal_hash) {
         my $char = $conceal_hash{$string};
         my $times = $text =~ s/$char/$string/g;
-        say "recover $times times" if ($times > 0);
+        say DEBUG "recover $times times" if ($times > 0);
     }
 
     # 输出对比结果
     my @en_lines = split /\n+/, $bak_text;
     my @cn_lines = split /\n+/, $text;
-    my @en_cn_lines = mesh @en_lines, @cn_lines;
-    while (my $line = @en_cn_lines) {
-        my $en_line = shift;
-        my $cn_line = shift;
-        say DEBUG "=EN $en_line\n=CN $cn_line" if (defined $en_line);
-    }
+	
+	# 剔除没有注释的代码
+	@en_lines = grep { ! /^\s[^#]+$/ } @en_lines;
+	@cn_lines = grep { ! /^\s[^#]+$/ } @cn_lines;
+    my @en_cn_lines = pairwise { "=EN $a\n\n=CN $b\n" } @en_lines, @cn_lines;
     
     # 输出翻译结果
     my $basename = basename $file;
 
     # 输出编辑结果
     my $edit_file = "../edit/$basename";
-
-#    say DEBUG $text;
+	open(my $fh_out, '>:utf8', $edit_file);
+	say {$fh_out} "=encoding utf8\n";
+	foreach my $line (@en_cn_lines) {
+		say {$fh_out} $line;
+	}	
 }
