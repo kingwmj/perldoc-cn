@@ -23,11 +23,11 @@ my $dict_phrase = '../dict/dict_phrase.dict'; # 短语字典
 my $ref_hash_dict_sentence = dict2hash($dict_sentence, $dict_phrase);
 my %hash_dict_sentence = %{$ref_hash_dict_sentence};
 
-# 加载专用词词典，直接替换
-my $dict_code = '../dict/dict_code.dict';
 # 加载普通单词词典，直接替换
 my $dict_common = '../dict/dict_common.dict';
-my $ref_hash_dict_common = dict2hash($dict_common);
+# 加载专用词词典，直接替换
+my $dict_code = '../dict/dict_code.dict';
+my $ref_hash_dict_common = dict2hash($dict_common, $dict_code);
 
 # 生僻词，字典中没有的记录 abrogate(？) 使用？进行标注
 my $dict_rare = '../dict/dict_rare.dict';
@@ -63,7 +63,7 @@ foreach my $file ( @filelist ) {
     say "filter $count conceal string ..";
     foreach my $key (keys %conceal_hash) {
 #        next if ($key eq '');
-        say DEBUG "<$key>=<$conceal_hash{$key}>";
+#        say DEBUG "<$key>=<$conceal_hash{$key}>";
     }
 
     # 隐藏代码字符
@@ -91,12 +91,22 @@ foreach my $file ( @filelist ) {
         my $times = $text =~ s/$char/$string/g;
         say "recover $times times" if ($times > 0);
     }
-#    say DEBUG $text; 
+
+    # 输出对比结果
+    my @en_lines = split /\n+/, $bak_text;
+    my @cn_lines = split /\n+/, $text;
+    my @en_cn_lines = mesh @en_lines, @cn_lines;
+    while (my $line = @en_cn_lines) {
+        my $en_line = shift;
+        my $cn_line = shift;
+        say DEBUG "=EN $en_line\n=CN $cn_line" if (defined $en_line);
+    }
     
     # 输出翻译结果
     my $basename = basename $file;
 
     # 输出编辑结果
     my $edit_file = "../edit/$basename";
-    #write_file($edit_file, { bimode => ':utf8' }, $text);
+
+#    say DEBUG $text;
 }
