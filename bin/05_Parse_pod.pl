@@ -8,7 +8,7 @@ use warnings;
 use 5.010;
 use utf8;
 use autodie;
-use List::MoreUtils qw < mesh >;
+use List::MoreUtils qw < uniq mesh >;
 
 open(DEBUG, '>', 'debug.pod');
 # 从存档目录读取文件列表
@@ -53,6 +53,7 @@ foreach my $file (@filelist) {
     my $basename = basename $file;
     my $outfile = "../split/$basename";
     my @lines = read_file $file;
+    @lines = uniq @lines;
     my @new_lines;
     foreach my $line (@lines) {
         # 去除行末换行符

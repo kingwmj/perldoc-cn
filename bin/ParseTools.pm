@@ -74,10 +74,10 @@ sub array2file {
     open (my $fh_array2file, '>', $file);
     foreach my $line (@array) {
         chomp $line;
+        # 如果是代码行，则不需要插入空行
         say {$fh_array2file} "\n" unless ($last_line =~ /^\s+/);
         say {$fh_array2file} $line;
-        my $last_line = $line;
-        # 如果是代码行，则不需要插入空行
+        $last_line = $line;
     }
     close $fh_array2file;
     return 1;

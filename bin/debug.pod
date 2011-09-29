@@ -224,37 +224,25 @@ Begun in 1993 (see L<perlhist>), Perl version 5 is nearly a complete rewrite tha
 =item *
 modularity and reusability using innumerable modules
 Described in L<perlmod>, L<perlmodlib>, and L<perlmodinstall>.
-=item *
 embeddable and extensible
 Described in L<perlembed>, L<perlxstut>, L<perlxs>, L<perlcall>,  L<perlguts>, and L<xsubpp>.
-=item *
 roll-your-own magic variables (including multiple simultaneous DBM implementations)
 Described in L<perltie> and L<AnyDBM_File>.
-=item *
 subroutines can now be overridden, autoloaded, and prototyped
 Described in L<perlsub>.
-=item *
 arbitrarily nested data structures and anonymous functions
 Described in L<perlreftut>, L<perlref>, L<perldsc>, and L<perllol>.
-=item *
 object-oriented programming
 Described in L<perlobj>, L<perlboot>, L<perltoot>, L<perltooc>,  and L<perlbot>.
-=item *
 support for light-weight processes (threads)
 Described in L<perlthrtut> and L<threads>.
-=item *
 support for Unicode, internationalization, and localization
 Described in L<perluniintro>, L<perllocale> and L<Locale::Maketext>.
-=item *
 lexical scoping
-Described in L<perlsub>.
-=item *
 regular expression enhancements
 Described in L<perlre>, with additional examples in L<perlop>.
-=item *
 enhanced debugger and interactive Perl environment,  with integrated editor support
 Described in L<perldebtut>, L<perldebug> and L<perldebguts>.
-=item *
 POSIX 1003. 1 compliant library
 Described in L<POSIX>.
 =back
@@ -355,7 +343,6 @@ The USE_PERLIO implementation is described in L<perliol>.
 =back
 Because "perlio. h" is a thin layer (for efficiency) the semantics of these functions are somewhat dependent on the underlying implementation.  Where these variations are understood they are noted below.
 Unless otherwise noted, functions return 0 on success, or a negative value (usually C<EOF> which is usually -1) and set C<errno> on error.
-=over 4
 =item B<PerlIO_stdin()>, B<PerlIO_stdout()>, B<PerlIO_stderr()>
 Use these rather than C<stdin>, C<stdout>, C<stderr>. They are written to look like "function calls" rather than variables because this makes it easier to I<make them> function calls if platform cannot export data to loaded modules, or if (say) different "threads" might have different values.
 =item B<PerlIO_open(path, mode)>, B<PerlIO_fdopen(fd, mode)>
@@ -402,14 +389,12 @@ This corresponds to rewind(). It is usually defined as being
 This corresponds to tmpfile(), i. e. , returns an anonymous PerlIO or NULL on error. The system will attempt to automatically delete the file when closed. On Unix the file is usually C<unlink>-ed just after it is created so it does not matter how it gets closed. On other systems the file may only be deleted if closed via PerlIO_close() and/or the program exits via C<exit>. Depending on the implementation there may be "race conditions" which allow other processes access to the file, though in general it will be safer in this regard than ad. hoc. schemes.
 =item B<PerlIO_setlinebuf(f)>
 This corresponds to setlinebuf(). Does not return a value. What constitutes a "line" is implementation dependent but usually means that writing "\n" flushes the buffer. What happens with things like "this\nthat" is uncertain. (Perl core uses it I<only> when "dumping"; it has nothing to do with $| auto-flush. )
-=back
 =head2 Co-existence with stdio
 There is outline support for co-existence of PerlIO with stdio.  Obviously if PerlIO is implemented in terms of stdio there is no problem. However in other cases then mechanisms must exist to create a FILE * which can be passed to library code which is going to use stdio calls.
 The first step is to add this line:
    #define PERLIO_NOT_STDIO 0
 I<before> including any perl header files. (This will probably become the default at some point). That prevents "perlio. h" from attempting to #define stdio functions onto PerlIO functions.
 XS code is probably better using "typemap" if it expects FILE * arguments. The standard typemap will be adjusted to comprehend any changes in this area.
-=over 4
 =item B<PerlIO_importFILE(f, mode)>
 Used to get a PerlIO * from a FILE *.
 The mode argument should be a string as would be passed to fopen/PerlIO_open. If it is NULL then - for legacy support - the code will (depending upon the platform and the implementation) either attempt to empirically determine the mode in which I<f> is open, or use "r+" to indicate a read/write stream.
@@ -425,10 +410,8 @@ Calling PerlIO_releaseFILE informs PerlIO that all use of FILE * is complete. It
 Use this to disassociate a file from a PerlIO * that was associated using PerlIO_exportFILE().
 =item B<PerlIO_findFILE(f)>
 Returns a native FILE * used by a stdio layer. If there is none, it will create one with PerlIO_exportFILE. In either case the FILE * should be considered as belonging to PerlIO subsystem and should only be closed by calling C<PerlIO_close()>.
-=back
 =head2 "Fast gets" Functions
 In addition to standard-like API defined so far above there is an "implementation" interface which allows perl to get at internals of PerlIO. The following calls correspond to the various FILE_xxx macros determined by Configure - or their equivalent in other implementations. This section is really of interest to only those concerned with detailed perl-core behaviour, implementing a PerlIO mapping or writing code which can make use of the "read ahead" that has been done by the IO system in the same way perl does. Note that any code that uses these interfaces must be prepared to do things the traditional way if a handle does not support them.
-=over 4
 =item B<PerlIO_fast_gets(f)>
 Returns true if implementation has all the interfaces required to allow perl's C<sv_gets> to "bypass" normal IO mechanism. This can vary from handle to handle.
   PerlIO_fast_gets(f) = PerlIO_has_cntptr(f) && \
@@ -452,9 +435,7 @@ Returns true if implementation has a buffer, and can return pointer to whole buf
 Return I<start> of buffer. Access only positive offsets in the buffer up to the value returned by PerlIO_get_bufsiz().
 =item B<PerlIO_get_bufsiz(f)>
 Return the I<total number of bytes> in the buffer, this is neither the number that can be read, nor the amount of memory allocated to the buffer. Rather it is what the operating system and/or implementation happened to C<read()> (or whatever) last time IO was requested.
-=back
 =head2 Other Functions
-=over 4
 =item PerlIO_apply_layers(f, mode, layers)
 The new interface to the USE_PERLIO implementation. The layers ":crlf" and ":raw" are only ones allowed for other implementations and those are silently ignored. (As of perl5. 8 ":raw" is deprecated. )  Use PerlIO_binmode() below for the portable case.
 =item PerlIO_binmode(f, ptype, imode, layers)
@@ -463,7 +444,6 @@ The hook used by perl's C<binmode> operator.  B<ptype> is perl's character for t
 =item 'E<lt>' read
 =item 'E<gt>' write
 =item '+' read/write
-=back
 B<imode> is C<O_BINARY> or C<O_TEXT>.
 B<layers> is a string of layers to apply, only ":crlf" makes sense in the non USE_PERLIO case. (As of perl5. 8 ":raw" is deprecated in favour of passing NULL. )
 Portable cases are:
