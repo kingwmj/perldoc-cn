@@ -27,7 +27,6 @@ open (my $fh_debug, '>:utf8', 'debug.pod');
 
 # 字符串定义
 my $blank = "\x{0020}"; # 空格
-my $comma = "，"; # 中文逗号
 
 # 扫描目录并获取所有文件列表
 my $find_dir = '../precess'; # 直接从预处理的文件夹中找
@@ -44,26 +43,13 @@ sub wanted {
 # 定义基本字典变量
 my $dict_dir = '../dict';
 my $file_dict_common  = "$dict_dir/dict_common.dict";
-my $file_dict_rare    = "$dict_dir/dict_rare.dict";
+my $file_dict_code   = "$dict_dir/dict_code.dict";
 
 # 定义存储字典内部变量
-my (%dict_hash, %dict_common, %dict_rare);
+my (%dict_hash, %dict_common, %dict_code);
 
 # 将单词字典加载为散列
-my $ref_dict_hash = dict2hash($file_dict_common, $file_dict_rare);
-
-# 将唯一释义的单词放置到 %dict_common 
-# 将多重释义的单词放置到 %dict_rare
-while (my ($word, $char) = each %{$ref_dict_hash}) {
-#    $char = decode('utf8', $char);
-    say {$fh_debug} "$word => $char" unless ($char =~ /$comma/);
-    $dict_common{$word} = $char unless ($char =~ /$comma/);
-    $dict_rare{$word}   = $char if     ($char =~ /$comma/);
-}
-
-# 将 %dict_common 输出为新的 dict_common.txt
-hash2dict(\%dict_common, $file_dict_common);
-hash2dict(\%dict_rare,   $file_dict_rare);
+my $ref_dict_hash = dict2hash($file_dict_common, $dict_code);
 
 # 解析文本，生成单词列表，同时生成代码单词表
 my (%wordlist);
@@ -96,16 +82,17 @@ foreach my $word (keys %wordlist) {
 }
 
 # 匹配单词列表
+my $unkown = '？';
 my (%dict_unknown);
 foreach my $key (sort keys %wordlist) {
 	if (not exists $dict_hash{$key}) {
         # 如果没有匹配上，就加入不匹配散列
-		$dict_unknown{$key} = $blank;
+		$dict_unknown{$key} = $unkown;
 	}
 }
 
 # 输出不匹配结果
-my $file_dict_unknown = "$dict_dir/dict_unknown.txt";
+my $file_dict_unknown = "$dict_dir/dict_rare.dict";
 hash2dict(\%dict_unknown, $file_dict_unknown);
 
 say "Parsing Over!";

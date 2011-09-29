@@ -43,7 +43,6 @@ foreach my $podfile (@filelist) {
         }
         # 如果代码不以空格开始进行替换
         if ($line =~ /\S/) {
-            $line =~ s/^\s+/$blank/g; # 开头两个以上空格替换成一个
             $line =~ s/\t/$tab/g;     # 将所有制表符替换成四个空格
             $line =~ s/\s*,\s*/,$blank/g; # 逗号后加一个空格
             $line =~ s/\s*\.\s*/./g; # 句号后不能留空格

@@ -41,8 +41,6 @@ my %chars  = (
     ">"     => "\x{226f}",
 );
 
-
-
 # 字典转换成散列 my $ref_dict_hash = dict2hash($file1, $file2);
 sub dict2hash {
     my @filelist = @_;
@@ -51,6 +49,7 @@ sub dict2hash {
         my @lines = read_file($file, binmode => ':utf8');
         foreach my $line (@lines) {
             chomp $line;
+            $line =~ s/\r//;
             if ($line =~ /\|\|/) {
                 my ($key, $value) = split /\|\|/, $line;
                 $dict_hash{$key} = $value;
@@ -68,7 +67,7 @@ sub array2hash {
     my @conceal = map { sprintf("&&%0.4x", $_) } (1 .. $number);
     # 合并两个数据类型相同的数组
     my %array2hash = mesh @array, @conceal;
-    return %array2hash;
+    return \%array2hash;
 }
 
 # 将一个数组拆分成按照句子的数组
@@ -94,30 +93,34 @@ sub hash2dict {
 
 # 将Pod文档中的不需要翻译的字符串数组提取成数组
 sub filter_conceal_string {
-    my $file = shift;
-    my $text = read_file $file;
+    my $file  = shift;
+    my $text  = read_file $file;
+    my @lines = read_file $file;
     my (@head, @double_format, @format, @code);
     # 获取 =head =over =item 等结构数组
-    @head = $text =~ /^=\w+\s+/xmsg;
+    @head = $text =~ /^=\w+/xmsg;
 
-    # 替换掉注释
-    $text =~ s/^(\s+.*?)#.*?$/$1/xmsg;
     # 获取每行前有空格的代码原文格式数组
-    @code = $text =~ /^\s+.*?$/xmsg;
+    @code = grep { chomp; /^\s{1,}/ } @lines;
+    # 替换掉注释
+    foreach my $element (@code) {
+        chomp $element;
+        $element =~ s/#.*//;
+    }
 
     # 中间替换变量
     my $elt = "\x{2264}"; # E<lt> => $elt
     my $egt = "\x{2265}"; # E<gt> => $egt
     my $lt  = "\x{226e}"; # '<' => $lt 
     my $gt  = "\x{226f}"; # '>' => $gt
-    @double_format = $text =~ m/[BCFILSX]<<+\s.*?\s>>+/mg;
+    @double_format = $text =~ /[BCFILSX]<<+\s.*?\s>>+/mg;
 
     # 先将文本中的转义字符串替换掉
     $text =~ s/E<lt>/$elt/g;
     $text =~ s/E<gt>/$egt/g;
     while (1) {
-        my @array = $text =~ m/[BCFILSX]<[^<>]+>/mg;
-        last if (scalar @format == 0);
+        my @array = $text =~ /[BCFILSX]<[^<>]+>/mg;
+        last if (scalar @array == 0);
         $text =~ s/([BCFILSX])<([^<>]+)>/$1$lt$2$gt/mg;
         push @format, @array;
     }
@@ -132,6 +135,7 @@ sub filter_conceal_string {
        $_ =~ s/\n/ /g;
    }
    my @return_array = (@head, @code, @all_format);
+#   my @return_array = @all_format;
    return \@return_array;
 }
 
