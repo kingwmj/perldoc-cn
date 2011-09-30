@@ -4,8 +4,8 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw<>;
-our @EXPORT_OK=qw< dict2hash hash2dict array2hash array2file
-                   split2sentence filter_conceal_string >;
+our @EXPORT_OK=qw<dict2hash hash2dict array2hash array2file
+                   split2sentence filter_conceal_string>;
 our @VERSION = 1.00;
 
 use strict;
@@ -15,6 +15,7 @@ use autodie;
 use File::Slurp qw< read_file write_file>;
 use List::MoreUtils qw< mesh uniq >;
 use Lingua::Sentence;
+use Regexp::Common qw/URI/;
 
 # 字典转换成散列 my $ref_dict_hash = dict2hash($file1, $file2);
 sub dict2hash {
@@ -75,8 +76,8 @@ sub array2file {
     foreach my $line (@array) {
         chomp $line;
         # 如果是代码行，则不需要插入空行
-        say {$fh_array2file} "\n" unless ($last_line =~ /^\s+/);
         say {$fh_array2file} $line;
+        say {$fh_array2file} "\n" unless ($last_line =~ /^\s+/);
         $last_line = $line;
     }
     close $fh_array2file;
@@ -88,12 +89,16 @@ sub filter_conceal_string {
     my $file  = shift;
     my $text  = read_file $file;
     my @lines = read_file $file;
-    my (@head, @double_format, @format, @code);
     # 获取 =head =over =item 等结构数组
-    @head = $text =~ /^=\w+/xmsg;
+    my @head = $text =~ /^=\w+/xmsg;
+    my @email = $text =~ /\w+@[a-zA-Z0-9_\-.]+/xmsg;
+    my @func =  $text =~ /\w+\(\d*\)/g;
+    my @http =  $text =~ /$RE{URI}{HTTP}/xmsg;
+    my @ftp  =  $text =~ /$RE{URI}{FTP}/xmsg;
+    my @file =  $text =~ /$RE{URI}{file}/xmsg;
 
     # 获取每行前有空格的代码原文格式数组
-    @code = grep { chomp; /^\s{1,}/ } @lines;
+    my @code = grep { chomp; /^\s{1,}/ } @lines;
     # 替换掉注释
     foreach my $element (@code) {
         $element =~ s/#.*//;
@@ -104,11 +109,12 @@ sub filter_conceal_string {
     my $egt = "\x{2265}"; # E<gt> => $egt
     my $lt  = "\x{226e}"; # '<' => $lt 
     my $gt  = "\x{226f}"; # '>' => $gt
-    @double_format = $text =~ /[BCFILSX]<<+\s.*?\s>>+/mg;
+    my @double_format = $text =~ /[BCFILSX]<<+\s.*?\s>>+/mg;
 
     # 先将文本中的转义字符串替换掉
     $text =~ s/E<lt>/$elt/g;
     $text =~ s/E<gt>/$egt/g;
+    my @format;
     while (1) {
         my @array = $text =~ /[BCFILSX]<[^<>]+>/mg;
         last if (scalar @array == 0);
@@ -125,7 +131,8 @@ sub filter_conceal_string {
        $_ =~ s/$gt/>/g;
        $_ =~ s/\n/ /g;
    }
-   my @return_array = (@head, @code, @all_format);
+   my @return_array = (@head, @email, @http, @ftp, @func, @file, @code, @all_format);
+   # my @return_array = (@email, @http, @ftp, @func, @file);
    return \@return_array;
 }
 

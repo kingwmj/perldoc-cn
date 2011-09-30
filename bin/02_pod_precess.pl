@@ -22,10 +22,10 @@ my $tab = $blank x 4;
 
 # 以流格式打开所有POD文件进行预处理
 my @filelist = glob("../en/*.pod");
-mkdir "../precess" unless (-e "../precess");
+mkdir "../precess" unless (-e "../pod");
 foreach my $podfile (@filelist) {
     my $filename = basename $podfile;
-    my $outfile  = "../precess/$filename";
+    my $outfile  = "../pod/$filename";
     say "Format $podfile ......to $outfile";
 	open(my $fh_in,  '<', $podfile);
     # 输出句柄以 utf8 为编码
@@ -45,7 +45,6 @@ foreach my $podfile (@filelist) {
         if ($line =~ /\S/) {
             $line =~ s/\t/$tab/g;     # 将所有制表符替换成四个空格
             $line =~ s/\s*,\s*/,$blank/g;  # 逗号后留空格
-            $line =~ s/\s*\.\s*/.$blank/g; # 句号后留空格
         }
         # 如果以代码格式开始，原样输出非空行
         if ($line =~ /^\s/) {
@@ -57,4 +56,3 @@ foreach my $podfile (@filelist) {
     }
 }
 
-__DATA__

@@ -34,7 +34,7 @@ foreach my $podfile (@filelist) {
 }
 
 # 输出文档到 ../dict/dict_sentence.txt
-my $output_file = '../dict/dict_sentence.dict';
+my $output_file = '../dict/sentence.dict';
 say "output file is: $output_file";
 open(my $fh_out, '>:utf8', $output_file);
 while (my ($en, $cn) = each %hash) {
@@ -61,7 +61,6 @@ foreach my $file (@filelist) {
         $line =~ s/\s+$//;
         # 忽略空行
         next if (length($line) == 0);
-        say DEBUG $line;
         # 如果非代码行和标题行，则进行拆分
         if ($line =~ /^[^\s=]+/) {
             my @split = split2sentence($line);
