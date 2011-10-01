@@ -6,10 +6,10 @@ use 5.010;
 use utf8;
 use Encode;
 use autodie;
-use File::Find qw< find >;
-use Lingua::EN::Splitter qw( words );
-use File::Slurp qw< read_file >;
-use ParseTools qw< dict2hash hash2dict filter_conceal_string >;
+use File::Find qw<find>;
+use Lingua::EN::Splitter qw(words);
+use File::Slurp qw<read_file>;
+use ParseTools qw<dict2hash hash2dict filter_format_str filter_ignore_str>;
 use List::MoreUtils qw<uniq>;
 use File::Basename qw<basename>;
 
@@ -45,18 +45,17 @@ sub wanted {
 # 定义基本字典变量
 my $dict_dir = '../dict';
 my $file_dict_common  = "$dict_dir/common.dict"; # 单词列表
-my $file_dict_code   = "$dict_dir/code.dict";   # 专有名词词典
 my $file_dict_ignore = "$dict_dir/ignore.dict"; # 忽略单词
 
 # 将单词字典加载为散列
 my $ref_dict_common = dict2hash($file_dict_common);
-my $ref_dict_code   = dict2hash($file_dict_code, $file_dict_ignore);
+my $ref_dict_ignore = dict2hash($file_dict_ignore);
 my %dict_common = %{$ref_dict_common};
-my %dict_code   = %{$ref_dict_code};
-my %dict_hash = (%dict_common, %dict_code);
+my %dict_ignore = %{$ref_dict_ignore};
+my %dict_hash = (%dict_common, %dict_ignore);
 
 # 遍历专有名词，如普通单词列表中有，则删除普通单词记录
-foreach my $key (keys %dict_code) {
+foreach my $key (keys %dict_ignore) {
 	if (exists $dict_common{$key}) {
 		delete $dict_common{$key};
 		say "exists $key in common dict";
@@ -74,13 +73,14 @@ foreach my $file ( @filelist ) {
     my $text = read_file $file;
 
     # 提取所有不需要翻译字符串列表
-    my $ref_array_conceal_string = filter_conceal_string($file);
+    my $ref_array_format_str = filter_format_str($file);
+    my $ref_array_ignore_str = filter_ignore_str($file);
+    my @conceal_str = (@{$ref_array_format_str}, @{$ref_array_ignore_str});
 
     # 将不需要翻译的字符串列表替换掉
-    foreach my $string (@{$ref_array_conceal_string}) {
+    foreach my $string (@conceal_str) {
         $text =~ s/\Q$string\E/$blank/g;
     }
-    
     say DEBUG $text;
 
     # 生成单词表散列，标注文件名
@@ -108,13 +108,15 @@ foreach my $key (sort keys %wordlist) {
 	if (not exists $dict_hash{$key}) {
         my $filename = $wordlist{$key};
         # 如果没有匹配上，就加入不匹配散列
-		$dict_unknown{$key} = $filename;
+		$dict_unknown{$key} = " ";
 	}
 }
 
 # 输出不匹配结果
 my $file_dict_unknown = "$dict_dir/rare.dict";
-hash2dict(\%dict_unknown, $file_dict_unknown);
+if (scalar %dict_unknown) {
+    hash2dict(\%dict_unknown, $file_dict_unknown);
+}
 close DEBUG;
 
 say "Parsing Over!";

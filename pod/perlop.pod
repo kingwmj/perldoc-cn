@@ -1550,7 +1550,7 @@ The next step is interpolation in the text obtained, which is now delimiter-inde
 
 No interpolation is performed. Note that the combination C<\\> is left intact, since escaped delimiters are not available for here-docs. 
 
-=item  C<m''>, the pattern of C<s'''> 
+=item C<m''>, the pattern of C<s'''> 
 
 No interpolation is performed at this stage. Any backslashed sequences including C<\\> are treated at the stage to L</"parsing regular expressions">. 
 

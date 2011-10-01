@@ -4,14 +4,15 @@ use strict;
 use warnings;
 use 5.010;
 use autodie;
-use File::Basename qw< basename >;
+use File::Basename qw<basename>;
+use Regexp::Common qw<URI>;
 
 # -----------------------
 # 预处理Pod中的内容
 # -----------------------
 
 # 调试模式，设置输出句柄
-my $DEBUG = 0;
+my $DEBUG = 1;
 if ($DEBUG) {
    open(DEBUG, '>', 'debug.pod');
 }
@@ -34,8 +35,15 @@ foreach my $podfile (@filelist) {
     my $text = "";
     while (my $line = <$fh_in>) {
         chomp $line;
+
         # 预处理部分
         $line =~ s/\s+$//;      # 去除尾部空格
+        $line =~ s/(=\w+)\s+/$1$blank/; # 标记语言后保留一个空格
+
+        # 提取标题后的单词
+        say DEBUG $1 if ($line =~ /(\w+\(\w*\))/); # 测试正则匹配
+
+        # 如果代码为空行，则输出空行后重置$text
         if ($line =~ /^$/) {
             say {$fh_out} "$text\n";
             $text = "";
@@ -56,3 +64,4 @@ foreach my $podfile (@filelist) {
     }
 }
 
+close DEBUG;

@@ -83,7 +83,7 @@ Those not usable within a bracketed character class (like C<[\da-z]>) are marked
 
 =head2 Character Escapes 
 
-=head3  Fixed characters 
+=head3 Fixed characters 
 
 A handful of characters have a dedicated I<character escape>. The following table shows them, along with their ASCII code points (in decimal and hex),  their ASCII name, the control escape on ASCII platforms and a short description.  (For EBCDIC platforms, see L<perlebcdic/OPERATOR DIFFERENCES>.) 
 

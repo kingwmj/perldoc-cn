@@ -781,7 +781,7 @@ If your Perl success stories and testimonials may be of help to others who wish 
 =head1 FILES
 
 
-"@INC" locations of perl libraries
+@INC locations of perl libraries
 
 
 =head1 SEE ALSO

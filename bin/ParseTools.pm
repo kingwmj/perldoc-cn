@@ -5,7 +5,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw<>;
 our @EXPORT_OK=qw<dict2hash hash2dict array2hash array2file
-                   split2sentence filter_conceal_string>;
+                  split2sentence filter_format_str filter_ignore_str>;
 our @VERSION = 1.00;
 
 use strict;
@@ -16,6 +16,7 @@ use File::Slurp qw< read_file write_file>;
 use List::MoreUtils qw< mesh uniq >;
 use Lingua::Sentence;
 use Regexp::Common qw/URI/;
+use Text::Balanced qw<extract_variable>;
 
 # 字典转换成散列 my $ref_dict_hash = dict2hash($file1, $file2);
 sub dict2hash {
@@ -84,18 +85,13 @@ sub array2file {
     return 1;
 }
 
-# 将Pod文档中的不需要翻译的字符串数组提取成数组
-sub filter_conceal_string {
+# 将Pod文档中的 head code 提取成数组
+sub filter_format_str {
     my $file  = shift;
     my $text  = read_file $file;
     my @lines = read_file $file;
     # 获取 =head =over =item 等结构数组
-    my @head = $text =~ /^=\w+/xmsg;
-    my @email = $text =~ /\w+@[a-zA-Z0-9_\-.]+/xmsg;
-    my @func =  $text =~ /\w+\(\d*\)/g;
-    my @http =  $text =~ /$RE{URI}{HTTP}/xmsg;
-    my @ftp  =  $text =~ /$RE{URI}{FTP}/xmsg;
-    my @file =  $text =~ /$RE{URI}{file}/xmsg;
+    my @head = $text =~ /^=[a-zA-Z0-9]+\s*[^a-zA-Z]*/xmsg;
 
     # 获取每行前有空格的代码原文格式数组
     my @code = grep { chomp; /^\s{1,}/ } @lines;
@@ -103,6 +99,24 @@ sub filter_conceal_string {
     foreach my $element (@code) {
         $element =~ s/#.*//;
     }
+
+#  my @return_array = (@head, @code);
+   my @return_array = (@head);
+   return \@return_array;
+}
+
+# 将Pod文档中的 format email func http ftp file fomat 提取成数组
+sub filter_ignore_str {
+    my $file  = shift;
+    my $text  = read_file $file;
+    my @lines = read_file $file;
+    # 获取 =head =over =item 等结构数组
+    my @var   = $text =~ /\b[\$@%]\w+/g;
+    my @email = $text =~ /\w+@[a-zA-Z0-9_\-.]+/xmsg;
+    my @func =  $text =~ /\w+\(\w*\)/g;
+    my @http =  $text =~ /$RE{URI}{HTTP}/xmsg;
+    my @ftp  =  $text =~ /$RE{URI}{FTP}/xmsg;
+    my @file =  $text =~ /\b\w+\.\w+\b/xmsg;
 
     # 中间替换变量
     my $elt = "\x{2264}"; # E<lt> => $elt
@@ -122,17 +136,17 @@ sub filter_conceal_string {
         push @format, @array;
     }
     # 恢复替换结果
-    my @all_format = (@double_format, @format);
-    uniq @all_format;
-    foreach (@all_format) {
-       $_ =~ s/$elt/E<lt>/g;
-       $_ =~ s/$egt/E<gt>/g;
-       $_ =~ s/$lt/</g;
-       $_ =~ s/$gt/>/g;
-       $_ =~ s/\n/ /g;
+    @format = (@double_format, @format);
+    uniq @format;
+    foreach (@format) {
+       s/$elt/E<lt>/g;
+       s/$egt/E<gt>/g;
+       s/$lt/</g;
+       s/$gt/>/g;
+       s/\n/ /g;
    }
-   my @return_array = (@head, @email, @http, @ftp, @func, @file, @code, @all_format);
-   # my @return_array = (@email, @http, @ftp, @func, @file);
+   my @return_array = (@var, @email, @http, @ftp, @func, @file, @format);
+#   my @return_array = (@format);
    return \@return_array;
 }
 

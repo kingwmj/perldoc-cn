@@ -399,7 +399,7 @@ was passed the result of stringifying the object.
 
 =head3 Assignment to C<$0> sets the legacy process name with prctl() on Linux
 
-On Linux the legacy process name is now set with L<prctl(2)>, in
+On Linux the legacy process name is now set with zip(2), in
 addition to altering the POSIX name via C<argv[0]>, as Perl has done
 since version 4.000.  Now system utilities that read the legacy process
 name such as I<ps>, I<top>, and I<killall> recognize the name you set when
@@ -1222,7 +1222,7 @@ L<HTTP::Tiny> 0.012 has been added as a dual-life module.  It is a very
 small, simple HTTP/1.1 client designed for simple GET requests and file
 mirroring.  It has been added so that F<CPAN.pm> and L<CPANPLUS> can
 "bootstrap" HTTP access to CPAN using pure Perl without relying on external
-binaries like L<curl(1)> or L<wget(1)>.
+binaries like curl(1) or wget(1).
 
 =item *
 
@@ -1286,7 +1286,7 @@ Updates since 0.38 include: a safe print method that guards
 L<Archive::Extract> from changes to C<$\>; a fix to the tests when run in core
 Perl; support for TZ files; a modification for the lzma
 logic to favour L<IO::Uncompress::Unlzma>; and a fix
-for an issue with NetBSD-current and its new L<unzip(1)>
+for an issue with NetBSD-current and its new unzip(1)
 executable.
 
 =item *
@@ -1299,7 +1299,7 @@ Important changes since 1.54 include the following:
 
 =item *
 
-Compatibility with busybox implementations of L<tar(1)>.
+Compatibility with busybox implementations of tar(1).
 
 =item *
 
@@ -1312,13 +1312,13 @@ A bug was fixed regarding the exit code of extract_archive.
 
 =item *
 
-The L<ptar(1)> utility has a new option to allow safe creation of
+The ptar(1) utility has a new option to allow safe creation of
 tarballs without world-writable files on Windows, allowing those
 archives to be uploaded to CPAN.
 
 =item *
 
-A new L<ptargrep(1)> utility for using regular expressions against 
+A new ptargrep(1) utility for using regular expressions against 
 the contents of files in a tar archive.
 
 =item *
@@ -1429,7 +1429,7 @@ newlines embedded in header values has been improved.
 
 L<Compress::Raw::Bzip2> has been upgraded from version 2.024 to 2.033.
 
-It has been updated to use L<bzip2(1)> 1.0.6.
+It has been updated to use bzip2(1) 1.0.6.
 
 =item *
 
@@ -1462,7 +1462,7 @@ Major highlights:
 
 =item * iron out all known bugs in configure_requires
 
-=item * support for distributions compressed with L<bzip2(1)>
+=item * support for distributions compressed with bzip2(1)
 
 =item * allow F<Foo/Bar.pm> on the command line to mean C<Foo::Bar>
 
@@ -1547,7 +1547,7 @@ It is now safe to use this module in combination with threads.
 
 L<Digest::SHA> has been upgraded from version 5.47 to 5.61.
 
-L<shasum> now more closely mimics L<sha1sum(1)>/L<md5sum(1)>.
+L<shasum> now more closely mimics sha1sum(1)/md5sum(1).
 
 L<Addfile> accepts all POSIX filenames.
 
@@ -1590,7 +1590,7 @@ L<Errno> has been upgraded from version 1.11 to 1.13.
 
 The implementation of L<Errno> has been refactored to use about 55% less memory.
 
-On some platforms with unusual header files, like Win32 L<gcc(1)> using C<mingw64>
+On some platforms with unusual header files, like Win32 gcc(1) using C<mingw64>
 headers, some constants that weren't actually error numbers have been exposed
 by L<Errno>.  This has been fixed [perl #77416].
 
@@ -1669,7 +1669,7 @@ L<File::Fetch> has been upgraded from version 0.24 to 0.32.
 
 L<HTTP::Lite> is now supported for the "http" scheme.
 
-The L<fetch(1)> utility is supported on FreeBSD, NetBSD, and
+The fetch(1) utility is supported on FreeBSD, NetBSD, and
 Dragonfly BSD for the C<http> and C<ftp> schemes.
 
 =item *
@@ -2192,7 +2192,7 @@ Calling C<use warnings> without arguments is now significantly more efficient.
 The L<warnings::register> pragma has been upgraded from version 1.01 to 1.02.
 
 It is now possible to register warning categories other than the names of
-packages using L<warnings::register>.  See L<perllexwarn(1)> for more information.
+packages using L<warnings::register>.  See perllexwarn(1) for more information.
 
 =item *
 
@@ -2271,7 +2271,7 @@ maintenance branch: L<perl5121delta>, L<perl5122delta>, L<perl5123delta>.
 =head3 L<perlpodstyle>
 
 New style guide for POD documentation,
-split mostly from the NOTES section of the L<pod2man(1)> manpage.
+split mostly from the NOTES section of the pod2man(1) manpage.
 
 =head3 L<perlsource>, L<perlinterp>, L<perlhacktut>, and L<perlhacktips>
 
@@ -2563,7 +2563,7 @@ two-character escape.  For example, "\q{" is now emitted instead of "\q".
 
 =head1 Utility Changes
 
-=head3 L<perlbug(1)>
+=head3 perlbug(1)
 
 =over 4
 

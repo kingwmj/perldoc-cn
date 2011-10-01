@@ -817,16 +817,19 @@ demerphq has this on his todo list, but right at the bottom.
 
 
 
-[ Each and every one of these may be obsolete, but they were listed 
-  in the old Todo.micro file] 
+[ Each and every one of these may be obsolete, but they were listed in the old Todo.micro file] 
 
 
 
 =head2 make creating uconfig.sh automatic 
 
-=head2 make creating Makefile.micro automatic 
+Z<> 
 
-=head2 do away with fork/exec/wait? 
+=head2 make creating F<Makefile.micro> automatic 
+
+Z<> 
+
+=head2 do away with fork? exec? wait? 
 
 (system, popen should be enough?) 
 

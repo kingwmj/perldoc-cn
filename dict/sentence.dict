@@ -1,6 +1,84 @@
 Perl officially stands for Practical Extraction and Report Language, except when it doesn't. ||Perl语言官方提供的意思是，实用摘录和报表语言的缩写，但其领域远不止如此。
-It's widely used for everything from quick "one-liners" to full-scale application development. ||从单行命令到全面开发应用领域，Perl被广泛使用。
-It quickly became a good language for many system management tasks. ||她很快变成一门许多系统管理员完成任务的利器。
-DESCRIPTION||描述 
+DESTRUCT||自毁
+tokener||标志
+Bibliography||参考文献
 Over the years, Perl has grown into a general-purpose programming language.||经过多年以后，Perl已经成长为一种多用途的语言。
+EOF||结束标志
+Dup||复制品
+Deprecations||反对
+CONVERSIONS||转化
+Datatypes||数据类型
+Died||消亡
+Assertions||断言
+CONTRIBUTORS||参与者
+Acknowledgments||权利
+CLOBBER||击倒
+Authors||作者
+Backreferences||反向引用
+CAVEATS||警告说明
+Binmode||binmode(二进制模式)
+Digits||数码
+Alpha||内部测试版
+Decoding||解码
+Boolean||布尔值
+CHECK||检查
+ERRORS||错误
+Administration||管理员
 Perl was originally a language optimized for scanning arbitrary text files, extracting information from those text files, and printing reports based on that information. ||Perl起初用来扫描文本文档，从这些文件中扫描信息，然后基于这些信息输出报告。
+Definitions||定义
+DEBUGGING||调试错误
+todo||正在改进
+BLOCK||块
+It's widely used for everything from quick "one-liners" to full-scale application development. ||从单行命令到全面开发应用领域，Perl被广泛使用。
+FILES||文件
+Copyrights||版权
+Autoloading||自动装载
+tie||tie(绑定操作符)
+Allocation||分配
+Bisecting||凝集素
+CREDITS||授权
+Development||开发
+ENVIRONMENT||环境
+EBCDIC||扩展二进制编码
+AUTHORS||作者
+AVAILABILITY||有效性
+Backticks||反引号(`)
+CGI||(CGI)通用网关界面
+FAQ||常见问题
+CONCLUSION||结论
+COPYRIGHT||版权
+CONSTRUCT||构造
+Author||作者
+Aggregation||汇总
+CHANGES||变更
+tokenizing||词汇单元化
+ARGV||命令行传入参数
+ASCII||美国信息交换标准码
+AUTHOR||作者
+CONCEPTS||概念
+Barewords||裸词
+ACKNOWLEDGMENTS||权利
+thread||线程
+DESCRIPTION||秒速
+Arithmetic||算法
+Acknowledgements||权利
+BUGS||待改进
+EXAMPLES||实例
+ACKNOWLEDGEMENTS||权利
+Affrus||Affrus 在Mac OS X 上的Perl IDE
+DOCUMENTATION||文档
+Backtracking||回溯
+token||标记
+FIFO||先入先出
+Declarations||声明
+DELEGATION||授权
+BENCHMARKS||基准测试
+Diagnostics||诊断
+Documentation||文档
+Arrays||数组
+DIAGNOSTICS||诊断
+Destructors||自毁装置
+It quickly became a good language for many system management tasks. ||她很快变成一门许多系统管理员完成任务的利器。
+ANCHORS||锚定
+CPAN||Perl综合典藏网
+Athena||雅典娜

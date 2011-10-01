@@ -66,6 +66,8 @@ F<translate_tips.pl>, 生成与输入文本同名的翻译对照文件。
 3. 专有词词典 F<dict_code.txt>
 
 专有词汇，变量名称，函数名称，常用缩写等无需翻译的单词。
+删除此词典，所有的转悠名次将使用内置的正则表达式动态匹配。
+所有的单词形式的专有名次将放入 ignore.dict 词典，忽略翻译。
 如：Perl perl int
 脚本将动态生成这个字符串字典。
 用于原文表现文本中的格式化代码。这个字典是根据 [BLXSFI]<...> 
@@ -153,4 +155,8 @@ syn match podEN /^=EN.*$/
 highlight link podCN        Function
 highlight link podEN        Comment
 
+=head3 关于大小写
+
+大小写的意思很多地方是不同的，在Pod中，大写作为标题，小写作为内容。
+有着完全不同的意思，所以，保持对大小写的敏感是重要的。
 =cut

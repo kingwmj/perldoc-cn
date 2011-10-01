@@ -43,7 +43,7 @@ Every case has a specific application and one or more exceptions, and there is n
 
 Here are a few examples to demonstrate usage of Perl's benchmarking tools. 
 
-=head2  Assigning and Dereferencing Variables. 
+=head2 Assigning and Dereferencing Variables. 
 
 I'm sure most of us have seen code which looks like, (or worse than), this: 
 
@@ -98,7 +98,7 @@ It's essential to run any timing measurements a sufficient number of times so th
 
 The difference is clear to see and the dereferencing approach is slower.  While it managed to execute an average of 628, 930 times a second during our test, the direct approach managed to run an additional 204, 403 times, unfortunately. Unfortunately, because there are many examples of code written using the multiple layer direct variable access, and it's usually horrible.  It is,  however, minusculy faster.  The question remains whether the minute gain is actually worth the eyestrain, or the loss of maintainability. 
 
-=head2  Search and replace or tr 
+=head2 Search and replace or tr 
 
 If we have a string which needs to be modified, while a regex will almost always be much more flexible, C<tr>, an oft underused tool, can still be a useful.  One scenario might be replace all vowels with another character.  The regex solution might look like this: 
 
@@ -661,7 +661,7 @@ Oodles of very useful information in there - this seems to be the way forward.
 
 See also C<Devel::NYTProf::Apache> which hooks C<Devel::NYTProf> into C<mod_perl>. 
 
-=head1  SORTING 
+=head1 SORTING 
 
 Perl modules are not the only tools a performance analyst has at their disposal, system tools like C<time> should not be overlooked as the next example shows, where we take a quick look at sorting.  Many books, theses and articles, have been written about efficient sorting algorithms, and this is not the place to repeat such work, there's several good sorting modules which deserve taking a look at too: C<Sort::Maker>, C<Sort::Key> spring to mind. However, it's still possible to make some observations on certain Perl specific interpretations on issues relating to sorting data sets and give an example or two with regard to how sorting large data volumes can effect performance. Firstly, an often overlooked point when sorting large amounts of data, one can attempt to reduce the data set to be dealt with and in many cases C<grep()> can be quite useful as a simple filter: 
 
@@ -921,7 +921,7 @@ Let's see what C<Benchmark> makes of this:
 
 In the one case the code, which does exactly the same thing as far as outputting any debugging information is concerned, in other words nothing,  takes 14 seconds, and in the other case the code takes one hundredth of a second.  Looks fairly definitive.  Use a C<$DEBUG> variable BEFORE you call the subroutine, rather than relying on the smart functionality inside it. 
 
-=head2  Logging if DEBUG (constant) 
+=head2 Logging if DEBUG (constant) 
 
 It's possible to take the previous idea a little further, by using a compile time C<DEBUG> constant. 
 

@@ -6,9 +6,10 @@ use 5.010;
 use utf8;
 use autodie;
 
-# ----------------------------------
-# 格式化所有的字典和中英文对照文档
-# ----------------------------------
+# ---------------------------------------------------
+# 格式化所有的后缀为 dict 的字典，中文去除英文标点符号
+# 英文部分去除中文标点符号
+# ---------------------------------------------------
 
 use File::Slurp qw< read_file write_file >;
 use File::Basename qw <basename>;
@@ -43,6 +44,10 @@ sub format_dict {
     };
     foreach my $en_string (keys %dict_hash ) {
         my $cn_string = $dict_hash{$en_string};
+        # 将前后的空格去掉
+        $en_string =~ s/^\s+|\s+$//;
+        $cn_string =~ s/^\s+|\s+$//;
+        # 遍历标点符号，实行替换
         foreach my $en_token (keys %{$tokens}) {
             my $cn_token = ${$tokens}{$en_token};
             $en_string =~ s/$cn_token/$en_token/g;

@@ -74,7 +74,7 @@ As a general rule you should I<always> check the return value from these functio
 
 The C<flags> parameter in all the I<call_*> functions is one of G_VOID,  G_SCALAR, or G_ARRAY, which indicate the call context, OR'ed together with a bit mask of any combination of the other G_* symbols defined below. 
 
-=head2  G_VOID 
+=head2 G_VOID 
 
 Calls the Perl subroutine in a void context. 
 
@@ -96,7 +96,7 @@ The value returned by the I<call_*> function indicates how many items have been 
 
 
 
-=head2  G_SCALAR 
+=head2 G_SCALAR 
 
 Calls the Perl subroutine in a scalar context.  This is the default context flag setting for all the I<call_*> functions. 
 

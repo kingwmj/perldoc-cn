@@ -164,7 +164,7 @@ Finally, as a general note, try not to use an excessive amount of markup. As doc
 
 =head1 SEE ALSO 
 
-For additional information that may be more accurate for your specific system, see either L<man(5)> or L<man(7)> depending on your system manual section numbering conventions. 
+For additional information that may be more accurate for your specific system, see either man(5) or man(7) depending on your system manual section numbering conventions. 
 
 This documentation is maintained as part of the podlators distribution. The current version is always available from its web site at <http://www.eyrie.org/~eagle/software/podlators/>. 
 

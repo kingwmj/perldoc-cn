@@ -1,2 +1,0 @@
-perl allwords.pl
-pause

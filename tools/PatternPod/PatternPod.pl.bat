@@ -1,2 +1,0 @@
-perl PatternPod.pl
-pause

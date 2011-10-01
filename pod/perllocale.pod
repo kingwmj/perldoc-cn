@@ -471,19 +471,19 @@ Perl cannot protect you from all possibilities shown in the examples--there is n
 
 =over 4 
 
-=item  * 
+=item * 
 
 B<Comparison operators> (C<lt>, C<le>, C<ge>, C<gt> and C<cmp>): 
 
 Scalar true/false (or less/equal/greater) result is never tainted. 
 
-=item  * 
+=item * 
 
 B<Case-mapping interpolation> (with C<\l>, C<\L>, C<\u> or C<\U>) 
 
 Result string containing interpolated material is tainted if C<use locale> is in effect. 
 
-=item  * 
+=item * 
 
 B<Matching operator> (C<m//>): 
 
@@ -491,7 +491,7 @@ Scalar true/false result never tainted.
 
 Subpatterns, either delivered as a list-context result or as $1 etc. are tainted if C<use locale> is in effect, and the subpattern regular expression contains C<\w> (to match an alphanumeric character), C<\W> (non-alphanumeric character), C<\s> (whitespace character), or C<\S> (non whitespace character).  The matched-pattern variable, $&, $` (pre-match), $' (post-match), and $+ (last match) are also tainted if C<use locale> is in effect and the regular expression contains C<\w>,  C<\W>, C<\s>, or C<\S>. 
 
-=item  * 
+=item * 
 
 B<Substitution operator> (C<s///>): 
 

@@ -220,7 +220,7 @@ End of file.
 
 Writes are permitted, i.e. opened as "w" or "r+" or "a", etc. 
 
-=item  PERLIO_F_CANREAD 
+=item PERLIO_F_CANREAD 
 
 Reads are permitted i.e. opened "r" or "w+" (or even "a+" - ick). 
 
@@ -438,7 +438,7 @@ Typically will call C<Fill> and manipulate pointers (possibly via the API).  C<P
 
 Returns actual bytes read, or -1 on an error. 
 
-=item    Unread 
+=item Unread 
 
 
     SSize_t    (*Unread)(pTHX_ PerlIO *f,  
@@ -520,7 +520,7 @@ Return error indicator. C<PerlIOBase_error()> is normally sufficient.
 
 Returns 1 if there is an error (usually when C<PERLIO_F_ERROR> is set,  0 otherwise. 
 
-=item  Clearerr 
+=item Clearerr 
 
 
     void    (*Clearerr)(pTHX_ PerlIO *f); 

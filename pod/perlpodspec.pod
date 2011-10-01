@@ -195,13 +195,13 @@ This command indicates that an item in a list begins here.  Formatting codes are
   =item * 
 
 
-  =item      * 
+  =item * 
 
 
   =item 14 
 
 
-  =item   3. 
+  =item 3. 
 
 
   =item C<< $thing->stuff(I<dodad>) >> 

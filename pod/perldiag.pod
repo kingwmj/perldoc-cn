@@ -2883,7 +2883,7 @@ The question mark is also used as part of the ternary operator (as in C<foo ? 0 
 
 (F) If the contents of a (?{...}) clause contain braces, they must balance for Perl to detect the end of the clause properly. The <-- HERE shows in the regular expression about where the problem was discovered. See L<perlre>. 
 
-=item Z<>500 Server error 
+=item Server error 500 
 
 See Server error. 
 
