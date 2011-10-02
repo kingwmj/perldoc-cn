@@ -22,7 +22,7 @@ You may have to re-read this entire section a few times...
 
 B<Unicode> is a character set with room for lots of characters. The ordinal value of a character is called a B<code point>.   (But in practice, the distinction between code point and character is blurred, so the terms often are used interchangeably.) 
 
-There are many, many code points, but computers work with bytes, and a byte has room for only 256 values.  Unicode has many more characters than that,  so you need a method to make these accessible. 
+There are many, many code points, but computers work with bytes, and a byte has room for only 256 values.  Unicode has many more characters than that, so you need a method to make these accessible. 
 
 Unicode is encoded using several competing encodings, of which UTF-8 is the most used. In a Unicode encoding, multiple subsequent bytes can be used to store a single code point, or simply: character. 
 
@@ -60,7 +60,7 @@ On a binary string, you would do things like:
 
 =head3 Encoding 
 
-B<Encoding> (as a verb) is the conversion from I<text> to I<binary>. To encode,  you have to supply the target encoding, for example C<iso-8859-1> or C<UTF-8>. Some encodings, like the C<iso-8859> ("latin") range, do not support the full Unicode standard; characters that can't be represented are lost in the conversion. 
+B<Encoding> (as a verb) is the conversion from I<text> to I<binary>. To encode, you have to supply the target encoding, for example C<iso-8859-1> or C<UTF-8>. Some encodings, like the C<iso-8859> ("latin") range, do not support the full Unicode standard; characters that can't be represented are lost in the conversion. 
 
 =head3 Decoding 
 
@@ -104,7 +104,7 @@ Decoding can't happen reliably if you don't know how the data was encoded. If yo
 
 Processing happens as you knew before. The only difference is that you're now using characters instead of bytes. That's very useful if you use things like C<substr>, or C<length>. 
 
-It's important to realize that there are no bytes in a text string. Of course,  Perl has its internal encoding to store the string in memory, but ignore that. If you have to do anything with the number of bytes, it's probably best to move that part to step 3, just after you've encoded the string. Then you know exactly how many bytes it will be in the destination string. 
+It's important to realize that there are no bytes in a text string. Of course, Perl has its internal encoding to store the string in memory, but ignore that. If you have to do anything with the number of bytes, it's probably best to move that part to step 3, just after you've encoded the string. Then you know exactly how many bytes it will be in the destination string. 
 
 The syntax for encoding text strings to binary strings is as simple as decoding: 
 
@@ -119,7 +119,7 @@ If you needed to know the length of the string in bytes, now's the perfect time 
 And if the protocol you're using supports a way of letting the recipient know which character encoding you used, please help the receiving end by using that feature! For example, E-mail and HTTP support MIME headers, so you can use the C<Content-Type> header. They can also have C<Content-Length> to indicate the number of I<bytes>, which is always a good idea to supply if the number is known. 
 
 
-    "Content-Type: text/plain; charset=UTF-8",  
+    "Content-Type: text/plain; charset=UTF-8", 
     "Content-Length: $byte_count" 
 
 =head1 SUMMARY 

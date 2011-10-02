@@ -16,9 +16,9 @@ If you believe you have found a security vulnerability in Perl, please email per
 
 Perl automatically enables a set of special security checks, called I<taint mode>, when it detects its program running with differing real and effective user or group IDs.  The setuid bit in Unix permissions is mode 04000, the setgid bit mode 02000; either or both may be set.  You can also enable taint mode explicitly by using the B<-T> command line flag. This flag is I<strongly> suggested for server programs and any program run on behalf of someone else, such as a CGI script. Once taint mode is on, it's on for the remainder of your script. 
 
-While in this mode, Perl takes special precautions called I<taint checks> to prevent both obvious and subtle traps.  Some of these checks are reasonably simple, such as verifying that path directories aren't writable by others; careful programmers have always used checks like these.  Other checks, however, are best supported by the language itself,  and it is these checks especially that contribute to making a set-id Perl program more secure than the corresponding C program. 
+While in this mode, Perl takes special precautions called I<taint checks> to prevent both obvious and subtle traps.  Some of these checks are reasonably simple, such as verifying that path directories aren't writable by others; careful programmers have always used checks like these.  Other checks, however, are best supported by the language itself, and it is these checks especially that contribute to making a set-id Perl program more secure than the corresponding C program. 
 
-You may not use data derived from outside your program to affect something else outside your program--at least, not by accident.  All command line arguments, environment variables, locale information (see L<perllocale>), results of certain system calls (C<readdir()>,  C<readlink()>, the variable of C<shmread()>, the messages returned by C<msgrcv()>, the password, gcos and shell fields returned by the C<getpwxxx()> calls), and all file input are marked as "tainted". Tainted data may not be used directly or indirectly in any command that invokes a sub-shell, nor in any command that modifies files,  directories, or processes, B<with the following exceptions>: 
+You may not use data derived from outside your program to affect something else outside your program--at least, not by accident.  All command line arguments, environment variables, locale information (see L<perllocale>), results of certain system calls (C<readdir()>, C<readlink()>, the variable of C<shmread()>, the messages returned by C<msgrcv()>, the password, gcos and shell fields returned by the C<getpwxxx()> calls), and all file input are marked as "tainted". Tainted data may not be used directly or indirectly in any command that invokes a sub-shell, nor in any command that modifies files, directories, or processes, B<with the following exceptions>: 
 
 =over 4 
 
@@ -39,7 +39,7 @@ and symbolic sub references
     &{$foo}(@args); 
     $foo->(@args); 
 
-are not checked for taintedness.  This requires extra carefulness unless you want external data to affect your control flow.  Unless you carefully limit what these symbolic values are, people are able to call functions B<outside> your Perl code, such as POSIX::system,  in which case they are able to run arbitrary external code. 
+are not checked for taintedness.  This requires extra carefulness unless you want external data to affect your control flow.  Unless you carefully limit what these symbolic values are, people are able to call functions B<outside> your Perl code, such as POSIX::system, in which case they are able to run arbitrary external code. 
 
 =item * 
 
@@ -47,7 +47,7 @@ Hash keys are B<never> tainted.
 
 =back 
 
-For efficiency reasons, Perl takes a conservative view of whether data is tainted.  If an expression contains tainted data,  any subexpression may be considered tainted, even if the value of the subexpression is not itself affected by the tainted data. 
+For efficiency reasons, Perl takes a conservative view of whether data is tainted.  If an expression contains tainted data, any subexpression may be considered tainted, even if the value of the subexpression is not itself affected by the tainted data. 
 
 Because taintedness is associated with each scalar value, some elements of an array or hash can be tainted and others not. The keys of a hash are B<never> tainted. 
 
@@ -86,8 +86,8 @@ For example:
     open(FOO, "> $arg");     # Not OK - trying to write 
 
 
-    open(FOO, "echo $arg|");    # Not OK 
-    open(FOO, "-|") 
+    open(FOO,"echo $arg|");    # Not OK 
+    open(FOO,"-|") 
     or exec 'echo', $arg;    # Also not OK 
 
 
@@ -147,7 +147,7 @@ This function makes use of the fact that the presence of tainted data anywhere w
 
 But testing for taintedness gets you only so far.  Sometimes you have just to clear your data's taintedness.  Values may be untainted by using them as keys in a hash; otherwise the only way to bypass the tainting mechanism is by referencing subpatterns from a regular expression match. Perl presumes that if you reference a substring using $1, $2, etc., that you knew what you were doing when you wrote the pattern.  That means using a bit of thought--don't just blindly untaint anything, or you defeat the entire mechanism.  It's better to verify that the variable has only good characters (for certain values of "good") rather than checking whether it has any bad characters.  That's because it's far too easy to miss bad characters that you never thought of. 
 
-Here's a test to make sure that the data contains nothing but "word" characters (alphabetics, numerics, and underscores), a hyphen, an at sign,  or a dot. 
+Here's a test to make sure that the data contains nothing but "word" characters (alphabetics, numerics, and underscores), a hyphen, an at sign, or a dot. 
 
 
     if ($data =~ /^([-\@\w.]+)$/) { 
@@ -158,7 +158,7 @@ Here's a test to make sure that the data contains nothing but "word" characters 
 
 This is fairly secure because C</\w+/> doesn't normally match shell metacharacters, nor are dot, dash, or at going to mean something special to the shell.  Use of C</.+/> would have been insecure in theory because it lets everything through, but Perl doesn't check for that.  The lesson is that when untainting, you must be exceedingly careful with your patterns. Laundering data using regular expression is the I<only> mechanism for untainting dirty data, unless you use the strategy detailed below to fork a child of lesser privilege. 
 
-The example does not untaint C<$data> if C<use locale> is in effect,  because the characters matched by C<\w> are determined by the locale. Perl considers that locale definitions are untrustworthy because they contain data from outside the program.  If you are writing a locale-aware program, and want to launder data with a regular expression containing C<\w>, put C<no locale> ahead of the expression in the same block.  See L<perllocale/SECURITY> for further discussion and examples. 
+The example does not untaint C<$data> if C<use locale> is in effect, because the characters matched by C<\w> are determined by the locale. Perl considers that locale definitions are untrustworthy because they contain data from outside the program.  If you are writing a locale-aware program, and want to launder data with a regular expression containing C<\w>, put C<no locale> ahead of the expression in the same block.  See L<perllocale/SECURITY> for further discussion and examples. 
 
 =head2 Switches On the "#!" Line 
 
@@ -189,7 +189,7 @@ The PATH isn't the only environment variable which can cause problems. Because s
 
     delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};   # Make %ENV safer 
 
-It's also possible to get into trouble with other operations that don't care whether they use tainted values.  Make judicious use of the file tests in dealing with any user-supplied filenames.  When possible, do opens and such B<after> properly dropping any special user (or group!) privileges. Perl doesn't prevent you from opening tainted filenames for reading,  so be careful what you print out.  The tainting mechanism is intended to prevent stupid mistakes, not to remove the need for thought. 
+It's also possible to get into trouble with other operations that don't care whether they use tainted values.  Make judicious use of the file tests in dealing with any user-supplied filenames.  When possible, do opens and such B<after> properly dropping any special user (or group!) privileges. Perl doesn't prevent you from opening tainted filenames for reading, so be careful what you print out.  The tainting mechanism is intended to prevent stupid mistakes, not to remove the need for thought. 
 
 Perl does not call the shell to expand wild cards when you pass C<system> and C<exec> explicit parameter lists instead of strings with possible shell wildcards in them.  Unfortunately, the C<open>, C<glob>, and backtick functions provide no such alternate calling convention, so more subterfuge will be required. 
 
@@ -228,7 +228,7 @@ A similar strategy would work for wildcard expansion via C<glob>, although you c
 
 Taint checking is most useful when although you trust yourself not to have written a program to give away the farm, you don't necessarily trust those who end up using it not to try to trick it into doing something bad.  This is the kind of security checking that's useful for set-id programs and programs launched on someone else's behalf, like CGI programs. 
 
-This is quite different, however, from not even trusting the writer of the code not to try to do something evil.  That's the kind of trust needed when someone hands you a program you've never seen before and says, "Here,  run this."  For that kind of safety, you might want to check out the Safe module, included standard in the Perl distribution.  This module allows the programmer to set up special compartments in which all system operations are trapped and namespace access is carefully controlled.  Safe should not be considered bullet-proof, though: it will not prevent the foreign code to set up infinite loops, allocate gigabytes of memory, or even abusing perl bugs to make the host interpreter crash or behave in unpredictable ways. In any case it's better avoided completely if you're really concerned about security. 
+This is quite different, however, from not even trusting the writer of the code not to try to do something evil.  That's the kind of trust needed when someone hands you a program you've never seen before and says, "Here, run this."  For that kind of safety, you might want to check out the Safe module, included standard in the Perl distribution.  This module allows the programmer to set up special compartments in which all system operations are trapped and namespace access is carefully controlled.  Safe should not be considered bullet-proof, though: it will not prevent the foreign code to set up infinite loops, allocate gigabytes of memory, or even abusing perl bugs to make the host interpreter crash or behave in unpredictable ways. In any case it's better avoided completely if you're really concerned about security. 
 
 =head2 Security Bugs 
 
@@ -252,13 +252,13 @@ In recent years, vendors have begun to supply systems free of this inherent secu
 
 =head2 Protecting Your Programs 
 
-There are a number of ways to hide the source to your Perl programs,  with varying levels of "security". 
+There are a number of ways to hide the source to your Perl programs, with varying levels of "security". 
 
 First of all, however, you I<can't> take away read permission, because the source code has to be readable in order to be compiled and interpreted.  (That doesn't mean that a CGI script's source is readable by people on the web, though.)  So you have to leave the permissions at the socially friendly 0755 level.  This lets people on your local system only see your source. 
 
 Some people mistakenly regard this as a security problem.  If your program does insecure things, and relies on people not knowing how to exploit those insecurities, it is not secure.  It is often possible for someone to determine the insecure things and exploit them without viewing the source.  Security through obscurity, the name for hiding your bugs instead of fixing them, is little security indeed. 
 
-You can try using encryption via source filters (Filter::* from CPAN,  or Filter::Util::Call and Filter::Simple since Perl 5.8). But crackers might be able to decrypt it.  You can try using the byte code compiler and interpreter described below, but crackers might be able to de-compile it.  You can try using the native-code compiler described below, but crackers might be able to disassemble it.  These pose varying degrees of difficulty to people wanting to get at your code, but none can definitively conceal it (this is true of every language, not just Perl). 
+You can try using encryption via source filters (Filter::* from CPAN, or Filter::Util::Call and Filter::Simple since Perl 5.8). But crackers might be able to decrypt it.  You can try using the byte code compiler and interpreter described below, but crackers might be able to de-compile it.  You can try using the native-code compiler described below, but crackers might be able to disassemble it.  These pose varying degrees of difficulty to people wanting to get at your code, but none can definitively conceal it (this is true of every language, not just Perl). 
 
 If you're concerned about people profiting from your code, then the bottom line is that nothing but a restrictive license will give you legal security.  License your software and pepper it with threatening statements like "This is unpublished proprietary software of XYZ Corp. Your access to it does not give you permission to use it blah blah blah."  You should see a lawyer to be sure your license's wording will stand up in court. 
 
@@ -278,7 +278,7 @@ Hash Function - the algorithm used to "order" hash elements has been changed sev
 
 In Perls before 5.8.1 one could rather easily generate data that as hash keys would cause Perl to consume large amounts of time because internal structure of hashes would badly degenerate.  In Perl 5.8.1 the hash function is randomly perturbed by a pseudorandom seed which makes generating such naughty hash keys harder. See L<perlrun/PERL_HASH_SEED> for more information. 
 
-In Perl 5.8.1 the random perturbation was done by default, but as of 5.8.2 it is only used on individual hashes if the internals detect the insertion of pathological data. If one wants for some reason emulate the old behaviour (and expose oneself to DoS attacks) one can set the environment variable PERL_HASH_SEED to zero to disable the protection (or any other integer to force a known perturbation, rather than random). One possible reason for wanting to emulate the old behaviour is that in the new behaviour consecutive runs of Perl will order hash keys differently,  which may confuse some applications (like Data::Dumper: the outputs of two different runs are no longer identical). 
+In Perl 5.8.1 the random perturbation was done by default, but as of 5.8.2 it is only used on individual hashes if the internals detect the insertion of pathological data. If one wants for some reason emulate the old behaviour (and expose oneself to DoS attacks) one can set the environment variable PERL_HASH_SEED to zero to disable the protection (or any other integer to force a known perturbation, rather than random). One possible reason for wanting to emulate the old behaviour is that in the new behaviour consecutive runs of Perl will order hash keys differently, which may confuse some applications (like Data::Dumper: the outputs of two different runs are no longer identical). 
 
 B<Perl has never guaranteed any ordering of the hash keys>, and the ordering has already changed several times during the lifetime of Perl 5.  Also, the ordering of hash keys has always been, and continues to be, affected by the insertion order. 
 
@@ -294,7 +294,7 @@ Sorting - the quicksort algorithm used in Perls before 5.8.0 to implement the so
 
 =back 
 
-See L<http://www.cs.rice.edu/~scrosby/hash/> for more information,  and any computer science textbook on algorithmic complexity. 
+See L<http://www.cs.rice.edu/~scrosby/hash/> for more information, and any computer science textbook on algorithmic complexity. 
 
 =head1 SEE ALSO 
 

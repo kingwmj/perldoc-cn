@@ -43,7 +43,7 @@ Because historically some operating systems silently chopped off kernel interpre
 
 Some switches do care if they are processed twice, for instance combinations of B<-l> and B<-0>.  Either put all the switches after the 32-character boundary (if applicable), or replace the use of B<-0>I<digits> by C<BEGIN{ $/ = "\0digits"; }>. 
 
-Parsing of the #! switches starts wherever "perl" is mentioned in the line. The sequences "-*" and "- " are specifically ignored so that you could,  if you were so inclined, say 
+Parsing of the #! switches starts wherever "perl" is mentioned in the line. The sequences "-*" and "- " are specifically ignored so that you could, if you were so inclined, say 
 
 
     #!/bin/sh 
@@ -58,11 +58,11 @@ A similar trick involves the B<env> program, if you have it.
 
     #!/usr/bin/env perl 
 
-The examples above use a relative path to the perl interpreter,  getting whatever version is first in the user's path.  If you want a specific version of Perl, say, perl5.005_57, you should place that directly in the #! line's path. 
+The examples above use a relative path to the perl interpreter, getting whatever version is first in the user's path.  If you want a specific version of Perl, say, perl5.005_57, you should place that directly in the #! line's path. 
 
 If the #! line does not contain the word "perl", the program named after the #! is executed instead of the Perl interpreter.  This is slightly bizarre, but it helps people on machines that don't do #!, because they can tell a program that their SHELL is F</usr/bin/perl>, and Perl will then dispatch the program to the correct interpreter for them. 
 
-After locating your program, Perl compiles the entire program to an internal form.  If there are any compilation errors, execution of the program is not attempted.  (This is unlike the typical shell script,  which might run part-way through before finding a syntax error.) 
+After locating your program, Perl compiles the entire program to an internal form.  If there are any compilation errors, execution of the program is not attempted.  (This is unlike the typical shell script, which might run part-way through before finding a syntax error.) 
 
 If the program is syntactically correct, it is executed.  If the program runs off the end without hitting an exit() or die() operator, an implicit C<exit(0)> is provided to indicate successful completion. 
 
@@ -87,7 +87,7 @@ Create a batch file to run your program, and codify it in C<ALTERNATE_SHEBANG> (
 
 =item Win95/NT 
 
-The Win95/NT installation, when using the ActiveState installer for Perl,  will modify the Registry to associate the F<.pl> extension with the perl interpreter.  If you install Perl by other means (including building from the sources), you may have to modify the Registry yourself.  Note that this means you can no longer tell the difference between an executable Perl program and a Perl library file. 
+The Win95/NT installation, when using the ActiveState installer for Perl, will modify the Registry to associate the F<.pl> extension with the perl interpreter.  If you install Perl by other means (including building from the sources), you may have to modify the Registry yourself.  Note that this means you can no longer tell the difference between an executable Perl program and a Perl library file. 
 
 =item VMS 
 
@@ -105,7 +105,7 @@ This incantation is a bit much to remember, but Perl will display it for you if 
 
 Command-interpreters on non-Unix systems have rather different ideas on quoting than Unix shells.  You'll need to learn the special characters in your command-interpreter (C<*>, C<\> and C<"> are common) and how to protect whitespace and these characters to run one-liners (see B<-e> below). 
 
-On some systems, you may have to change single-quotes to double ones,  which you must I<not> do on Unix or Plan 9 systems.  You might also have to change a single % to a %%. 
+On some systems, you may have to change single-quotes to double ones, which you must I<not> do on Unix or Plan 9 systems.  You might also have to change a single % to a %%. 
 
 For example: 
 
@@ -199,7 +199,7 @@ As of 5.8.1, the C<-C> can be followed either by a number or a list of option le
     D    24   i + o 
     A    32   the @ARGV elements are expected to be strings encoded 
               in UTF-8 
-    L    64   normally the "IOEioA" are unconditional,  
+    L    64   normally the "IOEioA" are unconditional, 
               the L makes them conditional on the locale environment 
               variables (the LC_ALL, LC_TYPE, and LANG, in the order 
               of decreasing precedence) -- if the variables indicate 
@@ -219,7 +219,7 @@ C<-C> on its own (not followed by any number or option list), or the empty strin
 
 You can use C<-C0> (or C<"0"> for C<PERL_UNICODE>) to explicitly disable all the above Unicode features. 
 
-The read-only magic variable C<${^UNICODE}> reflects the numeric value of this setting.  This variable is set during Perl startup and is thereafter read-only.  If you want runtime effects, use the three-arg open() (see L<perlfunc/open>), the two-arg binmode() (see L<perlfunc/binmode>),  and the C<open> pragma (see L<open>). 
+The read-only magic variable C<${^UNICODE}> reflects the numeric value of this setting.  This variable is set during Perl startup and is thereafter read-only.  If you want runtime effects, use the three-arg open() (see L<perlfunc/open>), the two-arg binmode() (see L<perlfunc/binmode>), and the C<open> pragma (see L<open>). 
 
 (In Perls earlier than 5.8.1 the C<-C> switch was a Win32-only switch that enabled the use of Unicode-aware "wide system call" Win32 APIs. This feature was practically unused, however, and the command line switch was therefore "recycled".) 
 
@@ -227,7 +227,7 @@ B<Note:> Since perl 5.10.1, if the -C option is used on the #! line, it must be 
 
 =item B<-c> X<-c> 
 
-causes Perl to check the syntax of the program and then exit without executing it.  Actually, it I<will> execute C<BEGIN>, C<UNITCHECK>,  C<CHECK>, and C<use> blocks, because these are considered as occurring outside the execution of your program.  C<INIT> and C<END> blocks,  however, will be skipped. 
+causes Perl to check the syntax of the program and then exit without executing it.  Actually, it I<will> execute C<BEGIN>, C<UNITCHECK>, C<CHECK>, and C<use> blocks, because these are considered as occurring outside the execution of your program.  C<INIT> and C<END> blocks, however, will be skipped. 
 
 =item B<-d> X<-d> X<-dt> 
 
@@ -235,9 +235,9 @@ causes Perl to check the syntax of the program and then exit without executing i
 
 runs the program under the Perl debugger.  See L<perldebug>. If B<t> is specified, it indicates to the debugger that threads will be used in the code being debugged. 
 
-=item B<-d:>I<foo[=bar, baz]> X<-d> X<-dt> 
+=item B<-d:>I<foo[=bar,baz]> X<-d> X<-dt> 
 
-=item B<-dt:>I<foo[=bar, baz]> 
+=item B<-dt:>I<foo[=bar,baz]> 
 
 runs the program under the control of a debugging, profiling, or tracing module installed as Devel::foo. E.g., B<-d:DProf> executes the program using the Devel::DProf profiler.  As with the B<-M> flag, options may be passed to the Devel::foo package where they will be received and interpreted by the Devel::foo::import routine. Again, like B<-M>, use -d:-foo to call Devel::foo::unimport instead of import. The comma-separated list of options must follow a C<=> character. If B<t> is specified, it indicates to the debugger that threads will be used in the code being debugged. See L<perldebug>. 
 
@@ -247,7 +247,7 @@ runs the program under the control of a debugging, profiling, or tracing module 
 
 sets debugging flags.  To watch how it executes your program, use B<-Dtls>.  (This works only if debugging is compiled into your Perl.)  Another nice value is B<-Dx>, which lists your compiled syntax tree.  And B<-Dr> displays compiled regular expressions; the format of the output is explained in L<perldebguts>. 
 
-As an alternative, specify a number instead of list of letters (e.g.,  B<-D14> is equivalent to B<-Dtls>): 
+As an alternative, specify a number instead of list of letters (e.g., B<-D14> is equivalent to B<-Dtls>): 
 
 
         1  p  Tokenizing and parsing (with v, displays parse stack) 
@@ -268,7 +268,7 @@ As an alternative, specify a number instead of list of letters (e.g.,  B<-D14> i
     32768  D  Cleaning up 
    131072  T  Tokenising 
    262144  R  Include reference counts of dumped variables (eg when using -Ds) 
-   524288  J  show s, t, P-debug (don't Jump over) on opcodes within package DB 
+   524288  J  show s,t,P-debug (don't Jump over) on opcodes within package DB 
   1048576  v  Verbose: use in conjunction with other flags 
   2097152  C  Copy On Write 
   4194304  A  Consistency checks on internal structures 
@@ -278,7 +278,7 @@ As an alternative, specify a number instead of list of letters (e.g.,  B<-D14> i
 
 All these flags require B<-DDEBUGGING> when you compile the Perl executable (but see C<:opd> in L<Devel::Peek> or L<re/'debug' mode> which may change this). See the F<INSTALL> file in the Perl source distribution for how to do this.  This flag is automatically set if you include B<-g> option when C<Configure> asks you about optimizer/debugger flags. 
 
-If you're just trying to get a print out of each line of Perl code as it executes, the way that C<sh -x> provides for shell scripts,  you can't use Perl's B<-D> switch.  Instead do this 
+If you're just trying to get a print out of each line of Perl code as it executes, the way that C<sh -x> provides for shell scripts, you can't use Perl's B<-D> switch.  Instead do this 
 
 
   # If you have "env" utility 
@@ -316,7 +316,7 @@ Perl actually inserts the following code:
             && do "$Config{sitelib}/sitecustomize.pl"; 
     } 
 
-Since it is an actual C<do> (not a C<require>), F<sitecustomize.pl> doesn't need to return a true value. The code is run in package C<main>,  in its own lexical scope. However, if the script dies, C<$@> will not be set. 
+Since it is an actual C<do> (not a C<require>), F<sitecustomize.pl> doesn't need to return a true value. The code is run in package C<main>, in its own lexical scope. However, if the script dies, C<$@> will not be set. 
 
 The value of C<$Config{sitelib}> is also determined in C code and not read from C<Config.pm>, which is not loaded. 
 
@@ -411,7 +411,7 @@ You can use C<eof> without parentheses to locate the end of each input file, in 
 
 If, for a given file, Perl is unable to create the backup file as specified in the extension then it will skip that file and continue on with the next one (if it exists). 
 
-For a discussion of issues surrounding file permissions and B<-i>,  see L<perlfaq5/Why does Perl let me delete read-only files?  Why does -i clobber protected files?  Isn't this a bug in Perl?>. 
+For a discussion of issues surrounding file permissions and B<-i>, see L<perlfaq5/Why does Perl let me delete read-only files?  Why does -i clobber protected files?  Isn't this a bug in Perl?>. 
 
 You cannot use B<-i> to create directories or to strip extensions from files. 
 
@@ -435,7 +435,7 @@ enables automatic line-ending processing.  It has two separate effects.  First, 
 
     perl -lpe 'substr($_, 80) = ""' 
 
-Note that the assignment C<$\ = $/> is done when the switch is processed,  so the input record separator can be different than the output record separator if the B<-l> switch is followed by a B<-0> switch: 
+Note that the assignment C<$\ = $/> is done when the switch is processed, so the input record separator can be different than the output record separator if the B<-l> switch is followed by a B<-0> switch: 
 
 
     gnufind / -print0 | perl -ln0e 'print "found $_" if -p' 
@@ -448,15 +448,15 @@ This sets C<$\> to newline and then sets C<$/> to the null character.
 
 =item B<-M>[B<->]I<'module ...'> 
 
-=item B<-[mM]>[B<->]I<module=arg[, arg]...> 
+=item B<-[mM]>[B<->]I<module=arg[,arg]...> 
 
 B<-m>I<module> executes C<use> I<module> C<();> before executing your program. 
 
-B<-M>I<module> executes C<use> I<module> C<;> before executing your program.  You can use quotes to add extra code after the module name,  e.g., C<'-Mmodule qw(foo bar)'>. 
+B<-M>I<module> executes C<use> I<module> C<;> before executing your program.  You can use quotes to add extra code after the module name, e.g., C<'-Mmodule qw(foo bar)'>. 
 
 If the first character after the B<-M> or B<-m> is a dash (C<->) then the 'use' is replaced with 'no'. 
 
-A little builtin syntactic sugar means you can also say B<-mmodule=foo, bar> or B<-Mmodule=foo, bar> as a shortcut for C<'-Mmodule qw(foo bar)'>.  This avoids the need to use quotes when importing symbols.  The actual code generated by B<-Mmodule=foo, bar> is C<use module split(/, /, q{foo, bar})>.  Note that the C<=> form removes the distinction between B<-m> and B<-M>. 
+A little builtin syntactic sugar means you can also say B<-mmodule=foo,bar> or B<-Mmodule=foo,bar> as a shortcut for C<'-Mmodule qw(foo bar)'>.  This avoids the need to use quotes when importing symbols.  The actual code generated by B<-Mmodule=foo,bar> is C<use module split(/,/,q{foo,bar})>.  Note that the C<=> form removes the distinction between B<-m> and B<-M>. 
 
 A consequence of this is that B<-MFoo=number> never does a version check (unless C<Foo::import()> itself is set up to do a version check, which could happen for example if Foo inherits from Exporter.) 
 
@@ -515,9 +515,9 @@ Do note that a switch like B<--help> creates the variable ${-help}, which is not
 
 makes Perl use the PATH environment variable to search for the program (unless the name of the program contains directory separators). 
 
-On some platforms, this also makes Perl append suffixes to the filename while searching for it.  For example, on Win32 platforms,  the ".bat" and ".cmd" suffixes are appended if a lookup for the original name fails, and if the name does not already end in one of those suffixes.  If your Perl was compiled with DEBUGGING turned on, using the -Dp switch to Perl shows how the search progresses. 
+On some platforms, this also makes Perl append suffixes to the filename while searching for it.  For example, on Win32 platforms, the ".bat" and ".cmd" suffixes are appended if a lookup for the original name fails, and if the name does not already end in one of those suffixes.  If your Perl was compiled with DEBUGGING turned on, using the -Dp switch to Perl shows how the search progresses. 
 
-Typically this is used to emulate #! startup on platforms that don't support #!.  Its also convenient when debugging a script that uses #!,  and is thus normally found by the shell's $PATH search mechanism. 
+Typically this is used to emulate #! startup on platforms that don't support #!.  Its also convenient when debugging a script that uses #!, and is thus normally found by the shell's $PATH search mechanism. 
 
 This example works on many platforms that have a shell compatible with Bourne shell: 
 
@@ -526,14 +526,14 @@ This example works on many platforms that have a shell compatible with Bourne sh
     eval 'exec /usr/bin/perl -wS $0 ${1+"$@"}' 
         if $running_under_some_shell; 
 
-The system ignores the first line and feeds the program to F</bin/sh>,  which proceeds to try to execute the Perl program as a shell script. The shell executes the second line as a normal shell command, and thus starts up the Perl interpreter.  On some systems $0 doesn't always contain the full pathname, so the B<-S> tells Perl to search for the program if necessary.  After Perl locates the program, it parses the lines and ignores them because the variable $running_under_some_shell is never true.  If the program will be interpreted by csh, you will need to replace C<${1+"$@"}> with C<$*>, even though that doesn't understand embedded spaces (and such) in the argument list.  To start up sh rather than csh, some systems may have to replace the #! line with a line containing just a colon, which will be politely ignored by Perl.  Other systems can't control that, and need a totally devious construct that will work under any of B<csh>, B<sh>, or Perl, such as the following: 
+The system ignores the first line and feeds the program to F</bin/sh>, which proceeds to try to execute the Perl program as a shell script. The shell executes the second line as a normal shell command, and thus starts up the Perl interpreter.  On some systems $0 doesn't always contain the full pathname, so the B<-S> tells Perl to search for the program if necessary.  After Perl locates the program, it parses the lines and ignores them because the variable $running_under_some_shell is never true.  If the program will be interpreted by csh, you will need to replace C<${1+"$@"}> with C<$*>, even though that doesn't understand embedded spaces (and such) in the argument list.  To start up sh rather than csh, some systems may have to replace the #! line with a line containing just a colon, which will be politely ignored by Perl.  Other systems can't control that, and need a totally devious construct that will work under any of B<csh>, B<sh>, or Perl, such as the following: 
 
 
     eval '(exit $?0)' && eval 'exec perl -wS $0 ${1+"$@"}' 
     & eval 'exec /usr/bin/perl -wS $0 $argv:q' 
         if $running_under_some_shell; 
 
-If the filename supplied contains directory separators (i.e., is an absolute or relative pathname), and if that file is not found,  platforms that append file extensions will do so and try to look for the file with those extensions added, one by one. 
+If the filename supplied contains directory separators (i.e., is an absolute or relative pathname), and if that file is not found, platforms that append file extensions will do so and try to look for the file with those extensions added, one by one. 
 
 On DOS-like platforms, if the program does not contain directory separators, it will first be searched for in the current directory before being searched for on the PATH.  On Unix platforms, the program will be searched for strictly on the PATH. 
 
@@ -565,7 +565,7 @@ prints summary of the major perl configuration values and the current values of 
 
 =item B<-V:>I<configvar> 
 
-Prints to STDOUT the value of the named configuration variable(s),  with multiples when your configvar argument looks like a regex (has non-letters).  For example: 
+Prints to STDOUT the value of the named configuration variable(s), with multiples when your configvar argument looks like a regex (has non-letters).  For example: 
 
 
     $ perl -V:libc 
@@ -601,7 +601,7 @@ Leading and trailing colons can be used together if you need positional paramete
 
 =item B<-w> X<-w> 
 
-prints warnings about dubious constructs, such as variable names that are mentioned only once and scalar variables that are used before being set, redefined subroutines, references to undefined filehandles or filehandles opened read-only that you are attempting to write on, values used as a number that don't look like numbers,  using an array as though it were a scalar, if your subroutines recurse more than 100 deep, and innumerable other things. 
+prints warnings about dubious constructs, such as variable names that are mentioned only once and scalar variables that are used before being set, redefined subroutines, references to undefined filehandles or filehandles opened read-only that you are attempting to write on, values used as a number that don't look like numbers, using an array as though it were a scalar, if your subroutines recurse more than 100 deep, and innumerable other things. 
 
 This switch really just enables the internal C<$^W> variable.  You can disable or promote into fatal errors specific warnings using C<__WARN__> hooks, as described in L<perlvar> and L<perlfunc/warn>. See also L<perldiag> and L<perltrap>.  A new, fine-grained warning facility is also available if you want to manipulate entire classes of warnings; see L<warnings> or L<perllexwarn>. 
 
@@ -778,7 +778,7 @@ Relevant only if perl is compiled with the malloc included with the perl distrib
 
 =item PERL_DESTRUCT_LEVEL X<PERL_DESTRUCT_LEVEL> 
 
-Relevant only if your perl executable was built with B<-DDEBUGGING>,  this controls the behavior of global destruction of objects and other references.  See L<perlhacktips/PERL_DESTRUCT_LEVEL> for more information. 
+Relevant only if your perl executable was built with B<-DDEBUGGING>, this controls the behavior of global destruction of objects and other references.  See L<perlhacktips/PERL_DESTRUCT_LEVEL> for more information. 
 
 =item PERL_DL_NONLAZY X<PERL_DL_NONLAZY> 
 
@@ -806,7 +806,7 @@ See L<perlsec/"Algorithmic Complexity Attacks"> and L</PERL_HASH_SEED_DEBUG> for
 
 (Since Perl 5.8.1.)  Set to one to display (to STDERR) the value of the hash seed at the beginning of execution.  This, combined with L</PERL_HASH_SEED> is intended to aid in debugging nondeterministic behavior caused by hash randomization. 
 
-B<Note that the hash seed is sensitive information>: by knowing it one can craft a denial-of-service attack against Perl code, even remotely,  see L<perlsec/"Algorithmic Complexity Attacks"> for more information. B<Do not disclose the hash seed> to people who don't need to know it. See also hash_seed() of L<Hash::Util>. 
+B<Note that the hash seed is sensitive information>: by knowing it one can craft a denial-of-service attack against Perl code, even remotely, see L<perlsec/"Algorithmic Complexity Attacks"> for more information. B<Do not disclose the hash seed> to people who don't need to know it. See also hash_seed() of L<Hash::Util>. 
 
 =item PERL_MEM_LOG X<PERL_MEM_LOG> 
 

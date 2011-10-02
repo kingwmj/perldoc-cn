@@ -10,10 +10,11 @@ use autodie;
 # 格式化所有的后缀为 dict 的字典，中文去除英文标点符号
 # 英文部分去除中文标点符号
 # ---------------------------------------------------
+my $blank = "\x{0020}";
 
-use File::Slurp qw< read_file write_file >;
+use File::Slurp qw<read_file write_file>;
 use File::Basename qw <basename>;
-use ParseTools qw< dict2hash hash2dict >;
+use ParseTools qw<dict2hash hash2dict>;
 
 open(my $debug, '>', 'debug.pod');
 my $dict_dir = '../dict';
@@ -34,7 +35,6 @@ sub format_dict {
     my %dict_hash = %{$ref_dict_hash};
     state $tokens = {
     ',' => '，',
-    '.' => '。',
     '!' => '！',
     '?' => '？',
     ':' => '：',
@@ -47,6 +47,7 @@ sub format_dict {
         # 将前后的空格去掉
         $en_string =~ s/^\s+|\s+$//;
         $cn_string =~ s/^\s+|\s+$//;
+        $en_string =~ s/\s+/$blank/g;
         # 遍历标点符号，实行替换
         foreach my $en_token (keys %{$tokens}) {
             my $cn_token = ${$tokens}{$en_token};

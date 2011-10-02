@@ -1,5 +1,12 @@
 #!perl
 
+# ---------------------------------------------------
+# 1. 将 common.dict 中在 ignore.dict 中已有的记录删除
+# 2. 将 ../precess 目录中的文本中的单词列表提取出来，
+#    将没有在 common.dict && ignore.dict 中没有的记录
+#    提取出来，保存为单词列表 rare.dict
+# ---------------------------------------------------
+
 use strict;
 use warnings;
 use 5.010;
@@ -7,7 +14,7 @@ use utf8;
 use Encode;
 use autodie;
 use File::Find qw<find>;
-use Lingua::EN::Splitter qw(words);
+use Lingua::EN::Splitter qw<words>;
 use File::Slurp qw<read_file>;
 use ParseTools qw<dict2hash hash2dict filter_format_str filter_ignore_str>;
 use List::MoreUtils qw<uniq>;
@@ -45,17 +52,17 @@ sub wanted {
 # 定义基本字典变量
 my $dict_dir = '../dict';
 my $file_dict_common  = "$dict_dir/common.dict"; # 单词列表
-my $file_dict_ignore = "$dict_dir/ignore.dict"; # 忽略单词
+my $file_dict_simple  = "$dict_dir/simple.dict"; # 忽略单词
 
 # 将单词字典加载为散列
 my $ref_dict_common = dict2hash($file_dict_common);
-my $ref_dict_ignore = dict2hash($file_dict_ignore);
+my $ref_dict_simple = dict2hash($file_dict_simple);
 my %dict_common = %{$ref_dict_common};
-my %dict_ignore = %{$ref_dict_ignore};
-my %dict_hash = (%dict_common, %dict_ignore);
+my %dict_simple = %{$ref_dict_simple};
+my %dict_hash = (%dict_common, %dict_simple);
 
 # 遍历专有名词，如普通单词列表中有，则删除普通单词记录
-foreach my $key (keys %dict_ignore) {
+foreach my $key (keys %dict_simple) {
 	if (exists $dict_common{$key}) {
 		delete $dict_common{$key};
 		say "exists $key in common dict";
@@ -103,19 +110,19 @@ foreach my $word (keys %wordlist) {
 }
 
 # 匹配单词列表
-my (%dict_unknown);
+my (%dict_rare);
 foreach my $key (sort keys %wordlist) {
 	if (not exists $dict_hash{$key}) {
         my $filename = $wordlist{$key};
         # 如果没有匹配上，就加入不匹配散列
-		$dict_unknown{$key} = " ";
+		$dict_rare{$key} = " ";
 	}
 }
 
 # 输出不匹配结果
-my $file_dict_unknown = "$dict_dir/rare.dict";
-if (scalar %dict_unknown) {
-    hash2dict(\%dict_unknown, $file_dict_unknown);
+my $file_dict_rare = "$dict_dir/rare.dict";
+if (scalar %dict_rare) {
+    hash2dict(\%dict_rare, $file_dict_rare);
 }
 close DEBUG;
 

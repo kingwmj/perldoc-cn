@@ -40,7 +40,7 @@ That word C<new> isn't special.  You could have written a construct this way, to
     package Critter; 
     sub spawn { bless {} } 
 
-This might even be preferable, because the C++ programmers won't be tricked into thinking that C<new> works in Perl as it does in C++. It doesn't.  We recommend that you name your constructors whatever makes sense in the context of the problem you're solving.  For example,  constructors in the Tk extension to Perl are named after the widgets they create. 
+This might even be preferable, because the C++ programmers won't be tricked into thinking that C<new> works in Perl as it does in C++. It doesn't.  We recommend that you name your constructors whatever makes sense in the context of the problem you're solving.  For example, constructors in the Tk extension to Perl are named after the widgets they create. 
 
 One thing that's different about Perl constructors compared with those in C++ is that in Perl, they have to allocate their own memory.  (The other things is that they don't automatically call overridden base-class constructors.)  The C<{}> allocates an anonymous hash containing no key/value pairs, and returns it  The bless() takes that reference and tells the object it references that it's now a Critter, and returns the reference.  This is for convenience, because the referenced object itself knows that it has been blessed, and the reference to it could have been returned directly, like this: 
 
@@ -61,7 +61,7 @@ You often see such a thing in more complicated constructors that wish to call me
     return $self; 
     } 
 
-If you care about inheritance (and you should; see L<perlmodlib/"Modules: Creation, Use, and Abuse">),  then you want to use the two-arg form of bless so that your constructors may be inherited: 
+If you care about inheritance (and you should; see L<perlmodlib/"Modules: Creation, Use, and Abuse">), then you want to use the two-arg form of bless so that your constructors may be inherited: 
 
 
     sub new { 
@@ -84,7 +84,7 @@ Or if you expect people to call not just C<< CLASS->new() >> but also C<< $obj->
     return $self; 
     } 
 
-Within the class package, the methods will typically deal with the reference as an ordinary reference.  Outside the class package,  the reference is generally treated as an opaque value that may be accessed only through the class's methods. 
+Within the class package, the methods will typically deal with the reference as an ordinary reference.  Outside the class package, the reference is generally treated as an opaque value that may be accessed only through the class's methods. 
 
 Although a constructor can in theory re-bless a referenced object currently belonging to another class, this is almost certainly going to get you into trouble.  The new class is responsible for all cleanup later.  The previous blessing is forgotten, as an object may belong to only one class at a time.  (Although of course it's free to inherit methods from many classes.)  If you find yourself having to do this, the parent class is probably misbehaving, though. 
 
@@ -108,7 +108,7 @@ All classes implicitly inherit from class C<UNIVERSAL> as their last base class.
 
 If a missing method is found in a base class, it is cached in the current class for efficiency.  Changing @ISA or defining new subroutines invalidates the cache and causes Perl to do the lookup again. 
 
-If neither the current class, its named base classes, nor the UNIVERSAL class contains the requested method, these three places are searched all over again, this time looking for a method named AUTOLOAD().  If an AUTOLOAD is found, this method is called on behalf of the missing method,  setting the package global $AUTOLOAD to be the fully qualified name of the method that was intended to be called. X<AUTOLOAD> 
+If neither the current class, its named base classes, nor the UNIVERSAL class contains the requested method, these three places are searched all over again, this time looking for a method named AUTOLOAD().  If an AUTOLOAD is found, this method is called on behalf of the missing method, setting the package global $AUTOLOAD to be the fully qualified name of the method that was intended to be called. X<AUTOLOAD> 
 
 If none of that works, Perl finally gives up and complains. 
 
@@ -119,7 +119,7 @@ If you want to stop the AUTOLOAD inheritance say simply X<AUTOLOAD>
 
 and the call will die using the name of the sub being called. 
 
-Perl classes do method inheritance only.  Data inheritance is left up to the class itself.  By and large, this is not a problem in Perl,  because most classes model the attributes of their object using an anonymous hash, which serves as its own little namespace to be carved up by the various classes that might want to do something with the object. The only problem with this is that you can't sure that you aren't using a piece of the hash that isn't already used.  A reasonable workaround is to prepend your fieldname in the hash with the package name. X<inheritance, method> X<inheritance, data> 
+Perl classes do method inheritance only.  Data inheritance is left up to the class itself.  By and large, this is not a problem in Perl, because most classes model the attributes of their object using an anonymous hash, which serves as its own little namespace to be carved up by the various classes that might want to do something with the object. The only problem with this is that you can't sure that you aren't using a piece of the hash that isn't already used.  A reasonable workaround is to prepend your fieldname in the hash with the package name. X<inheritance, method> X<inheritance, data> 
 
 
     sub bump { 
@@ -139,7 +139,7 @@ A class method expects a class name as the first argument.  It provides function
     $objtable{$name}; 
     } 
 
-An instance method expects an object reference as its first argument. Typically it shifts the first argument into a "self" or "this" variable,  and then uses that as an ordinary reference. 
+An instance method expects an object reference as its first argument. Typically it shifts the first argument into a "self" or "this" variable, and then uses that as an ordinary reference. 
 
 
     sub display { 
@@ -158,7 +158,7 @@ For various historical and other reasons, Perl offers two equivalent ways to wri
     my $fred = Critter->find("Fred"); 
     $fred->display("Height", "Weight"); 
 
-You should already be familiar with the use of the C<< -> >> operator with references.  In fact, since C<$fred> above is a reference to an object,  you could think of the method call as just another form of dereferencing. 
+You should already be familiar with the use of the C<< -> >> operator with references.  In fact, since C<$fred> above is a reference to an object, you could think of the method call as just another form of dereferencing. 
 
 Whatever is on the left side of the arrow, whether a reference or a class name, is passed to the method subroutine as its first argument. So the above code is mostly equivalent to: 
 
@@ -188,7 +188,7 @@ As a special case of the above, you may use the C<SUPER> pseudo-class to tell Pe
         $self->SUPER::display("Name", @args); 
     } 
 
-It is important to note that C<SUPER> refers to the superclass(es) of the I<current package> and not to the superclass(es) of the object. Also, the C<SUPER> pseudo-class can only currently be used as a modifier to a method name, but not in any of the other ways that class names are normally used,  eg: X<SUPER> 
+It is important to note that C<SUPER> refers to the superclass(es) of the I<current package> and not to the superclass(es) of the object. Also, the C<SUPER> pseudo-class can only currently be used as a modifier to a method name, but not in any of the other ways that class names are normally used, eg: X<SUPER> 
 
 
     something->SUPER::method(...);    # OK 
@@ -277,7 +277,7 @@ C<DOES> returns I<true> if its object claims to perform the role C<ROLE>.  By de
 
 =item can(METHOD) X<can> 
 
-C<can> checks to see if its object has a method called C<METHOD>,  if it does then a reference to the sub is returned, if it does not then C<undef> is returned. 
+C<can> checks to see if its object has a method called C<METHOD>, if it does then a reference to the sub is returned, if it does not then C<undef> is returned. 
 
 =item VERSION( [NEED] ) X<VERSION> 
 
@@ -292,13 +292,13 @@ C<VERSION> returns the version number of the class (package).  If the NEED argum
 
 =head2 Destructors X<destructor> X<DESTROY> 
 
-When the last reference to an object goes away, the object is automatically destroyed.  (This may even be after you exit, if you've stored references in global variables.)  If you want to capture control just before the object is freed, you may define a DESTROY method in your class.  It will automatically be called at the appropriate moment,  and you can do any extra cleanup you need to do.  Perl passes a reference to the object under destruction as the first (and only) argument.  Beware that the reference is a read-only value, and cannot be modified by manipulating C<$_[0]> within the destructor.  The object itself (i.e. the thingy the reference points to, namely C<${$_[0]}>, C<@{$_[0]}>,  C<%{$_[0]}> etc.) is not similarly constrained. 
+When the last reference to an object goes away, the object is automatically destroyed.  (This may even be after you exit, if you've stored references in global variables.)  If you want to capture control just before the object is freed, you may define a DESTROY method in your class.  It will automatically be called at the appropriate moment, and you can do any extra cleanup you need to do.  Perl passes a reference to the object under destruction as the first (and only) argument.  Beware that the reference is a read-only value, and cannot be modified by manipulating C<$_[0]> within the destructor.  The object itself (i.e. the thingy the reference points to, namely C<${$_[0]}>, C<@{$_[0]}>, C<%{$_[0]}> etc.) is not similarly constrained. 
 
 Since DESTROY methods can be called at unpredictable times, it is important that you localise any global variables that the method may update.  In particular, localise C<$@> if you use C<eval {}> and localise C<$?> if you use C<system> or backticks. 
 
-If you arrange to re-bless the reference before the destructor returns,  perl will again call the DESTROY method for the re-blessed object after the current one returns.  This can be used for clean delegation of object destruction, or for ensuring that destructors in the base classes of your choosing get called.  Explicitly calling DESTROY is also possible,  but is usually never needed. 
+If you arrange to re-bless the reference before the destructor returns, perl will again call the DESTROY method for the re-blessed object after the current one returns.  This can be used for clean delegation of object destruction, or for ensuring that destructors in the base classes of your choosing get called.  Explicitly calling DESTROY is also possible, but is usually never needed. 
 
-DESTROY is subject to AUTOLOAD lookup, just like any other method. Hence, if your class has an AUTOLOAD method, but does not need any DESTROY actions,  you probably want to provide a DESTROY method anyway, to prevent an expensive call to AUTOLOAD each time an object is freed. As this technique makes empty DESTROY methods common, the implementation is optimised so that a DESTROY method that is an empty or constant subroutine, and hence could have no side effects anyway, is not actually called. X<AUTOLOAD> X<DESTROY> 
+DESTROY is subject to AUTOLOAD lookup, just like any other method. Hence, if your class has an AUTOLOAD method, but does not need any DESTROY actions, you probably want to provide a DESTROY method anyway, to prevent an expensive call to AUTOLOAD each time an object is freed. As this technique makes empty DESTROY methods common, the implementation is optimised so that a DESTROY method that is an empty or constant subroutine, and hence could have no side effects anyway, is not actually called. X<AUTOLOAD> X<DESTROY> 
 
 Do not confuse the previous discussion with how objects I<CONTAINED> in the current one are destroyed.  Such objects will be freed and destroyed automatically when the current object is freed, provided no other references to them exist elsewhere. 
 

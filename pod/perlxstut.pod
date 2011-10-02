@@ -4,9 +4,9 @@ perlXStut - Tutorial for writing XSUBs
 
 =head1 DESCRIPTION 
 
-This tutorial will educate the reader on the steps involved in creating a Perl extension.  The reader is assumed to have access to L<perlguts>,  L<perlapi> and L<perlxs>. 
+This tutorial will educate the reader on the steps involved in creating a Perl extension.  The reader is assumed to have access to L<perlguts>, L<perlapi> and L<perlxs>. 
 
-This tutorial starts with very simple examples and becomes more complex,  with each new example adding new features.  Certain concepts may not be completely explained until later in the tutorial in order to slowly ease the reader into building extensions. 
+This tutorial starts with very simple examples and becomes more complex, with each new example adding new features.  Certain concepts may not be completely explained until later in the tutorial in order to slowly ease the reader into building extensions. 
 
 This tutorial was written from a Unix point of view.  Where I know them to be otherwise different for other platforms (e.g. Win32), I will list them.  If you find something that was missed, please let me know. 
 
@@ -18,9 +18,9 @@ This tutorial assumes that the make program that Perl is configured to use is ca
 
 =head2 Version caveat 
 
-When writing a Perl extension for general consumption, one should expect that the extension will be used with versions of Perl different from the version available on your machine.  Since you are reading this document,  the version of Perl on your machine is probably 5.005 or later, but the users of your extension may have more ancient versions. 
+When writing a Perl extension for general consumption, one should expect that the extension will be used with versions of Perl different from the version available on your machine.  Since you are reading this document, the version of Perl on your machine is probably 5.005 or later, but the users of your extension may have more ancient versions. 
 
-To understand what kinds of incompatibilities one may expect, and in the rare case that the version of Perl on your machine is older than this document,  see the section on "Troubleshooting these Examples" for more information. 
+To understand what kinds of incompatibilities one may expect, and in the rare case that the version of Perl on your machine is older than this document, see the section on "Troubleshooting these Examples" for more information. 
 
 If your extension uses some features of Perl which are not available on older releases of Perl, your users would appreciate an early meaningful warning. You would probably put this information into the F<README> file, but nowadays installation of extensions may be performed automatically, guided by F<CPAN.pm> module or other tools. 
 
@@ -39,9 +39,9 @@ In MakeMaker-based installations, F<Makefile.PL> provides the earliest opportuni
 
 It is commonly thought that if a system does not have the capability to dynamically load a library, you cannot build XSUBs.  This is incorrect. You I<can> build them, but you must link the XSUBs subroutines with the rest of Perl, creating a new executable.  This situation is similar to Perl 4. 
 
-This tutorial can still be used on such a system.  The XSUB build mechanism will check the system and build a dynamically-loadable library if possible,  or else a static library and then, optionally, a new statically-linked executable with that static library linked in. 
+This tutorial can still be used on such a system.  The XSUB build mechanism will check the system and build a dynamically-loadable library if possible, or else a static library and then, optionally, a new statically-linked executable with that static library linked in. 
 
-Should you wish to build a statically-linked executable on a system which can dynamically load libraries, you may, in all the following examples,  where the command "C<make>" with no arguments is executed, run the command "C<make perl>" instead. 
+Should you wish to build a statically-linked executable on a system which can dynamically load libraries, you may, in all the following examples, where the command "C<make>" with no arguments is executed, run the command "C<make perl>" instead. 
 
 If you have generated such a statically-linked executable by choice, then instead of saying "C<make test>", you should say "C<make test_static>". On systems that cannot build dynamically-loadable libraries at all, simply saying "C<make test>" is sufficient. 
 
@@ -53,7 +53,7 @@ Now let's go on with the show!
 
 Our first extension will be very simple.  When we call the routine in the extension, it will print out a well-known message and return. 
 
-Run "C<h2xs -A -n Mytest>".  This creates a directory named Mytest,  possibly under ext/ if that directory exists in the current working directory.  Several files will be created under the Mytest dir, including MANIFEST, Makefile.PL, lib/Mytest.pm, Mytest.xs, t/Mytest.t, and Changes. 
+Run "C<h2xs -A -n Mytest>".  This creates a directory named Mytest, possibly under ext/ if that directory exists in the current working directory.  Several files will be created under the Mytest dir, including MANIFEST, Makefile.PL, lib/Mytest.pm, Mytest.xs, t/Mytest.t, and Changes. 
 
 The MANIFEST file contains the names of all the files just created in the Mytest directory. 
 
@@ -64,11 +64,11 @@ The file Makefile.PL should look something like this:
     # See lib/ExtUtils/MakeMaker.pm for details of how to influence 
     # the contents of the Makefile that is written. 
     WriteMakefile( 
-    NAME         => 'Mytest',  
+    NAME         => 'Mytest', 
     VERSION_FROM => 'Mytest.pm', # finds $VERSION 
-    LIBS         => [''], # e.g., '-lm' 
-    DEFINE       => '', # e.g., '-DHAVE_SOMETHING' 
-    INC          => '', # e.g., '-I/usr/include/other' 
+    LIBS         => [''],   # e.g., '-lm' 
+    DEFINE       => '',     # e.g., '-DHAVE_SOMETHING' 
+    INC          => '',     # e.g., '-I/usr/include/other' 
     ); 
 
 The file Mytest.pm should start with something like this: 
@@ -140,7 +140,7 @@ Let's edit the .xs file by adding this to the end of the file:
 
 It is okay for the lines starting at the "CODE:" line to not be indented. However, for readability purposes, it is suggested that you indent CODE: one level and the lines following one more level. 
 
-Now we'll run "C<perl Makefile.PL>".  This will create a real Makefile,  which make needs.  Its output looks something like: 
+Now we'll run "C<perl Makefile.PL>".  This will create a real Makefile, which make needs.  Its output looks something like: 
 
 
     % perl Makefile.PL 
@@ -239,7 +239,7 @@ We will be calling the test script through the command "C<make test>".  You shou
     PERL_DL_NONLAZY=1 /usr/bin/perl "-MExtUtils::Command::MM" "-e" "test_harness(0, 'blib/lib', 'blib/arch')" t/*.t 
     t/Mytest....ok 
     All tests successful. 
-    Files=1, Tests=4, 0 wallclock secs ( 0.03 cusr +  0.00 csys =  0.03 CPU) 
+    Files=1, Tests=4,  0 wallclock secs ( 0.03 cusr +  0.00 csys =  0.03 CPU) 
     % 
 
 =head2 What has gone on? 
@@ -252,9 +252,9 @@ The .pm and .xs files contain the meat of the extension.  The .xs file holds the
 
 Generating the Makefile and running C<make> created a directory called blib (which stands for "build library") in the current working directory.  This directory will contain the shared library that we will build.  Once we have tested it, we can install it into its final location. 
 
-Invoking the test script via "C<make test>" did something very important. It invoked perl with all those C<-I> arguments so that it could find the various files that are part of the extension.  It is I<very> important that while you are still testing extensions that you use "C<make test>".  If you try to run the test script all by itself, you will get a fatal error. Another reason it is important to use "C<make test>" to run your test script is that if you are testing an upgrade to an already-existing version,  using "C<make test>" ensures that you will test your new extension, not the already-existing version. 
+Invoking the test script via "C<make test>" did something very important. It invoked perl with all those C<-I> arguments so that it could find the various files that are part of the extension.  It is I<very> important that while you are still testing extensions that you use "C<make test>".  If you try to run the test script all by itself, you will get a fatal error. Another reason it is important to use "C<make test>" to run your test script is that if you are testing an upgrade to an already-existing version, using "C<make test>" ensures that you will test your new extension, not the already-existing version. 
 
-When Perl sees a C<use extension;>, it searches for a file with the same name as the C<use>'d extension that has a .pm suffix.  If that file cannot be found,  Perl dies with a fatal error.  The default search path is contained in the C<@INC> array. 
+When Perl sees a C<use extension;>, it searches for a file with the same name as the C<use>'d extension that has a .pm suffix.  If that file cannot be found, Perl dies with a fatal error.  The default search path is contained in the C<@INC> array. 
 
 In our case, Mytest.pm tells perl that it will need the Exporter and Dynamic Loader extensions.  It then sets the C<@ISA> and C<@EXPORT> arrays and the C<$VERSION> scalar; finally it tells perl to bootstrap the module.  Perl will call its dynamic loader routine (if there is one) and load the shared library. 
 
@@ -272,7 +272,7 @@ The C<$VERSION> variable is used to ensure that the .pm file and the shared libr
 
 The importance of writing good test scripts cannot be over-emphasized.  You should closely follow the "ok/not ok" style that Perl itself uses, so that it is very easy and unambiguous to determine the outcome of each test case. When you find and fix a bug, make sure you add a test case for it. 
 
-By running "C<make test>", you ensure that your Mytest.t script runs and uses the correct version of your extension.  If you have many test cases,  save your test files in the "t" directory and use the suffix ".t". When you run "C<make test>", all of these test files will be executed. 
+By running "C<make test>", you ensure that your Mytest.t script runs and uses the correct version of your extension.  If you have many test cases, save your test files in the "t" directory and use the suffix ".t". When you run "C<make test>", all of these test files will be executed. 
 
 =head2 EXAMPLE 3 
 
@@ -298,16 +298,16 @@ Add the following to the end of Mytest.xs:
 Edit the Makefile.PL file so that the corresponding line looks like this: 
 
 
-    'LIBS'      => ['-lm'], # e.g., '-lm' 
+    'LIBS'      => ['-lm'],   # e.g., '-lm' 
 
 Generate the Makefile and run make.  Change the test number in Mytest.t to "9" and add the following tests: 
 
 
     $i = -1.5; &Mytest::round($i); is( $i, -2.0 ); 
     $i = -1.1; &Mytest::round($i); is( $i, -1.0 ); 
-    $i = 0.0; &Mytest::round($i);  is( $i, 0.0 ); 
-    $i = 0.5; &Mytest::round($i);  is( $i, 1.0 ); 
-    $i = 1.2; &Mytest::round($i);  is( $i, 1.0 ); 
+    $i = 0.0; &Mytest::round($i);  is( $i,  0.0 ); 
+    $i = 0.5; &Mytest::round($i);  is( $i,  1.0 ); 
+    $i = 1.2; &Mytest::round($i);  is( $i,  1.0 ); 
 
 Running "C<make test>" should now print out that all nine tests are okay. 
 
@@ -344,7 +344,7 @@ The B<xsubpp> program takes the XS code in the .xs file and translates it into C
 
 =head2 The TYPEMAP file 
 
-The B<xsubpp> program uses rules to convert from Perl's data types (scalar,  array, etc.) to C's data types (int, char, etc.).  These rules are stored in the typemap file ($PERLLIB/ExtUtils/typemap).  This file is split into three parts. 
+The B<xsubpp> program uses rules to convert from Perl's data types (scalar, array, etc.) to C's data types (int, char, etc.).  These rules are stored in the typemap file ($PERLLIB/ExtUtils/typemap).  This file is split into three parts. 
 
 The first section maps various C data types to a name, which corresponds somewhat with the various Perl types.  The second section contains C code which B<xsubpp> uses to handle input parameters.  The third section contains C code which B<xsubpp> uses to handle output parameters. 
 
@@ -372,7 +372,7 @@ Let's take a look at a portion of the .c file created for our extension. The fil
         XSRETURN_EMPTY; 
     } 
 
-Notice the two lines commented with "XXXXX".  If you check the first section of the typemap file, you'll see that doubles are of type T_DOUBLE.  In the INPUT section, an argument that is T_DOUBLE is assigned to the variable arg by calling the routine SvNV on something, then casting it to double,  then assigned to the variable arg.  Similarly, in the OUTPUT section,  once arg has its final value, it is passed to the sv_setnv function to be passed back to the calling subroutine.  These two functions are explained in L<perlguts>; we'll talk more later about what that "ST(0)" means in the section on the argument stack. 
+Notice the two lines commented with "XXXXX".  If you check the first section of the typemap file, you'll see that doubles are of type T_DOUBLE.  In the INPUT section, an argument that is T_DOUBLE is assigned to the variable arg by calling the routine SvNV on something, then casting it to double, then assigned to the variable arg.  Similarly, in the OUTPUT section, once arg has its final value, it is passed to the sv_setnv function to be passed back to the calling subroutine.  These two functions are explained in L<perlguts>; we'll talk more later about what that "ST(0)" means in the section on the argument stack. 
 
 =head2 Warning about Output Arguments 
 
@@ -382,7 +382,7 @@ In general, it's not a good idea to write extensions that modify their input par
 
 In this example, we'll now begin to write XSUBs that will interact with pre-defined C libraries.  To begin with, we will build a small library of our own, then let h2xs write our .pm and .xs files for us. 
 
-Create a new directory called Mytest2 at the same level as the directory Mytest.  In the Mytest2 directory, create another directory called mylib,  and cd into that directory. 
+Create a new directory called Mytest2 at the same level as the directory Mytest.  In the Mytest2 directory, create another directory called mylib, and cd into that directory. 
 
 Here we'll create some files that will generate a test library.  These will include a C source file and a header file.  We'll also create a Makefile.PL in this directory.  Then we'll make sure that running make at the Mytest2 level will automatically run this Makefile.PL file and the resulting Makefile. 
 
@@ -413,9 +413,9 @@ And finally create a file Makefile.PL that looks like this:
     use ExtUtils::MakeMaker; 
     $Verbose = 1; 
     WriteMakefile( 
-        NAME   => 'Mytest2::mylib',  
-        SKIP   => [qw(all static static_lib dynamic dynamic_lib)],  
-        clean  => {'FILES' => 'libmylib$(LIB_EXT)'},  
+        NAME   => 'Mytest2::mylib', 
+        SKIP   => [qw(all static static_lib dynamic dynamic_lib)], 
+        clean  => {'FILES' => 'libmylib$(LIB_EXT)'}, 
     ); 
 
 
@@ -453,12 +453,12 @@ The normal Makefile.PL that h2xs generates doesn't know about the mylib director
 
 
     WriteMakefile( 
-        'NAME'      => 'Mytest2',  
+        'NAME'      => 'Mytest2', 
         'VERSION_FROM' => 'Mytest2.pm', # finds $VERSION 
-        'LIBS'      => [''], # e.g., '-lm' 
-        'DEFINE'    => '', # e.g., '-DHAVE_SOMETHING' 
-        'INC'       => '', # e.g., '-I/usr/include/other' 
-        'MYEXTLIB' => 'mylib/libmylib$(LIB_EXT)',  
+        'LIBS'      => [''],   # e.g., '-lm' 
+        'DEFINE'    => '',     # e.g., '-DHAVE_SOMETHING' 
+        'INC'       => '',     # e.g., '-I/usr/include/other' 
+        'MYEXTLIB' => 'mylib/libmylib$(LIB_EXT)', 
     ); 
 
 and then at the end add a subroutine (which will override the pre-existing subroutine).  Remember to use a tab character to indent the line beginning with "cd"! 
@@ -487,7 +487,7 @@ And also add the following function definition to the end of the .xs file:
 
 
     double 
-    foo(a, b, c) 
+    foo(a,b,c) 
         int             a 
         long            b 
         const char *    c 
@@ -501,7 +501,7 @@ Now we also need to create a typemap file because the default Perl doesn't curre
 
 Now run perl on the top-level Makefile.PL.  Notice that it also created a Makefile in the mylib directory.  Run make and watch that it does cd into the mylib directory and run make in there as well. 
 
-Now edit the Mytest2.t script and change the number of tests to "4",  and add the following lines to the end of the script: 
+Now edit the Mytest2.t script and change the number of tests to "4", and add the following lines to the end of the script: 
 
 
     is( &Mytest2::foo(1, 2, "Hello, world!"), 7 ); 
@@ -528,7 +528,7 @@ There's now some new C code that's been added to the .xs file.  The purpose of t
 
 =item * 
 
-The .pm file originally exported the name C<TESTVAL> in the C<@EXPORT> array. This could lead to name clashes.  A good rule of thumb is that if the #define is only going to be used by the C routines themselves, and not by the user,  they should be removed from the C<@EXPORT> array.  Alternately, if you don't mind using the "fully qualified name" of a variable, you could move most or all of the items from the C<@EXPORT> array into the C<@EXPORT_OK> array. 
+The .pm file originally exported the name C<TESTVAL> in the C<@EXPORT> array. This could lead to name clashes.  A good rule of thumb is that if the #define is only going to be used by the C routines themselves, and not by the user, they should be removed from the C<@EXPORT> array.  Alternately, if you don't mind using the "fully qualified name" of a variable, you could move most or all of the items from the C<@EXPORT> array into the C<@EXPORT_OK> array. 
 
 =item * 
 
@@ -553,7 +553,7 @@ Anything after this line is the description of XSUB functions. These description
 
 Pay a special attention to the function C<constant>.  This name appears twice in the generated .xs file: once in the first part, as a static C function, then another time in the second part, when an XSUB interface to this static C function is defined. 
 
-This is quite typical for .xs files: usually the .xs file provides an interface to an existing C function.  Then this C function is defined somewhere (either in an external library, or in the first part of .xs file),  and a Perl interface to this function (i.e. "Perl glue") is described in the second part of .xs file.  The situation in L<"EXAMPLE 1">, L<"EXAMPLE 2">,  and L<"EXAMPLE 3">, when all the work is done inside the "Perl glue", is somewhat of an exception rather than the rule. 
+This is quite typical for .xs files: usually the .xs file provides an interface to an existing C function.  Then this C function is defined somewhere (either in an external library, or in the first part of .xs file), and a Perl interface to this function (i.e. "Perl glue") is described in the second part of .xs file.  The situation in L<"EXAMPLE 1">, L<"EXAMPLE 2">, and L<"EXAMPLE 3">, when all the work is done inside the "Perl glue", is somewhat of an exception rather than the rule. 
 
 =head2 Getting the fat out of XSUBs 
 
@@ -561,23 +561,23 @@ In L<"EXAMPLE 4"> the second part of .xs file contained the following descriptio
 
 
     double 
-    foo(a, b, c) 
+    foo(a,b,c) 
         int             a 
         long            b 
         const char *    c 
         OUTPUT: 
         RETVAL 
 
-Note that in contrast with L<"EXAMPLE 1">, L<"EXAMPLE 2"> and L<"EXAMPLE 3">,  this description does not contain the actual I<code> for what is done during a call to Perl function foo().  To understand what is going on here, one can add a CODE section to this XSUB: 
+Note that in contrast with L<"EXAMPLE 1">, L<"EXAMPLE 2"> and L<"EXAMPLE 3">, this description does not contain the actual I<code> for what is done during a call to Perl function foo().  To understand what is going on here, one can add a CODE section to this XSUB: 
 
 
     double 
-    foo(a, b, c) 
+    foo(a,b,c) 
         int             a 
         long            b 
         const char *    c 
         CODE: 
-        RETVAL = foo(a, b, c); 
+        RETVAL = foo(a,b,c); 
         OUTPUT: 
         RETVAL 
 
@@ -585,7 +585,7 @@ However, these two XSUBs provide almost identical generated C code: B<xsubpp> co
 
 
     double 
-    foo(a, b, c) 
+    foo(a,b,c) 
         int             a 
         long            b 
         const char *    c 
@@ -622,15 +622,15 @@ After having this in the first part of .xs file, the "Perl glue" part becomes as
     is_even(input) 
         int    input 
 
-This technique of separation of the glue part from the workhorse part has obvious tradeoffs: if you want to change a Perl interface, you need to change two places in your code.  However, it removes a lot of clutter,  and makes the workhorse part independent from idiosyncrasies of Perl calling convention.  (In fact, there is nothing Perl-specific in the above description,  a different version of B<xsubpp> might have translated this to TCL glue or Python glue as well.) 
+This technique of separation of the glue part from the workhorse part has obvious tradeoffs: if you want to change a Perl interface, you need to change two places in your code.  However, it removes a lot of clutter, and makes the workhorse part independent from idiosyncrasies of Perl calling convention.  (In fact, there is nothing Perl-specific in the above description, a different version of B<xsubpp> might have translated this to TCL glue or Python glue as well.) 
 
 =head2 More about XSUB arguments 
 
 With the completion of Example 4, we now have an easy way to simulate some real-life libraries whose interfaces may not be the cleanest in the world. We shall now continue with a discussion of the arguments passed to the B<xsubpp> compiler. 
 
-When you specify arguments to routines in the .xs file, you are really passing three pieces of information for each argument listed.  The first piece is the order of that argument relative to the others (first, second,  etc).  The second is the type of argument, and consists of the type declaration of the argument (e.g., int, char*, etc).  The third piece is the calling convention for the argument in the call to the library function. 
+When you specify arguments to routines in the .xs file, you are really passing three pieces of information for each argument listed.  The first piece is the order of that argument relative to the others (first, second, etc).  The second is the type of argument, and consists of the type declaration of the argument (e.g., int, char*, etc).  The third piece is the calling convention for the argument in the call to the library function. 
 
-While Perl passes arguments to functions by reference,  C passes arguments by value; to implement a C function which modifies data of one of the "arguments", the actual argument of this C function would be a pointer to the data.  Thus two C functions with declarations 
+While Perl passes arguments to functions by reference, C passes arguments by value; to implement a C function which modifies data of one of the "arguments", the actual argument of this C function would be a pointer to the data.  Thus two C functions with declarations 
 
 
     int string_length(char *s); 
@@ -654,7 +654,7 @@ For example, consider:
 
 
     int 
-    foo(a, b) 
+    foo(a,b) 
         char    &a 
         char *    b 
 
@@ -701,15 +701,15 @@ Sometimes you might want to provide some extra methods or subroutines to assist 
 
 =head2 Documenting your Extension 
 
-There is absolutely no excuse for not documenting your extension. Documentation belongs in the .pm file.  This file will be fed to pod2man,  and the embedded documentation will be converted to the manpage format,  then placed in the blib directory.  It will be copied to Perl's manpage directory when the extension is installed. 
+There is absolutely no excuse for not documenting your extension. Documentation belongs in the .pm file.  This file will be fed to pod2man, and the embedded documentation will be converted to the manpage format, then placed in the blib directory.  It will be copied to Perl's manpage directory when the extension is installed. 
 
-You may intersperse documentation and Perl code within the .pm file. In fact, if you want to use method autoloading, you must do this,  as the comment inside the .pm file explains. 
+You may intersperse documentation and Perl code within the .pm file. In fact, if you want to use method autoloading, you must do this, as the comment inside the .pm file explains. 
 
 See L<perlpod> for more information about the pod format. 
 
 =head2 Installing your Extension 
 
-Once your extension is complete and passes all its tests, installing it is quite simple: you simply run "make install".  You will either need to have write permission into the directories where Perl is installed,  or ask your system administrator to run the make for you. 
+Once your extension is complete and passes all its tests, installing it is quite simple: you simply run "make install".  You will either need to have write permission into the directories where Perl is installed, or ask your system administrator to run the make for you. 
 
 Alternately, you can specify the exact directory to place the extension's files by placing a "PREFIX=/destination/directory" after the make install. (or in between the make and install if you have a brain-dead version of make). This can be very useful if you are building an extension that will eventually be distributed to multiple systems.  You can then just archive the files in the destination directory and distribute them to your destination systems. 
 
@@ -765,17 +765,17 @@ This example added quite a few new concepts.  We'll take them one at a time.
 
 =item * 
 
-The INIT: directive contains code that will be placed immediately after the argument stack is decoded.  C does not allow variable declarations at arbitrary locations inside a function,  so this is usually the best way to declare local variables needed by the XSUB. (Alternatively, one could put the whole C<PPCODE:> section into braces, and put these declarations on top.) 
+The INIT: directive contains code that will be placed immediately after the argument stack is decoded.  C does not allow variable declarations at arbitrary locations inside a function, so this is usually the best way to declare local variables needed by the XSUB. (Alternatively, one could put the whole C<PPCODE:> section into braces, and put these declarations on top.) 
 
 =item * 
 
-This routine also returns a different number of arguments depending on the success or failure of the call to statfs.  If there is an error, the error number is returned as a single-element array.  If the call is successful,  then a 7-element array is returned.  Since only one argument is passed into this function, we need room on the stack to hold the 7 values which may be returned. 
+This routine also returns a different number of arguments depending on the success or failure of the call to statfs.  If there is an error, the error number is returned as a single-element array.  If the call is successful, then a 7-element array is returned.  Since only one argument is passed into this function, we need room on the stack to hold the 7 values which may be returned. 
 
 We do this by using the PPCODE: directive, rather than the CODE: directive. This tells B<xsubpp> that we will be managing the return values that will be put on the argument stack by ourselves. 
 
 =item * 
 
-When we want to place values to be returned to the caller onto the stack,  we use the series of macros that begin with "XPUSH".  There are five different versions, for placing integers, unsigned integers, doubles,  strings, and Perl scalars on the stack.  In our example, we placed a Perl scalar onto the stack.  (In fact this is the only macro which can be used to return multiple values.) 
+When we want to place values to be returned to the caller onto the stack, we use the series of macros that begin with "XPUSH".  There are five different versions, for placing integers, unsigned integers, doubles, strings, and Perl scalars on the stack.  In our example, we placed a Perl scalar onto the stack.  (In fact this is the only macro which can be used to return multiple values.) 
 
 The XPUSH* macros will automatically extend the return stack to prevent it from being overrun.  You push values onto the stack in the order you want them seen by the calling program. 
 
@@ -800,7 +800,7 @@ Similarly, in the failure branch we could use C<PUSHs> I<without> extending the 
 
 In this example, we will accept a reference to an array as an input parameter, and return a reference to an array of hashes.  This will demonstrate manipulation of complex Perl data types from an XSUB. 
 
-This extension is somewhat contrived.  It is based on the code in the previous example.  It calls the statfs function multiple times,  accepting a reference to an array of filenames as input, and returning a reference to an array of hashes containing the data for each of the filesystems. 
+This extension is somewhat contrived.  It is based on the code in the previous example.  It calls the statfs function multiple times, accepting a reference to an array of filenames as input, and returning a reference to an array of hashes containing the data for each of the filesystems. 
 
 Return to the Mytest directory and add the following code to the end of Mytest.xs: 
 
@@ -840,12 +840,12 @@ Return to the Mytest directory and add the following code to the end of Mytest.x
 
 
         hv_store(rh, "f_bavail", 8, newSVnv(buf.f_bavail), 0); 
-        hv_store(rh, "f_bfree", 7, newSVnv(buf.f_bfree), 0); 
+        hv_store(rh, "f_bfree",  7, newSVnv(buf.f_bfree),  0); 
         hv_store(rh, "f_blocks", 8, newSVnv(buf.f_blocks), 0); 
-        hv_store(rh, "f_bsize", 7, newSVnv(buf.f_bsize), 0); 
-        hv_store(rh, "f_ffree", 7, newSVnv(buf.f_ffree), 0); 
-        hv_store(rh, "f_files", 7, newSVnv(buf.f_files), 0); 
-        hv_store(rh, "f_type", 6, newSVnv(buf.f_type), 0); 
+        hv_store(rh, "f_bsize",  7, newSVnv(buf.f_bsize),  0); 
+        hv_store(rh, "f_ffree",  7, newSVnv(buf.f_ffree),  0); 
+        hv_store(rh, "f_files",  7, newSVnv(buf.f_files),  0); 
+        hv_store(rh, "f_type",   6, newSVnv(buf.f_type),   0); 
 
 
         av_push(results, newRV((SV *)rh)); 
@@ -873,7 +873,7 @@ This function does not use a typemap.  Instead, we declare it as accepting one S
 
 =item * 
 
-When dealing with references, it is important to handle them with caution. The C<INIT:> block first checks that C<SvROK> returns true, which indicates that paths is a valid reference.  It then verifies that the object referenced by paths is an array, using C<SvRV> to dereference paths, and C<SvTYPE> to discover its type.  As an added test,  it checks that the array referenced by paths is non-empty, using the C<av_len> function (which returns -1 if the array is empty).  The XSRETURN_UNDEF macro is used to abort the XSUB and return the undefined value whenever all three of these conditions are not met. 
+When dealing with references, it is important to handle them with caution. The C<INIT:> block first checks that C<SvROK> returns true, which indicates that paths is a valid reference.  It then verifies that the object referenced by paths is an array, using C<SvRV> to dereference paths, and C<SvTYPE> to discover its type.  As an added test, it checks that the array referenced by paths is non-empty, using the C<av_len> function (which returns -1 if the array is empty).  The XSRETURN_UNDEF macro is used to abort the XSUB and return the undefined value whenever all three of these conditions are not met. 
 
 =item * 
 
@@ -935,7 +935,7 @@ B<But> you loose all the fine stuff done by the perlio layers. This calls the st
 
 The standard typemap offers three variants of PerlIO *: C<InputStream> (T_IN), C<InOutStream> (T_INOUT) and C<OutputStream> (T_OUT). A bare C<PerlIO *> is considered a T_INOUT. If it matters in your code (see below for why it might) #define or typedef one of the specific names and use that as the argument or result type in your XS file. 
 
-The standard typemap does not contain PerlIO * before perl 5.7,  but it has the three stream variants. Using a PerlIO * directly is not backwards compatible unless you provide your own typemap. 
+The standard typemap does not contain PerlIO * before perl 5.7, but it has the three stream variants. Using a PerlIO * directly is not backwards compatible unless you provide your own typemap. 
 
 For streams coming I<from> perl the main difference is that C<OutputStream> will get the output PerlIO * - which may make a difference on a socket. Like in our example... 
 
@@ -986,7 +986,7 @@ Wanting to explore this thoroughly, we want to use the stdio C<fputs()> on a Per
 
 Note: C<PerlIO_findFILE()> will search the layers for a stdio layer. If it can't find one, it will call C<PerlIO_exportFILE()> to generate a new stdio C<FILE>. Please only call C<PerlIO_exportFILE()> if you want a I<new> C<FILE>. It will generate one on each call and push a new stdio layer. So don't call it repeatedly on the same file. C<PerlIO_findFILE()> will retrieve the stdio layer once it has been generated by C<PerlIO_exportFILE()>. 
 
-This applies to the perlio system only. For versions before 5.7,  C<PerlIO_exportFILE()> is equivalent to C<PerlIO_findFILE()>. 
+This applies to the perlio system only. For versions before 5.7, C<PerlIO_exportFILE()> is equivalent to C<PerlIO_findFILE()>. 
 
 =head2 Troubleshooting these Examples 
 
@@ -1023,13 +1023,13 @@ This document assumes that the executable named "perl" is Perl version 5. Some s
 
 =head1 See also 
 
-For more information, consult L<perlguts>, L<perlapi>, L<perlxs>, L<perlmod>,  and L<perlpod>. 
+For more information, consult L<perlguts>, L<perlapi>, L<perlxs>, L<perlmod>, and L<perlpod>. 
 
 =head1 Author 
 
 Jeff Okamoto <F<okamoto@corp.hp.com>> 
 
-Reviewed and assisted by Dean Roehrich, Ilya Zakharevich, Andreas Koenig,  and Tim Bunce. 
+Reviewed and assisted by Dean Roehrich, Ilya Zakharevich, Andreas Koenig, and Tim Bunce. 
 
 PerlIO material contributed by Lupe Christoph, with some clarification by Nick Ing-Simmons. 
 

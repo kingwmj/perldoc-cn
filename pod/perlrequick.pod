@@ -46,7 +46,7 @@ Finally, the C<//> default delimiters for a match can be changed to arbitrary de
 
     "Hello World" =~ m!World!;   # matches, delimited by '!' 
     "Hello World" =~ m{World};   # matches, note the matching '{}' 
-    "/usr/bin/perl" =~ m"/perl"; # matches after '/usr/bin',  
+    "/usr/bin/perl" =~ m"/perl"; # matches after '/usr/bin', 
                                  # '/' becomes an ordinary char 
 
 Regexes must match a part of the string I<exactly> in order for the statement to be true: 
@@ -62,7 +62,7 @@ Perl will always match at the earliest possible point in the string:
     "Hello World" =~ /o/;       # matches 'o' in 'Hello' 
     "That hat is red" =~ /hat/; # matches 'hat' in 'That' 
 
-Not all characters can be used 'as is' in a match.  Some characters,  called B<metacharacters>, are reserved for use in regex notation. The metacharacters are 
+Not all characters can be used 'as is' in a match.  Some characters, called B<metacharacters>, are reserved for use in regex notation. The metacharacters are 
 
 
     {}[]()^$.|*+?\ 
@@ -75,9 +75,9 @@ A metacharacter can be matched by putting a backslash before it:
     'C:\WIN32' =~ /C:\\WIN/;                       # matches 
     "/usr/bin/perl" =~ /\/usr\/bin\/perl/;  # matches 
 
-In the last regex, the forward slash C<'/'> is also backslashed,  because it is used to delimit the regex. 
+In the last regex, the forward slash C<'/'> is also backslashed, because it is used to delimit the regex. 
 
-Non-printable ASCII characters are represented by B<escape sequences>. Common examples are C<\t> for a tab, C<\n> for a newline, and C<\r> for a carriage return.  Arbitrary bytes are represented by octal escape sequences, e.g., C<\033>, or hexadecimal escape sequences,  e.g., C<\x1B>: 
+Non-printable ASCII characters are represented by B<escape sequences>. Common examples are C<\t> for a tab, C<\n> for a newline, and C<\r> for a carriage return.  Arbitrary bytes are represented by octal escape sequences, e.g., C<\033>, or hexadecimal escape sequences, e.g., C<\x1B>: 
 
 
     "1000\t2000" =~ m(0\t2)      # matches 
@@ -217,13 +217,13 @@ In the last example, the end of the string is considered a word boundary.
 
 =head2 Matching this or that 
 
-We can match different character strings with the B<alternation> metacharacter C<'|'>.  To match C<dog> or C<cat>, we form the regex C<dog|cat>.  As before, Perl will try to match the regex at the earliest possible point in the string.  At each character position,  Perl will first try to match the first alternative, C<dog>.  If C<dog> doesn't match, Perl will then try the next alternative, C<cat>. If C<cat> doesn't match either, then the match fails and Perl moves to the next position in the string.  Some examples: 
+We can match different character strings with the B<alternation> metacharacter C<'|'>.  To match C<dog> or C<cat>, we form the regex C<dog|cat>.  As before, Perl will try to match the regex at the earliest possible point in the string.  At each character position, Perl will first try to match the first alternative, C<dog>.  If C<dog> doesn't match, Perl will then try the next alternative, C<cat>. If C<cat> doesn't match either, then the match fails and Perl moves to the next position in the string.  Some examples: 
 
 
     "cats and dogs" =~ /cat|dog|bird/;  # matches "cat" 
     "cats and dogs" =~ /dog|cat|bird/;  # matches "cat" 
 
-Even though C<dog> is the first alternative in the second regex,  C<cat> is able to match earlier in the string. 
+Even though C<dog> is the first alternative in the second regex, C<cat> is able to match earlier in the string. 
 
 
     "cats"          =~ /c|ca|cat|cats/; # matches "c" 
@@ -245,7 +245,7 @@ The B<grouping> metacharacters C<()> allow a part of a regex to be treated as a 
                         # 'house'.  Note groups can be nested. 
 
 
-    "20" =~ /(19|20|)\d\d/;  # matches the null alternative '()\d\d',  
+    "20" =~ /(19|20|)\d\d/;  # matches the null alternative '()\d\d', 
                              # because '20\d\d' can't match 
 
 =head2 Extracting matches 
@@ -259,12 +259,12 @@ The grouping metacharacters C<()> also allow the extraction of the parts of a st
     $minutes = $2; 
     $seconds = $3; 
 
-In list context, a match C</regex/> with groupings will return the list of matched values C<($1, $2, ...)>.  So we could rewrite it as 
+In list context, a match C</regex/> with groupings will return the list of matched values C<($1,$2,...)>.  So we could rewrite it as 
 
 
     ($hours, $minutes, $second) = ($time =~ /(\d\d):(\d\d):(\d\d)/); 
 
-If the groupings in a regex are nested, C<$1> gets the group with the leftmost opening parenthesis, C<$2> the next opening parenthesis,  etc.  For example, here is a complex regex and the matching variables indicated below it: 
+If the groupings in a regex are nested, C<$1> gets the group with the leftmost opening parenthesis, C<$2> the next opening parenthesis, etc.  For example, here is a complex regex and the matching variables indicated below it: 
 
 
     /(ab(cd|ef)((gi)|j))/; 
@@ -275,7 +275,7 @@ Associated with the matching variables C<$1>, C<$2>, ... are the B<backreference
 
     /(\w\w\w)\s\g1/; # find sequences like 'the the' in string 
 
-C<$1>, C<$2>, ... should only be used outside of a regex, and C<\g1>,  C<\g2>, ... only inside a regex. 
+C<$1>, C<$2>, ... should only be used outside of a regex, and C<\g1>, C<\g2>, ... only inside a regex. 
 
 =head2 Matching repetitions 
 
@@ -297,11 +297,11 @@ C<a+> = match 'a' 1 or more times, i.e., at least once
 
 =item * 
 
-C<a{n, m}> = match at least C<n> times, but not more than C<m> times. 
+C<a{n,m}> = match at least C<n> times, but not more than C<m> times. 
 
 =item * 
 
-C<a{n, }> = match at least C<n> or more times 
+C<a{n,}> = match at least C<n> or more times 
 
 =item * 
 
@@ -315,15 +315,15 @@ Here are some examples:
     /[a-z]+\s+\d*/;  # match a lowercase word, at least some space, and 
                      # any number of digits 
     /(\w+)\s+\g1/;    # match doubled words of arbitrary length 
-    $year =~ /^\d{2, 4}$/;  # make sure year is at least 2 but not more 
+    $year =~ /^\d{2,4}$/;  # make sure year is at least 2 but not more 
                            # than 4 digits 
     $year =~ /^\d{4}$|^\d{2}$/;    # better match; throw out 3 digit dates 
 
-These quantifiers will try to match as much of the string as possible,  while still allowing the regex to match.  So we have 
+These quantifiers will try to match as much of the string as possible, while still allowing the regex to match.  So we have 
 
 
     $x = 'the cat in the hat'; 
-    $x =~ /^(.*)(at)(.*)$/; # matches,  
+    $x =~ /^(.*)(at)(.*)$/; # matches, 
                             # $1 = 'the cat in the h' 
                             # $2 = 'at' 
                             # $3 = ''   (0 matches) 
@@ -332,7 +332,7 @@ The first quantifier C<.*> grabs as much of the string as possible while still h
 
 =head2 More matching 
 
-There are a few more things you might want to know about matching operators. The global modifier C<//g> allows the matching operator to match within a string as many times as possible.  In scalar context,  successive matches against a string will have C<//g> jump from match to match, keeping track of position in the string as it goes along. You can get or set the position with the C<pos()> function. For example,  
+There are a few more things you might want to know about matching operators. The global modifier C<//g> allows the matching operator to match within a string as many times as possible.  In scalar context, successive matches against a string will have C<//g> jump from match to match, keeping track of position in the string as it goes along. You can get or set the position with the C<pos()> function. For example, 
 
 
     $x = "cat dog house"; # 3 words 
@@ -352,20 +352,20 @@ A failed match or changing the target string resets the position.  If you don't 
 In list context, C<//g> returns a list of matched groupings, or if there are no groupings, a list of matches to the whole regex.  So 
 
 
-    @words = ($x =~ /(\w+)/g);  # matches,  
+    @words = ($x =~ /(\w+)/g);  # matches, 
                                 # $word[0] = 'cat' 
                                 # $word[1] = 'dog' 
                                 # $word[2] = 'house' 
 
 =head2 Search and replace 
 
-Search and replace is performed using C<s/regex/replacement/modifiers>. The C<replacement> is a Perl double-quoted string that replaces in the string whatever is matched with the C<regex>.  The operator C<=~> is also used here to associate a string with C<s///>.  If matching against C<$_>, the S<C<$_ =~>> can be dropped.  If there is a match,  C<s///> returns the number of substitutions made; otherwise it returns false.  Here are a few examples: 
+Search and replace is performed using C<s/regex/replacement/modifiers>. The C<replacement> is a Perl double-quoted string that replaces in the string whatever is matched with the C<regex>.  The operator C<=~> is also used here to associate a string with C<s///>.  If matching against C<$_>, the S<C<$_ =~>> can be dropped.  If there is a match, C<s///> returns the number of substitutions made; otherwise it returns false.  Here are a few examples: 
 
 
     $x = "Time to feed the cat!"; 
     $x =~ s/cat/hacker/;   # $x contains "Time to feed the hacker!" 
     $y = "'quoted words'"; 
-    $y =~ s/^'(.*)'$/$1/;  # strip single quotes,  
+    $y =~ s/^'(.*)'$/$1/;  # strip single quotes, 
                            # $y contains "quoted words" 
 
 With the C<s///> operator, the matched variables C<$1>, C<$2>, etc. are immediately available for use in the replacement expression. With the global modifier, C<s///g> will search and replace all occurrences of the regex in the string: 
@@ -419,8 +419,8 @@ C<split /regex/, string> splits C<string> into a list of substrings and returns 
 To extract a comma-delimited list of numbers, use 
 
 
-    $x = "1.618, 2.718, 3.142"; 
-    @const = split /, \s*/, $x;  # $const[0] = '1.618' 
+    $x = "1.618,2.718,   3.142"; 
+    @const = split /,\s*/, $x;  # $const[0] = '1.618' 
                                 # $const[1] = '2.718' 
                                 # $const[2] = '3.142' 
 
@@ -452,7 +452,7 @@ This document may be distributed under the same terms as Perl itself.
 
 =head2 Acknowledgments 
 
-The author would like to thank Mark-Jason Dominus, Tom Christiansen,  Ilya Zakharevich, Brad Hughes, and Mike Giroux for all their helpful comments. 
+The author would like to thank Mark-Jason Dominus, Tom Christiansen, Ilya Zakharevich, Brad Hughes, and Mike Giroux for all their helpful comments. 
 
 =cut 
 

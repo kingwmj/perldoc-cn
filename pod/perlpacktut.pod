@@ -10,9 +10,9 @@ C<pack> and C<unpack> are two functions for transforming data according to a use
 
 =head1 The Basic Principle 
 
-Most programming languages don't shelter the memory where variables are stored. In C, for instance, you can take the address of some variable,  and the C<sizeof> operator tells you how many bytes are allocated to the variable. Using the address and the size, you may access the storage to your heart's content. 
+Most programming languages don't shelter the memory where variables are stored. In C, for instance, you can take the address of some variable, and the C<sizeof> operator tells you how many bytes are allocated to the variable. Using the address and the size, you may access the storage to your heart's content. 
 
-In Perl, you just can't access memory at random, but the structural and representational conversion provided by C<pack> and C<unpack> is an excellent alternative. The C<pack> function converts values to a byte sequence containing representations according to a given specification,  the so-called "template" argument. C<unpack> is the reverse process,  deriving some values from the contents of a string of bytes. (Be cautioned,  however, that not all that has been packed together can be neatly unpacked - a very common experience as seasoned travellers are likely to confirm.) 
+In Perl, you just can't access memory at random, but the structural and representational conversion provided by C<pack> and C<unpack> is an excellent alternative. The C<pack> function converts values to a byte sequence containing representations according to a given specification, the so-called "template" argument. C<unpack> is the reverse process, deriving some values from the contents of a string of bytes. (Be cautioned, however, that not all that has been packed together can be neatly unpacked - a very common experience as seasoned travellers are likely to confirm.) 
 
 Why, you may ask, would you need a chunk of memory containing some values in binary representation? One good reason is input and output accessing some file, a device, or a network connection, whereby this binary representation is either forced on you or will give you some benefit in processing. Another cause is passing data to some system call that is not available as a Perl function: C<syscall> requires you to provide parameters stored in the way it happens in a C program. Even text processing (as shown in the next section) may be simplified with judicious usage of these two functions. 
 
@@ -27,7 +27,7 @@ whereupon we might see something like this, with each pair of hex digits corresp
 
    41204d414e204120504c414e20412043414e414c2050414e414d41 
 
-What was in this chunk of memory? Numbers, characters, or a mixture of both? Assuming that we're on a computer where ASCII (or some similar) encoding is used: hexadecimal values in the range C<0x40> - C<0x5A> indicate an uppercase letter, and C<0x20> encodes a space. So we might assume it is a piece of text, which some are able to read like a tabloid; but others will have to get hold of an ASCII table and relive that firstgrader feeling. Not caring too much about which way to read this,  we note that C<unpack> with the template code C<H> converts the contents of a sequence of bytes into the customary hexadecimal notation. Since "a sequence of" is a pretty vague indication of quantity, C<H> has been defined to convert just a single hexadecimal digit unless it is followed by a repeat count. An asterisk for the repeat count means to use whatever remains. 
+What was in this chunk of memory? Numbers, characters, or a mixture of both? Assuming that we're on a computer where ASCII (or some similar) encoding is used: hexadecimal values in the range C<0x40> - C<0x5A> indicate an uppercase letter, and C<0x20> encodes a space. So we might assume it is a piece of text, which some are able to read like a tabloid; but others will have to get hold of an ASCII table and relive that firstgrader feeling. Not caring too much about which way to read this, we note that C<unpack> with the template code C<H> converts the contents of a sequence of bytes into the customary hexadecimal notation. Since "a sequence of" is a pretty vague indication of quantity, C<H> has been defined to convert just a single hexadecimal digit unless it is followed by a repeat count. An asterisk for the repeat count means to use whatever remains. 
 
 The inverse operation - packing byte contents from a string of hexadecimal digits - is just as easily written. For instance: 
 
@@ -53,10 +53,10 @@ How do we do it? You might think first to use C<split>; however, since C<split> 
 
 
     while (<>) { 
-        my $date   = substr($_, 0, 11); 
+        my $date   = substr($_,  0, 11); 
         my $desc   = substr($_, 12, 27); 
-        my $income = substr($_, 40, 7); 
-        my $expend = substr($_, 52, 7); 
+        my $income = substr($_, 40,  7); 
+        my $expend = substr($_, 52,  7); 
         ... 
     } 
 
@@ -73,7 +73,7 @@ Or maybe we could use regular expressions:
 
 Urgh. Well, it's a bit better, but - well, would you want to maintain that? 
 
-Hey, isn't Perl supposed to make this sort of thing easy? Well, it does,  if you use the right tools. C<pack> and C<unpack> are designed to help you out when dealing with fixed-width data like the above. Let's have a look at a solution with C<unpack>: 
+Hey, isn't Perl supposed to make this sort of thing easy? Well, it does, if you use the right tools. C<pack> and C<unpack> are designed to help you out when dealing with fixed-width data like the above. Let's have a look at a solution with C<unpack>: 
 
 
     while (<>) { 
@@ -102,7 +102,7 @@ OK, what's next? Between the date and the description is a blank column; we want
 Now we skip another character and pick up the next 7 characters: 
 
 
-    my($date, $description, $income) = unpack("A10xA27xA7", $_); 
+    my($date,$description,$income) = unpack("A10xA27xA7", $_); 
 
 Now comes the clever bit. Lines in our ledger which are just income and not expenditure might end at column 46. Hence, we don't want to tell our C<unpack> pattern that we B<need> to find another 12 characters; we'll just say "if there's anything left, take it". As you might guess from regular expressions, that's what the C<*> means: "use everything remaining". 
 
@@ -119,7 +119,7 @@ Be warned, though, that unlike regular expressions, if the C<unpack> template do
 Hence, putting it all together: 
 
 
-    my($date, $description, $income, $expend) = unpack("A10xA27xA7xA*", $_); 
+    my($date,$description,$income,$expend) = unpack("A10xA27xA7xA*", $_); 
 
 Now, that's our data parsed. I suppose what we might want to do now is total up our income and expenditure, and add another line to the end of our ledger - in the same format - saying how much we've brought in and how much we've spent: 
 
@@ -156,14 +156,14 @@ OK, it's a start, but what happened to the spaces? We put C<x>, didn't we? Shoul
 
     x   A null byte. 
 
-Urgh. No wonder. There's a big difference between "a null byte",  character zero, and "a space", character 32. Perl's put something between the date and the description - but unfortunately, we can't see it! 
+Urgh. No wonder. There's a big difference between "a null byte", character zero, and "a space", character 32. Perl's put something between the date and the description - but unfortunately, we can't see it! 
 
 What we actually need to do is expand the width of the fields. The C<A> format pads any non-existent characters with spaces, so we can use the additional spaces to line up our fields, like this: 
 
 
     print pack("A11 A28 A8 A*", $date, "Totals", $tot_income, $tot_expend); 
 
-(Note that you can put spaces in the template to make it more readable,  but they don't translate to spaces in the output.) Here's what we got this time: 
+(Note that you can put spaces in the template to make it more readable, but they don't translate to spaces in the output.) Here's what we got this time: 
 
 
     01/24/2001 Ahmed's Camel Emporium                   1147.99 
@@ -225,7 +225,7 @@ packs all of C<$one> into the first C<A*> and then all of C<$two> into the secon
 
 =head1 Packing Numbers 
 
-So much for textual data. Let's get onto the meaty stuff that C<pack> and C<unpack> are best at: handling binary formats for numbers. There is,  of course, not just one binary format  - life would be too simple - but Perl will do all the finicky labor for you. 
+So much for textual data. Let's get onto the meaty stuff that C<pack> and C<unpack> are best at: handling binary formats for numbers. There is, of course, not just one binary format  - life would be too simple - but Perl will do all the finicky labor for you. 
 
 
 
@@ -237,11 +237,11 @@ Packing and unpacking numbers implies conversion to and from some I<specific> bi
 
 =item * 
 
-the number of bytes used for storing the integer,  
+the number of bytes used for storing the integer, 
 
 =item * 
 
-whether the contents are interpreted as a signed or unsigned number,  
+whether the contents are interpreted as a signed or unsigned number, 
 
 =item * 
 
@@ -263,7 +263,7 @@ This is true for all numeric template codes. But don't expect miracles: if the p
 
 16 bits won't get you too far with integers, but there is C<l> and C<L> for signed and unsigned 32-bit integers. And if this is not enough and your system supports 64 bit integers you can push the limits much closer to infinity with pack codes C<q> and C<Q>. A notable exception is provided by pack codes C<i> and C<I> for signed and unsigned integers of the "local custom" variety: Such an integer will take up as many bytes as a local C compiler returns for C<sizeof(int)>, but it'll use I<at least> 32 bits. 
 
-Each of the integer pack codes C<sSlLqQ> results in a fixed number of bytes,  no matter where you execute your program. This may be useful for some applications, but it does not provide for a portable way to pass data structures between Perl and C programs (bound to happen when you call XS extensions or the Perl function C<syscall>), or when you read or write binary files. What you'll need in this case are template codes that depend on what your local C compiler compiles when you code C<short> or C<unsigned long>, for instance. These codes and their corresponding byte lengths are shown in the table below.  Since the C standard leaves much leeway with respect to the relative sizes of these data types, actual values may vary, and that's why the values are given as expressions in C and Perl. (If you'd like to use values from C<%Config> in your program you have to import it with C<use Config>.) 
+Each of the integer pack codes C<sSlLqQ> results in a fixed number of bytes, no matter where you execute your program. This may be useful for some applications, but it does not provide for a portable way to pass data structures between Perl and C programs (bound to happen when you call XS extensions or the Perl function C<syscall>), or when you read or write binary files. What you'll need in this case are template codes that depend on what your local C compiler compiles when you code C<short> or C<unsigned long>, for instance. These codes and their corresponding byte lengths are shown in the table below.  Since the C standard leaves much leeway with respect to the relative sizes of these data types, actual values may vary, and that's why the values are given as expressions in C and Perl. (If you'd like to use values from C<%Config> in your program you have to import it with C<use Config>.) 
 
 
    signed unsigned  byte length in C   byte length in Perl 
@@ -293,7 +293,7 @@ Requesting a particular byte ordering may be necessary when you work with binary
                          | DL | DH | DX            |   ES    | 
                          +----+----+               +---------+ 
 
-First, we note that this time-honored 16-bit CPU uses little-endian order,  and that's why the low order byte is stored at the lower address. To unpack such a (unsigned) short we'll have to use code C<v>. A repeat count unpacks all 12 shorts: 
+First, we note that this time-honored 16-bit CPU uses little-endian order, and that's why the low order byte is stored at the lower address. To unpack such a (unsigned) short we'll have to use code C<v>. A repeat count unpacks all 12 shorts: 
 
 
    my( $ip, $cs, $flags, $ax, $bx, $cd, $dx, $si, $di, $bp, $ds, $es ) = 
@@ -305,24 +305,24 @@ Alternatively, we could have used C<C> to unpack the individually accessible byt
    my( $fl, $fh, $al, $ah, $bl, $bh, $cl, $ch, $dl, $dh ) = 
      unpack( 'C10', substr( $frame, 4, 10 ) ); 
 
-It would be nice if we could do this in one fell swoop: unpack a short,  back up a little, and then unpack 2 bytes. Since Perl I<is> nice, it proffers the template code C<X> to back up one byte. Putting this all together, we may now write: 
+It would be nice if we could do this in one fell swoop: unpack a short, back up a little, and then unpack 2 bytes. Since Perl I<is> nice, it proffers the template code C<X> to back up one byte. Putting this all together, we may now write: 
 
 
-   my( $ip, $cs,  
-       $flags, $fl, $fh,  
-       $ax, $al, $ah, $bx, $bl, $bh, $cx, $cl, $ch, $dx, $dl, $dh,  
+   my( $ip, $cs, 
+       $flags,$fl,$fh, 
+       $ax,$al,$ah, $bx,$bl,$bh, $cx,$cl,$ch, $dx,$dl,$dh, 
        $si, $di, $bp, $ds, $es ) = 
    unpack( 'v2' . ('vXXCC' x 5) . 'v5', $frame ); 
 
 (The clumsy construction of the template can be avoided - just read on!) 
 
-We've taken some pains to construct the template so that it matches the contents of our frame buffer. Otherwise we'd either get undefined values,  or C<unpack> could not unpack all. If C<pack> runs out of items, it will supply null strings (which are coerced into zeroes whenever the pack code says so). 
+We've taken some pains to construct the template so that it matches the contents of our frame buffer. Otherwise we'd either get undefined values, or C<unpack> could not unpack all. If C<pack> runs out of items, it will supply null strings (which are coerced into zeroes whenever the pack code says so). 
 
 
 
 =head2 How to Eat an Egg on a Net 
 
-The pack code for big-endian (high order byte at the lowest address) is C<n> for 16 bit and C<N> for 32 bit integers. You use these codes if you know that your data comes from a compliant architecture, but,  surprisingly enough, you should also use these pack codes if you exchange binary data, across the network, with some system that you know next to nothing about. The simple reason is that this order has been chosen as the I<network order>, and all standard-fearing programs ought to follow this convention. (This is, of course, a stern backing for one of the Lilliputian parties and may well influence the political development there.) So, if the protocol expects you to send a message by sending the length first, followed by just so many bytes,  you could write: 
+The pack code for big-endian (high order byte at the lowest address) is C<n> for 16 bit and C<N> for 32 bit integers. You use these codes if you know that your data comes from a compliant architecture, but, surprisingly enough, you should also use these pack codes if you exchange binary data, across the network, with some system that you know next to nothing about. The simple reason is that this order has been chosen as the I<network order>, and all standard-fearing programs ought to follow this convention. (This is, of course, a stern backing for one of the Lilliputian parties and may well influence the political development there.) So, if the protocol expects you to send a message by sending the length first, followed by just so many bytes, you could write: 
 
 
    my $buf = pack( 'N', length( $msg ) ) . $msg; 
@@ -356,7 +356,7 @@ You will probably find these modifiers even more useful if you have to deal with
 
 =head2 Floating point Numbers 
 
-For packing floating point numbers you have the choice between the pack codes C<f>, C<d>, C<F> and C<D>. C<f> and C<d> pack into (or unpack from) single-precision or double-precision representation as it is provided by your system. If your systems supports it, C<D> can be used to pack and unpack extended-precision floating point values (C<long double>), which can offer even more resolution than C<f> or C<d>. C<F> packs an C<NV>,  which is the floating point type used by Perl internally. (There is no such thing as a network representation for reals, so if you want to send your real numbers across computer boundaries, you'd better stick to ASCII representation, unless you're absolutely sure what's on the other end of the line. For the even more adventuresome, you can use the byte-order modifiers from the previous section also on floating point codes.) 
+For packing floating point numbers you have the choice between the pack codes C<f>, C<d>, C<F> and C<D>. C<f> and C<d> pack into (or unpack from) single-precision or double-precision representation as it is provided by your system. If your systems supports it, C<D> can be used to pack and unpack extended-precision floating point values (C<long double>), which can offer even more resolution than C<f> or C<d>. C<F> packs an C<NV>, which is the floating point type used by Perl internally. (There is no such thing as a network representation for reals, so if you want to send your real numbers across computer boundaries, you'd better stick to ASCII representation, unless you're absolutely sure what's on the other end of the line. For the even more adventuresome, you can use the byte-order modifiers from the previous section also on floating point codes.) 
 
 
 
@@ -396,7 +396,7 @@ To illustrate unpacking for bit strings, we'll decompose a simple status registe
 Converting these two bytes to a string can be done with the unpack template C<'b16'>. To obtain the individual bit values from the bit string we use C<split> with the "empty" separator pattern which dissects into individual characters. Bit values from the "reserved" positions are simply assigned to C<undef>, a convenient notation for "I don't care where this goes". 
 
 
-   ($carry, undef, $parity, undef, $auxcarry, undef, $zero, $sign,  
+   ($carry, undef, $parity, undef, $auxcarry, undef, $zero, $sign, 
     $trace, $interrupt, $direction, $overflow) = 
       split( //, unpack( 'b16', $status ) ); 
 
@@ -444,7 +444,7 @@ And an even parity bit can be determined like this:
 
 =head2 Unicode 
 
-Unicode is a character set that can represent most characters in most of the world's languages, providing room for over one million different characters. Unicode 3.1 specifies 94, 140 characters: The Basic Latin characters are assigned to the numbers 0 - 127. The Latin-1 Supplement with characters that are used in several European languages is in the next range, up to 255. After some more Latin extensions we find the character sets from languages using non-Roman alphabets, interspersed with a variety of symbol sets such as currency symbols, Zapf Dingbats or Braille. (You might want to visit L<http://www.unicode.org/> for a look at some of them - my personal favourites are Telugu and Kannada.) 
+Unicode is a character set that can represent most characters in most of the world's languages, providing room for over one million different characters. Unicode 3.1 specifies 94,140 characters: The Basic Latin characters are assigned to the numbers 0 - 127. The Latin-1 Supplement with characters that are used in several European languages is in the next range, up to 255. After some more Latin extensions we find the character sets from languages using non-Roman alphabets, interspersed with a variety of symbol sets such as currency symbols, Zapf Dingbats or Braille. (You might want to visit L<http://www.unicode.org/> for a look at some of them - my personal favourites are Telugu and Kannada.) 
 
 The Unicode character sets associates characters with integers. Encoding these numbers in an equal number of bytes would more than double the requirements for storing texts written in Latin alphabets. The UTF-8 encoding avoids this by storing the most common (from a western point of view) characters in a single byte while encoding the rarer ones in three or more bytes. 
 
@@ -479,7 +479,7 @@ The pack code C<w> has been added to support a portable binary data encoding sch
 
    my $berbuf = pack( 'w*', 1, 128, 128+1, 128*128+127 ); 
 
-A hex dump of C<$berbuf>, with spaces inserted at the right places,  shows 01 8100 8101 81807F. Since the last byte is always less than 128, C<unpack> knows where to stop. 
+A hex dump of C<$berbuf>, with spaces inserted at the right places, shows 01 8100 8101 81807F. Since the last byte is always less than 128, C<unpack> knows where to stop. 
 
 
 
@@ -500,7 +500,7 @@ which returns a string consisting of the first character from each string. Using
 
    pack( '(A)'.@str, @str ) 
 
-or, because a repeat count C<*> means "repeat as often as required",  simply 
+or, because a repeat count C<*> means "repeat as often as required", simply 
 
 
    pack( '(A)*', @str ) 
@@ -573,7 +573,7 @@ The pack code preceding C</> may be anything that's fit to represent a number: A
    # unpack $buf: '13  Humpty-Dumpty' 
    my $txt = unpack( 'A4/A*', $buf ); 
 
-C</> is not implemented in Perls before 5.6, so if your code is required to work on older Perls you'll need to C<unpack( 'Z* Z* C')> to get the length,  then use it to make a new unpack string. For example 
+C</> is not implemented in Perls before 5.6, so if your code is required to work on older Perls you'll need to C<unpack( 'Z* Z* C')> to get the length, then use it to make a new unpack string. For example 
 
 
    # pack a message: ASCIIZ, ASCIIZ, length, string, byte (5.005 compatible) 
@@ -588,13 +588,13 @@ But that second C<unpack> is rushing ahead. It isn't using a simple literal stri
 
 =head2 Dynamic Templates 
 
-So far, we've seen literals used as templates. If the list of pack items doesn't have fixed length, an expression constructing the template is required (whenever, for some reason, C<()*> cannot be used). Here's an example: To store named string values in a way that can be conveniently parsed by a C program, we create a sequence of names and null terminated ASCII strings, with C<=> between the name and the value,  followed by an additional delimiting null byte. Here's how: 
+So far, we've seen literals used as templates. If the list of pack items doesn't have fixed length, an expression constructing the template is required (whenever, for some reason, C<()*> cannot be used). Here's an example: To store named string values in a way that can be conveniently parsed by a C program, we create a sequence of names and null terminated ASCII strings, with C<=> between the name and the value, followed by an additional delimiting null byte. Here's how: 
 
 
-   my $env = pack( '(A*A*Z*)' . keys( %Env ) . 'C',  
+   my $env = pack( '(A*A*Z*)' . keys( %Env ) . 'C', 
                    map( { ( $_, '=', $Env{$_} ) } keys( %Env ) ), 0 ); 
 
-Let's examine the cogs of this byte mill, one by one. There's the C<map> call, creating the items we intend to stuff into the C<$env> buffer: to each key (in C<$_>) it adds the C<=> separator and the hash entry value. Each triplet is packed with the template code sequence C<A*A*Z*> that is repeated according to the number of keys. (Yes, that's what the C<keys> function returns in scalar context.) To get the very last null byte,  we add a C<0> at the end of the C<pack> list, to be packed with C<C>. (Attentive readers may have noticed that we could have omitted the 0.) 
+Let's examine the cogs of this byte mill, one by one. There's the C<map> call, creating the items we intend to stuff into the C<$env> buffer: to each key (in C<$_>) it adds the C<=> separator and the hash entry value. Each triplet is packed with the template code sequence C<A*A*Z*> that is repeated according to the number of keys. (Yes, that's what the C<keys> function returns in scalar context.) To get the very last null byte, we add a C<0> at the end of the C<pack> list, to be packed with C<C>. (Attentive readers may have noticed that we could have omitted the 0.) 
 
 For the reverse operation, we'll have to determine the number of items in the buffer before we can let C<unpack> rip it apart: 
 
@@ -608,7 +608,7 @@ The C<tr> counts the null bytes. The C<unpack> call returns a list of name-value
 
 =head2 Counting Repetitions 
 
-Rather than storing a sentinel at the end of a data item (or a list of items),  we could precede the data with a count. Again, we pack keys and values of a hash, preceding each with an unsigned short length count, and up front we store the number of pairs: 
+Rather than storing a sentinel at the end of a data item (or a list of items), we could precede the data with a count. Again, we pack keys and values of a hash, preceding each with an unsigned short length count, and up front we store the number of pairs: 
 
 
    my $env = pack( 'S(S/A* S/A*)*', scalar keys( %Env ), %Env ); 
@@ -624,9 +624,9 @@ Note that this is one of the rare cases where you cannot use the same template f
 
 =head2 Intel HEX 
 
-Intel HEX is a file format for representing binary data, mostly for programming various chips, as a text file. (See L<http://en.wikipedia.org/wiki/.hex> for a detailed description, and L<http://en.wikipedia.org/wiki/SREC_(file_format)> for the Motorola S-record format, which can be unravelled using the same technique.) Each line begins with a colon (':') and is followed by a sequence of hexadecimal characters, specifying a byte count I<n> (8 bit),  an address (16 bit, big endian), a record type (8 bit), I<n> data bytes and a checksum (8 bit) computed as the least significant byte of the two's complement sum of the preceding bytes. Example: C<:0300300002337A1E>. 
+Intel HEX is a file format for representing binary data, mostly for programming various chips, as a text file. (See L<http://en.wikipedia.org/wiki/.hex> for a detailed description, and L<http://en.wikipedia.org/wiki/SREC_(file_format)> for the Motorola S-record format, which can be unravelled using the same technique.) Each line begins with a colon (':') and is followed by a sequence of hexadecimal characters, specifying a byte count I<n> (8 bit), an address (16 bit, big endian), a record type (8 bit), I<n> data bytes and a checksum (8 bit) computed as the least significant byte of the two's complement sum of the preceding bytes. Example: C<:0300300002337A1E>. 
 
-The first step of processing such a line is the conversion, to binary,  of the hexadecimal data, to obtain the four fields, while checking the checksum. No surprise here: we'll start with a simple C<pack> call to convert everything to binary: 
+The first step of processing such a line is the conversion, to binary, of the hexadecimal data, to obtain the four fields, while checking the checksum. No surprise here: we'll start with a simple C<pack> call to convert everything to binary: 
 
 
    my $binrec = pack( 'H*', substr( $hexrec, 1 ) ); 
@@ -655,7 +655,7 @@ If you have to deal with a lot of C structures, and don't want to hack all your 
 
 =head2 The Alignment Pit 
 
-In the consideration of speed against memory requirements the balance has been tilted in favor of faster execution. This has influenced the way C compilers allocate memory for structures: On architectures where a 16-bit or 32-bit operand can be moved faster between places in memory, or to or from a CPU register, if it is aligned at an even or multiple-of-four or even at a multiple-of eight address, a C compiler will give you this speed benefit by stuffing extra bytes into structures. If you don't cross the C shoreline this is not likely to cause you any grief (although you should care when you design large data structures,  or you want your code to be portable between architectures (you do want that, don't you?)). 
+In the consideration of speed against memory requirements the balance has been tilted in favor of faster execution. This has influenced the way C compilers allocate memory for structures: On architectures where a 16-bit or 32-bit operand can be moved faster between places in memory, or to or from a CPU register, if it is aligned at an even or multiple-of-four or even at a multiple-of eight address, a C compiler will give you this speed benefit by stuffing extra bytes into structures. If you don't cross the C shoreline this is not likely to cause you any grief (although you should care when you design large data structures, or you want your code to be portable between architectures (you do want that, don't you?)). 
 
 To see how this affects C<pack> and C<unpack>, we'll compare these two C structures: 
 
@@ -675,7 +675,7 @@ To see how this affects C<pack> and C<unpack>, we'll compare these two C structu
      char     c2; 
    } dense_t; 
 
-Typically, a C compiler allocates 12 bytes to a C<gappy_t> variable, but requires only 8 bytes for a C<dense_t>. After investigating this further,  we can draw memory maps, showing where the extra 4 bytes are hidden: 
+Typically, a C compiler allocates 12 bytes to a C<gappy_t> variable, but requires only 8 bytes for a C<dense_t>. After investigating this further, we can draw memory maps, showing where the extra 4 bytes are hidden: 
 
 
    0           +4          +8          +12 
@@ -717,15 +717,15 @@ Counting bytes and watching alignments in lengthy structures is bound to be a dr
    } gappy_t; 
 
 
-   #define Pt(struct, field, tchar) \ 
-     printf( "@%d%s ", offsetof(struct, field), # tchar ); 
+   #define Pt(struct,field,tchar) \ 
+     printf( "@%d%s ", offsetof(struct,field), # tchar ); 
 
 
    int main() { 
      Pt( gappy_t, fc1, c  ); 
-     Pt( gappy_t, fs, s! ); 
+     Pt( gappy_t, fs,  s! ); 
      Pt( gappy_t, fc2, c  ); 
-     Pt( gappy_t, fl, l! ); 
+     Pt( gappy_t, fl,  l! ); 
      printf( "\n" ); 
    } 
 
@@ -741,7 +741,7 @@ Neither using offsets nor adding C<x>'s to bridge the gaps is satisfactory. (Jus
 
   my $gappy = pack( 'c x!2 s c x!4 l!', $c1, $s, $c2, $l ); 
 
-That's certainly better, but we still have to know how long all the integers are, and portability is far away. Rather than C<2>,  for instance, we want to say "however long a short is". But this can be done by enclosing the appropriate pack code in brackets: C<[s]>. So, here's the very best we can do: 
+That's certainly better, but we still have to know how long all the integers are, and portability is far away. Rather than C<2>, for instance, we want to say "however long a short is". But this can be done by enclosing the appropriate pack code in brackets: C<[s]>. So, here's the very best we can do: 
 
 
   my $gappy = pack( 'c x![s] s c x![l!] l!', $c1, $s, $c2, $l ); 
@@ -782,17 +782,17 @@ I'm afraid that we're not quite through with the alignment catch yet. The hydra 
 
    typedef cell_t buffer_t[BUFLEN]; 
 
-Where's the catch? Padding is neither required before the first field C<count>,  nor between this and the next field C<glyph>, so why can't we simply pack like this: 
+Where's the catch? Padding is neither required before the first field C<count>, nor between this and the next field C<glyph>, so why can't we simply pack like this: 
 
 
    # something goes wrong here: 
-   pack( 's!a' x @buffer,  
+   pack( 's!a' x @buffer, 
          map{ ( $_->{count}, $_->{glyph} ) } @buffer ); 
 
 This packs C<3*@buffer> bytes, but it turns out that the size of C<buffer_t> is four times C<BUFLEN>! The moral of the story is that the required alignment of a structure or array is propagated to the next higher level where we have to consider padding I<at the end> of each component as well. Thus the correct template is: 
 
 
-   pack( 's!ax' x @buffer,  
+   pack( 's!ax' x @buffer, 
          map{ ( $_->{count}, $_->{glyph} ) } @buffer ); 
 
 =head2 Alignment, Take 3 
@@ -817,7 +817,7 @@ Template code C<P> promises to pack a "pointer to a fixed length string". Isn't 
     my $memory = "\x00" x $size; 
     my $memptr = pack( 'P', $memory ); 
 
-But wait: doesn't C<pack> just return a sequence of bytes? How can we pass this string of bytes to some C code expecting a pointer which is, after all,  nothing but a number? The answer is simple: We have to obtain the numeric address from the bytes returned by C<pack>. 
+But wait: doesn't C<pack> just return a sequence of bytes? How can we pass this string of bytes to some C code expecting a pointer which is, after all, nothing but a number? The answer is simple: We have to obtain the numeric address from the bytes returned by C<pack>. 
 
 
     my $ptr = unpack( 'L!', $memptr ); 
@@ -855,7 +855,7 @@ As a consequence, C<pack> ignores any number or C<*> after C<P>.
 
 
 
-Now that we have seen C<P> at work, we might as well give C<p> a whirl. Why do we need a second template code for packing pointers at all? The answer lies behind the simple fact that an C<unpack> with C<p> promises a null-terminated string starting at the address taken from the buffer,  and that implies a length for the data item to be returned: 
+Now that we have seen C<P> at work, we might as well give C<p> a whirl. Why do we need a second template code for packing pointers at all? The answer lies behind the simple fact that an C<unpack> with C<p> promises a null-terminated string starting at the address taken from the buffer, and that implies a length for the data item to be returned: 
 
 
    my $buf = pack( 'p', "abc\x00efhijklmn" ); 
@@ -922,8 +922,8 @@ For a simple memory dump we unpack some bytes into just as many pairs of hex dig
 
 
     my $i; 
-    print map( ++$i % 16 ? "$_ " : "$_\n",  
-               unpack( 'H2' x length( $mem ), $mem ) ),  
+    print map( ++$i % 16 ? "$_ " : "$_\n", 
+               unpack( 'H2' x length( $mem ), $mem ) ), 
           length( $mem ) % 16 ? "\n" : ''; 
 
 
@@ -932,9 +932,9 @@ For a simple memory dump we unpack some bytes into just as many pairs of hex dig
 
 
     # Pulling digits out of nowhere... 
-    print unpack( 'C', pack( 'x' ) ),  
-          unpack( '%B*', pack( 'A' ) ),  
-          unpack( 'H', pack( 'A' ) ),  
+    print unpack( 'C', pack( 'x' ) ), 
+          unpack( '%B*', pack( 'A' ) ), 
+          unpack( 'H', pack( 'A' ) ), 
           unpack( 'A', unpack( 'C', pack( 'A' ) ) ), "\n"; 
 
 

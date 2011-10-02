@@ -8,21 +8,21 @@ Object-oriented programming is a big seller these days.  Some managers would rat
 
 An object is nothing but a way of tucking away complex behaviours into a neat little easy-to-use bundle.  (This is what professors call abstraction.) Smart people who have nothing to do but sit around for weeks on end figuring out really hard problems make these nifty objects that even regular people can use. (This is what professors call software reuse.)  Users (well, programmers) can play with this little bundle all they want, but they aren't to open it up and mess with the insides.  Just like an expensive piece of hardware, the contract says that you void the warranty if you muck with the cover.  So don't do that. 
 
-The heart of objects is the class, a protected little private namespace full of data and functions.  A class is a set of related routines that addresses some problem area.  You can think of it as a user-defined type. The Perl package mechanism, also used for more traditional modules,  is used for class modules as well.  Objects "live" in a class, meaning that they belong to some package. 
+The heart of objects is the class, a protected little private namespace full of data and functions.  A class is a set of related routines that addresses some problem area.  You can think of it as a user-defined type. The Perl package mechanism, also used for more traditional modules, is used for class modules as well.  Objects "live" in a class, meaning that they belong to some package. 
 
-More often than not, the class provides the user with little bundles. These bundles are objects.  They know whose class they belong to,  and how to behave.  Users ask the class to do something, like "give me an object."  Or they can ask one of these objects to do something. Asking a class to do something for you is calling a I<class method>. Asking an object to do something for you is calling an I<object method>. Asking either a class (usually) or an object (sometimes) to give you back an object is calling a I<constructor>, which is just a kind of method. 
+More often than not, the class provides the user with little bundles. These bundles are objects.  They know whose class they belong to, and how to behave.  Users ask the class to do something, like "give me an object."  Or they can ask one of these objects to do something. Asking a class to do something for you is calling a I<class method>. Asking an object to do something for you is calling an I<object method>. Asking either a class (usually) or an object (sometimes) to give you back an object is calling a I<constructor>, which is just a kind of method. 
 
 That's all well and good, but how is an object different from any other Perl data type?  Just what is an object I<really>; that is, what's its fundamental type?  The answer to the first question is easy.  An object is different from any other data type in Perl in one and only one way: you may dereference it using not merely string or numeric subscripts as with simple arrays and hashes, but with named subroutine calls. In a word, with I<methods>. 
 
-The answer to the second question is that it's a reference, and not just any reference, mind you, but one whose referent has been I<bless>()ed into a particular class (read: package).  What kind of reference?  Well,  the answer to that one is a bit less concrete.  That's because in Perl the designer of the class can employ any sort of reference they'd like as the underlying intrinsic data type.  It could be a scalar, an array,  or a hash reference.  It could even be a code reference.  But because of its inherent flexibility, an object is usually a hash reference. 
+The answer to the second question is that it's a reference, and not just any reference, mind you, but one whose referent has been I<bless>()ed into a particular class (read: package).  What kind of reference?  Well, the answer to that one is a bit less concrete.  That's because in Perl the designer of the class can employ any sort of reference they'd like as the underlying intrinsic data type.  It could be a scalar, an array, or a hash reference.  It could even be a code reference.  But because of its inherent flexibility, an object is usually a hash reference. 
 
 =head1 Creating a Class 
 
 Before you create a class, you need to decide what to name it.  That's because the class (package) name governs the name of the file used to house it, just as with regular modules.  Then, that class (package) should provide one or more ways to generate objects.  Finally, it should provide mechanisms to allow users of its objects to indirectly manipulate these objects from a distance. 
 
-For example, let's make a simple Person class module.  It gets stored in the file Person.pm.  If it were called a Happy::Person class, it would be stored in the file Happy/Person.pm, and its package would become Happy::Person instead of just Person.  (On a personal computer not running Unix or Plan 9, but something like Mac OS or VMS, the directory separator may be different, but the principle is the same.)  Do not assume any formal relationship between modules based on their directory names. This is merely a grouping convenience, and has no effect on inheritance,  variable accessibility, or anything else. 
+For example, let's make a simple Person class module.  It gets stored in the file Person.pm.  If it were called a Happy::Person class, it would be stored in the file Happy/Person.pm, and its package would become Happy::Person instead of just Person.  (On a personal computer not running Unix or Plan 9, but something like Mac OS or VMS, the directory separator may be different, but the principle is the same.)  Do not assume any formal relationship between modules based on their directory names. This is merely a grouping convenience, and has no effect on inheritance, variable accessibility, or anything else. 
 
-For this module we aren't going to use Exporter, because we're a well-behaved class module that doesn't export anything at all. In order to manufacture objects, a class needs to have a I<constructor method>.  A constructor gives you back not just a regular data type,  but a brand-new object in that class.  This magic is taken care of by the bless() function, whose sole purpose is to enable its referent to be used as an object.  Remember: being an object really means nothing more than that methods may now be called against it. 
+For this module we aren't going to use Exporter, because we're a well-behaved class module that doesn't export anything at all. In order to manufacture objects, a class needs to have a I<constructor method>.  A constructor gives you back not just a regular data type, but a brand-new object in that class.  This magic is taken care of by the bless() function, whose sole purpose is to enable its referent to be used as an object.  Remember: being an object really means nothing more than that methods may now be called against it. 
 
 While a constructor may be named anything you'd like, most Perl programmers seem to like to call theirs new().  However, new() is not a reserved word, and a class is under no obligation to supply such. Some programmers have also been known to use a function with the same name as the class as the constructor. 
 
@@ -34,29 +34,29 @@ If you were just doing a simple struct-like emulation, you would likely go about
 
 
     $rec = { 
-        name  => "Jason",  
-        age   => 23,  
-        peers => [ "Norbert", "Rhys", "Phineas"],  
+        name  => "Jason", 
+        age   => 23, 
+        peers => [ "Norbert", "Rhys", "Phineas"], 
     }; 
 
 If you felt like it, you could add a bit of visual distinction by up-casing the hash keys: 
 
 
     $rec = { 
-        NAME  => "Jason",  
-        AGE   => 23,  
-        PEERS => [ "Norbert", "Rhys", "Phineas"],  
+        NAME  => "Jason", 
+        AGE   => 23, 
+        PEERS => [ "Norbert", "Rhys", "Phineas"], 
     }; 
 
 And so you could get at C<< $rec->{NAME} >> to find "Jason", or C<< @{ $rec->{PEERS} } >> to get at "Norbert", "Rhys", and "Phineas". (Have you ever noticed how many 23-year-old programmers seem to be named "Jason" these days? :-) 
 
-This same model is often used for classes, although it is not considered the pinnacle of programming propriety for folks from outside the class to come waltzing into an object, brazenly accessing its data members directly.  Generally speaking, an object should be considered an opaque cookie that you use I<object methods> to access.  Visually,  methods look like you're dereffing a reference using a function name instead of brackets or braces. 
+This same model is often used for classes, although it is not considered the pinnacle of programming propriety for folks from outside the class to come waltzing into an object, brazenly accessing its data members directly.  Generally speaking, an object should be considered an opaque cookie that you use I<object methods> to access.  Visually, methods look like you're dereffing a reference using a function name instead of brackets or braces. 
 
 =head2 Class Interface 
 
-Some languages provide a formal syntactic interface to a class's methods,  but Perl does not.  It relies on you to read the documentation of each class.  If you try to call an undefined method on an object, Perl won't complain, but the program will trigger an exception while it's running. Likewise, if you call a method expecting a prime number as its argument with a non-prime one instead, you can't expect the compiler to catch this. (Well, you can expect it all you like, but it's not going to happen.) 
+Some languages provide a formal syntactic interface to a class's methods, but Perl does not.  It relies on you to read the documentation of each class.  If you try to call an undefined method on an object, Perl won't complain, but the program will trigger an exception while it's running. Likewise, if you call a method expecting a prime number as its argument with a non-prime one instead, you can't expect the compiler to catch this. (Well, you can expect it all you like, but it's not going to happen.) 
 
-Let's suppose you have a well-educated user of your Person class,  someone who has read the docs that explain the prescribed interface.  Here's how they might use the Person class: 
+Let's suppose you have a well-educated user of your Person class, someone who has read the docs that explain the prescribed interface.  Here's how they might use the Person class: 
 
 
     use Person; 
@@ -132,7 +132,7 @@ Still, I<someone> has to know what's in the object.  And that someone is the cla
 
     1;  # so the require or use succeeds 
 
-We've created three methods to access an object's data, name(), age(),  and peers().  These are all substantially similar.  If called with an argument, they set the appropriate field; otherwise they return the value held by that field, meaning the value of that hash key. 
+We've created three methods to access an object's data, name(), age(), and peers().  These are all substantially similar.  If called with an argument, they set the appropriate field; otherwise they return the value held by that field, meaning the value of that hash key. 
 
 =head2 Planning for the Future: Better Constructors 
 
@@ -159,7 +159,7 @@ If constructors can have arbitrary names, then why not destructors? Because whil
 
 Why is DESTROY in all caps?  Perl on occasion uses purely uppercase function names as a convention to indicate that the function will be automatically called by Perl in some way.  Others that are called implicitly include BEGIN, END, AUTOLOAD, plus all methods used by tied objects, described in L<perltie>. 
 
-In really good object-oriented programming languages, the user doesn't care when the destructor is called.  It just happens when it's supposed to.  In low-level languages without any GC at all, there's no way to depend on this happening at the right time, so the programmer must explicitly call the destructor to clean up memory and state, crossing their fingers that it's the right time to do so.   Unlike C++, an object destructor is nearly never needed in Perl, and even when it is,  explicit invocation is uncalled for.  In the case of our Person class,  we don't need a destructor because Perl takes care of simple matters like memory deallocation. 
+In really good object-oriented programming languages, the user doesn't care when the destructor is called.  It just happens when it's supposed to.  In low-level languages without any GC at all, there's no way to depend on this happening at the right time, so the programmer must explicitly call the destructor to clean up memory and state, crossing their fingers that it's the right time to do so.   Unlike C++, an object destructor is nearly never needed in Perl, and even when it is, explicit invocation is uncalled for.  In the case of our Person class, we don't need a destructor because Perl takes care of simple matters like memory deallocation. 
 
 The only situation where Perl's reference-based GC won't work is when there's a circularity in the data structure, such as: 
 
@@ -179,7 +179,7 @@ There's no reason to limit methods to those that simply access data. Methods can
 
     sub exclaim { 
         my $self = shift; 
-        return sprintf "Hi, I'm %s, age %d, working with %s",  
+        return sprintf "Hi, I'm %s, age %d, working with %s", 
             $self->{NAME}, $self->{AGE}, join(", ", @{$self->{PEERS}}); 
     } 
 
@@ -196,7 +196,7 @@ Some might argue that one should go at these this way:
 
     sub exclaim { 
         my $self = shift; 
-        return sprintf "Hi, I'm %s, age %d, working with %s",  
+        return sprintf "Hi, I'm %s, age %d, working with %s", 
             $self->name, $self->age, join(", ", $self->peers); 
     } 
 
@@ -259,9 +259,9 @@ Alternatively, you could use the Class::Data::Inheritable module from CPAN.
 
 It turns out that this is not really a good way to go about handling class data.  A good scalable rule is that I<you must never reference class data directly from an object method>.  Otherwise you aren't building a scalable, inheritable class.  The object must be the rendezvous point for all operations, especially from an object method.  The globals (class data) would in some sense be in the "wrong" package in your derived classes.  In Perl, methods execute in the context of the class they were defined in, I<not> that of the object that triggered them. Therefore, namespace visibility of package globals in methods is unrelated to inheritance. 
 
-Got that?  Maybe not.  Ok, let's say that some other class "borrowed" (well, inherited) the DESTROY method as it was defined above.  When those objects are destroyed, the original $Census variable will be altered,  not the one in the new class's package namespace.  Perhaps this is what you want, but probably it isn't. 
+Got that?  Maybe not.  Ok, let's say that some other class "borrowed" (well, inherited) the DESTROY method as it was defined above.  When those objects are destroyed, the original $Census variable will be altered, not the one in the new class's package namespace.  Perhaps this is what you want, but probably it isn't. 
 
-Here's how to fix this.  We'll store a reference to the data in the value accessed by the hash key "_CENSUS".  Why the underscore?  Well,  mostly because an initial underscore already conveys strong feelings of magicalness to a C programmer.  It's really just a mnemonic device to remind ourselves that this field is special and not to be used as a public data member in the same way that NAME, AGE, and PEERS are. (Because we've been developing this code under the strict pragma, prior to perl version 5.004 we'll have to quote the field name.) 
+Here's how to fix this.  We'll store a reference to the data in the value accessed by the hash key "_CENSUS".  Why the underscore?  Well, mostly because an initial underscore already conveys strong feelings of magicalness to a C programmer.  It's really just a mnemonic device to remind ourselves that this field is special and not to be used as a public data member in the same way that NAME, AGE, and PEERS are. (Because we've been developing this code under the strict pragma, prior to perl version 5.004 we'll have to quote the field name.) 
 
 
     sub new { 
@@ -295,7 +295,7 @@ Here's how to fix this.  We'll store a reference to the data in the value access
 
 =head2 Debugging Methods 
 
-It's common for a class to have a debugging mechanism.  For example,  you might want to see when objects are created or destroyed.  To do that,  add a debugging variable as a file-scoped lexical.  For this, we'll pull in the standard Carp module to emit our warnings and fatal messages. That way messages will come out with the caller's filename and line number instead of our own; if we wanted them to be from our own perspective, we'd just use die() and warn() directly instead of croak() and carp() respectively. 
+It's common for a class to have a debugging mechanism.  For example, you might want to see when objects are created or destroyed.  To do that, add a debugging variable as a file-scoped lexical.  For this, we'll pull in the standard Carp module to emit our warnings and fatal messages. That way messages will come out with the caller's filename and line number instead of our own; if we wanted them to be from our own perspective, we'd just use die() and warn() directly instead of croak() and carp() respectively. 
 
 
     use Carp; 
@@ -353,7 +353,7 @@ What happens if a derived class (which we'll call Employee) inherits methods fro
 
 =head2 Class Destructors 
 
-The object destructor handles the death of each distinct object.  But sometimes you want a bit of cleanup when the entire class is shut down, which currently only happens when the program exits.  To make such a I<class destructor>, create a function in that class's package named END.  This works just like the END function in traditional modules,  meaning that it gets called whenever your program exits unless it execs or dies of an uncaught signal.  For example,  
+The object destructor handles the death of each distinct object.  But sometimes you want a bit of cleanup when the entire class is shut down, which currently only happens when the program exits.  To make such a I<class destructor>, create a function in that class's package named END.  This works just like the END function in traditional modules, meaning that it gets called whenever your program exits unless it execs or dies of an uncaught signal.  For example, 
 
 
     sub END { 
@@ -423,7 +423,7 @@ That's all there is to the matter of interface versus implementation. A programm
 
 =head1 Aggregation 
 
-Suppose you later want to change the class to implement better names. Perhaps you'd like to support both given names (called Christian names,  irrespective of one's religion) and family names (called surnames), plus nicknames and titles.  If users of your Person class have been properly accessing it through its documented interface, then you can easily change the underlying implementation.  If they haven't, then they lose and it's their fault for breaking the contract and voiding their warranty. 
+Suppose you later want to change the class to implement better names. Perhaps you'd like to support both given names (called Christian names, irrespective of one's religion) and family names (called surnames), plus nicknames and titles.  If users of your Person class have been properly accessing it through its documented interface, then you can easily change the underlying implementation.  If they haven't, then they lose and it's their fault for breaking the contract and voiding their warranty. 
 
 To do this, we'll make another class, this one called Fullname.  What's the Fullname class look like?  To answer that question, you have to first figure out how you want to use it.  How about we use it this way: 
 
@@ -476,10 +476,10 @@ Here's the Fullname class.  We'll use the same technique of using a hash referen
     sub new { 
         my $class = shift; 
         my $self  = { 
-            TITLE       => undef,  
-            CHRISTIAN   => undef,  
-            SURNAME     => undef,  
-            NICK        => undef,  
+            TITLE       => undef, 
+            CHRISTIAN   => undef, 
+            SURNAME     => undef, 
+            NICK        => undef, 
         }; 
         bless ($self, $class); 
         return $self; 
@@ -566,9 +566,9 @@ Finally, here's the test program:
 
 =head1 Inheritance 
 
-Object-oriented programming systems all support some notion of inheritance.  Inheritance means allowing one class to piggy-back on top of another one so you don't have to write the same code again and again.  It's about software reuse, and therefore related to Laziness,  the principal virtue of a programmer.  (The import/export mechanisms in traditional modules are also a form of code reuse, but a simpler one than the true inheritance that you find in object modules.) 
+Object-oriented programming systems all support some notion of inheritance.  Inheritance means allowing one class to piggy-back on top of another one so you don't have to write the same code again and again.  It's about software reuse, and therefore related to Laziness, the principal virtue of a programmer.  (The import/export mechanisms in traditional modules are also a form of code reuse, but a simpler one than the true inheritance that you find in object modules.) 
 
-Sometimes the syntax of inheritance is built into the core of the language, and sometimes it's not.  Perl has no special syntax for specifying the class (or classes) to inherit from.  Instead, it's all strictly in the semantics.  Each package can have a variable called @ISA,  which governs (method) inheritance.  If you try to call a method on an object or class, and that method is not found in that object's package,  Perl then looks to @ISA for other packages to go looking through in search of the missing method. 
+Sometimes the syntax of inheritance is built into the core of the language, and sometimes it's not.  Perl has no special syntax for specifying the class (or classes) to inherit from.  Instead, it's all strictly in the semantics.  Each package can have a variable called @ISA, which governs (method) inheritance.  If you try to call a method on an object or class, and that method is not found in that object's package, Perl then looks to @ISA for other packages to go looking through in search of the missing method. 
 
 Like the special per-package variables recognized by Exporter (such as @EXPORT, @EXPORT_OK, @EXPORT_FAIL, %EXPORT_TAGS, and $VERSION), the @ISA array I<must> be a package-scoped global and not a file-scoped lexical created via my().  Most classes have just one item in their @ISA array. In this case, we have what's called "single inheritance", or SI for short. 
 
@@ -582,7 +582,7 @@ Consider this class:
 
 Not a lot to it, eh?  All it's doing so far is loading in another class and stating that this one will inherit methods from that other class if need be.  We have given it none of its own methods. We rely upon an Employee to behave just like a Person. 
 
-Setting up an empty class like this is called the "empty subclass test"; that is, making a derived class that does nothing but inherit from a base class.  If the original base class has been designed properly,  then the new derived class can be used as a drop-in replacement for the old one.  This means you should be able to write a program like this: 
+Setting up an empty class like this is called the "empty subclass test"; that is, making a derived class that does nothing but inherit from a base class.  If the original base class has been designed properly, then the new derived class can be used as a drop-in replacement for the old one.  This means you should be able to write a program like this: 
 
 
     use Employee; 
@@ -591,9 +591,9 @@ Setting up an empty class like this is called the "empty subclass test"; that is
     $empl->age(23); 
     printf "%s is age %d.\n", $empl->name, $empl->age; 
 
-By proper design, we mean always using the two-argument form of bless(),  avoiding direct access of global data, and not exporting anything.  If you look back at the Person::new() function we defined above, we were careful to do that.  There's a bit of package data used in the constructor,  but the reference to this is stored on the object itself and all other methods access package data via that reference, so we should be ok. 
+By proper design, we mean always using the two-argument form of bless(), avoiding direct access of global data, and not exporting anything.  If you look back at the Person::new() function we defined above, we were careful to do that.  There's a bit of package data used in the constructor, but the reference to this is stored on the object itself and all other methods access package data via that reference, so we should be ok. 
 
-What do we mean by the Person::new() function? Isn't that actually a method?  Well, in principle, yes.  A method is just a function that expects as its first argument a class name (package) or object (blessed reference).   Person::new() is the function that both the C<< Person->new() >> method and the C<< Employee->new() >> method end up calling.  Understand that while a method call looks a lot like a function call, they aren't really quite the same, and if you treat them as the same, you'll very soon be left with nothing but broken programs. First, the actual underlying calling conventions are different: method calls get an extra argument.  Second, function calls don't do inheritance,  but methods do. 
+What do we mean by the Person::new() function? Isn't that actually a method?  Well, in principle, yes.  A method is just a function that expects as its first argument a class name (package) or object (blessed reference).   Person::new() is the function that both the C<< Person->new() >> method and the C<< Employee->new() >> method end up calling.  Understand that while a method call looks a lot like a function call, they aren't really quite the same, and if you treat them as the same, you'll very soon be left with nothing but broken programs. First, the actual underlying calling conventions are different: method calls get an extra argument.  Second, function calls don't do inheritance, but methods do. 
 
 
         Method Call             Resulting Function Call 
@@ -605,7 +605,7 @@ So don't use function calls when you mean to call a method.
 
 If an employee is just a Person, that's not all too very interesting. So let's add some other methods.  We'll give our employee data fields to access their salary, their employee ID, and their start date. 
 
-If you're getting a little tired of creating all these nearly identical methods just to get at the object's data, do not despair.  Later,  we'll describe several different convenience mechanisms for shortening this up.  Meanwhile, here's the straight-forward way: 
+If you're getting a little tired of creating all these nearly identical methods just to get at the object's data, do not despair.  Later, we'll describe several different convenience mechanisms for shortening this up.  Meanwhile, here's the straight-forward way: 
 
 
     sub salary { 
@@ -736,22 +736,22 @@ Which shows us something like this:
 
     Here's the boss: 
     $VAR1 = bless( { 
-     _CENSUS => \1,  
+     _CENSUS => \1, 
      FULLNAME => bless( { 
-                  TITLE => 'Don',  
-                  SURNAME => 'Pichon Alvarez',  
-                  NICK => 'Fred',  
+                  TITLE => 'Don', 
+                  SURNAME => 'Pichon Alvarez', 
+                  NICK => 'Fred', 
                   CHRISTIAN => 'Federico Jesus' 
-                }, 'Fullname' ),  
-     AGE => 47,  
+                }, 'Fullname' ), 
+     AGE => 47, 
      PEERS => [ 
-            'Frank',  
-            'Felipe',  
+            'Frank', 
+            'Felipe', 
             'Faust' 
           ] 
        }, 'Boss' ); 
 
-Hm.... something's missing there.  What about the salary, start date,  and ID fields?  Well, we never set them to anything, even undef, so they don't show up in the hash's keys.  The Employee class has no new() method of its own, and the new() method in Person doesn't know about Employees. (Nor should it: proper OO design dictates that a subclass be allowed to know about its immediate superclass, but never vice-versa.)  So let's fix up Employee::new() this way: 
+Hm.... something's missing there.  What about the salary, start date, and ID fields?  Well, we never set them to anything, even undef, so they don't show up in the hash's keys.  The Employee class has no new() method of its own, and the new() method in Person doesn't know about Employees. (Nor should it: proper OO design dictates that a subclass be allowed to know about its immediate superclass, but never vice-versa.)  So let's fix up Employee::new() this way: 
 
 
     sub new { 
@@ -787,7 +787,7 @@ How do we find a spin() method (or a new() method for that matter)? Because the 
 
 In practice, few class modules have been seen that actually make use of MI.  One nearly always chooses simple containership of one class within another over MI.  That's why our Person object I<contained> a Fullname object.  That doesn't mean it I<was> one. 
 
-However, there is one particular area where MI in Perl is rampant: borrowing another class's class methods.  This is rather common,  especially with some bundled "objectless" classes,  like Exporter, DynaLoader, AutoLoader, and SelfLoader.  These classes do not provide constructors; they exist only so you may inherit their class methods.  (It's not entirely clear why inheritance was done here rather than traditional module importation.) 
+However, there is one particular area where MI in Perl is rampant: borrowing another class's class methods.  This is rather common, especially with some bundled "objectless" classes, like Exporter, DynaLoader, AutoLoader, and SelfLoader.  These classes do not provide constructors; they exist only so you may inherit their class methods.  (It's not entirely clear why inheritance was done here rather than traditional module importation.) 
 
 For example, here is the POSIX module's @ISA: 
 
@@ -795,15 +795,15 @@ For example, here is the POSIX module's @ISA:
     package POSIX; 
     @ISA = qw(Exporter DynaLoader); 
 
-The POSIX module isn't really an object module, but then,  neither are Exporter or DynaLoader.  They're just lending their classes' behaviours to POSIX. 
+The POSIX module isn't really an object module, but then, neither are Exporter or DynaLoader.  They're just lending their classes' behaviours to POSIX. 
 
-Why don't people use MI for object methods much?  One reason is that it can have complicated side-effects.  For one thing, your inheritance graph (no longer a tree) might converge back to the same base class. Although Perl guards against recursive inheritance, merely having parents who are related to each other via a common ancestor, incestuous though it sounds, is not forbidden.  What if in our Third class shown above we wanted its new() method to also call both overridden constructors in its two parent classes?  The SUPER notation would only find the first one. Also, what about if the Alpha and Beta classes both had a common ancestor,  like Nought?  If you kept climbing up the inheritance tree calling overridden methods, you'd end up calling Nought::new() twice,  which might well be a bad idea. 
+Why don't people use MI for object methods much?  One reason is that it can have complicated side-effects.  For one thing, your inheritance graph (no longer a tree) might converge back to the same base class. Although Perl guards against recursive inheritance, merely having parents who are related to each other via a common ancestor, incestuous though it sounds, is not forbidden.  What if in our Third class shown above we wanted its new() method to also call both overridden constructors in its two parent classes?  The SUPER notation would only find the first one. Also, what about if the Alpha and Beta classes both had a common ancestor, like Nought?  If you kept climbing up the inheritance tree calling overridden methods, you'd end up calling Nought::new() twice, which might well be a bad idea. 
 
 =head2 UNIVERSAL: The Root of All Objects 
 
 Wouldn't it be convenient if all objects were rooted at some ultimate base class?  That way you could give every object common methods without having to go and add it to each and every @ISA.  Well, it turns out that you can.  You don't see it, but Perl tacitly and irrevocably assumes that there's an extra element at the end of @ISA: the class UNIVERSAL. In version 5.003, there were no predefined methods there, but you could put whatever you felt like into it. 
 
-However, as of version 5.004 (or some subversive releases, like 5.003_08),  UNIVERSAL has some methods in it already.  These are builtin to your Perl binary, so they don't take any extra time to load.  Predefined methods include isa(), can(), and VERSION().  isa() tells you whether an object or class "is" another one without having to traverse the hierarchy yourself: 
+However, as of version 5.004 (or some subversive releases, like 5.003_08), UNIVERSAL has some methods in it already.  These are builtin to your Perl binary, so they don't take any extra time to load.  Predefined methods include isa(), can(), and VERSION().  isa() tells you whether an object or class "is" another one without having to traverse the hierarchy yourself: 
 
 
    $has_io = $fd->isa("IO::Handle"); 
@@ -820,7 +820,7 @@ Finally, the VERSION method checks whether the class (or the object's class) has
     Some_Module->VERSION(3.0); 
     $his_vers = $ob->VERSION(); 
 
-However, we don't usually call VERSION ourselves.  (Remember that an all uppercase function name is a Perl convention that indicates that the function will be automatically used by Perl in some way.)  In this case,  it happens when you say 
+However, we don't usually call VERSION ourselves.  (Remember that an all uppercase function name is a Perl convention that indicates that the function will be automatically used by Perl in some way.)  In this case, it happens when you say 
 
 
     use Some_Module 3.0; 
@@ -854,13 +854,13 @@ It is also valid (though perhaps unwise in most cases) to put other packages' na
 
 Calling Foo->special_method() will return "123", but calling Foo->isa('REALLYUNIVERSAL') or Foo->isa('UNIVERSAL') will return false. 
 
-If your class is using an alternate mro like C3 (see L<mro>), method resolution within UNIVERSAL / @UNIVERSAL::ISA will still occur in the default depth-first left-to-right manner,  after the class's C3 mro is exhausted. 
+If your class is using an alternate mro like C3 (see L<mro>), method resolution within UNIVERSAL / @UNIVERSAL::ISA will still occur in the default depth-first left-to-right manner, after the class's C3 mro is exhausted. 
 
 All of the above is made more intuitive by realizing what really happens during method lookup, which is roughly like this ugly pseudo-code: 
 
 
     get_mro(class) { 
-        # recurses down the @ISA's starting at class,  
+        # recurses down the @ISA's starting at class, 
         # builds a single linear array of all 
         # classes to search in the appropriate order. 
         # The method resolution order (mro) to use 
@@ -942,13 +942,13 @@ If the user of your class honors the contract and sticks to the advertised inter
 
     1;  # so the require or use succeeds 
 
-You might guess that the array access would be a lot faster than the hash access, but they're actually comparable.  The array is a I<little> bit faster, but not more than ten or fifteen percent, even when you replace the variables above like $AGE with literal numbers, like 1. A bigger difference between the two approaches can be found in memory use. A hash representation takes up more memory than an array representation because you have to allocate memory for the keys as well as for the values. However, it really isn't that bad, especially since as of version 5.004,  memory is only allocated once for a given hash key, no matter how many hashes have that key.  It's expected that sometime in the future, even these differences will fade into obscurity as more efficient underlying representations are devised. 
+You might guess that the array access would be a lot faster than the hash access, but they're actually comparable.  The array is a I<little> bit faster, but not more than ten or fifteen percent, even when you replace the variables above like $AGE with literal numbers, like 1. A bigger difference between the two approaches can be found in memory use. A hash representation takes up more memory than an array representation because you have to allocate memory for the keys as well as for the values. However, it really isn't that bad, especially since as of version 5.004, memory is only allocated once for a given hash key, no matter how many hashes have that key.  It's expected that sometime in the future, even these differences will fade into obscurity as more efficient underlying representations are devised. 
 
 Still, the tiny edge in speed (and somewhat larger one in memory) is enough to make some programmers choose an array representation for simple classes.  There's still a little problem with scalability, though, because later in life when you feel like creating subclasses, you'll find that hashes just work out better. 
 
 =head2 Closures as Objects 
 
-Using a code reference to represent an object offers some fascinating possibilities.  We can create a new anonymous function (closure) who alone in all the world can see the object's data.  This is because we put the data into an anonymous hash that's lexically visible only to the closure we create, bless, and return as the object.  This object's methods turn around and call the closure as a regular subroutine call,  passing it the field we want to affect.  (Yes,  the double-function call is slow, but if you wanted fast, you wouldn't be using objects at all, eh? :-) 
+Using a code reference to represent an object offers some fascinating possibilities.  We can create a new anonymous function (closure) who alone in all the world can see the object's data.  This is because we put the data into an anonymous hash that's lexically visible only to the closure we create, bless, and return as the object.  This object's methods turn around and call the closure as a regular subroutine call, passing it the field we want to affect.  (Yes, the double-function call is slow, but if you wanted fast, you wouldn't be using objects at all, eh? :-) 
 
 Use would be similar to before: 
 
@@ -970,9 +970,9 @@ but the implementation would be radically, perhaps even sublimely different:
     sub new { 
      my $class  = shift; 
      my $self = { 
-        NAME  => undef,  
-        AGE   => undef,  
-        PEERS => [],  
+        NAME  => undef, 
+        AGE   => undef, 
+        PEERS => [], 
      }; 
      my $closure = sub { 
         my $field = shift; 
@@ -984,8 +984,8 @@ but the implementation would be radically, perhaps even sublimely different:
     } 
 
 
-    sub name   { &{ $_[0] }("NAME", @_[ 1 .. $#_ ] ) } 
-    sub age    { &{ $_[0] }("AGE", @_[ 1 .. $#_ ] ) } 
+    sub name   { &{ $_[0] }("NAME",  @_[ 1 .. $#_ ] ) } 
+    sub age    { &{ $_[0] }("AGE",   @_[ 1 .. $#_ ] ) } 
     sub peers  { &{ $_[0] }("PEERS", @_[ 1 .. $#_ ] ) } 
 
 
@@ -995,7 +995,7 @@ Because this object is hidden behind a code reference, it's probably a bit myste
 
 When a method like C<$him-E<gt>name("Jason")> is called, its implicit zeroth argument is the invoking object--just as it is with all method calls.  But in this case, it's our code reference (something like a function pointer in C++, but with deep binding of lexical variables). There's not a lot to be done with a code reference beyond calling it, so that's just what we do when we say C<&{$_[0]}>.  This is just a regular function call, not a method call.  The initial argument is the string "NAME", and any remaining arguments are whatever had been passed to the method itself. 
 
-Once we're executing inside the closure that had been created in new(),  the $self hash reference suddenly becomes visible.  The closure grabs its first argument ("NAME" in this case because that's what the name() method passed it), and uses that string to subscript into the private hash hidden in its unique version of $self. 
+Once we're executing inside the closure that had been created in new(), the $self hash reference suddenly becomes visible.  The closure grabs its first argument ("NAME" in this case because that's what the name() method passed it), and uses that string to subscript into the private hash hidden in its unique version of $self. 
 
 Nothing under the sun will allow anyone outside the executing method to be able to get at this hidden data.  Well, nearly nothing.  You I<could> single step through the program using the debugger and find out the pieces while you're in the method, but everyone else is out of luck. 
 
@@ -1003,7 +1003,7 @@ There, if that doesn't excite the Scheme folks, then I just don't know what will
 
 You could even add a bit of nosiness via the caller() function and make the closure refuse to operate unless called via its own package. This would no doubt satisfy certain fastidious concerns of programming police and related puritans. 
 
-If you were wondering when Hubris, the third principle virtue of a programmer, would come into play, here you have it. (More seriously,  Hubris is just the pride in craftsmanship that comes from having written a sound bit of well-designed code.) 
+If you were wondering when Hubris, the third principle virtue of a programmer, would come into play, here you have it. (More seriously, Hubris is just the pride in craftsmanship that comes from having written a sound bit of well-designed code.) 
 
 =head1 AUTOLOAD: Proxy Methods 
 
@@ -1013,13 +1013,13 @@ But that's only one possible approach.  Another one is to just have the autoload
 
 When Perl tries to call an undefined function in a particular package and that function is not defined, it looks for a function in that same package called AUTOLOAD.  If one exists, it's called with the same arguments as the original function would have had. The fully-qualified name of the function is stored in that package's global variable $AUTOLOAD.  Once called, the function can do anything it would like, including defining a new function by the right name, and then doing a really fancy kind of C<goto> right to it, erasing itself from the call stack. 
 
-What does this have to do with objects?  After all, we keep talking about functions, not methods.  Well, since a method is just a function with an extra argument and some fancier semantics about where it's found,  we can use autoloading for methods, too.  Perl doesn't start looking for an AUTOLOAD method until it has exhausted the recursive hunt up through @ISA, though.  Some programmers have even been known to define a UNIVERSAL::AUTOLOAD method to trap unresolved method calls to any kind of object. 
+What does this have to do with objects?  After all, we keep talking about functions, not methods.  Well, since a method is just a function with an extra argument and some fancier semantics about where it's found, we can use autoloading for methods, too.  Perl doesn't start looking for an AUTOLOAD method until it has exhausted the recursive hunt up through @ISA, though.  Some programmers have even been known to define a UNIVERSAL::AUTOLOAD method to trap unresolved method calls to any kind of object. 
 
 =head2 Autoloaded Data Methods 
 
-You probably began to get a little suspicious about the duplicated code way back earlier when we first showed you the Person class, and then later the Employee class.  Each method used to access the hash fields looked virtually identical.  This should have tickled that great programming virtue, Impatience, but for the time,  we let Laziness win out, and so did nothing.  Proxy methods can cure this. 
+You probably began to get a little suspicious about the duplicated code way back earlier when we first showed you the Person class, and then later the Employee class.  Each method used to access the hash fields looked virtually identical.  This should have tickled that great programming virtue, Impatience, but for the time, we let Laziness win out, and so did nothing.  Proxy methods can cure this. 
 
-Instead of writing a new function every time we want a new data field,  we'll use the autoload mechanism to generate (actually, mimic) methods on the fly.  To verify that we're accessing a valid member, we will check against an C<_permitted> (pronounced "under-permitted") field, which is a reference to a file-scoped lexical (like a C file static) hash of permitted fields in this record called %fields.  Why the underscore?  For the same reason as the _CENSUS field we once used: as a marker that means "for internal use only". 
+Instead of writing a new function every time we want a new data field, we'll use the autoload mechanism to generate (actually, mimic) methods on the fly.  To verify that we're accessing a valid member, we will check against an C<_permitted> (pronounced "under-permitted") field, which is a reference to a file-scoped lexical (like a C file static) hash of permitted fields in this record called %fields.  Why the underscore?  For the same reason as the _CENSUS field we once used: as a marker that means "for internal use only". 
 
 Here's what the module initialization code and class constructor will look like when taking this approach: 
 
@@ -1030,17 +1030,17 @@ Here's what the module initialization code and class constructor will look like 
 
 
     my %fields = ( 
-    name        => undef,  
-    age         => undef,  
-    peers       => undef,  
+    name        => undef, 
+    age         => undef, 
+    peers       => undef, 
     ); 
 
 
     sub new { 
     my $class = shift; 
     my $self  = { 
-        _permitted => \%fields,  
-        %fields,  
+        _permitted => \%fields, 
+        %fields, 
     }; 
     bless $self, $class; 
     return $self; 
@@ -1093,8 +1093,8 @@ Here's how to be careful:
 
 
     my %fields = ( 
-    id          => undef,  
-    salary      => undef,  
+    id          => undef, 
+    salary      => undef, 
     ); 
 
 
@@ -1109,11 +1109,11 @@ Here's how to be careful:
     return $self; 
     } 
 
-Once we've done this, we don't even need to have an AUTOLOAD function in the Employee package, because we'll grab Person's version of that via inheritance,  and it will all work out just fine. 
+Once we've done this, we don't even need to have an AUTOLOAD function in the Employee package, because we'll grab Person's version of that via inheritance, and it will all work out just fine. 
 
 =head1 Metaclassical Tools 
 
-Even though proxy methods can provide a more convenient approach to making more struct-like classes than tediously coding up data methods as functions, it still leaves a bit to be desired.  For one thing, it means you have to handle bogus calls that you don't mean to trap via your proxy. It also means you have to be quite careful when dealing with inheritance,  as detailed above. 
+Even though proxy methods can provide a more convenient approach to making more struct-like classes than tediously coding up data methods as functions, it still leaves a bit to be desired.  For one thing, it means you have to handle bogus calls that you don't mean to trap via your proxy. It also means you have to be quite careful when dealing with inheritance, as detailed above. 
 
 Perl programmers have responded to this by creating several different class construction classes.  These metaclasses are classes that create other classes.  A couple worth looking at are Class::Struct and Alias.  These and other related metaclasses can be found in the modules directory on CPAN. 
 
@@ -1129,9 +1129,9 @@ Here's a simple example of using it:
 
 
     struct 'Fred' => { 
-        one        => '$',  
-        many       => '@',  
-        profession => 'Jobbie', # does not call Jobbie->new() 
+        one        => '$', 
+        many       => '@', 
+        profession => 'Jobbie',  # does not call Jobbie->new() 
     }; 
 
 
@@ -1157,18 +1157,18 @@ Here's a real-world example of using struct generation.  Let's say you wanted to
     use Socket; 
     use Net::hostent; 
     $h = gethostbyname("perl.com");  # object return 
-    printf "perl.com's real name is %s, address %s\n",  
+    printf "perl.com's real name is %s, address %s\n", 
     $h->name, inet_ntoa($h->addr); 
 
 Here's how to do this using the Class::Struct module. The crux is going to be this call: 
 
 
     struct 'Net::hostent' => [      # note bracket 
-    name       => '$',  
-    aliases    => '@',  
-    addrtype   => '$',  
-    'length'   => '$',  
-    addr_list  => '@',  
+    name       => '$', 
+    aliases    => '@', 
+    addrtype   => '$', 
+    'length'   => '$', 
+    addr_list  => '@', 
      ]; 
 
 Which creates object methods of those names and types. It even creates a new() method for us. 
@@ -1177,14 +1177,14 @@ We could also have implemented our object this way:
 
 
     struct 'Net::hostent' => {      # note brace 
-    name       => '$',  
-    aliases    => '@',  
-    addrtype   => '$',  
-    'length'   => '$',  
-    addr_list  => '@',  
+    name       => '$', 
+    aliases    => '@', 
+    addrtype   => '$', 
+    'length'   => '$', 
+    addr_list  => '@', 
      }; 
 
-and then Class::Struct would have used an anonymous hash as the object type, instead of an anonymous array.  The array is faster and smaller,  but the hash works out better if you eventually want to do inheritance. Since for this struct-like object we aren't planning on inheritance,  this time we'll opt for better speed and size over better flexibility. 
+and then Class::Struct would have used an anonymous hash as the object type, instead of an anonymous array.  The array is faster and smaller, but the hash works out better if you eventually want to do inheritance. Since for this struct-like object we aren't planning on inheritance, this time we'll opt for better speed and size over better flexibility. 
 
 Here's the whole implementation: 
 
@@ -1212,11 +1212,11 @@ Here's the whole implementation:
 
     use Class::Struct qw(struct); 
     struct 'Net::hostent' => [ 
-       name        => '$',  
-       aliases     => '@',  
-       addrtype    => '$',  
-       'length'    => '$',  
-       addr_list   => '@',  
+       name        => '$', 
+       aliases     => '@', 
+       addrtype    => '$', 
+       'length'    => '$', 
+       addr_list   => '@', 
     ]; 
 
 
@@ -1260,9 +1260,9 @@ Here's the whole implementation:
 
     1; 
 
-We've snuck in quite a fair bit of other concepts besides just dynamic class creation, like overriding core functions, import/export bits,  function prototyping, short-cut function call via C<&whatever>, and function replacement with C<goto &whatever>.  These all mostly make sense from the perspective of a traditional module, but as you can see,  we can also use them in an object module. 
+We've snuck in quite a fair bit of other concepts besides just dynamic class creation, like overriding core functions, import/export bits, function prototyping, short-cut function call via C<&whatever>, and function replacement with C<goto &whatever>.  These all mostly make sense from the perspective of a traditional module, but as you can see, we can also use them in an object module. 
 
-You can look at other object-based, struct-like overrides of core functions in the 5.004 release of Perl in File::stat, Net::hostent,  Net::netent, Net::protoent, Net::servent, Time::gmtime, Time::localtime,  User::grent, and User::pwent.  These modules have a final component that's all lowercase, by convention reserved for compiler pragmas,  because they affect the compilation and change a builtin function. They also have the type names that a C programmer would most expect. 
+You can look at other object-based, struct-like overrides of core functions in the 5.004 release of Perl in File::stat, Net::hostent, Net::netent, Net::protoent, Net::servent, Time::gmtime, Time::localtime, User::grent, and User::pwent.  These modules have a final component that's all lowercase, by convention reserved for compiler pragmas, because they affect the compilation and change a builtin function. They also have the type names that a C programmer would most expect. 
 
 =head2 Data Members as Variables 
 
@@ -1278,9 +1278,9 @@ Here's an example of creating a Person using the Alias module. When you update t
     sub new { 
      my $class = shift; 
      my $self = { 
-        NAME  => undef,  
-        AGE   => undef,  
-        PEERS => [],  
+        NAME  => undef, 
+        AGE   => undef, 
+        PEERS => [], 
     }; 
     bless($self, $class); 
     return $self; 
@@ -1314,7 +1314,7 @@ Here's an example of creating a Person using the Alias module. When you update t
 
     sub exclaim { 
         my $self = attr shift; 
-        return sprintf "Hi, I'm %s, age %d, working with %s",  
+        return sprintf "Hi, I'm %s, age %d, working with %s", 
             $NAME, $AGE, join(", ", @PEERS); 
     } 
 
@@ -1338,7 +1338,7 @@ For example, it's common to call an object an I<instance> of a class and to call
 
 Also, I<base class>, I<generic class>, and I<superclass> all describe the same notion, whereas I<derived class>, I<specific class>, and I<subclass> describe the other related one. 
 
-C++ programmers have I<static methods> and I<virtual methods>,  but Perl only has I<class methods> and I<object methods>. Actually, Perl only has methods.  Whether a method gets used as a class or object method is by usage only.  You could accidentally call a class method (one expecting a string argument) on an object (one expecting a reference), or vice versa. 
+C++ programmers have I<static methods> and I<virtual methods>, but Perl only has I<class methods> and I<object methods>. Actually, Perl only has methods.  Whether a method gets used as a class or object method is by usage only.  You could accidentally call a class method (one expecting a string argument) on an object (one expecting a reference), or vice versa. 
 
 From the C++ perspective, all methods in Perl are virtual. This, by the way, is why they are never checked for function prototypes in the argument list as regular builtin and user-defined functions can be. 
 
@@ -1346,13 +1346,13 @@ Because a class is itself something of an object, Perl's classes can be taken as
 
 =head1 SEE ALSO 
 
-The following manpages will doubtless provide more background for this one: L<perlmod>,  L<perlref>,  L<perlobj>,  L<perlbot>,  L<perltie>,  and L<overload>. 
+The following manpages will doubtless provide more background for this one: L<perlmod>, L<perlref>, L<perlobj>, L<perlbot>, L<perltie>, and L<overload>. 
 
 L<perlboot> is a kinder, gentler introduction to object-oriented programming. 
 
 L<perltooc> provides more detail on class data. 
 
-Some modules which might prove interesting are Class::Accessor,  Class::Class, Class::Contract, Class::Data::Inheritable,  Class::MethodMaker and Tie::SecureHash 
+Some modules which might prove interesting are Class::Accessor, Class::Class, Class::Contract, Class::Data::Inheritable, Class::MethodMaker and Tie::SecureHash 
 
 
 

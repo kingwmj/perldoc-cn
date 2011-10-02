@@ -6,7 +6,7 @@ perlboot - Beginner's Object-Oriented Tutorial
 
 If you're not familiar with objects from other languages, some of the other Perl object documentation may be a little daunting, such as L<perlobj>, a basic reference in using objects, and L<perltoot>, which introduces readers to the peculiarities of Perl's object system in a tutorial way. 
 
-So, let's take a different approach, presuming no prior object experience. It helps if you know about subroutines (L<perlsub>),  references (L<perlref> et. seq.), and packages (L<perlmod>), so become familiar with those first if you haven't already. 
+So, let's take a different approach, presuming no prior object experience. It helps if you know about subroutines (L<perlsub>), references (L<perlref> et. seq.), and packages (L<perlmod>), so become familiar with those first if you haven't already. 
 
 =head2 If we could talk to the animals... 
 
@@ -103,7 +103,7 @@ Let's take that new arrow invocation and put it back in the barnyard example:
       $animal->speak; 
     } 
 
-There!  Now we have the animals all talking, and safely at that,  without the use of symbolic coderefs. 
+There!  Now we have the animals all talking, and safely at that, without the use of symbolic coderefs. 
 
 But look at all that common code.  Each of the C<speak> routines has a similar structure: a C<print> operator and a string that contains common text, except for two of the words.  It'd be nice if we could factor out the commonality, in case we decide later to change it all to C<says> instead of C<goes>. 
 
@@ -193,7 +193,7 @@ Note the added C<@ISA> array (pronounced "is a").  We'll get to that in a minute
 
 But what happens when we invoke C<< Cow->speak >> now? 
 
-First, Perl constructs the argument list.  In this case, it's just C<Cow>.  Then Perl looks for C<Cow::speak>.  But that's not there, so Perl checks for the inheritance array C<@Cow::ISA>.  It's there,  and contains the single name C<Animal>. 
+First, Perl constructs the argument list.  In this case, it's just C<Cow>.  Then Perl looks for C<Cow::speak>.  But that's not there, so Perl checks for the inheritance array C<@Cow::ISA>.  It's there, and contains the single name C<Animal>. 
 
 Perl next checks for C<speak> inside C<Animal> instead, as in C<Animal::speak>.  And that's found, so Perl invokes that subroutine with the already frozen argument list. 
 
@@ -205,7 +205,7 @@ This magical C<@ISA> variable has declared that C<Cow> "is a" C<Animal>. Note th
 
 If C<Animal> also had an C<@ISA>, then we'd check there too.  The search is recursive, depth-first, left-to-right in each C<@ISA> by default (see L<mro> for alternatives).  Typically, each C<@ISA> has only one element (multiple elements means multiple inheritance and multiple headaches), so we get a nice tree of inheritance. 
 
-When we turn on C<use strict>, we'll get complaints on C<@ISA>, since it's not a variable containing an explicit package name, nor is it a lexical ("my") variable.  We can't make it a lexical variable though (it has to belong to the package to be found by the inheritance mechanism),  so there's a couple of straightforward ways to handle that. 
+When we turn on C<use strict>, we'll get complaints on C<@ISA>, since it's not a variable containing an explicit package name, nor is it a lexical ("my") variable.  We can't make it a lexical variable though (it has to belong to the package to be found by the inheritance mechanism), so there's a couple of straightforward ways to handle that. 
 
 The easiest is to just spell the package name out: 
 
@@ -258,7 +258,7 @@ which results in:
     a Mouse goes squeak! 
     [but you can barely hear it!] 
 
-Here, C<Mouse> has its own speaking routine, so C<< Mouse->speak >> doesn't immediately invoke C<< Animal->speak >>. This is known as "overriding". In fact, we don't even need to say that a C<Mouse> is an C<Animal> at all, because all of the methods needed for C<speak> are completely defined for C<Mouse>; this is known as "duck typing": "If it walks like a duck and quacks like a duck, I would call it a duck" (James Whitcomb). However, it would probably be beneficial to allow a closer examination to conclude that a C<Mouse> is indeed an C<Animal>,  so it is actually better to define C<Mouse> with C<Animal> as its base (that is, it is better to "derive C<Mouse> from C<Animal>"). 
+Here, C<Mouse> has its own speaking routine, so C<< Mouse->speak >> doesn't immediately invoke C<< Animal->speak >>. This is known as "overriding". In fact, we don't even need to say that a C<Mouse> is an C<Animal> at all, because all of the methods needed for C<speak> are completely defined for C<Mouse>; this is known as "duck typing": "If it walks like a duck and quacks like a duck, I would call it a duck" (James Whitcomb). However, it would probably be beneficial to allow a closer examination to conclude that a C<Mouse> is indeed an C<Animal>, so it is actually better to define C<Mouse> with C<Animal> as its base (that is, it is better to "derive C<Mouse> from C<Animal>"). 
 
 Moreover, this duplication of code could become a maintenance headache (though code-reuse is not actually a good reason for inheritance; good design practices dictate that a derived class should be usable wherever its base class is usable, which might not be the outcome if code-reuse is the sole criterion for inheritance. Just remember that a C<Mouse> should always act like an C<Animal>). 
 
@@ -284,7 +284,7 @@ Also, without the method arrow C<< -> >>, it becomes necessary to specify the fi
 
 However, invoking C<Animal::speak> directly is a mess: Firstly, it assumes that the C<speak> method is a member of the C<Animal> class; what if C<Animal> actually inherits C<speak> from its own base? Because we are no longer using C<< -> >> to access C<speak>, the special method look up mechanism wouldn't be used, so C<speak> wouldn't even be found! 
 
-The second problem is more subtle: C<Animal> is now hardwired into the subroutine selection. Let's assume that C<Animal::speak> does exist. What happens when,  at a later time, someone expands the class hierarchy by having C<Mouse> inherit from C<Mus> instead of C<Animal>. Unless the invocation of C<Animal::speak> is also changed to an invocation of C<Mus::speak>, centuries worth of taxonomical classification could be obliterated! 
+The second problem is more subtle: C<Animal> is now hardwired into the subroutine selection. Let's assume that C<Animal::speak> does exist. What happens when, at a later time, someone expands the class hierarchy by having C<Mouse> inherit from C<Mus> instead of C<Animal>. Unless the invocation of C<Animal::speak> is also changed to an invocation of C<Mus::speak>, centuries worth of taxonomical classification could be obliterated! 
 
 What we have here is a fragile or leaky abstraction; it is the beginning of a maintenance nightmare. What we need is the ability to search for the right method wih as few assumptions as possible. 
 
@@ -359,9 +359,9 @@ and attempts to invoke:
 
   Class::method("Class", @args); 
 
-However, if C<Class::method> is not found, then C<@Class::ISA> is examined (recursively) to locate a class (a package) that does indeed contain C<method>,  and that subroutine is invoked instead. 
+However, if C<Class::method> is not found, then C<@Class::ISA> is examined (recursively) to locate a class (a package) that does indeed contain C<method>, and that subroutine is invoked instead. 
 
-Using this simple syntax, we have class methods, (multiple) inheritance,  overriding, and extending. Using just what we've seen so far, we've been able to factor out common code (though that's never a good reason for inheritance!), and provide a nice way to reuse implementations with variations. 
+Using this simple syntax, we have class methods, (multiple) inheritance, overriding, and extending. Using just what we've seen so far, we've been able to factor out common code (though that's never a good reason for inheritance!), and provide a nice way to reuse implementations with variations. 
 
 Now, what about data? 
 
@@ -456,7 +456,7 @@ outputs:
 
 =head2 How to build a horse 
 
-Of course, if we constructed all of our horses by hand, we'd most likely make mistakes from time to time.  We're also violating one of the properties of object-oriented programming, in that the "inside guts" of a Horse are visible.  That's good if you're a veterinarian,  but not if you just like to own horses.  So, let's have the Horse class handle the details inside a class method: 
+Of course, if we constructed all of our horses by hand, we'd most likely make mistakes from time to time.  We're also violating one of the properties of object-oriented programming, in that the "inside guts" of a Horse are visible.  That's good if you're a veterinarian, but not if you just like to own horses.  So, let's have the Horse class handle the details inside a class method: 
 
 
   { package Horse; 
@@ -482,11 +482,11 @@ Notice we're back to a class method, so the two arguments to C<Horse::named> are
 
 This C<Horse::named> method is called a "constructor". 
 
-We've called the constructor C<named> here, so that it quickly denotes the constructor's argument as the name for this particular C<Horse>. You can use different constructors with different names for different ways of "giving birth" to the object (like maybe recording its pedigree or date of birth).  However, you'll find that most people coming to Perl from more limited languages use a single constructor named C<new>, with various ways of interpreting the arguments to C<new>.  Either style is fine, as long as you document your particular way of giving birth to an object.  (And you I<were> going to do that,  right?) 
+We've called the constructor C<named> here, so that it quickly denotes the constructor's argument as the name for this particular C<Horse>. You can use different constructors with different names for different ways of "giving birth" to the object (like maybe recording its pedigree or date of birth).  However, you'll find that most people coming to Perl from more limited languages use a single constructor named C<new>, with various ways of interpreting the arguments to C<new>.  Either style is fine, as long as you document your particular way of giving birth to an object.  (And you I<were> going to do that, right?) 
 
 =head2 Inheriting the constructor 
 
-But was there anything specific to C<Horse> in that method?  No.  Therefore,  it's also the same recipe for building anything else that inherited from C<Animal>, so let's put C<name> and C<named> there: 
+But was there anything specific to C<Horse> in that method?  No.  Therefore, it's also the same recipe for building anything else that inherited from C<Animal>, so let's put C<name> and C<named> there: 
 
 
   { package Animal; 
@@ -520,7 +520,7 @@ We get a debugging value:
 
   a Horse=SCALAR(0xaca42ac) goes neigh! 
 
-Why?  Because the C<Animal::speak> routine is expecting a classname as its first parameter, not an instance.  When the instance is passed in,  we'll end up using a blessed scalar reference as a string, and that shows up as we saw it just now. 
+Why?  Because the C<Animal::speak> routine is expecting a classname as its first parameter, not an instance.  When the instance is passed in, we'll end up using a blessed scalar reference as a string, and that shows up as we saw it just now. 
 
 =head2 Making a method work with either classes or instances 
 
@@ -547,7 +547,7 @@ and now we'll fix C<speak> to use this:
     print $either->name, " goes ", $either->sound, "\n"; 
   } 
 
-And since C<sound> already worked with either a class or an instance,  we're done! 
+And since C<sound> already worked with either a class or an instance, we're done! 
 
 =head2 Adding parameters to a method 
 
@@ -596,7 +596,7 @@ which prints:
   Mr. Ed eats hay. 
   Any Sheep eats grass. 
 
-An instance method with parameters gets invoked with the instance,  and then the list of parameters.  So that first invocation is like: 
+An instance method with parameters gets invoked with the instance, and then the list of parameters.  So that first invocation is like: 
 
 
   Animal::eat($horse, "hay"); 
@@ -614,7 +614,7 @@ Let's make a sheep that has a name and a color:
 
 so C<< $bad->{Name} >> has C<Evil>, and C<< $bad->{Color} >> has C<black>.  But we want to make C<< $bad->name >> access the name, and that's now messed up because it's expecting a scalar reference.  Not to worry, because that's pretty easy to fix up. 
 
-One solution is to override C<Animal::name> and C<Animal::named> by defining them anew in C<Sheep>, but then any methods added later to C<Animal> might still mess up, and we'd have to override all of those too. Therefore, it's never a good idea to define the data layout in a way that's different from the data layout of the base classes. In fact,  it's a good idea to use blessed hash references in all cases. Also, this is why it's important to have constructors do the low-level work. So,  let's redefine C<Animal>: 
+One solution is to override C<Animal::name> and C<Animal::named> by defining them anew in C<Sheep>, but then any methods added later to C<Animal> might still mess up, and we'd have to override all of those too. Therefore, it's never a good idea to define the data layout in a way that's different from the data layout of the base classes. In fact, it's a good idea to use blessed hash references in all cases. Also, this is why it's important to have constructors do the low-level work. So, let's redefine C<Animal>: 
 
 
   ## in Animal 
@@ -642,7 +642,7 @@ Of course, we still need to override C<named> in order to handle constructing a 
 
 (Note that C<@_> contains the parameters to C<named>.) 
 
-What's this C<default_color>?  Well, if C<named> has only the name,  we still need to set a color, so we'll have a class-specific default color. For a sheep, we might define it as white: 
+What's this C<default_color>?  Well, if C<named> has only the name, we still need to set a color, so we'll have a class-specific default color. For a sheep, we might define it as white: 
 
 
   ## in Sheep 
@@ -704,13 +704,13 @@ which results in:
 
 =head2 Summary 
 
-So, now we have class methods, constructors, instance methods, instance data, and even accessors. But that's still just the beginning of what Perl has to offer. We haven't even begun to talk about accessors that double as getters and setters, destructors, indirect object notation,  overloading, "isa" and "can" tests, the C<UNIVERSAL> class, and so on. That's for the rest of the Perl documentation to cover. Hopefully, this gets you started, though. 
+So, now we have class methods, constructors, instance methods, instance data, and even accessors. But that's still just the beginning of what Perl has to offer. We haven't even begun to talk about accessors that double as getters and setters, destructors, indirect object notation, overloading, "isa" and "can" tests, the C<UNIVERSAL> class, and so on. That's for the rest of the Perl documentation to cover. Hopefully, this gets you started, though. 
 
 =head1 SEE ALSO 
 
 For more information, see L<perlobj> (for all the gritty details about Perl objects, now that you've seen the basics), L<perltoot> (the tutorial for those who already know objects), L<perltooc> (dealing with class data), L<perlbot> (for some more tricks), and books such as Damian Conway's excellent I<Object Oriented Perl>. 
 
-Some modules which might prove interesting are Class::Accessor,  Class::Class, Class::Contract, Class::Data::Inheritable,  Class::MethodMaker and Tie::SecureHash 
+Some modules which might prove interesting are Class::Accessor, Class::Class, Class::Contract, Class::Data::Inheritable, Class::MethodMaker and Tie::SecureHash 
 
 =head1 COPYRIGHT 
 

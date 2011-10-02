@@ -22,7 +22,7 @@ The aim of the implementation is to provide the PerlIO API in a flexible and pla
 
 PerlIO is a stack of layers. 
 
-The low levels of the stack work with the low-level operating system calls (file descriptors in C) getting bytes in and out, the higher layers of the stack buffer, filter, and otherwise manipulate the I/O,  and return characters (or bytes) to Perl.  Terms I<above> and I<below> are used to refer to the relative positioning of the stack layers. 
+The low levels of the stack work with the low-level operating system calls (file descriptors in C) getting bytes in and out, the higher layers of the stack buffer, filter, and otherwise manipulate the I/O, and return characters (or bytes) to Perl.  Terms I<above> and I<below> are used to refer to the relative positioning of the stack layers. 
 
 A layer contains a "vtable", the table of I/O operations (at C level a table of function pointers), and status flags.  The functions in the vtable implement operations like "open", "read", and "write". 
 
@@ -30,9 +30,9 @@ When I/O, for example "read", is requested, the request goes from Perl first dow
 
 The requests do not necessarily go always all the way down to the operating system: that's where PerlIO buffering comes into play. 
 
-When you do an open() and specify extra PerlIO layers to be deployed,  the layers you specify are "pushed" on top of the already existing default stack.  One way to see it is that "operating system is on the left" and "Perl is on the right". 
+When you do an open() and specify extra PerlIO layers to be deployed, the layers you specify are "pushed" on top of the already existing default stack.  One way to see it is that "operating system is on the left" and "Perl is on the right". 
 
-What exact layers are in this default stack depends on a lot of things: your operating system, Perl version, Perl compile time configuration, and Perl runtime configuration.  See L<PerlIO>,  L<perlrun/PERLIO>, and L<open> for more information. 
+What exact layers are in this default stack depends on a lot of things: your operating system, Perl version, Perl compile time configuration, and Perl runtime configuration.  See L<PerlIO>, L<perlrun/PERLIO>, and L<open> for more information. 
 
 binmode() operates similarly to open(): by default the specified layers are pushed on top of the existing stack. 
 
@@ -65,7 +65,7 @@ The basic data structure is a PerlIOl:
 
 A C<PerlIOl *> is a pointer to the struct, and the I<application> level C<PerlIO *> is a pointer to a C<PerlIOl *> - i.e. a pointer to a pointer to the struct. This allows the application level C<PerlIO *> to remain constant while the actual C<PerlIOl *> underneath changes. (Compare perl's C<SV *> which remains constant while its C<sv_any> field changes as the scalar's type changes.) An IO stream is then in general represented as a pointer to this linked-list of "layers". 
 
-It should be noted that because of the double indirection in a C<PerlIO *>,  a C<< &(perlio->next) >> "is" a C<PerlIO *>, and so to some degree at least one layer can use the "standard" API on the next layer down. 
+It should be noted that because of the double indirection in a C<PerlIO *>, a C<< &(perlio->next) >> "is" a C<PerlIO *>, and so to some degree at least one layer can use the "standard" API on the next layer down. 
 
 A "layer" is composed of two parts: 
 
@@ -92,13 +92,13 @@ The functions and attributes are accessed via the "tab" (for table) member of C<
    char *        name; 
    Size_t        size; 
    IV        kind; 
-   IV        (*Pushed)(pTHX_ PerlIO *f, const char *mode, SV *arg, PerlIO_funcs *tab); 
+   IV        (*Pushed)(pTHX_ PerlIO *f,const char *mode,SV *arg, PerlIO_funcs *tab); 
    IV        (*Popped)(pTHX_ PerlIO *f); 
-   PerlIO *    (*Open)(pTHX_ PerlIO_funcs *tab,  
-              PerlIO_list_t *layers, IV n,  
-              const char *mode,  
-              int fd, int imode, int perm,  
-              PerlIO *old,  
+   PerlIO *    (*Open)(pTHX_ PerlIO_funcs *tab, 
+              PerlIO_list_t *layers, IV n, 
+              const char *mode, 
+              int fd, int imode, int perm, 
+              PerlIO *old, 
               int narg, SV **args); 
    IV        (*Binmode)(pTHX_ PerlIO *f); 
    SV *        (*Getarg)(pTHX_ PerlIO *f, CLONE_PARAMS *param, int flags) 
@@ -123,10 +123,10 @@ The functions and attributes are accessed via the "tab" (for table) member of C<
    Size_t    (*Get_bufsiz)(pTHX_ PerlIO *f); 
    STDCHAR *    (*Get_ptr)(pTHX_ PerlIO *f); 
    SSize_t    (*Get_cnt)(pTHX_ PerlIO *f); 
-   void        (*Set_ptrcnt)(pTHX_ PerlIO *f, STDCHAR *ptr, SSize_t cnt); 
+   void        (*Set_ptrcnt)(pTHX_ PerlIO *f,STDCHAR *ptr,SSize_t cnt); 
   }; 
 
-The first few members of the struct give a function table size for compatibility check "name" for the layer, the  size to C<malloc> for the per-instance data,  and some flags which are attributes of the class as whole (such as whether it is a buffering layer), then follow the functions which fall into four basic groups: 
+The first few members of the struct give a function table size for compatibility check "name" for the layer, the  size to C<malloc> for the per-instance data, and some flags which are attributes of the class as whole (such as whether it is a buffering layer), then follow the functions which fall into four basic groups: 
 
 =over 4 
 
@@ -182,7 +182,7 @@ In this way (as for perl's scalars) a pointer to a PerlIOBuf can be treated as a
 
 
 
-The above attempts to show how the layer scheme works in a simple case. The application's C<PerlIO *> points to an entry in the table(s) representing open (allocated) handles. For example the first three slots in the table correspond to C<stdin>, C<stdout> and C<stderr>. The table in turn points to the current "top" layer for the handle - in this case an instance of the generic buffering layer "perlio". That layer in turn points to the next layer down - in this case the low-level "unix" layer. 
+The above attempts to show how the layer scheme works in a simple case. The application's C<PerlIO *> points to an entry in the table(s) representing open (allocated) handles. For example the first three slots in the table correspond to C<stdin>,C<stdout> and C<stderr>. The table in turn points to the current "top" layer for the handle - in this case an instance of the generic buffering layer "perlio". That layer in turn points to the next layer down - in this case the low-level "unix" layer. 
 
 The above is roughly equivalent to a "stdio" buffered stream, but with much more flexibility: 
 
@@ -238,7 +238,7 @@ All writes should be appends.
 
 =item PERLIO_F_CRLF 
 
-Layer is performing Win32-like "\n" mapped to CR, LF for output and CR, LF mapped to "\n" for input. Normally the provided "crlf" layer is the only layer that need bother about this. C<PerlIO_binmode()> will mess with this flag rather than add/remove layers if the C<PERLIO_K_CANCRLF> bit is set for the layers class. 
+Layer is performing Win32-like "\n" mapped to CR,LF for output and CR,LF mapped to "\n" for input. Normally the provided "crlf" layer is the only layer that need bother about this. C<PerlIO_binmode()> will mess with this flag rather than add/remove layers if the C<PERLIO_K_CANCRLF> bit is set for the layers class. 
 
 =item PERLIO_F_UTF8 
 
@@ -307,7 +307,7 @@ The size of the per-instance data structure, e.g.:
 
   sizeof(PerlIOAPR) 
 
-If this field is zero then C<PerlIO_pushed> does not malloc anything and assumes layer's Pushed function will do any required layer stack manipulation - used to avoid malloc/free overhead for dummy layers. If the field is non-zero it must be at least the size of C<PerlIOl>,  C<PerlIO_pushed> will allocate memory for the layer's data structures and link new layer onto the stream's stack. (If the layer's Pushed method returns an error indication the layer is popped again.) 
+If this field is zero then C<PerlIO_pushed> does not malloc anything and assumes layer's Pushed function will do any required layer stack manipulation - used to avoid malloc/free overhead for dummy layers. If the field is non-zero it must be at least the size of C<PerlIOl>, C<PerlIO_pushed> will allocate memory for the layer's data structures and link new layer onto the stream's stack. (If the layer's Pushed method returns an error indication the layer is popped again.) 
 
 =item kind 
 
@@ -341,7 +341,7 @@ Used when the layer's open() accepts more arguments than usual. The extra argume
 =item Pushed 
 
 
-    IV    (*Pushed)(pTHX_ PerlIO *f, const char *mode, SV *arg); 
+    IV    (*Pushed)(pTHX_ PerlIO *f,const char *mode, SV *arg); 
 
 The only absolutely mandatory method. Called when the layer is pushed onto the stack.  The C<mode> argument may be NULL if this occurs post-open. The C<arg> will be non-C<NULL> if an argument string was passed. In most cases this should call C<PerlIOBase_pushed()> to convert C<mode> into the appropriate C<PERLIO_F_XXXXX> flags in addition to any actions the layer itself takes.  If a layer is not expecting an argument it need neither save the one passed to it, nor provide C<Getarg()> (it could perhaps C<Perl_warn> that the argument was un-expected). 
 
@@ -361,14 +361,14 @@ Returns 0 on success and failure.  If C<Popped()> returns I<true> then I<perlio.
 
     PerlIO *    (*Open)(...); 
 
-The C<Open()> method has lots of arguments because it combines the functions of perl's C<open>, C<PerlIO_open>, perl's C<sysopen>,  C<PerlIO_fdopen> and C<PerlIO_reopen>.  The full prototype is as follows: 
+The C<Open()> method has lots of arguments because it combines the functions of perl's C<open>, C<PerlIO_open>, perl's C<sysopen>, C<PerlIO_fdopen> and C<PerlIO_reopen>.  The full prototype is as follows: 
 
 
- PerlIO *    (*Open)(pTHX_ PerlIO_funcs *tab,  
-            PerlIO_list_t *layers, IV n,  
-            const char *mode,  
-            int fd, int imode, int perm,  
-            PerlIO *old,  
+ PerlIO *    (*Open)(pTHX_ PerlIO_funcs *tab, 
+            PerlIO_list_t *layers, IV n, 
+            const char *mode, 
+            int fd, int imode, int perm, 
+            PerlIO *old, 
             int narg, SV **args); 
 
 Open should (perhaps indirectly) call C<PerlIO_allocate()> to allocate a slot in the table and associate it with the layers information for the opened file, by calling C<PerlIO_push>.  The I<layers> is an array of all the layers destined for the C<PerlIO *>, and any arguments passed to them, I<n> is the index into that array of the layer being called. The macro C<PerlIOArg> will return a (possibly C<NULL>) SV * for the argument passed to the layer. 
@@ -379,7 +379,7 @@ The C<'I'> prefix is used during creation of C<stdin>..C<stderr> via special C<P
 
 If I<old> is not C<NULL> then this is a C<PerlIO_reopen>. Perl itself does not use this (yet?) and semantics are a little vague. 
 
-If I<fd> not negative then it is the numeric file descriptor I<fd>,  which will be open in a manner compatible with the supplied mode string, the call is thus equivalent to C<PerlIO_fdopen>. In this case I<nargs> will be zero. 
+If I<fd> not negative then it is the numeric file descriptor I<fd>, which will be open in a manner compatible with the supplied mode string, the call is thus equivalent to C<PerlIO_fdopen>. In this case I<nargs> will be zero. 
 
 If I<nargs> is greater than zero then it gives the number of arguments passed to C<open>, otherwise it will be 1 if for example C<PerlIO_open> was called.  In simple cases SvPV_nolen(*args) is the pathname to open. 
 
@@ -399,7 +399,7 @@ Optional. Used when C<:raw> layer is pushed (explicitly or as a result of binmod
 =item Getarg 
 
 
-    SV *      (*Getarg)(pTHX_ PerlIO *f,  
+    SV *      (*Getarg)(pTHX_ PerlIO *f, 
                 CLONE_PARAMS *param, int flags); 
 
 Optional. If present should return an SV * representing the string argument passed to the layer when it was pushed. e.g. ":encoding(ascii)" would return an SvPV with value "ascii". (I<param> and I<flags> arguments can be ignored in most cases) 
@@ -418,7 +418,7 @@ Returns -1 on error, which is considered to include the case where the layer can
 =item Dup 
 
 
-    PerlIO * (*Dup)(pTHX_ PerlIO *f, PerlIO *o,  
+    PerlIO * (*Dup)(pTHX_ PerlIO *f, PerlIO *o, 
             CLONE_PARAMS *param, int flags); 
 
 XXX: Needs more docs. 
@@ -441,7 +441,7 @@ Returns actual bytes read, or -1 on an error.
 =item Unread 
 
 
-    SSize_t    (*Unread)(pTHX_ PerlIO *f,  
+    SSize_t    (*Unread)(pTHX_ PerlIO *f, 
               const void *vbuf, Size_t count); 
 
 A superset of stdio's C<ungetc()>. Should arrange for future reads to see the bytes in C<vbuf>. If there is no obviously better implementation then C<PerlIOBase_unread()> provides the function by pushing a "fake" "pending" layer above the calling layer. 
@@ -518,7 +518,7 @@ Returns 0 on end-of-file, 1 if not end-of-file, -1 on error.
 
 Return error indicator. C<PerlIOBase_error()> is normally sufficient. 
 
-Returns 1 if there is an error (usually when C<PERLIO_F_ERROR> is set,  0 otherwise. 
+Returns 1 if there is an error (usually when C<PERLIO_F_ERROR> is set, 0 otherwise. 
 
 =item Clearerr 
 
@@ -565,7 +565,7 @@ Return the number of bytes left to be read in the current buffer.
 =item Set_ptrcnt 
 
 
-    void    (*Set_ptrcnt)(pTHX_ PerlIO *f,  
+    void    (*Set_ptrcnt)(pTHX_ PerlIO *f, 
                   STDCHAR *ptr, SSize_t cnt); 
 
 Adjust the read pointer and count of bytes to match C<ptr> and/or C<cnt>. The application (or layer above) must ensure they are consistent. (Checking is allowed by the paranoid.) 
@@ -578,21 +578,21 @@ To ask for the next layer down use PerlIONext(PerlIO *f).
 
 To check that a PerlIO* is valid use PerlIOValid(PerlIO *f).  (All this does is really just to check that the pointer is non-NULL and that the pointer behind that is non-NULL.) 
 
-PerlIOBase(PerlIO *f) returns the "Base" pointer, or in other words,  the C<PerlIOl*> pointer. 
+PerlIOBase(PerlIO *f) returns the "Base" pointer, or in other words, the C<PerlIOl*> pointer. 
 
 PerlIOSelf(PerlIO* f, type) return the PerlIOBase cast to a type. 
 
 Perl_PerlIO_or_Base(PerlIO* f, callback, base, failure, args) either calls the I<callback> from the functions of the layer I<f> (just by the name of the IO function, like "Read") with the I<args>, or if there is no such callback, calls the I<base> version of the callback with the same args, or if the f is invalid, set errno to EBADF and return I<failure>. 
 
-Perl_PerlIO_or_fail(PerlIO* f, callback, failure, args) either calls the I<callback> of the functions of the layer I<f> with the I<args>,  or if there is no such callback, set errno to EINVAL.  Or if the f is invalid, set errno to EBADF and return I<failure>. 
+Perl_PerlIO_or_fail(PerlIO* f, callback, failure, args) either calls the I<callback> of the functions of the layer I<f> with the I<args>, or if there is no such callback, set errno to EINVAL.  Or if the f is invalid, set errno to EBADF and return I<failure>. 
 
-Perl_PerlIO_or_Base_void(PerlIO* f, callback, base, args) either calls the I<callback> of the functions of the layer I<f> with the I<args>,  or if there is no such callback, calls the I<base> version of the callback with the same args, or if the f is invalid, set errno to EBADF. 
+Perl_PerlIO_or_Base_void(PerlIO* f, callback, base, args) either calls the I<callback> of the functions of the layer I<f> with the I<args>, or if there is no such callback, calls the I<base> version of the callback with the same args, or if the f is invalid, set errno to EBADF. 
 
 Perl_PerlIO_or_fail_void(PerlIO* f, callback, args) either calls the I<callback> of the functions of the layer I<f> with the I<args>, or if there is no such callback, set errno to EINVAL.  Or if the f is invalid, set errno to EBADF. 
 
 =head2 Implementing PerlIO Layers 
 
-If you find the implementation document unclear or not sufficient,  look at the existing PerlIO layer implementations, which include: 
+If you find the implementation document unclear or not sufficient, look at the existing PerlIO layer implementations, which include: 
 
 =over 
 
@@ -661,7 +661,7 @@ The file C<perlio.c> provides the following layers:
 
 =item "unix" 
 
-A basic non-buffered layer which calls Unix/POSIX C<read()>, C<write()>,  C<lseek()>, C<close()>. No buffering. Even on platforms that distinguish between O_TEXT and O_BINARY this layer is always O_BINARY. 
+A basic non-buffered layer which calls Unix/POSIX C<read()>, C<write()>, C<lseek()>, C<close()>. No buffering. Even on platforms that distinguish between O_TEXT and O_BINARY this layer is always O_BINARY. 
 
 =item "perlio" 
 
@@ -675,7 +675,7 @@ A layer which provides the PerlIO API via the layer scheme, but implements it by
 
 =item "crlf" 
 
-A layer derived using "perlio" as a base class. It provides Win32-like "\n" to CR, LF translation. Can either be applied above "perlio" or serve as the buffer layer itself. "crlf" over "unix" is the default if system distinguishes between C<O_TEXT> and C<O_BINARY> opens. (At some point "unix" will be replaced by a "native" Win32 IO layer on that platform,  as Win32's read/write layer has various drawbacks.) The "crlf" layer is a reasonable model for a layer which transforms data in some way. 
+A layer derived using "perlio" as a base class. It provides Win32-like "\n" to CR,LF translation. Can either be applied above "perlio" or serve as the buffer layer itself. "crlf" over "unix" is the default if system distinguishes between C<O_TEXT> and C<O_BINARY> opens. (At some point "unix" will be replaced by a "native" Win32 IO layer on that platform, as Win32's read/write layer has various drawbacks.) The "crlf" layer is a reasonable model for a layer which transforms data in some way. 
 
 =item "mmap" 
 

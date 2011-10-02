@@ -67,7 +67,7 @@ $<I<digit>> does not refer to fields--it refers to substrings matched by the las
 
 =item * 
 
-The print() statement does not add field and record separators unless you set C<$, > and C<$\>.  You can set $OFS and $ORS if you're using the English module. 
+The print() statement does not add field and record separators unless you set C<$,> and C<$\>.  You can set $OFS and $ORS if you're using the English module. 
 
 =item * 
 
@@ -109,7 +109,7 @@ The following variables work differently:
       NF    $#Fld, or some such 
       NR    $. 
       OFMT    $# 
-      OFS    $,  
+      OFS    $, 
       ORS    $\ 
       RLENGTH    length($&) 
       RS    $/ 
@@ -230,7 +230,7 @@ The environment is not automatically made available as separate scalar variables
 
 =item * 
 
-The shell's C<test> uses "=", "!=", "<" etc for string comparisons and "-eq",  "-ne", "-lt" etc for numeric comparisons. This is the reverse of Perl, which uses C<eq>, C<ne>, C<lt> for string comparisons, and C<==>, C<!=> C<< < >> etc for numeric comparisons. 
+The shell's C<test> uses "=", "!=", "<" etc for string comparisons and "-eq", "-ne", "-lt" etc for numeric comparisons. This is the reverse of Perl, which uses C<eq>, C<ne>, C<lt> for string comparisons, and C<==>, C<!=> C<< < >> etc for numeric comparisons. 
 
 =back 
 
@@ -325,7 +325,7 @@ Traps related to the use of pattern matching.
 
 =item Subroutine, Signal, Sorting Traps 
 
-Traps related to the use of signals and signal handlers, general subroutines,  and sorting, along with sorting subroutines. 
+Traps related to the use of signals and signal handlers, general subroutines, and sorting, along with sorting subroutines. 
 
 =item OS Traps 
 
@@ -341,7 +341,7 @@ Everything else.
 
 =back 
 
-If you find an example of a conversion trap that is not listed here,  please submit it to <F<perlbug@perl.org>> for inclusion. Also note that at least some of these can be caught with the C<use warnings> pragma or the B<-w> switch. 
+If you find an example of a conversion trap that is not listed here, please submit it to <F<perlbug@perl.org>> for inclusion. Also note that at least some of these can be caught with the C<use warnings> pragma or the B<-w> switch. 
 
 =head2 Discontinuance, Deprecation, and BugFix traps 
 
@@ -359,7 +359,7 @@ Symbols starting with "_" are no longer forced into package main, except for C<$
 
 
     package main; 
-    print "\$_legacy is ", $_legacy, "\n"; 
+    print "\$_legacy is ",$_legacy,"\n"; 
 
 
     # perl4 prints: $_legacy is 1 
@@ -378,7 +378,7 @@ Double-colon is now a valid package separator in a variable name.  Thus these be
     # perl4 prints: 1::2::3 4::abc::xyz 
     # perl5 prints: 3 
 
-Given that C<::> is now the preferred package delimiter, it is debatable whether this should be classed as a bug or not. (The older package delimiter, ', is used here) 
+Given that C<::> is now the preferred package delimiter, it is debatable whether this should be classed as a bug or not. (The older package delimiter, ' ,is used here) 
 
 
     $x = 10; 
@@ -401,11 +401,11 @@ Also see precedence traps, for parsing C<$:>.
 The second and third arguments of C<splice()> are now evaluated in scalar context (as the Camel says) rather than list context. 
 
 
-    sub sub1{return(0, 2) }          # return a 2-element list 
-    sub sub2{ return(1, 2, 3)}        # return a 3-element list 
-    @a1 = ("a", "b", "c", "d", "e"); 
-    @a2 = splice(@a1, &sub1, &sub2); 
-    print join(' ', @a2), "\n"; 
+    sub sub1{return(0,2) }          # return a 2-element list 
+    sub sub2{ return(1,2,3)}        # return a 3-element list 
+    @a1 = ("a","b","c","d","e"); 
+    @a2 = splice(@a1,&sub1,&sub2); 
+    print join(' ',@a2),"\n"; 
 
 
     # perl4 prints: a b 
@@ -462,7 +462,7 @@ The archaic while/if BLOCK BLOCK syntax is no longer supported.
 The C<**> operator now binds more tightly than unary minus. It was documented to work this way before, but didn't. 
 
 
-    print -4**2, "\n"; 
+    print -4**2,"\n"; 
 
 
     # perl4 prints: 16 
@@ -473,11 +473,11 @@ The C<**> operator now binds more tightly than unary minus. It was documented to
 The meaning of C<foreach{}> has changed slightly when it is iterating over a list which is not an array.  This used to assign the list to a temporary array, but no longer does so (for efficiency).  This means that you'll now be iterating over the actual values, not over copies of the values.  Modifications to the loop variable can change the original values. 
 
 
-    @list = ('ab', 'abc', 'bcd', 'def'); 
-    foreach $var (grep(/ab/, @list)){ 
+    @list = ('ab','abc','bcd','def'); 
+    foreach $var (grep(/ab/,@list)){ 
         $var = 1; 
     } 
-    print (join(':', @list)); 
+    print (join(':',@list)); 
 
 
     # perl4 prints: ab:abc:bcd:def 
@@ -486,12 +486,12 @@ The meaning of C<foreach{}> has changed slightly when it is iterating over a lis
 To retain Perl4 semantics you need to assign your list explicitly to a temporary array and then iterate over that.  For example, you might need to change 
 
 
-    foreach $var (grep(/ab/, @list)){ 
+    foreach $var (grep(/ab/,@list)){ 
 
 to 
 
 
-    foreach $var (@tmp = grep(/ab/, @list)){ 
+    foreach $var (@tmp = grep(/ab/,@list)){ 
 
 Otherwise changing $var will clobber the values of @list.  (This most often happens when you use C<$_> for the loop variable, and call subroutines in the loop that don't properly localize C<$_>.) 
 
@@ -509,7 +509,7 @@ C<split> with no arguments now behaves like C<split ' '> (which doesn't return a
 
 =item * B<-e> behavior fixed 
 
-Perl 4 would ignore any text which was attached to an B<-e> switch,  always taking the code snippet from the following arg.  Additionally, it would silently accept an B<-e> switch without a following arg.  Both of these behaviors have been fixed. 
+Perl 4 would ignore any text which was attached to an B<-e> switch, always taking the code snippet from the following arg.  Additionally, it would silently accept an B<-e> switch without a following arg.  Both of these behaviors have been fixed. 
 
 
     perl -e'print "attached to -e"' 'print "separate arg"' 
@@ -624,7 +624,7 @@ Use unary C<+> before C<{> on a hash reference, and unary C<+> applied to the fi
 
 =head2 Numerical Traps 
 
-Perl4-to-Perl5 traps having to do with numerical operators,  operands, or output from same. 
+Perl4-to-Perl5 traps having to do with numerical operators, operands, or output from same. 
 
 =over 5 
 
@@ -663,7 +663,7 @@ Assignment of return values from numeric equality tests does not work in perl5 w
 
 
     $p = ($test == 1); 
-    print $p, "\n"; 
+    print $p,"\n"; 
 
 
     # perl4 prints: 0 
@@ -720,12 +720,12 @@ Negative array subscripts now count from the end of the array.
 Setting C<$#array> lower now discards array elements, and makes them impossible to recover. 
 
 
-    @a = (a, b, c, d, e); 
-    print "Before: ", join('', @a); 
+    @a = (a,b,c,d,e); 
+    print "Before: ",join('',@a); 
     $#a =1; 
-    print ", After: ", join('', @a); 
+    print ", After: ",join('',@a); 
     $#a =3; 
-    print ", Recovered: ", join('', @a), "\n"; 
+    print ", Recovered: ",join('',@a),"\n"; 
 
 
     # perl4 prints: Before: abcde, After: ab, Recovered: abcd 
@@ -736,7 +736,7 @@ Setting C<$#array> lower now discards array elements, and makes them impossible 
 Hashes get defined before use 
 
 
-    local($s, @a, %h); 
+    local($s,@a,%h); 
     die "scalar \$s defined" if defined($s); 
     die "array \@a defined" if defined(@a); 
     die "hash \%h defined" if defined(%h); 
@@ -755,7 +755,7 @@ glob assignment from variable to variable will fail if the assigned variable is 
     @a = ("This is Perl 4"); 
     *b = *a; 
     local(@a); 
-    print @b, "\n"; 
+    print @b,"\n"; 
 
 
     # perl4 prints: This is Perl 4 
@@ -782,9 +782,9 @@ Changes in unary negation (of strings) This change effects both the return value
 
 
     $x = "aaa"; 
-    print ++$x, " : "; 
-    print -$x, " : "; 
-    print ++$x, "\n"; 
+    print ++$x," : "; 
+    print -$x," : "; 
+    print ++$x,"\n"; 
 
 
     # perl4 prints: aab : -0 : 1 
@@ -832,7 +832,7 @@ The behavior is slightly different for:
 
 =item * Variable Suicide 
 
-Variable suicide behavior is more consistent under Perl 5. Perl5 exhibits the same behavior for hashes and scalars,  that perl4 exhibits for only scalars. 
+Variable suicide behavior is more consistent under Perl 5. Perl5 exhibits the same behavior for hashes and scalars, that perl4 exhibits for only scalars. 
 
 
     $aGlobal{ "aKey" } = "global value"; 
@@ -843,7 +843,7 @@ Variable suicide behavior is more consistent under Perl 5. Perl5 exhibits the sa
 
     sub test { 
         local( *theArgument ) = @_; 
-        local( %aNewLocal ); # perl 4 != 5.001l, m 
+        local( %aNewLocal ); # perl 4 != 5.001l,m 
         $aNewLocal{"aKey"} = "this should never appear"; 
         print "SUB: ", $theArgument{"aKey"}, "\n"; 
         $aNewLocal{"aKey"} = "level $GlobalLevel";   # what should print 
@@ -880,7 +880,7 @@ Variable suicide behavior is more consistent under Perl 5. Perl5 exhibits the sa
 The elements of argument lists for formats are now evaluated in list context.  This means you can interpolate list values now. 
 
 
-    @fmt = ("foo", "bar", "baz"); 
+    @fmt = ("foo","bar","baz"); 
     format STDOUT= 
     @<<<<< @||||| @>>>>> 
     @fmt; 
@@ -907,7 +907,7 @@ The C<caller()> function now returns a false value in a scalar context if there 
 The comma operator in a scalar context is now guaranteed to give a scalar context to its last argument. It gives scalar or void context to any preceding arguments, depending on circumstances. 
 
 
-    @y= ('a', 'b', 'c'); 
+    @y= ('a','b','c'); 
     $x = (1, 2, @y); 
     print "x = $x\n"; 
 
@@ -917,7 +917,7 @@ The comma operator in a scalar context is now guaranteed to give a scalar contex
 
 =item * C<sprintf()> prototyped as C<($;@)> 
 
-C<sprintf()> is prototyped as ($;@), so its first argument is given scalar context. Thus, if passed an array, it will probably not do what you want,  unlike Perl 4: 
+C<sprintf()> is prototyped as ($;@), so its first argument is given scalar context. Thus, if passed an array, it will probably not do what you want, unlike Perl 4: 
 
 
     @z = ('%s%s', 'foo', 'bar'); 
@@ -966,8 +966,8 @@ LHS vs. RHS of any assignment operator.  LHS is evaluated first in perl4, second
 These are now semantic errors because of precedence: 
 
 
-    @list = (1, 2, 3, 4, 5); 
-    %map = ("a", 1, "b", 2, "c", 3, "d", 4); 
+    @list = (1,2,3,4,5); 
+    %map = ("a",1,"b",2,"c",3,"d",4); 
     $n = shift @list + 2;   # first item in list plus 2 
     print "n is $n, "; 
     $m = keys %map + 2;     # number of items in hash plus 2 
@@ -994,7 +994,7 @@ would be erroneously parsed as
 
     (/foo/ ? $a += 2 : $a) -= 2; 
 
-On the other hand,  
+On the other hand, 
 
 
     $a += /foo/ ? 1 : 2; 
@@ -1067,7 +1067,7 @@ C<s'$lhs'$rhs'> now does no interpolation on either side.  It used to interpolat
     $a=1;$b=2; 
     $string = '1 2 $a $b'; 
     $string =~ s'$a'$b'; 
-    print $string, "\n"; 
+    print $string,"\n"; 
 
 
     # perl4 prints: $b 2 $a $b 
@@ -1094,11 +1094,11 @@ Currently, if you use the C<m//o> qualifier on a regular expression within an an
 
 
     sub build_match { 
-        my($left, $right) = @_; 
+        my($left,$right) = @_; 
         return sub { $_[0] =~ /$left stuff $right/o; }; 
     } 
-    $good = build_match('foo', 'bar'); 
-    $bad = build_match('baz', 'blarch'); 
+    $good = build_match('foo','bar'); 
+    $bad = build_match('baz','blarch'); 
     print $good->('foo stuff bar') ? "ok\n" : "not ok\n"; 
     print $bad->('baz stuff blarch') ? "ok\n" : "not ok\n"; 
     print $bad->('foo stuff bar') ? "not ok\n" : "ok\n"; 
@@ -1224,7 +1224,7 @@ reverse is no longer allowed as the name of a sort subroutine.
 
 
     sub reverse{ print "yup "; $a <=> $b } 
-    print sort reverse (2, 1, 3); 
+    print sort reverse (2,1,3); 
 
 
     # perl4 prints: yup yup 123 
@@ -1250,7 +1250,7 @@ Although it _always_ printed to STDERR, warn() would let you specify a filehandl
 
 =item * SysV resets signal handler correctly 
 
-Under HPUX, and some other SysV OSes, one had to reset any signal handler,  within  the signal handler function, each time a signal was handled with perl4.  With perl5, the reset is now done correctly.  Any code relying on the handler _not_ being reset will have to be reworked. 
+Under HPUX, and some other SysV OSes, one had to reset any signal handler, within  the signal handler function, each time a signal was handled with perl4.  With perl5, the reset is now done correctly.  Any code relying on the handler _not_ being reset will have to be reworked. 
 
 Since version 5.002, Perl uses sigaction() under SysV. 
 
@@ -1277,16 +1277,16 @@ Since version 5.002, Perl uses sigaction() under SysV.
 
 =item * SysV C<seek()> appends correctly 
 
-Under SysV OSes, C<seek()> on a file opened to append C<<< >> >>> now does the right thing w.r.t. the fopen() manpage. e.g., - When a file is opened for append, it  is  impossible to overwrite information already in the file. 
+Under SysV OSes, C<seek()> on a file opened to append C<<< >> >>> now does the right thing w.r.t. the fopen() manpage. e.g., - When a file is opened for append,  it  is  impossible to overwrite information already in the file. 
 
 
-    open(TEST, ">>seek.test"); 
+    open(TEST,">>seek.test"); 
     $start = tell TEST; 
     foreach(1 .. 9){ 
         print TEST "$_ "; 
     } 
     $end = tell TEST; 
-    seek(TEST, $start, 0); 
+    seek(TEST,$start,0); 
     print TEST "18 characters here"; 
 
 
@@ -1497,7 +1497,7 @@ Existing dbm databases created under perl4 (or any other dbm/ndbm tool) may caus
 Existing dbm databases created under perl4 (or any other dbm/ndbm tool) may cause the same script, run under perl5, to fail.  The error generated when exceeding the limit on the key/value size will cause perl5 to exit immediately. 
 
 
-    dbmopen(DB, "testdb", 0600) || die "couldn't open db! $!"; 
+    dbmopen(DB, "testdb",0600) || die "couldn't open db! $!"; 
     $DB{'trap'} = "x" x 1024;  # value too large for most dbm/ndbm 
     print "YUP\n"; 
 
@@ -1552,5 +1552,5 @@ Perl4 returns a one element list containing the empty string but Perl5 returns a
 
 =back 
 
-As always, if any of these are ever officially declared as bugs,  they'll be fixed and removed. 
+As always, if any of these are ever officially declared as bugs, they'll be fixed and removed. 
 

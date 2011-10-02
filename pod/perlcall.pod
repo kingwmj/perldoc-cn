@@ -20,13 +20,13 @@ A fairly common feature in applications is to allow you to define a C function t
 
 =item * An Event-Driven Program 
 
-The classic example of where callbacks are used is when writing an event driven program, such as for an X windows application.  In this case you register functions to be called whenever specific events occur,  e.g., a mouse button is pressed, the cursor moves into a window or a menu item is selected. 
+The classic example of where callbacks are used is when writing an event driven program, such as for an X windows application.  In this case you register functions to be called whenever specific events occur, e.g., a mouse button is pressed, the cursor moves into a window or a menu item is selected. 
 
 =back 
 
 Although the techniques described here are applicable when embedding Perl in a C program, this is not the primary goal of this document. There are other details that must be considered and are specific to embedding Perl. For details on embedding Perl in C refer to L<perlembed>. 
 
-Before you launch yourself head first into the rest of this document,  it would be a good idea to have read the following two documents--L<perlxs> and L<perlguts>. 
+Before you launch yourself head first into the rest of this document, it would be a good idea to have read the following two documents--L<perlxs> and L<perlguts>. 
 
 =head1 THE CALL_ FUNCTIONS 
 
@@ -72,7 +72,7 @@ As a general rule you should I<always> check the return value from these functio
 
 =head1 FLAG VALUES 
 
-The C<flags> parameter in all the I<call_*> functions is one of G_VOID,  G_SCALAR, or G_ARRAY, which indicate the call context, OR'ed together with a bit mask of any combination of the other G_* symbols defined below. 
+The C<flags> parameter in all the I<call_*> functions is one of G_VOID, G_SCALAR, or G_ARRAY, which indicate the call context, OR'ed together with a bit mask of any combination of the other G_* symbols defined below. 
 
 =head2 G_VOID 
 
@@ -110,7 +110,7 @@ It indicates to the subroutine being called that it is executing in a scalar con
 
 =item 2. 
 
-It ensures that only a scalar is actually returned from the subroutine. The subroutine can, of course, ignore the I<wantarray> and return a list anyway. If so, then only the last element of the list will be returned. 
+It ensures that only a scalar is actually returned from the subroutine. The subroutine can, of course,  ignore the I<wantarray> and return a list anyway. If so, then only the last element of the list will be returned. 
 
 =back 
 
@@ -171,7 +171,7 @@ In fact, what can happen is that the Perl subroutine you have called can access 
       { &fred } 
 
 
-    &joe(1, 2, 3); 
+    &joe(1,2,3); 
 
 This will print 
 
@@ -220,7 +220,7 @@ This scenario will mostly be applicable to code that is meant to be called from 
 
 The G_KEEPERR flag is meant to be used in conjunction with G_EVAL in I<call_*> functions that are used to implement such code, or with C<eval_sv>.  This flag has no effect on the C<call_*> functions when G_EVAL is not used. 
 
-When G_KEEPERR is used, any error in the called code will terminate the call as usual, and the error will not propagate beyond the call (as usual for G_EVAL), but it will not go into C<$@>.  Instead the error will be converted into a warning, prefixed with the string "\t(in cleanup)". This can be disabled using C<no warnings 'misc'>.  If there is no error,  C<$@> will not be cleared. 
+When G_KEEPERR is used, any error in the called code will terminate the call as usual, and the error will not propagate beyond the call (as usual for G_EVAL), but it will not go into C<$@>.  Instead the error will be converted into a warning, prefixed with the string "\t(in cleanup)". This can be disabled using C<no warnings 'misc'>.  If there is no error, C<$@> will not be cleared. 
 
 Note that the G_KEEPERR flag does not propagate into inner evals; these may still set C<$@>. 
 
@@ -461,7 +461,7 @@ If you are making use of the Perl stack pointer in your code you must always ref
 
 =item 3. 
 
-Although only a single value was expected to be returned from I<Adder>,  it is still good practice to check the return code from I<call_pv> anyway. 
+Although only a single value was expected to be returned from I<Adder>, it is still good practice to check the return code from I<call_pv> anyway. 
 
 Expecting a single value is not quite the same as knowing that there will be one. If someone modified I<Adder> to return a list and we didn't check for that possibility and take appropriate action the Perl stack would end up in an inconsistent state. That is something you I<really> don't want to happen ever. 
 
@@ -670,7 +670,7 @@ and here is a C function to call it.
 
 
         if (count != 0) 
-            croak ("call_Inc: expected 0 values from 'Inc', got %d\n",  
+            croak ("call_Inc: expected 0 values from 'Inc', got %d\n", 
                    count); 
 
 
@@ -745,7 +745,7 @@ and some C to call it
         else 
         { 
             if (count != 1) 
-               croak("call_Subtract: wanted 1 value from 'Subtract', got %d\n",  
+               croak("call_Subtract: wanted 1 value from 'Subtract', got %d\n", 
                         count); 
 
 
@@ -796,7 +796,7 @@ C<PL_errgv> is a perl global of type C<GV *> that points to the symbol table ent
 
 =item 3. 
 
-Note that the stack is popped using C<POPs> in the block where C<SvTRUE(ERRSV)> is true.  This is necessary because whenever a I<call_*> function invoked with G_EVAL|G_SCALAR returns an error,  the top of the stack holds the value I<undef>. Because we want the program to continue after detecting this error, it is essential that the stack be tidied up by removing the I<undef>. 
+Note that the stack is popped using C<POPs> in the block where C<SvTRUE(ERRSV)> is true.  This is necessary because whenever a I<call_*> function invoked with G_EVAL|G_SCALAR returns an error, the top of the stack holds the value I<undef>. Because we want the program to continue after detecting this error, it is essential that the stack be tidied up by removing the I<undef>. 
 
 =back 
 
@@ -810,7 +810,7 @@ Consider this rather facetious example, where we have used an XS version of the 
     package Foo; 
     sub new { bless {}, $_[0] } 
     sub Subtract { 
-        my($a, $b) = @_; 
+        my($a,$b) = @_; 
         die "death can be fatal" if $a < $b; 
         $a - $b; 
     } 
@@ -859,7 +859,7 @@ Here is a snippet of XSUB which defines I<CallSubPV>.
     PUSHMARK(SP); 
     call_pv(name, G_DISCARD|G_NOARGS); 
 
-That is fine as far as it goes. The thing is, the Perl subroutine can be specified as only a string.  For Perl 4 this was adequate,  but Perl 5 allows references to subroutines and anonymous subroutines. This is where I<call_sv> is useful. 
+That is fine as far as it goes. The thing is, the Perl subroutine can be specified as only a string.  For Perl 4 this was adequate, but Perl 5 allows references to subroutines and anonymous subroutines. This is where I<call_sv> is useful. 
 
 The code below for I<CallSubSV> is identical to I<CallSubPV> except that the C<name> parameter is now defined as an SV* and we use I<call_sv> instead of I<call_pv>. 
 
@@ -911,7 +911,7 @@ The reason this is wrong is that, by the time you come to use the pointer C<reme
     SaveSub1( sub { print "Hello there\n" } ); 
     CallSavedSub1(); 
 
-By the time each of the C<SaveSub1> statements above has been executed,  the SV*s which corresponded to the parameters will no longer exist. Expect an error message from Perl of the form 
+By the time each of the C<SaveSub1> statements above has been executed, the SV*s which corresponded to the parameters will no longer exist. Expect an error message from Perl of the form 
 
 
     Can't use an undefined value as a subroutine reference at ... 
@@ -969,7 +969,7 @@ To get around these problems it is necessary to take a full copy of the SV.  The
     PUSHMARK(SP); 
     call_sv(keepSub, G_DISCARD|G_NOARGS); 
 
-To avoid creating a new SV every time C<SaveSub2> is called,  the function first checks to see if it has been called before.  If not,  then space for a new SV is allocated and the reference to the Perl subroutine C<name> is copied to the variable C<keepSub> in one operation using C<newSVsv>.  Thereafter, whenever C<SaveSub2> is called,  the existing SV, C<keepSub>, is overwritten with the new value using C<SvSetSV>. 
+To avoid creating a new SV every time C<SaveSub2> is called, the function first checks to see if it has been called before.  If not, then space for a new SV is allocated and the reference to the Perl subroutine C<name> is copied to the variable C<keepSub> in one operation using C<newSVsv>.  Thereafter, whenever C<SaveSub2> is called, the existing SV, C<keepSub>, is overwritten with the new value using C<SvSetSV>. 
 
 =head2 Using call_argv 
 
@@ -1101,7 +1101,7 @@ So the methods C<PrintID> and C<Display> can be invoked like this:
     call_Method($a, 'Display', 1); 
     call_PrintID('Mine', 'PrintID'); 
 
-The only thing to note is that, in both the static and virtual methods,  the method name is not passed via the stack--it is used as the first parameter to I<call_method>. 
+The only thing to note is that, in both the static and virtual methods, the method name is not passed via the stack--it is used as the first parameter to I<call_method>. 
 
 =head2 Using GIMME_V 
 
@@ -1180,7 +1180,7 @@ Whilst control is in the library, an error condition occurs. You have previously
                                                           | 
     perl <-- XSUB <-- external library <-- call_* <----+ 
 
-After processing of the error using I<call_*> is completed,  control reverts back to Perl more or less immediately. 
+After processing of the error using I<call_*> is completed, control reverts back to Perl more or less immediately. 
 
 In the diagram, the further right you go the more deeply nested the scope is.  It is only when control is back with perl on the extreme left of the diagram that you will have dropped back to the enclosing scope and any temporaries you have left hanging around will be freed. 
 
@@ -1341,7 +1341,7 @@ and C<asynch_read_if> could look like this
 
 
         /* Get the callback associated with fh */ 
-        sv =  hv_fetch(Mapping, (char*)&fh, sizeof(fh), FALSE); 
+        sv =  hv_fetch(Mapping, (char*)&fh , sizeof(fh), FALSE); 
         if (sv == (SV**)NULL) 
             croak("Internal error...\n"); 
 
@@ -1421,8 +1421,8 @@ In this case a possible way around this problem is to predefine a series of C fu
 
     static struct MapStruct Map [MAX_CB] = 
         { 
-            { fn1, NULL, NULL_HANDLE },  
-            { fn2, NULL, NULL_HANDLE },  
+            { fn1, NULL, NULL_HANDLE }, 
+            { fn2, NULL, NULL_HANDLE }, 
             { fn3, NULL, NULL_HANDLE } 
         }; 
 
@@ -1671,11 +1671,11 @@ The pattern of macro calls is like this:
 
 
     dMULTICALL;            /* Declare local variables */ 
-    I32 gimme = G_SCALAR;    /* context of the call: G_SCALAR,  
+    I32 gimme = G_SCALAR;    /* context of the call: G_SCALAR, 
                  * G_LIST, or G_VOID */ 
 
 
-    PUSH_MULTICALL(cv);        /* Set up the context for calling cv,  
+    PUSH_MULTICALL(cv);        /* Set up the context for calling cv, 
                    and set local vars appropriately */ 
 
 

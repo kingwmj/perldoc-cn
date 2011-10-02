@@ -6,7 +6,7 @@ perlebcdic - Considerations for running Perl on EBCDIC platforms
 
 =head1 DESCRIPTION 
 
-An exploration of some of the issues facing Perl programmers on EBCDIC based computers.  We do not cover localization,  internationalization, or multi-byte character set issues other than some discussion of UTF-8 and UTF-EBCDIC. 
+An exploration of some of the issues facing Perl programmers on EBCDIC based computers.  We do not cover localization, internationalization, or multi-byte character set issues other than some discussion of UTF-8 and UTF-EBCDIC. 
 
 Portions that are still incomplete are marked with XXX. 
 
@@ -26,7 +26,7 @@ The ISO 8859-$n are a collection of character code sets from the International O
 
 =head2 Latin 1 (ISO 8859-1) 
 
-A particular 8-bit extension to ASCII that includes grave and acute accented Latin characters.  Languages that can employ ISO 8859-1 include all the languages covered by ASCII as well as Afrikaans,  Albanian, Basque, Catalan, Danish, Faroese, Finnish, Norwegian,  Portuguese, Spanish, and Swedish.  Dutch is covered albeit without the ij ligature.  French is covered too but without the oe ligature. German can use ISO 8859-1 but must do so without German-style quotation marks.  This set is based on Western European extensions to ASCII and is commonly encountered in world wide web work. In IBM character code set identification terminology ISO 8859-1 is also known as CCSID 819 (or sometimes 0819 or even 00819). 
+A particular 8-bit extension to ASCII that includes grave and acute accented Latin characters.  Languages that can employ ISO 8859-1 include all the languages covered by ASCII as well as Afrikaans, Albanian, Basque, Catalan, Danish, Faroese, Finnish, Norwegian, Portuguese, Spanish, and Swedish.  Dutch is covered albeit without the ij ligature.  French is covered too but without the oe ligature. German can use ISO 8859-1 but must do so without German-style quotation marks.  This set is based on Western European extensions to ASCII and is commonly encountered in world wide web work. In IBM character code set identification terminology ISO 8859-1 is also known as CCSID 819 (or sometimes 0819 or even 00819). 
 
 =head2 EBCDIC 
 
@@ -65,7 +65,7 @@ In Unicode terminology a I<code point> is the number assigned to a character: fo
     pack("U", ord($character)) eq $character 
     unpack("U", $character) == ord $character 
 
-will hold.  (If Unicode code points were applied consistently over all the possible code points, pack("U", ord("A")) would in EBCDIC equal I<A with acute> or chr(101), and unpack("U", "A") would equal 65, or I<non-breaking space>, not 193, or ord "A".) 
+will hold.  (If Unicode code points were applied consistently over all the possible code points, pack("U",ord("A")) would in EBCDIC equal I<A with acute> or chr(101), and unpack("U", "A") would equal 65, or I<non-breaking space>, not 193, or ord "A".) 
 
 =head2 Remaining Perl Unicode problems in EBCDIC 
 
@@ -83,9 +83,9 @@ The extensions Unicode::Collate and Unicode::Normalized are not supported under 
 
 =head2 Unicode and UTF 
 
-UTF stands for C<Unicode Transformation Format>. UTF-8 is an encoding of Unicode into a sequence of 8-bit byte chunks, based on ASCII and Latin-1. The length of a sequence required to represent a Unicode code point depends on the ordinal number of that code point,  with larger numbers requiring more bytes. UTF-EBCDIC is like UTF-8, but based on EBCDIC. 
+UTF stands for C<Unicode Transformation Format>. UTF-8 is an encoding of Unicode into a sequence of 8-bit byte chunks, based on ASCII and Latin-1. The length of a sequence required to represent a Unicode code point depends on the ordinal number of that code point, with larger numbers requiring more bytes. UTF-EBCDIC is like UTF-8, but based on EBCDIC. 
 
-You may see the term C<invariant> character or code point. This simply means that the character has the same numeric value when encoded as when not. (Note that this is a very different concept from L</The 13 variant characters> mentioned above.) For example, the ordinal value of 'A' is 193 in most EBCDIC code pages,  and also is 193 when encoded in UTF-EBCDIC. All variant code points occupy at least two bytes when encoded. In UTF-8, the code points corresponding to the lowest 128 ordinal numbers (0 - 127: the ASCII characters) are invariant. In UTF-EBCDIC, there are 160 invariant characters. (If you care, the EBCDIC invariants are those characters which have ASCII equivalents, plus those that correspond to the C1 controls (80..9f on ASCII platforms).) 
+You may see the term C<invariant> character or code point. This simply means that the character has the same numeric value when encoded as when not. (Note that this is a very different concept from L</The 13 variant characters> mentioned above.) For example, the ordinal value of 'A' is 193 in most EBCDIC code pages, and also is 193 when encoded in UTF-EBCDIC. All variant code points occupy at least two bytes when encoded. In UTF-8, the code points corresponding to the lowest 128 ordinal numbers (0 - 127: the ASCII characters) are invariant. In UTF-EBCDIC, there are 160 invariant characters. (If you care, the EBCDIC invariants are those characters which have ASCII equivalents, plus those that correspond to the C1 controls (80..9f on ASCII platforms).) 
 
 A string encoded in UTF-EBCDIC may be longer (but never shorter) than one encoded in UTF-8. 
 
@@ -132,13 +132,13 @@ Since version 5.8 Perl uses the new PerlIO I/O library.  This enables you to use
     open($f, ">:encoding(utf8)", "test.utf8"); 
     print $f "Hello World!\n"; 
 
-to get four files containing "Hello World!\n" in ASCII, CP 0037 EBCDIC,  ISO 8859-1 (Latin-1) (in this example identical to ASCII since only ASCII characters were printed), and UTF-EBCDIC (in this example identical to normal EBCDIC since only characters that don't differ between EBCDIC and UTF-EBCDIC were printed).  See the documentation of Encode::PerlIO for details. 
+to get four files containing "Hello World!\n" in ASCII, CP 0037 EBCDIC, ISO 8859-1 (Latin-1) (in this example identical to ASCII since only ASCII characters were printed), and UTF-EBCDIC (in this example identical to normal EBCDIC since only characters that don't differ between EBCDIC and UTF-EBCDIC were printed).  See the documentation of Encode::PerlIO for details. 
 
 As the PerlIO layer uses raw IO (bytes) internally, all this totally ignores things like the type of your filesystem (ASCII or EBCDIC). 
 
 =head1 SINGLE OCTET TABLES 
 
-The following tables list the ASCII and Latin 1 ordered sets including the subsets: C0 controls (0..31), ASCII graphics (32..7e), delete (7f),  C1 controls (80..9f), and Latin-1 (a.k.a. ISO 8859-1) (a0..ff).  In the table non-printing control character names as well as the Latin 1 extensions to ASCII have been labelled with character names roughly corresponding to I<The Unicode Standard, Version 3.0> albeit with substitutions such as s/LATIN// and s/VULGAR// in all cases,  s/CAPITAL LETTER// in some cases, and s/SMALL LETTER ([A-Z])/\l$1/ in some other cases.  The "names" of the controls listed here are the Unicode Version 1 names, except for the few that don't have names, in which case the names in the Wikipedia article were used (L<http://en.wikipedia.org/wiki/C0_and_C1_control_codes>). The differences between the 0037 and 1047 sets are flagged with ***.  The differences between the 1047 and POSIX-BC sets are flagged with ###.  All ord() numbers listed are decimal.  If you would rather see this table listing octal values then run the table (that is, the pod version of this document since this recipe may not work with a pod2_other_format translation) through: 
+The following tables list the ASCII and Latin 1 ordered sets including the subsets: C0 controls (0..31), ASCII graphics (32..7e), delete (7f), C1 controls (80..9f), and Latin-1 (a.k.a. ISO 8859-1) (a0..ff).  In the table non-printing control character names as well as the Latin 1 extensions to ASCII have been labelled with character names roughly corresponding to I<The Unicode Standard, Version 3.0> albeit with substitutions such as s/LATIN// and s/VULGAR// in all cases, s/CAPITAL LETTER// in some cases, and s/SMALL LETTER ([A-Z])/\l$1/ in some other cases.  The "names" of the controls listed here are the Unicode Version 1 names, except for the few that don't have names, in which case the names in the Wikipedia article were used (L<http://en.wikipedia.org/wiki/C0_and_C1_control_codes>). The differences between the 0037 and 1047 sets are flagged with ***.  The differences between the 1047 and POSIX-BC sets are flagged with ###.  All ord() numbers listed are decimal.  If you would rather see this table listing octal values then run the table (that is, the pod version of this document since this recipe may not work with a pod2_other_format translation) through: 
 
 =over 4 
 
@@ -148,7 +148,7 @@ The following tables list the ASCII and Latin 1 ordered sets including the subse
 
 
     perl -ne 'if(/(.{43})(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/)' \ 
-     -e '{printf("%s%-9.03o%-9.03o%-9.03o%.03o\n", $1, $2, $3, $4, $5)}' \ 
+     -e '{printf("%s%-9.03o%-9.03o%-9.03o%.03o\n",$1,$2,$3,$4,$5)}' \ 
      perlebcdic.pod 
 
 If you want to retain the UTF-x code points then in script form you might want to write: 
@@ -160,22 +160,22 @@ If you want to retain the UTF-x code points then in script form you might want t
 =back 
 
 
- open(FH, "<perlebcdic.pod") or die "Could not open perlebcdic.pod: $!"; 
+ open(FH,"<perlebcdic.pod") or die "Could not open perlebcdic.pod: $!"; 
  while (<FH>) { 
      if (/(.{43})(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\.?(\d*)\s+(\d+)\.?(\d*)/) 
      { 
          if ($7 ne '' && $9 ne '') { 
              printf( 
-                "%s%-9.03o%-9.03o%-9.03o%-9.03o%-3o.%-5o%-3o.%.03o\n",  
-                                            $1, $2, $3, $4, $5, $6, $7, $8, $9); 
+                "%s%-9.03o%-9.03o%-9.03o%-9.03o%-3o.%-5o%-3o.%.03o\n", 
+                                            $1,$2,$3,$4,$5,$6,$7,$8,$9); 
          } 
          elsif ($7 ne '') { 
-             printf("%s%-9.03o%-9.03o%-9.03o%-9.03o%-3o.%-5o%.03o\n",  
-                                           $1, $2, $3, $4, $5, $6, $7, $8); 
+             printf("%s%-9.03o%-9.03o%-9.03o%-9.03o%-3o.%-5o%.03o\n", 
+                                           $1,$2,$3,$4,$5,$6,$7,$8); 
          } 
          else { 
-             printf("%s%-9.03o%-9.03o%-9.03o%-9.03o%-9.03o%.03o\n",  
-                                                $1, $2, $3, $4, $5, $6, $8); 
+             printf("%s%-9.03o%-9.03o%-9.03o%-9.03o%-9.03o%.03o\n", 
+                                                $1,$2,$3,$4,$5,$6,$8); 
          } 
      } 
  } 
@@ -190,7 +190,7 @@ If you would rather see this table listing hexadecimal values then run the table
 
 
     perl -ne 'if(/(.{43})(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/)' \ 
-     -e '{printf("%s%-9.02X%-9.02X%-9.02X%.02X\n", $1, $2, $3, $4, $5)}' \ 
+     -e '{printf("%s%-9.02X%-9.02X%-9.02X%.02X\n",$1,$2,$3,$4,$5)}' \ 
      perlebcdic.pod 
 
 Or, in order to retain the UTF-x code points in hexadecimal: 
@@ -202,22 +202,22 @@ Or, in order to retain the UTF-x code points in hexadecimal:
 =back 
 
 
- open(FH, "<perlebcdic.pod") or die "Could not open perlebcdic.pod: $!"; 
+ open(FH,"<perlebcdic.pod") or die "Could not open perlebcdic.pod: $!"; 
  while (<FH>) { 
      if (/(.{43})(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\.?(\d*)\s+(\d+)\.?(\d*)/) 
      { 
          if ($7 ne '' && $9 ne '') { 
              printf( 
-                "%s%-9.02X%-9.02X%-9.02X%-9.02X%-2X.%-6.02X%02X.%02X\n",  
-                                           $1, $2, $3, $4, $5, $6, $7, $8, $9); 
+                "%s%-9.02X%-9.02X%-9.02X%-9.02X%-2X.%-6.02X%02X.%02X\n", 
+                                           $1,$2,$3,$4,$5,$6,$7,$8,$9); 
          } 
          elsif ($7 ne '') { 
-             printf("%s%-9.02X%-9.02X%-9.02X%-9.02X%-2X.%-6.02X%02X\n",  
-                                              $1, $2, $3, $4, $5, $6, $7, $8); 
+             printf("%s%-9.02X%-9.02X%-9.02X%-9.02X%-2X.%-6.02X%02X\n", 
+                                              $1,$2,$3,$4,$5,$6,$7,$8); 
          } 
          else { 
-             printf("%s%-9.02X%-9.02X%-9.02X%-9.02X%-9.02X%02X\n",  
-                                                  $1, $2, $3, $4, $5, $6, $8); 
+             printf("%s%-9.02X%-9.02X%-9.02X%-9.02X%-9.02X%02X\n", 
+                                                  $1,$2,$3,$4,$5,$6,$8); 
          } 
      } 
  } 
@@ -271,7 +271,8 @@ Or, in order to retain the UTF-x code points in hexadecimal:
  (                                         40       77       77       77       40       77 
  )                                         41       93       93       93       41       93 
  *                                         42       92       92       92       42       92 
- +                                         43       78       78       78       43       78 , 44       107      107      107      44       107 
+ +                                         43       78       78       78       43       78 
+ ,                                         44       107      107      107      44       107 
  -                                         45       96       96       96       45       96 
  .                                         46       75       75       75       46       75 
  /                                         47       97       97       97       47       97 
@@ -494,11 +495,11 @@ If you would rather see the above table in CCSID 0037 order rather than ASCII + 
 
 
  perl \ 
-    -ne 'if(/.{43}\d{1, 3}\s{6, 8}\d{1, 3}\s{6, 8}\d{1, 3}\s{6, 8}\d{1, 3}/)'\ 
-     -e '{push(@l, $_)}' \ 
+    -ne 'if(/.{43}\d{1,3}\s{6,8}\d{1,3}\s{6,8}\d{1,3}\s{6,8}\d{1,3}/)'\ 
+     -e '{push(@l,$_)}' \ 
      -e 'END{print map{$_->[0]}' \ 
      -e '          sort{$a->[1] <=> $b->[1]}' \ 
-     -e '          map{[$_, substr($_, 52, 3)]}@l;}' perlebcdic.pod 
+     -e '          map{[$_,substr($_,52,3)]}@l;}' perlebcdic.pod 
 
 If you would rather see it in CCSID 1047 order then change the number 52 in the last line to 61, like this: 
 
@@ -510,11 +511,11 @@ If you would rather see it in CCSID 1047 order then change the number 52 in the 
 
 
  perl \ 
-    -ne 'if(/.{43}\d{1, 3}\s{6, 8}\d{1, 3}\s{6, 8}\d{1, 3}\s{6, 8}\d{1, 3}/)'\ 
-    -e '{push(@l, $_)}' \ 
+    -ne 'if(/.{43}\d{1,3}\s{6,8}\d{1,3}\s{6,8}\d{1,3}\s{6,8}\d{1,3}/)'\ 
+    -e '{push(@l,$_)}' \ 
     -e 'END{print map{$_->[0]}' \ 
     -e '          sort{$a->[1] <=> $b->[1]}' \ 
-    -e '          map{[$_, substr($_, 61, 3)]}@l;}' perlebcdic.pod 
+    -e '          map{[$_,substr($_,61,3)]}@l;}' perlebcdic.pod 
 
 If you would rather see it in POSIX-BC order then change the number 61 in the last line to 70, like this: 
 
@@ -526,11 +527,11 @@ If you would rather see it in POSIX-BC order then change the number 61 in the la
 
 
  perl \ 
-    -ne 'if(/.{43}\d{1, 3}\s{6, 8}\d{1, 3}\s{6, 8}\d{1, 3}\s{6, 8}\d{1, 3}/)'\ 
-     -e '{push(@l, $_)}' \ 
+    -ne 'if(/.{43}\d{1,3}\s{6,8}\d{1,3}\s{6,8}\d{1,3}\s{6,8}\d{1,3}/)'\ 
+     -e '{push(@l,$_)}' \ 
      -e 'END{print map{$_->[0]}' \ 
      -e '          sort{$a->[1] <=> $b->[1]}' \ 
-     -e '          map{[$_, substr($_, 70, 3)]}@l;}' perlebcdic.pod 
+     -e '          map{[$_,substr($_,70,3)]}@l;}' perlebcdic.pod 
 
 
 
@@ -717,13 +718,13 @@ ord() will return EBCDIC code number values on an EBCDIC platform. For example:
 The c and C templates for pack() are dependent upon character set encoding.  Examples of usage on EBCDIC include: 
 
 
-    $foo = pack("CCCC", 193, 194, 195, 196); 
+    $foo = pack("CCCC",193,194,195,196); 
     # $foo eq "ABCD" 
-    $foo = pack("C4", 193, 194, 195, 196); 
+    $foo = pack("C4",193,194,195,196); 
     # same thing 
 
 
-    $foo = pack("ccxxcc", 193, 194, 195, 196); 
+    $foo = pack("ccxxcc",193,194,195,196); 
     # $foo eq "AB\0\0CD" 
 
 =item print() 
@@ -746,7 +747,7 @@ That is because the translation from EBCDIC to ASCII is done by the web server i
 The formats that can convert characters to numbers and vice versa will be different from their ASCII counterparts when executed on an EBCDIC platform.  Examples include: 
 
 
-    printf("%c%c%c", 193, 194, 195);  # prints ABC 
+    printf("%c%c%c",193,194,195);  # prints ABC 
 
 =item sort() 
 
@@ -757,7 +758,7 @@ EBCDIC sort results may differ from ASCII sort results especially for mixed case
 See the discussion of printf() above.  An example of the use of sprintf would be: 
 
 
-    $CAPITAL_LETTER_A = sprintf("%c", 193); 
+    $CAPITAL_LETTER_A = sprintf("%c",193); 
 
 =item unpack() 
 
@@ -775,31 +776,31 @@ Another construct to be wary of is the inappropriate use of hex or octal constan
 
 
     sub is_c0 { 
-        my $char = substr(shift, 0, 1); 
+        my $char = substr(shift,0,1); 
         $char =~ /[\000-\037]/; 
     } 
 
 
     sub is_print_ascii { 
-        my $char = substr(shift, 0, 1); 
+        my $char = substr(shift,0,1); 
         $char =~ /[\040-\176]/; 
     } 
 
 
     sub is_delete { 
-        my $char = substr(shift, 0, 1); 
+        my $char = substr(shift,0,1); 
         $char eq "\177"; 
     } 
 
 
     sub is_c1 { 
-        my $char = substr(shift, 0, 1); 
+        my $char = substr(shift,0,1); 
         $char =~ /[\200-\237]/; 
     } 
 
 
     sub is_latin_1 { 
-        my $char = substr(shift, 0, 1); 
+        my $char = substr(shift,0,1); 
         $char =~ /[\240-\377]/; 
     } 
 
@@ -807,7 +808,7 @@ The above would be adequate if the concern was only with numeric code points. Ho
 
 
     sub Is_c0 { 
-        my $char = substr(shift, 0, 1); 
+        my $char = substr(shift,0,1); 
         if (ord('^')==94)  { # ascii 
             return $char =~ /[\000-\037]/; 
         } 
@@ -821,13 +822,13 @@ The above would be adequate if the concern was only with numeric code points. Ho
 
 
     sub Is_print_ascii { 
-        my $char = substr(shift, 0, 1); 
-        $char =~ /[ !"\#\$%&'()*+, \-.\/0-9:;<=>?\@A-Z[\\\]^_`a-z{|}~]/; 
+        my $char = substr(shift,0,1); 
+        $char =~ /[ !"\#\$%&'()*+,\-.\/0-9:;<=>?\@A-Z[\\\]^_`a-z{|}~]/; 
     } 
 
 
     sub Is_delete { 
-        my $char = substr(shift, 0, 1); 
+        my $char = substr(shift,0,1); 
         if (ord('^')==94)  { # ascii 
             return $char eq "\177"; 
         } 
@@ -838,7 +839,7 @@ The above would be adequate if the concern was only with numeric code points. Ho
 
 
     sub Is_c1 { 
-        my $char = substr(shift, 0, 1); 
+        my $char = substr(shift,0,1); 
         if (ord('^')==94)  { # ascii 
             return $char =~ /[\200-\237]/; 
         } 
@@ -856,7 +857,7 @@ The above would be adequate if the concern was only with numeric code points. Ho
 
 
     sub Is_latin_1 { 
-        my $char = substr(shift, 0, 1); 
+        my $char = substr(shift,0,1); 
         if (ord('^')==94)  { # ascii 
             return $char =~ /[\240-\377]/; 
         } 
@@ -878,7 +879,7 @@ Note however that only the C<Is_ascii_print()> sub is really independent of code
 
 
     sub Is_latin_1 { 
-        my $char = substr(shift, 0, 1); 
+        my $char = substr(shift,0,1); 
         $char =~ /[ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ]/; 
     } 
 
@@ -893,8 +894,8 @@ Most socket programming assumes ASCII character encodings in network byte order.
 One big difference between ASCII-based character sets and EBCDIC ones are the relative positions of upper and lower case letters and the letters compared to the digits.  If sorted on an ASCII-based platform the two-letter abbreviation for a physician comes before the two letter abbreviation for drive; that is: 
 
 
- @sorted = sort(qw(Dr. dr.));  # @sorted holds ('Dr.', 'dr.') on ASCII,  
-                                  # but ('dr.', 'Dr.') on EBCDIC 
+ @sorted = sort(qw(Dr. dr.));  # @sorted holds ('Dr.','dr.') on ASCII, 
+                                  # but ('dr.','Dr.') on EBCDIC 
 
 The property of lowercase before uppercase letters in EBCDIC is even carried to the Latin 1 EBCDIC pages such as 0037 and 1047. An example would be that E<Euml> C<E WITH DIAERESIS> (203) comes before E<euml> C<e WITH DIAERESIS> (235) on an ASCII platform, but the latter (83) comes before the former (115) on an EBCDIC platform. (Astute readers will note that the uppercase version of E<szlig> C<SMALL LETTER SHARP S> is simply "SS" and that the upper case version of E<yuml> C<y WITH DIAERESIS> is not in the 0..255 range but it is at U+x0178 in Unicode, or C<"\x{178}"> in a Unicode enabled Perl). 
 
@@ -953,24 +954,24 @@ where 7E is the hexadecimal ASCII code point for '~'.  Here is an example of dec
     $url = 'http://www.pvhp.com/%7Epvhp/'; 
     # this array assumes code page 1047 
     my @a2e_1047 = ( 
-          0, 1, 2, 3, 55, 45, 46, 47, 22, 5, 21, 11, 12, 13, 14, 15,  
-         16, 17, 18, 19, 60, 61, 50, 38, 24, 25, 63, 39, 28, 29, 30, 31,  
-         64, 90, 127, 123, 91, 108, 80, 125, 77, 93, 92, 78, 107, 96, 75, 97,  
-        240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 122, 94, 76, 126, 110, 111,  
-        124, 193, 194, 195, 196, 197, 198, 199, 200, 201, 209, 210, 211, 212, 213, 214,  
-        215, 216, 217, 226, 227, 228, 229, 230, 231, 232, 233, 173, 224, 189, 95, 109,  
-        121, 129, 130, 131, 132, 133, 134, 135, 136, 137, 145, 146, 147, 148, 149, 150,  
-        151, 152, 153, 162, 163, 164, 165, 166, 167, 168, 169, 192, 79, 208, 161, 7,  
-         32, 33, 34, 35, 36, 37, 6, 23, 40, 41, 42, 43, 44, 9, 10, 27,  
-         48, 49, 26, 51, 52, 53, 54, 8, 56, 57, 58, 59, 4, 20, 62, 255,  
-         65, 170, 74, 177, 159, 178, 106, 181, 187, 180, 154, 138, 176, 202, 175, 188,  
-        144, 143, 234, 250, 190, 160, 182, 179, 157, 218, 155, 139, 183, 184, 185, 171,  
-        100, 101, 98, 102, 99, 103, 158, 104, 116, 113, 114, 115, 120, 117, 118, 119,  
-        172, 105, 237, 238, 235, 239, 236, 191, 128, 253, 254, 251, 252, 186, 174, 89,  
-         68, 69, 66, 70, 67, 71, 156, 72, 84, 81, 82, 83, 88, 85, 86, 87,  
-        140, 73, 205, 206, 203, 207, 204, 225, 112, 221, 222, 219, 220, 141, 142, 223 
+          0,  1,  2,  3, 55, 45, 46, 47, 22,  5, 21, 11, 12, 13, 14, 15, 
+         16, 17, 18, 19, 60, 61, 50, 38, 24, 25, 63, 39, 28, 29, 30, 31, 
+         64, 90,127,123, 91,108, 80,125, 77, 93, 92, 78,107, 96, 75, 97, 
+        240,241,242,243,244,245,246,247,248,249,122, 94, 76,126,110,111, 
+        124,193,194,195,196,197,198,199,200,201,209,210,211,212,213,214, 
+        215,216,217,226,227,228,229,230,231,232,233,173,224,189, 95,109, 
+        121,129,130,131,132,133,134,135,136,137,145,146,147,148,149,150, 
+        151,152,153,162,163,164,165,166,167,168,169,192, 79,208,161,  7, 
+         32, 33, 34, 35, 36, 37,  6, 23, 40, 41, 42, 43, 44,  9, 10, 27, 
+         48, 49, 26, 51, 52, 53, 54,  8, 56, 57, 58, 59,  4, 20, 62,255, 
+         65,170, 74,177,159,178,106,181,187,180,154,138,176,202,175,188, 
+        144,143,234,250,190,160,182,179,157,218,155,139,183,184,185,171, 
+        100,101, 98,102, 99,103,158,104,116,113,114,115,120,117,118,119, 
+        172,105,237,238,235,239,236,191,128,253,254,251,252,186,174, 89, 
+         68, 69, 66, 70, 67, 71,156, 72, 84, 81, 82, 83, 88, 85, 86, 87, 
+        140, 73,205,206,203,207,204,225,112,221,222,219,220,141,142,223 
     ); 
-    $url =~ s/%([0-9a-fA-F]{2})/pack("c", $a2e_1047[hex($1)])/ge; 
+    $url =~ s/%([0-9a-fA-F]{2})/pack("c",$a2e_1047[hex($1)])/ge; 
 
 Conversely, here is a partial solution for the task of encoding such a URL under the 1047 code page: 
 
@@ -978,26 +979,26 @@ Conversely, here is a partial solution for the task of encoding such a URL under
     $url = 'http://www.pvhp.com/~pvhp/'; 
     # this array assumes code page 1047 
     my @e2a_1047 = ( 
-          0, 1, 2, 3, 156, 9, 134, 127, 151, 141, 142, 11, 12, 13, 14, 15,  
-         16, 17, 18, 19, 157, 10, 8, 135, 24, 25, 146, 143, 28, 29, 30, 31,  
-        128, 129, 130, 131, 132, 133, 23, 27, 136, 137, 138, 139, 140, 5, 6, 7,  
-        144, 145, 22, 147, 148, 149, 150, 4, 152, 153, 154, 155, 20, 21, 158, 26,  
-         32, 160, 226, 228, 224, 225, 227, 229, 231, 241, 162, 46, 60, 40, 43, 124,  
-         38, 233, 234, 235, 232, 237, 238, 239, 236, 223, 33, 36, 42, 41, 59, 94,  
-         45, 47, 194, 196, 192, 193, 195, 197, 199, 209, 166, 44, 37, 95, 62, 63,  
-        248, 201, 202, 203, 200, 205, 206, 207, 204, 96, 58, 35, 64, 39, 61, 34,  
-        216, 97, 98, 99, 100, 101, 102, 103, 104, 105, 171, 187, 240, 253, 254, 177,  
-        176, 106, 107, 108, 109, 110, 111, 112, 113, 114, 170, 186, 230, 184, 198, 164,  
-        181, 126, 115, 116, 117, 118, 119, 120, 121, 122, 161, 191, 208, 91, 222, 174,  
-        172, 163, 165, 183, 169, 167, 182, 188, 189, 190, 221, 168, 175, 93, 180, 215,  
-        123, 65, 66, 67, 68, 69, 70, 71, 72, 73, 173, 244, 246, 242, 243, 245,  
-        125, 74, 75, 76, 77, 78, 79, 80, 81, 82, 185, 251, 252, 249, 250, 255,  
-         92, 247, 83, 84, 85, 86, 87, 88, 89, 90, 178, 212, 214, 210, 211, 213,  
-         48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 179, 219, 220, 217, 218, 159 
+          0,  1,  2,  3,156,  9,134,127,151,141,142, 11, 12, 13, 14, 15, 
+         16, 17, 18, 19,157, 10,  8,135, 24, 25,146,143, 28, 29, 30, 31, 
+        128,129,130,131,132,133, 23, 27,136,137,138,139,140,  5,  6,  7, 
+        144,145, 22,147,148,149,150,  4,152,153,154,155, 20, 21,158, 26, 
+         32,160,226,228,224,225,227,229,231,241,162, 46, 60, 40, 43,124, 
+         38,233,234,235,232,237,238,239,236,223, 33, 36, 42, 41, 59, 94, 
+         45, 47,194,196,192,193,195,197,199,209,166, 44, 37, 95, 62, 63, 
+        248,201,202,203,200,205,206,207,204, 96, 58, 35, 64, 39, 61, 34, 
+        216, 97, 98, 99,100,101,102,103,104,105,171,187,240,253,254,177, 
+        176,106,107,108,109,110,111,112,113,114,170,186,230,184,198,164, 
+        181,126,115,116,117,118,119,120,121,122,161,191,208, 91,222,174, 
+        172,163,165,183,169,167,182,188,189,190,221,168,175, 93,180,215, 
+        123, 65, 66, 67, 68, 69, 70, 71, 72, 73,173,244,246,242,243,245, 
+        125, 74, 75, 76, 77, 78, 79, 80, 81, 82,185,251,252,249,250,255, 
+         92,247, 83, 84, 85, 86, 87, 88, 89, 90,178,212,214,210,211,213, 
+         48, 49, 50, 51, 52, 53, 54, 55, 56, 57,179,219,220,217,218,159 
     ); 
     # The following regular expression does not address the 
     # mappings for: ('.' => '%2E', '/' => '%2F', ':' => '%3A') 
-    $url =~ s/([\t "#%&\(\), ;<=>\?\@\[\\\]^`{|}~])/sprintf("%%%02X", $e2a_1047[ord($1)])/ge; 
+    $url =~ s/([\t "#%&\(\),;<=>\?\@\[\\\]^`{|}~])/sprintf("%%%02X",$e2a_1047[ord($1)])/ge; 
 
 where a more complete solution would split the URL into components and apply a full s/// substitution only to the appropriate parts. 
 
@@ -1012,11 +1013,11 @@ The C<u> template to pack() or unpack() will render EBCDIC data in EBCDIC charac
     for (0..255) { $all_byte_chrs .= chr($_); } 
     $uuencode_byte_chrs = pack('u', $all_byte_chrs); 
     ($uu = <<'ENDOFHEREDOC') =~ s/^\s*//gm; 
-    M``$"`P0%!@<("0H+#`T.#Q`1$A, 4%187&!D:&QP='A\@(2(C)"4F)R@I*BLL 
-    M+2XO, #$R, S0U-C<X.3H[/#T^/T!!0D-$149'2$E*2TQ-3D]045)35%565UA9 
+    M``$"`P0%!@<("0H+#`T.#Q`1$A,4%187&!D:&QP='A\@(2(C)"4F)R@I*BLL 
+    M+2XO,#$R,S0U-C<X.3H[/#T^/T!!0D-$149'2$E*2TQ-3D]045)35%565UA9 
     M6EM<75Y?8&%B8V1E9F=H:6IK;&UN;W!Q<G-T=79W>'EZ>WQ]?G^`@8*#A(6& 
-    MAXB)BHN, C8Z/D)&2DY25EI>8F9J;G)V>GZ"AHJ.DI::GJ*FJJZRMKJ^PL;*S 
-    MM+6VM[BYNKN\O;Z_P, '"P\3%QL?(R<K+S, W.S]#1TM/4U=;7V-G:V]S=WM_@ 
+    MAXB)BHN,C8Z/D)&2DY25EI>8F9J;G)V>GZ"AHJ.DI::GJ*FJJZRMKJ^PL;*S 
+    MM+6VM[BYNKN\O;Z_P,'"P\3%QL?(R<K+S,W.S]#1TM/4U=;7V-G:V]S=WM_@ 
     ?X>+CY.7FY^CIZNOL[>[O\/'R\_3U]O?X^?K[_/W^_P`` 
     ENDOFHEREDOC 
     if ($uuencode_byte_chrs eq $uu) { 
@@ -1033,7 +1034,7 @@ Here is a very spartan uudecoder that will work on EBCDIC provided that the @e2a
     #!/usr/local/bin/perl 
     @e2a = ( # this must be filled in 
            ); 
-    $_ = <> until ($mode, $file) = /^begin\s*(\d*)\s*(\S*)/; 
+    $_ = <> until ($mode,$file) = /^begin\s*(\d*)\s*(\S*)/; 
     open(OUT, "> $file") if $file ne ""; 
     while(<>) { 
         last if /^end/; 
@@ -1053,7 +1054,7 @@ On ASCII-encoded platforms it is possible to strip characters outside of the pri
 
 
     # This QP encoder works on ASCII only 
-    $qp_string =~ s/([=\x00-\x1F\x80-\xFF])/sprintf("=%02X", ord($1))/ge; 
+    $qp_string =~ s/([=\x00-\x1F\x80-\xFF])/sprintf("=%02X",ord($1))/ge; 
 
 Whereas a QP encoder that works on both ASCII and EBCDIC platforms would look somewhat like the following (where the EBCDIC branch @e2a array is omitted for brevity): 
 
@@ -1067,7 +1068,7 @@ Whereas a QP encoder that works on both ASCII and EBCDIC platforms would look so
         @e2a =               # EBCDIC to ASCII map (as shown above) 
     } 
     $qp_string =~ 
-      s/([^ !"\#\$%&'()*+, \-.\/0-9:;<>?\@A-Z[\\\]^_`a-z{|}~$delete])/sprintf("=%02X", $e2a[ord($1)])/ge; 
+      s/([^ !"\#\$%&'()*+,\-.\/0-9:;<>?\@A-Z[\\\]^_`a-z{|}~$delete])/sprintf("=%02X",$e2a[ord($1)])/ge; 
 
 (although in production code the substitutions might be done in the EBCDIC branch with the @e2a array and separately in the ASCII branch without the expense of the identity map). 
 
@@ -1196,15 +1197,15 @@ L<http://www.unicode.org/>
 
 L<http://www.unicode.org/unicode/reports/tr16/> 
 
-L<http://www.wps.com/projects/codes/> B<ASCII: American Standard Code for Information Infiltration> Tom Jennings,  September 1999. 
+L<http://www.wps.com/projects/codes/> B<ASCII: American Standard Code for Information Infiltration> Tom Jennings, September 1999. 
 
-B<The Unicode Standard, Version 3.0> The Unicode Consortium, Lisa Moore ed.,  ISBN 0-201-61633-5, Addison Wesley Developers Press, February 2000. 
+B<The Unicode Standard, Version 3.0> The Unicode Consortium, Lisa Moore ed., ISBN 0-201-61633-5, Addison Wesley Developers Press, February 2000. 
 
 B<CDRA: IBM - Character Data Representation Architecture - Reference and Registry>, IBM SC09-2190-00, December 1996. 
 
 "Demystifying Character Sets", Andrea Vine, Multilingual Computing & Technology, B<#26 Vol. 10 Issue 4>, August/September 1999; ISSN 1523-0309; Multilingual Computing Inc. Sandpoint ID, USA. 
 
-B<Codes, Ciphers, and Other Cryptic and Clandestine Communication> Fred B. Wrixon, ISBN 1-57912-040-7, Black Dog & Leventhal Publishers,  1998. 
+B<Codes, Ciphers, and Other Cryptic and Clandestine Communication> Fred B. Wrixon, ISBN 1-57912-040-7, Black Dog & Leventhal Publishers, 1998. 
 
 L<http://www.bobbemer.com/P-BIT.HTM> B<IBM - EBCDIC and the P-bit; The biggest Computer Goof Ever> Robert Bemer. 
 

@@ -1,8 +1,10 @@
 #!perl
 
 # --------------------------------------------------------
-# 1. 解析中英文对照格式，输出到 ../dict/dict_sentence.dict
+# 1. 解析 ../data 目录中所有的 .pod 中英文对照格式文档，
+#    输出到 ../dict/dict_sentence.dict
 # 2. 将 ../precess 文件夹中的POD文档的段落拆分成更小的句子
+#    输出到 ../split 文件夹的同名文件
 # --------------------------------------------------------
 
 use strict;
@@ -10,8 +12,9 @@ use warnings;
 use 5.010;
 use utf8;
 use autodie;
-use List::MoreUtils qw < uniq mesh >;
+use List::MoreUtils qw <uniq mesh>;
 
+my $blank = "\x{0020}";
 open(DEBUG, '>', 'debug.pod');
 # 从存档目录读取文件列表
 my @filelist = glob("../data/*.pod");
@@ -40,6 +43,9 @@ my $output_file = '../dict/sentence.dict';
 say "output file is: $output_file";
 open(my $fh_out, '>:utf8', $output_file);
 while (my ($en, $cn) = each %hash) {
+    $en =~ s/^\s+|\s+$//g;
+    $en =~ s/\s+/$blank/g;
+    $en =~ s/\s*,\s*/,$blank/g;
     say {$fh_out} "$en||$cn";
 }
 
@@ -65,6 +71,8 @@ foreach my $file (@filelist) {
         next if (length($line) == 0);
         # 如果非代码行和标题行，则进行拆分
         if ($line =~ /^[^\s=]+/) {
+            $line =~ s/\s+/$blank/g; # 合并多余空格
+            $line =~ s/\s*,\s*/,$blank/g; # 规范逗号
             my @split = split2sentence($line);
             push @new_lines, @split;
             next;

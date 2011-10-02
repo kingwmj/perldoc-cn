@@ -68,11 +68,11 @@ All open handles are dup()-ed in pseudo-processes, so that closing any handles i
 
 =head2 Resource limits 
 
-In the eyes of the operating system, pseudo-processes created via the fork() emulation are simply threads in the same process.  This means that any process-level limits imposed by the operating system apply to all pseudo-processes taken together.  This includes any limits imposed by the operating system on the number of open file, directory and socket handles,  limits on disk space usage, limits on memory size, limits on CPU utilization etc. 
+In the eyes of the operating system, pseudo-processes created via the fork() emulation are simply threads in the same process.  This means that any process-level limits imposed by the operating system apply to all pseudo-processes taken together.  This includes any limits imposed by the operating system on the number of open file, directory and socket handles, limits on disk space usage, limits on memory size, limits on CPU utilization etc. 
 
 =head2 Killing the parent process 
 
-If the parent process is killed (either using Perl's kill() builtin, or using some external means) all the pseudo-processes are killed as well,  and the whole process exits. 
+If the parent process is killed (either using Perl's kill() builtin, or using some external means) all the pseudo-processes are killed as well, and the whole process exits. 
 
 =head2 Lifetime of the parent process and pseudo-processes 
 
@@ -110,9 +110,9 @@ This limitation arises from fundamental technical difficulties in cloning and re
 
 =item Open filehandles 
 
-Any filehandles open at the time of the fork() will be dup()-ed.  Thus,  the files can be closed independently in the parent and child, but beware that the dup()-ed handles will still share the same seek pointer.  Changing the seek position in the parent will change it in the child and vice-versa. One can avoid this by opening files that need distinct seek pointers separately in the child. 
+Any filehandles open at the time of the fork() will be dup()-ed.  Thus, the files can be closed independently in the parent and child, but beware that the dup()-ed handles will still share the same seek pointer.  Changing the seek position in the parent will change it in the child and vice-versa. One can avoid this by opening files that need distinct seek pointers separately in the child. 
 
-On some operating systems, notably Solaris and Unixware, calling C<exit()> from a child process will flush and close open filehandles in the parent,  thereby corrupting the filehandles.  On these systems, calling C<_exit()> is suggested instead.  C<_exit()> is available in Perl through the C<POSIX> module.  Please consult your system's manpages for more information on this. 
+On some operating systems, notably Solaris and Unixware, calling C<exit()> from a child process will flush and close open filehandles in the parent, thereby corrupting the filehandles.  On these systems, calling C<_exit()> is suggested instead.  C<_exit()> is available in Perl through the C<POSIX> module.  Please consult your system's manpages for more information on this. 
 
 =item Open directory handles 
 
@@ -188,7 +188,7 @@ Forking pipe open() constructs will be supported in future.
 
 =item Global state maintained by XSUBs 
 
-External subroutines (XSUBs) that maintain their own global state may not work correctly.  Such XSUBs will either need to maintain locks to protect simultaneous access to global data from different pseudo-processes,  or maintain all their state on the Perl symbol table, which is copied naturally when fork() is called.  A callback mechanism that provides extensions an opportunity to clone their state will be provided in the near future. 
+External subroutines (XSUBs) that maintain their own global state may not work correctly.  Such XSUBs will either need to maintain locks to protect simultaneous access to global data from different pseudo-processes, or maintain all their state on the Perl symbol table, which is copied naturally when fork() is called.  A callback mechanism that provides extensions an opportunity to clone their state will be provided in the near future. 
 
 =item Interpreter embedded in larger application 
 
@@ -210,7 +210,7 @@ Having pseudo-process IDs be negative integers breaks down for the integer C<-1>
 
 =item * 
 
-In certain cases, the OS-level handles created by the pipe(), socket(),  and accept() operators are apparently not duplicated accurately in pseudo-processes.  This only happens in some situations, but where it does happen, it may result in deadlocks between the read and write ends of pipe handles, or inability to send or receive data across socket handles. 
+In certain cases, the OS-level handles created by the pipe(), socket(), and accept() operators are apparently not duplicated accurately in pseudo-processes.  This only happens in some situations, but where it does happen, it may result in deadlocks between the read and write ends of pipe handles, or inability to send or receive data across socket handles. 
 
 =item * 
 

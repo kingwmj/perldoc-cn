@@ -13,12 +13,12 @@ C<=~> determines to which variable the regex is applied. In its absence, $_ is u
 
     $var =~ /foo/; 
 
-C<!~> determines to which variable the regex is applied,  and negates the result of the match; it returns false if the match succeeds, and true if it fails. 
+C<!~> determines to which variable the regex is applied, and negates the result of the match; it returns false if the match succeeds, and true if it fails. 
 
 
     $var !~ /foo/; 
 
-C<m/pattern/msixpogcdual> searches a string for a pattern match,  applying the given options. 
+C<m/pattern/msixpogcdual> searches a string for a pattern match, applying the given options. 
 
 
     m  Multiline mode - ^ and $ match internal lines 
@@ -39,9 +39,9 @@ C<m/pattern/msixpogcdual> searches a string for a pattern match,  applying the g
 
 If 'pattern' is an empty string, the last I<successfully> matched regex is used. Delimiters other than '/' may be used for both this operator and the following ones. The leading C<m> can be omitted if the delimiter is '/'. 
 
-C<qr/pattern/msixpodual> lets you store a regex in a variable,  or pass one around. Modifiers as for C<m//>, and are stored within the regex. 
+C<qr/pattern/msixpodual> lets you store a regex in a variable, or pass one around. Modifiers as for C<m//>, and are stored within the regex. 
 
-C<s/pattern/replacement/msixpogcedual> substitutes matches of 'pattern' with 'replacement'. Modifiers as for C<m//>,  with two additions: 
+C<s/pattern/replacement/msixpogcedual> substitutes matches of 'pattern' with 'replacement'. Modifiers as for C<m//>, with two additions: 
 
 
     e  Evaluate 'replacement' as an expression 
@@ -175,7 +175,7 @@ POSIX character classes and their Unicode and Perl equivalents:
  word    PerlWord         XPosixWord    \w       Alnum + Unicode marks + 
                                                    connectors, like '_' 
                                                    (Perl extension) 
- xdigit  ASCII_Hex_Digit  XPosixDigit            Hexadecimal digit,  
+ xdigit  ASCII_Hex_Digit  XPosixDigit            Hexadecimal digit, 
                                                     ASCII-range is 
                                                     [0-9A-Fa-f] 
 
@@ -210,17 +210,17 @@ Quantifiers are greedy by default and match the B<longest> leftmost.
 
    Maximal Minimal Possessive Allowed range 
    ------- ------- ---------- ------------- 
-   {n, m}   {n, m}?  {n, m}+     Must occur at least n times 
+   {n,m}   {n,m}?  {n,m}+     Must occur at least n times 
                               but no more than m times 
-   {n, }    {n, }?   {n, }+      Must occur at least n times 
+   {n,}    {n,}?   {n,}+      Must occur at least n times 
    {n}     {n}?    {n}+       Must occur exactly n times 
-   *       *?      *+         0 or more times (same as {0, }) 
-   +       +?      ++         1 or more times (same as {1, }) 
-   ?       ??      ?+         0 or 1 time (same as {0, 1}) 
+   *       *?      *+         0 or more times (same as {0,}) 
+   +       +?      ++         1 or more times (same as {1,}) 
+   ?       ??      ?+         0 or 1 time (same as {0,1}) 
 
 The possessive forms (new in Perl 5.10) prevent backtracking: what gets matched by a pattern with a possessive quantifier will not be backtracked into, even if that causes the whole match to fail. 
 
-There is no quantifier C<{, n}>. That's interpreted as a literal string. 
+There is no quantifier C<{,n}>. That's interpreted as a literal string. 
 
 =head2 EXTENDED CONSTRUCTS 
 
@@ -305,7 +305,7 @@ Captured groups are numbered according to their I<opening> paren.
 
    split       Use a regex to split a string into parts 
 
-The first four of these are like the escape sequences C<\L>, C<\l>,  C<\U>, and C<\u>.  For Titlecase, see L</Titlecase>. 
+The first four of these are like the escape sequences C<\L>, C<\l>, C<\U>, and C<\u>.  For Titlecase, see L</Titlecase>. 
 
 =head2 TERMINOLOGY 
 
@@ -379,5 +379,5 @@ I<Mastering Regular Expressions> by Jeffrey Friedl (F<http://oreilly.com/catalog
 
 =head1 THANKS 
 
-David P.C. Wollmann,  Richard Soderberg,  Sean M. Burke,  Tom Christiansen,  Jim Cromie,  and Jeffrey Goff for useful advice. 
+David P.C. Wollmann, Richard Soderberg, Sean M. Burke, Tom Christiansen, Jim Cromie, and Jeffrey Goff for useful advice. 
 

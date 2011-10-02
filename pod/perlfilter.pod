@@ -111,16 +111,16 @@ The C<cpp> filter does not apply to the text of the Fred module, only to the tex
 
     Fred.pm ----> parser 
 
-As you can see, a new stream has been created for reading the source from C<Fred.pm>. This stream will remain active until all of C<Fred.pm> has been parsed. The source stream for C<cpp_test> will still exist,  but is inactive. Once the parser has finished reading Fred.pm, the source stream associated with it will be destroyed. The source stream for C<cpp_test> then becomes active again and the parser reads line 4 and subsequent lines from C<cpp_test>. 
+As you can see, a new stream has been created for reading the source from C<Fred.pm>. This stream will remain active until all of C<Fred.pm> has been parsed. The source stream for C<cpp_test> will still exist, but is inactive. Once the parser has finished reading Fred.pm, the source stream associated with it will be destroyed. The source stream for C<cpp_test> then becomes active again and the parser reads line 4 and subsequent lines from C<cpp_test>. 
 
-You can use more than one source filter on a single file. Similarly,  you can reuse the same filter in as many files as you like. 
+You can use more than one source filter on a single file. Similarly, you can reuse the same filter in as many files as you like. 
 
 For example, if you have a uuencoded and compressed source file, it is possible to stack a uudecode filter and an uncompression filter like this: 
 
 
     use Filter::uudecode; use Filter::uncompress; 
     M'XL(".H<US4''V9I;F%L')Q;>7/;1I;_>_I3=&E=%:F*I"T?22Q/ 
-    M6]9*<IQCO*XFT"0[PL%%'Y+IG?WN^ZYN-$'J.[.JE$, 20/?K=_[> 
+    M6]9*<IQCO*XFT"0[PL%%'Y+IG?WN^ZYN-$'J.[.JE$,20/?K=_[> 
     ... 
 
 Once the first line has been processed, the flow will look like this: 
@@ -157,7 +157,7 @@ That said, there are a number of steps that can be taken to make life difficult 
 
 An alternative to writing the filter in C is to create a separate executable in the language of your choice. The separate executable reads from standard input, does whatever processing is necessary, and writes the filtered data to standard output. C<Filter::cpp> is an example of a source filter implemented as a separate executable - the executable is the C preprocessor bundled with your C compiler. 
 
-The source filter distribution includes two modules that simplify this task: C<Filter::exec> and C<Filter::sh>. Both allow you to run any external executable. Both use a coprocess to control the flow of data into and out of the external executable. (For details on coprocesses,  see Stephens, W.R., "Advanced Programming in the UNIX Environment." Addison-Wesley, ISBN 0-210-56317-7, pages 441-445.) The difference between them is that C<Filter::exec> spawns the external command directly, while C<Filter::sh> spawns a shell to execute the external command. (Unix uses the Bourne shell; NT uses the cmd shell.) Spawning a shell allows you to make use of the shell metacharacters and redirection facilities. 
+The source filter distribution includes two modules that simplify this task: C<Filter::exec> and C<Filter::sh>. Both allow you to run any external executable. Both use a coprocess to control the flow of data into and out of the external executable. (For details on coprocesses, see Stephens, W.R., "Advanced Programming in the UNIX Environment." Addison-Wesley, ISBN 0-210-56317-7, pages 441-445.) The difference between them is that C<Filter::exec> spawns the external command directly, while C<Filter::sh> spawns a shell to execute the external command. (Unix uses the Bourne shell; NT uses the cmd shell.) Spawning a shell allows you to make use of the shell metacharacters and redirection facilities. 
 
 Here is an example script that uses C<Filter::sh>: 
 
@@ -302,11 +302,11 @@ Here is the complete Debug filter:
     sub import { 
        my ($type) = @_; 
        my (%context) = ( 
-         Enabled => defined $ENV{DEBUG},  
-         InTraceBlock => FALSE,  
-         Filename => (caller)[1],  
-         LineNo => 0,  
-         LastBegin => 0,  
+         Enabled => defined $ENV{DEBUG}, 
+         InTraceBlock => FALSE, 
+         Filename => (caller)[1], 
+         LineNo => 0, 
+         LastBegin => 0, 
        ); 
        filter_add(bless \%context); 
     } 
@@ -357,7 +357,7 @@ Here is the complete Debug filter:
 
     1; 
 
-The big difference between this filter and the previous example is the use of context data in the filter object. The filter object is based on a hash reference, and is used to keep various pieces of context information between calls to the filter function. All but two of the hash fields are used for error reporting. The first of those two,  Enabled, is used by the filter to determine whether the debugging code should be given to the Perl parser. The second, InTraceBlock, is true when the filter has encountered a C<DEBUG_BEGIN> line, but has not yet encountered the following C<DEBUG_END> line. 
+The big difference between this filter and the previous example is the use of context data in the filter object. The filter object is based on a hash reference, and is used to keep various pieces of context information between calls to the filter function. All but two of the hash fields are used for error reporting. The first of those two, Enabled, is used by the filter to determine whether the debugging code should be given to the Perl parser. The second, InTraceBlock, is true when the filter has encountered a C<DEBUG_BEGIN> line, but has not yet encountered the following C<DEBUG_END> line. 
 
 If you ignore all the error checking that most of the code does, the essence of the filter is as follows: 
 

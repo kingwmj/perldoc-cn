@@ -53,13 +53,13 @@ Thus the pattern C</foo(?:\w+|\d+|\s+)bar/> can be thought of as the following c
 
 The truth of the matter is that perl's regular expressions these days are much more complex than this kind of structure, but visualising it this way can help when trying to get your bearings, and it matches the current implementation pretty closely. 
 
-To be more precise, we will say that a regex program is an encoding of a graph. Each node in the graph corresponds to part of the original regex pattern, such as a literal string or a branch,  and has a pointer to the nodes representing the next component to be matched. Since "node" and "opcode" already have other meanings in the perl source, we will call the nodes in a regex program "regops". 
+To be more precise, we will say that a regex program is an encoding of a graph. Each node in the graph corresponds to part of the original regex pattern, such as a literal string or a branch, and has a pointer to the nodes representing the next component to be matched. Since "node" and "opcode" already have other meanings in the perl source, we will call the nodes in a regex program "regops". 
 
 The program is represented by an array of C<regnode> structures, one or more of which represent a single regop of the program. Struct C<regnode> is the smallest struct needed, and has a field structure which is shared with all the other larger structures. 
 
 The "next" pointers of all regops except C<BRANCH> implement concatenation; a "next" pointer with a C<BRANCH> on both ends of it is connecting two alternatives.  [Here we have one of the subtle syntax dependencies: an individual C<BRANCH> (as opposed to a collection of them) is never concatenated with anything because of operator precedence.] 
 
-The operand of some types of regop is a literal string; for others,  it is a regop leading into a sub-program.  In particular, the operand of a C<BRANCH> node is the first regop of the branch. 
+The operand of some types of regop is a literal string; for others, it is a regop leading into a sub-program.  In particular, the operand of a C<BRANCH> node is the first regop of the branch. 
 
 B<NOTE>: As the railroad metaphor suggests, this is B<not> a tree structure:  the tail of the branch connects to the thing following the set of C<BRANCH>es.  It is a like a single line of railway track that splits as it goes into a station or railway yard and rejoins as it comes out the other side. 
 
@@ -98,7 +98,7 @@ C<regnode_string> structures, used for literal strings, follow the header with a
 
 =item C<regnode_charclass> 
 
-Character classes are represented by C<regnode_charclass> structures,  which have a four-byte argument and then a 32-byte (256-bit) bitmap indicating which characters are included in the class. 
+Character classes are represented by C<regnode_charclass> structures, which have a four-byte argument and then a 32-byte (256-bit) bitmap indicating which characters are included in the class. 
 
 
     regnode_charclass        U32 arg1; 
@@ -119,7 +119,7 @@ F<regnodes.h> defines an array called C<regarglen[]> which gives the size of eac
 
 The regops are defined in F<regnodes.h> which is generated from F<regcomp.sym> by F<regcomp.pl>. Currently the maximum possible number of distinct regops is restricted to 256, with about a quarter already used. 
 
-A set of macros makes accessing the fields easier and more consistent. These include C<OP()>, which is used to determine the type of a C<regnode>-like structure; C<NEXT_OFF()>, which is the offset to the next node (more on this later); C<ARG()>, C<ARG1()>, C<ARG2()>, C<ARG_SET()>,  and equivalents for reading and setting the arguments; and C<STR_LEN()>,  C<STRING()> and C<OPERAND()> for manipulating strings and regop bearing types. 
+A set of macros makes accessing the fields easier and more consistent. These include C<OP()>, which is used to determine the type of a C<regnode>-like structure; C<NEXT_OFF()>, which is the offset to the next node (more on this later); C<ARG()>, C<ARG1()>, C<ARG2()>, C<ARG_SET()>, and equivalents for reading and setting the arguments; and C<STR_LEN()>, C<STRING()> and C<OPERAND()> for manipulating strings and regop bearing types. 
 
 =head3 What regop is next? 
 
@@ -137,7 +137,7 @@ There is the "next regop" from a given regop/regnode. This is the regop physical
 
 =item * 
 
-There is the "regnext" from a given regop. This is the regop which is reached by jumping forward by the value of C<NEXT_OFF()>,  or in a few cases for longer jumps by the C<arg1> field of the C<regnode_1> structure. The subroutine C<regnext()> handles this transparently. This is the logical successor of the node, which in some cases, like that of the C<BRANCH> regop, has special meaning. 
+There is the "regnext" from a given regop. This is the regop which is reached by jumping forward by the value of C<NEXT_OFF()>, or in a few cases for longer jumps by the C<arg1> field of the C<regnode_1> structure. The subroutine C<regnext()> handles this transparently. This is the logical successor of the node, which in some cases, like that of the C<BRANCH> regop, has special meaning. 
 
 =back 
 
@@ -173,13 +173,13 @@ Broadly speaking, performing a match of a string against a pattern involves the 
 
 
 
-Where these steps occur in the actual execution of a perl program is determined by whether the pattern involves interpolating any string variables. If interpolation occurs, then compilation happens at run time. If it does not, then compilation is performed at compile time. (The C</o> modifier changes this,  as does C<qr//> to a certain extent.) The engine doesn't really care that much. 
+Where these steps occur in the actual execution of a perl program is determined by whether the pattern involves interpolating any string variables. If interpolation occurs, then compilation happens at run time. If it does not, then compilation is performed at compile time. (The C</o> modifier changes this, as does C<qr//> to a certain extent.) The engine doesn't really care that much. 
 
 =head2 Compilation 
 
 This code resides primarily in F<regcomp.c>, along with the header files F<regcomp.h>, F<regexp.h> and F<regnodes.h>. 
 
-Compilation starts with C<pregcomp()>, which is mostly an initialisation wrapper which farms work out to two other routines for the heavy lifting: the first is C<reg()>, which is the start point for parsing; the second,  C<study_chunk()>, is responsible for optimisation. 
+Compilation starts with C<pregcomp()>, which is mostly an initialisation wrapper which farms work out to two other routines for the heavy lifting: the first is C<reg()>, which is the start point for parsing; the second, C<study_chunk()>, is responsible for optimisation. 
 
 Initialisation in C<pregcomp()> mostly involves the creation and data-filling of a special structure, C<RExC_state_t> (defined in F<regcomp.c>). Almost all internally-used routines in F<regcomp.h> take a pointer to one of these structures as their first argument, with the name C<pRExC_state>. This structure is used to store the compilation state and contains many fields. Likewise there are many macros which operate on this variable: anything that looks like C<RExC_xxxx> is a macro that operates on this pointer/structure. 
 
@@ -229,7 +229,7 @@ A grammar form might be something like this:
 
 
     atom  : constant | class 
-    quant : '*' | '+' | '?' | '{min, max}' 
+    quant : '*' | '+' | '?' | '{min,max}' 
     _branch: piece 
            | piece _branch 
            | nothing 
@@ -260,7 +260,7 @@ The resulting program then looks like:
    1: EXACT <foo>(3) 
    3: END(0) 
 
-As you can see, even though we parsed out a branch and a piece, it was ultimately only an atom. The final program shows us how things work. We have an C<EXACT> regop,  followed by an C<END> regop. The number in parens indicates where the C<regnext> of the node goes. The C<regnext> of an C<END> regop is unused, as C<END> regops mean we have successfully matched. The number on the left indicates the position of the regop in the regnode array. 
+As you can see, even though we parsed out a branch and a piece, it was ultimately only an atom. The final program shows us how things work. We have an C<EXACT> regop, followed by an C<END> regop. The number in parens indicates where the C<regnext> of the node goes. The C<regnext> of an C<END> regop is unused, as C<END> regops mean we have successfully matched. The number on the left indicates the position of the regop in the regnode array. 
 
 Now let's try a harder pattern. We will add a quantifier, so now we have the pattern C</foo+/>. We will see that C<regbranch()> calls C<regpiece()> twice. 
 
@@ -384,7 +384,7 @@ Resulting in the program
   36: EOL(37) 
   37: END(0) 
 
-Here we can see a much more complex program, with various optimisations in play. At regnode 10 we see an example where a character class with only one character in it was turned into an C<EXACT> node. We can also see where an entire alternation was turned into a C<TRIE-EXACT> node. As a consequence,  some of the regnodes have been marked as optimised away. We can see that the C<$> symbol has been converted into an C<EOL> regop, a special piece of code that looks for C<\n> or the end of the string. 
+Here we can see a much more complex program, with various optimisations in play. At regnode 10 we see an example where a character class with only one character in it was turned into an C<EXACT> node. We can also see where an entire alternation was turned into a C<TRIE-EXACT> node. As a consequence, some of the regnodes have been marked as optimised away. We can see that the C<$> symbol has been converted into an C<EOL> regop, a special piece of code that looks for C<\n> or the end of the string. 
 
 The next pointer for C<BRANCH>es is interesting in that it points at where execution should go if the branch fails. When executing, if the engine tries to traverse from a branch to a C<regnext> that isn't a branch then the engine will know that the entire set of branches has failed. 
 
@@ -428,11 +428,11 @@ The code involved in C<study_chunk()> is extremely cryptic. Be careful. :-)
 
 =head2 Execution 
 
-Execution of a regex generally involves two phases, the first being finding the start point in the string where we should match from,  and the second being running the regop interpreter. 
+Execution of a regex generally involves two phases, the first being finding the start point in the string where we should match from, and the second being running the regop interpreter. 
 
 If we can tell that there is no valid start point then we don't bother running interpreter at all. Likewise, if we know from the analysis phase that we cannot detect a short-cut to the start position, we go straight to the interpreter. 
 
-The two entry points are C<re_intuit_start()> and C<pregexec()>. These routines have a somewhat incestuous relationship with overlap between their functions,  and C<pregexec()> may even call C<re_intuit_start()> on its own. Nevertheless other parts of the perl source code may call into either, or both. 
+The two entry points are C<re_intuit_start()> and C<pregexec()>. These routines have a somewhat incestuous relationship with overlap between their functions, and C<pregexec()> may even call C<re_intuit_start()> on its own. Nevertheless other parts of the perl source code may call into either, or both. 
 
 Execution of the interpreter itself used to be recursive, but thanks to the efforts of Dave Mitchell in the 5.9.x development track, that has changed: now an internal stack is maintained on the heap and the routine is fully iterative. This can make it tricky as the code is quite conservative about what state it stores, with the result that two consecutive lines in the code can actually be running in totally different contexts due to the simulated recursion. 
 
@@ -488,7 +488,7 @@ The following comment in F<regcomp.h> gives an example of exactly how tricky thi
     U+03C5 U+0308 U+0301         0xCF 0x85 0xCC 0x88 0xCC 0x81 
 
 
-    This means that in case-insensitive matching (or "loose matching",  
+    This means that in case-insensitive matching (or "loose matching", 
     as Unicode calls it), an EXACTF of length six (the UTF-8 encoded 
     byte length of the above casefolded versions) can match a target 
     string of length two (the byte length of UTF-8 encoded U+0390 or 
@@ -588,7 +588,7 @@ L<perlunitut>
 
 by Yves Orton, 2006. 
 
-With excerpts from Perl, and contributions and suggestions from Ronald J. Kimball, Dave Mitchell, Dominic Dunlop, Mark Jason Dominus,  Stephen McCamant, and David Landgren. 
+With excerpts from Perl, and contributions and suggestions from Ronald J. Kimball, Dave Mitchell, Dominic Dunlop, Mark Jason Dominus, Stephen McCamant, and David Landgren. 
 
 =head1 LICENCE 
 

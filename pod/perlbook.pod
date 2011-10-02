@@ -30,7 +30,7 @@ The Ram is a cookbook with hundreds of examples of using Perl to accomplish spec
 =item I<The Perl Cookbook> (the "Ram Book"): 
 
 
-    by Tom Christiansen and Nathan Torkington,  
+    by Tom Christiansen and Nathan Torkington, 
         with Foreword by Larry Wall 
     ISBN 978-0-596-00313-5 [2nd Edition August 2003] 
     http://oreilly.com/catalog/9780596003135/ 
@@ -50,7 +50,7 @@ If you want to learn the basics of Perl, you might start with the Llama book, wh
 
 =back 
 
-The tutorial started in the Llama continues in the Alpaca, which introduces the intermediate features of references, data structures,  object-oriented programming, and modules: 
+The tutorial started in the Llama continues in the Alpaca, which introduces the intermediate features of references, data structures, object-oriented programming, and modules: 
 
 =over 4 
 

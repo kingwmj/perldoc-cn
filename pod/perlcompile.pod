@@ -8,9 +8,9 @@ Perl has always had a compiler: your source is compiled into an internal form (a
 
 The C<B> module provides access to the parse tree, and other modules ("back ends") do things with the tree.  Some write it out as semi-human-readable text.  Another traverses the parse tree to build a cross-reference of which subroutines, formats, and variables are used where.  Another checks your code for dubious constructs.  Yet another back end dumps the parse tree back out as Perl source, acting as a source code beautifier or deobfuscator. 
 
-Because its original purpose was to be a way to produce C code corresponding to a Perl program, and in turn a native executable, the C<B> module and its associated back ends are known as "the compiler", even though they don't really compile anything. Different parts of the compiler are more accurately a "translator",  or an "inspector", but people want Perl to have a "compiler option" not an "inspector gadget".  What can you do? 
+Because its original purpose was to be a way to produce C code corresponding to a Perl program, and in turn a native executable, the C<B> module and its associated back ends are known as "the compiler", even though they don't really compile anything. Different parts of the compiler are more accurately a "translator", or an "inspector", but people want Perl to have a "compiler option" not an "inspector gadget".  What can you do? 
 
-This document covers the use of the Perl compiler: which modules it comprises, how to use the most important of the back end modules,  what problems there are, and how to work around them. 
+This document covers the use of the Perl compiler: which modules it comprises, how to use the most important of the back end modules, what problems there are, and how to work around them. 
 
 =head2 Layout 
 
@@ -47,7 +47,7 @@ before producing any other output.
 
 =head2 The Cross-Referencing Back End 
 
-The cross-referencing back end (B::Xref) produces a report on your program,  breaking down declarations and uses of subroutines and variables (and formats) by file and subroutine.  For instance, here's part of the report from the I<pod2man> program that comes with Perl: 
+The cross-referencing back end (B::Xref) produces a report on your program, breaking down declarations and uses of subroutines and variables (and formats) by file and subroutine.  For instance, here's part of the report from the I<pod2man> program that comes with Perl: 
 
 
   Subroutine clear_noremap 
@@ -63,7 +63,7 @@ The cross-referencing back end (B::Xref) produces a report on your program,  bre
       $ARGV             1086 
       %HTML_Escapes     1085, 1085 
 
-This shows the variables used in the subroutine C<clear_noremap>.  The variable C<$ready_to_print> is a my() (lexical) variable,  B<i>ntroduced (first declared with my()) on line 1069, and used on line 1079.  The variable C<$&> from the main package is used on 1086,  and so on. 
+This shows the variables used in the subroutine C<clear_noremap>.  The variable C<$ready_to_print> is a my() (lexical) variable, B<i>ntroduced (first declared with my()) on line 1069, and used on line 1079.  The variable C<$&> from the main package is used on 1086, and so on. 
 
 A line number may be prefixed by a single letter: 
 
@@ -90,7 +90,7 @@ Format defined.
 The most useful option the cross referencer has is to save the report to a separate file.  For instance, to save the report on I<myperlprogram> to the file I<report>: 
 
 
-  $ perl -MO=Xref, -oreport myperlprogram 
+  $ perl -MO=Xref,-oreport myperlprogram 
 
 =head2 The Decompiling Back End 
 
@@ -104,7 +104,7 @@ You'll notice immediately that Perl has no idea of how to paragraph your code.  
 
   $ perl -MO=Deparse -e '$op=shift||die "usage: $0 
   code [...]";chomp(@ARGV=<>)unless@ARGV; for(@ARGV){$was=$_;eval$op; 
-  die$@ if$@; rename$was, $_ unless$was eq $_}' 
+  die$@ if$@; rename$was,$_ unless$was eq $_}' 
   -e syntax OK 
   $op = shift @ARGV || die("usage: $0 code [...]"); 
   chomp(@ARGV = <ARGV>) unless @ARGV; 
@@ -118,7 +118,7 @@ You'll notice immediately that Perl has no idea of how to paragraph your code.  
 The decompiler has several options for the code it generates.  For instance, you can set the size of each indent from 4 (as above) to 2 with: 
 
 
-  $ perl -MO=Deparse, -si2 myperlprogram 
+  $ perl -MO=Deparse,-si2 myperlprogram 
 
 The B<-p> option adds parentheses where normally they are omitted: 
 
@@ -126,7 +126,7 @@ The B<-p> option adds parentheses where normally they are omitted:
   $ perl -MO=Deparse -e 'print "Hello, world\n"' 
   -e syntax OK 
   print "Hello, world\n"; 
-  $ perl -MO=Deparse, -p -e 'print "Hello, world\n"' 
+  $ perl -MO=Deparse,-p -e 'print "Hello, world\n"' 
   -e syntax OK 
   print("Hello, world\n"); 
 
@@ -144,7 +144,7 @@ To run the style checker across your source code:
 To disable context checks and undefined subroutines: 
 
 
-  $ perl -MO=Lint, -context, -undefined-subs myperlprogram 
+  $ perl -MO=Lint,-context,-undefined-subs myperlprogram 
 
 See L<B::Lint> for information on the options. 
 
@@ -175,7 +175,7 @@ This module dumps the Perl parse tree in verbose detail to STDOUT. It's useful f
 
 =item B::Deparse 
 
-This module produces Perl source code from the compiled parse tree. It is useful in debugging and deconstructing other people's code,  also as a pretty-printer for your own source.  See L</"The Decompiling Back End"> for details about usage. 
+This module produces Perl source code from the compiled parse tree. It is useful in debugging and deconstructing other people's code, also as a pretty-printer for your own source.  See L</"The Decompiling Back End"> for details about usage. 
 
 =item B::Lint 
 
@@ -186,7 +186,7 @@ This module inspects the compiled form of your source code for things which, whi
 This module prints out the my() variables used in a function or a file.  To get a list of the my() variables used in the subroutine mysub() defined in the file myperlprogram: 
 
 
-  $ perl -MO=Showlex, mysub myperlprogram 
+  $ perl -MO=Showlex,mysub myperlprogram 
 
 To get a list of the my() variables used in the file myperlprogram: 
 
@@ -199,7 +199,7 @@ To get a list of the my() variables used in the file myperlprogram:
 
 This module prints the contents of the parse tree, but without as much information as B::Debug.  For comparison, C<print "Hello, world."> produced 96 lines of output from B::Debug, but only 6 from B::Terse. 
 
-This module is useful for people who are writing their own back end,  or who are learning about the Perl internals.  It's not useful to the average programmer. 
+This module is useful for people who are writing their own back end, or who are learning about the Perl internals.  It's not useful to the average programmer. 
 
 =item B::Xref 
 

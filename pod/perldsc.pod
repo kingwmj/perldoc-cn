@@ -4,7 +4,7 @@ perldsc - Perl Data Structures Cookbook
 
 =head1 DESCRIPTION 
 
-The single feature most sorely lacking in the Perl programming language prior to its 5.0 release was complex data structures.  Even without direct language support, some valiant programmers did manage to emulate them, but it was hard work and not for the faint of heart.  You could occasionally get away with the C<$m{$AoA, $b}> notation borrowed from B<awk> in which the keys are actually more like a single concatenated string C<"$AoA$b">, but traversal and sorting were difficult.  More desperate programmers even hacked Perl's internal symbol table directly, a strategy that proved hard to develop and maintain--to put it mildly. 
+The single feature most sorely lacking in the Perl programming language prior to its 5.0 release was complex data structures.  Even without direct language support, some valiant programmers did manage to emulate them, but it was hard work and not for the faint of heart.  You could occasionally get away with the C<$m{$AoA,$b}> notation borrowed from B<awk> in which the keys are actually more like a single concatenated string C<"$AoA$b">, but traversal and sorting were difficult.  More desperate programmers even hacked Perl's internal symbol table directly, a strategy that proved hard to develop and maintain--to put it mildly. 
 
 The 5.0 release of Perl let us have complex data structures.  You may now write something like this and all of a sudden, you'd have an array with three dimensions! 
 
@@ -46,11 +46,11 @@ But for now, let's look at general issues common to all these types of data stru
 
 =head1 REFERENCES X<reference> X<dereference> X<dereferencing> X<pointer> 
 
-The most important thing to understand about all data structures in Perl--including multidimensional arrays--is that even though they might appear otherwise, Perl C<@ARRAY>s and C<%HASH>es are all internally one-dimensional.  They can hold only scalar values (meaning a string,  number, or a reference).  They cannot directly contain other arrays or hashes, but instead contain I<references> to other arrays or hashes. X<multidimensional array> X<array, multidimensional> 
+The most important thing to understand about all data structures in Perl--including multidimensional arrays--is that even though they might appear otherwise, Perl C<@ARRAY>s and C<%HASH>es are all internally one-dimensional.  They can hold only scalar values (meaning a string, number, or a reference).  They cannot directly contain other arrays or hashes, but instead contain I<references> to other arrays or hashes. X<multidimensional array> X<array, multidimensional> 
 
 You can't use a reference to an array or hash in quite the same way that you would a real array or hash.  For C or C++ programmers unused to distinguishing between arrays and pointers to the same, this can be confusing.  If so, just think of it as the difference between a structure and a pointer to a structure. 
 
-You can (and should) read more about references in L<perlref>. Briefly, references are rather like pointers that know what they point to.  (Objects are also a kind of reference, but we won't be needing them right away--if ever.)  This means that when you have something which looks to you like an access to a two-or-more-dimensional array and/or hash,  what's really going on is that the base type is merely a one-dimensional entity that contains references to the next level.  It's just that you can I<use> it as though it were a two-dimensional one.  This is actually the way almost all C multidimensional arrays work as well. 
+You can (and should) read more about references in L<perlref>. Briefly, references are rather like pointers that know what they point to.  (Objects are also a kind of reference, but we won't be needing them right away--if ever.)  This means that when you have something which looks to you like an access to a two-or-more-dimensional array and/or hash, what's really going on is that the base type is merely a one-dimensional entity that contains references to the next level.  It's just that you can I<use> it as though it were a two-dimensional one.  This is actually the way almost all C multidimensional arrays work as well. 
 
 
     $array[7][12]            # array of arrays 
@@ -69,7 +69,7 @@ Now, because the top level contains only references, if you try to print out you
 
 
 
-That's because Perl doesn't (ever) implicitly dereference your variables. If you want to get at the thing a reference is referring to, then you have to do this yourself using either prefix typing indicators, like C<${$blah}>, C<@{$blah}>, C<@{$blah[$i]}>, or else postfix pointer arrows,  like C<$a-E<gt>[3]>, C<$h-E<gt>{fred}>, or even C<$ob-E<gt>method()-E<gt>[3]>. 
+That's because Perl doesn't (ever) implicitly dereference your variables. If you want to get at the thing a reference is referring to, then you have to do this yourself using either prefix typing indicators, like C<${$blah}>, C<@{$blah}>, C<@{$blah[$i]}>, or else postfix pointer arrows, like C<$a-E<gt>[3]>, C<$h-E<gt>{fred}>, or even C<$ob-E<gt>method()-E<gt>[3]>. 
 
 =head1 COMMON MISTAKES 
 
@@ -109,7 +109,7 @@ Unfortunately, while this is true, it's still broken.  All the references in @Ao
     dp = getpwnam("daemon"); 
 
 
-    printf("daemon name is %s\nroot name is %s\n",  
+    printf("daemon name is %s\nroot name is %s\n", 
         dp->pw_name, rp->pw_name); 
     } 
 
@@ -147,7 +147,7 @@ Then the assignment with the indirection on the left-hand-side would use the exi
 
     @{$AoA[3]} = @array; 
 
-Of course, this I<would> have the "interesting" effect of clobbering @another_array.  (Have you ever noticed how when a programmer says something is "interesting", that rather than meaning "intriguing",  they're disturbingly more apt to mean that it's "annoying",  "difficult", or both?  :-) 
+Of course, this I<would> have the "interesting" effect of clobbering @another_array.  (Have you ever noticed how when a programmer says something is "interesting", that rather than meaning "intriguing", they're disturbingly more apt to mean that it's "annoying", "difficult", or both?  :-) 
 
 So just remember always to use the array or hash constructors with C<[]> or C<{}>, and you'll be fine, although it's not always optimally efficient. 
 
@@ -194,15 +194,15 @@ This way, you'll be forced to declare all your variables with my() and also disa
 
 
     my $aref = [ 
-    [ "fred", "barney", "pebbles", "bambam", "dino", ],  
-    [ "homer", "bart", "marge", "maggie", ],  
-    [ "george", "jane", "elroy", "judy", ],  
+    [ "fred", "barney", "pebbles", "bambam", "dino", ], 
+    [ "homer", "bart", "marge", "maggie", ], 
+    [ "george", "jane", "elroy", "judy", ], 
     ]; 
 
 
     print $aref[2][2]; 
 
-The compiler would immediately flag that as an error I<at compile time>,  because you were accidentally accessing C<@aref>, an undeclared variable, and it would thereby remind you to write instead: 
+The compiler would immediately flag that as an error I<at compile time>, because you were accidentally accessing C<@aref>, an undeclared variable, and it would thereby remind you to write instead: 
 
 
     print $aref->[2][2] 
@@ -241,9 +241,9 @@ Presented with little comment (these will get their own manpages someday) here a
 
 
  @AoA = ( 
-        [ "fred", "barney" ],  
-        [ "george", "jane", "elroy" ],  
-        [ "homer", "marge", "bart" ],  
+        [ "fred", "barney" ], 
+        [ "george", "jane", "elroy" ], 
+        [ "homer", "marge", "bart" ], 
       ); 
 
 =head2 Generation of an ARRAY OF ARRAYS 
@@ -284,13 +284,13 @@ Presented with little comment (these will get their own manpages someday) here a
 
  # print the whole thing with refs 
  for $aref ( @AoA ) { 
-     print "\t [ @$aref ], \n"; 
+     print "\t [ @$aref ],\n"; 
  } 
 
 
  # print the whole thing with indices 
  for $i ( 0 .. $#AoA ) { 
-     print "\t [ @{$AoA[$i]} ], \n"; 
+     print "\t [ @{$AoA[$i]} ],\n"; 
  } 
 
 
@@ -307,9 +307,9 @@ Presented with little comment (these will get their own manpages someday) here a
 
 
  %HoA = ( 
-        flintstones        => [ "fred", "barney" ],  
-        jetsons            => [ "george", "jane", "elroy" ],  
-        simpsons           => [ "homer", "marge", "bart" ],  
+        flintstones        => [ "fred", "barney" ], 
+        jetsons            => [ "george", "jane", "elroy" ], 
+        simpsons           => [ "homer", "marge", "bart" ], 
       ); 
 
 =head2 Generation of a HASH OF ARRAYS 
@@ -398,18 +398,18 @@ Presented with little comment (these will get their own manpages someday) here a
 
  @AoH = ( 
         { 
-            Lead     => "fred",  
-            Friend   => "barney",  
-        },  
+            Lead     => "fred", 
+            Friend   => "barney", 
+        }, 
         { 
-            Lead     => "george",  
-            Wife     => "jane",  
-            Son      => "elroy",  
-        },  
+            Lead     => "george", 
+            Wife     => "jane", 
+            Son      => "elroy", 
+        }, 
         { 
-            Lead     => "homer",  
-            Wife     => "marge",  
-            Son      => "bart",  
+            Lead     => "homer", 
+            Wife     => "marge", 
+            Son      => "bart", 
         } 
   ); 
 
@@ -439,7 +439,7 @@ Presented with little comment (these will get their own manpages someday) here a
 
 
  # calling a function  that returns a key/value pair list, like 
- # "lead", "fred", "daughter", "pebbles" 
+ # "lead","fred","daughter","pebbles" 
  while ( %fields = getnextpairset() ) { 
      push @AoH, { %fields }; 
  } 
@@ -500,19 +500,19 @@ Presented with little comment (these will get their own manpages someday) here a
 
  %HoH = ( 
         flintstones => { 
-        lead      => "fred",  
-        pal       => "barney",  
-        },  
+        lead      => "fred", 
+        pal       => "barney", 
+        }, 
         jetsons     => { 
-        lead      => "george",  
-        wife      => "jane",  
-        "his boy" => "elroy",  
-        },  
+        lead      => "george", 
+        wife      => "jane", 
+        "his boy" => "elroy", 
+        }, 
         simpsons    => { 
-        lead      => "homer",  
-        wife      => "marge",  
-        kid       => "bart",  
-    },  
+        lead      => "homer", 
+        wife      => "marge", 
+        kid       => "bart", 
+    }, 
  ); 
 
 =head2 Generation of a HASH OF HASHES 
@@ -544,7 +544,7 @@ Presented with little comment (these will get their own manpages someday) here a
  } 
 
 
- # calling a function  that returns a key, value hash 
+ # calling a function  that returns a key,value hash 
  for $group ( "simpsons", "jetsons", "flintstones" ) { 
      $HoH{$group} = { get_family($group) }; 
  } 
@@ -559,8 +559,8 @@ Presented with little comment (these will get their own manpages someday) here a
 
  # append new members to an existing family 
  %new_folks = ( 
-     wife => "wilma",  
-     pet  => "dino",  
+     wife => "wilma", 
+     pet  => "dino", 
  ); 
 
 
@@ -636,12 +636,12 @@ Here's a sample showing how to create and use a record whose fields are of many 
 
 
      $rec = { 
-     TEXT      => $string,  
-     SEQUENCE  => [ @old_values ],  
-     LOOKUP    => { %some_table },  
-     THATCODE  => \&some_function,  
-     THISCODE  => sub { $_[0] ** $_[1] },  
-     HANDLE    => \*STDOUT,  
+     TEXT      => $string, 
+     SEQUENCE  => [ @old_values ], 
+     LOOKUP    => { %some_table }, 
+     THATCODE  => \&some_function, 
+     THISCODE  => sub { $_[0] ** $_[1] }, 
+     HANDLE    => \*STDOUT, 
      }; 
 
 
@@ -673,36 +673,36 @@ Here's a sample showing how to create and use a record whose fields are of many 
 
      %TV = ( 
         flintstones => { 
-            series   => "flintstones",  
-            nights   => [ qw(monday thursday friday) ],  
+            series   => "flintstones", 
+            nights   => [ qw(monday thursday friday) ], 
             members  => [ 
-                { name => "fred", role => "lead", age  => 36, },  
-                { name => "wilma", role => "wife", age  => 31, },  
-                { name => "pebbles", role => "kid", age  =>  4, },  
-            ],  
-        },  
+                { name => "fred",    role => "lead", age  => 36, }, 
+                { name => "wilma",   role => "wife", age  => 31, }, 
+                { name => "pebbles", role => "kid",  age  =>  4, }, 
+            ], 
+        }, 
 
 
         jetsons     => { 
-            series   => "jetsons",  
-            nights   => [ qw(wednesday saturday) ],  
+            series   => "jetsons", 
+            nights   => [ qw(wednesday saturday) ], 
             members  => [ 
-                { name => "george", role => "lead", age  => 41, },  
-                { name => "jane", role => "wife", age  => 39, },  
-                { name => "elroy", role => "kid", age  =>  9, },  
-            ],  
-         },  
+                { name => "george",  role => "lead", age  => 41, }, 
+                { name => "jane",    role => "wife", age  => 39, }, 
+                { name => "elroy",   role => "kid",  age  =>  9, }, 
+            ], 
+         }, 
 
 
         simpsons    => { 
-            series   => "simpsons",  
-            nights   => [ qw(monday) ],  
+            series   => "simpsons", 
+            nights   => [ qw(monday) ], 
             members  => [ 
-                { name => "homer", role => "lead", age  => 34, },  
-                { name => "marge", role => "wife", age => 37, },  
-                { name => "bart", role => "kid", age  =>  11, },  
-            ],  
-         },  
+                { name => "homer", role => "lead", age  => 34, }, 
+                { name => "marge", role => "wife", age => 37, }, 
+                { name => "bart",  role => "kid",  age  =>  11, }, 
+            ], 
+         }, 
       ); 
 
 =head2 Generation of a HASH OF COMPLEX RECORDS 

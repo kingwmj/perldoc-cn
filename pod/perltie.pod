@@ -19,9 +19,9 @@ Prior to release 5.0 of Perl, a programmer could use dbmopen() to connect an on-
 
 Now you can. 
 
-The tie() function binds a variable to a class (package) that will provide the implementation for access methods for that variable.  Once this magic has been performed, accessing a tied variable automatically triggers method calls in the proper class.  The complexity of the class is hidden behind magic methods calls.  The method names are in ALL CAPS,  which is a convention that Perl uses to indicate that they're called implicitly rather than explicitly--just like the BEGIN() and END() functions. 
+The tie() function binds a variable to a class (package) that will provide the implementation for access methods for that variable.  Once this magic has been performed, accessing a tied variable automatically triggers method calls in the proper class.  The complexity of the class is hidden behind magic methods calls.  The method names are in ALL CAPS, which is a convention that Perl uses to indicate that they're called implicitly rather than explicitly--just like the BEGIN() and END() functions. 
 
-In the tie() call, C<VARIABLE> is the name of the variable to be enchanted.  C<CLASSNAME> is the name of a class implementing objects of the correct type.  Any additional arguments in the C<LIST> are passed to the appropriate constructor method for that class--meaning TIESCALAR(),  TIEARRAY(), TIEHASH(), or TIEHANDLE().  (Typically these are arguments such as might be passed to the dbminit() function of C.) The object returned by the "new" method is also returned by the tie() function,  which would be useful if you wanted to access other methods in C<CLASSNAME>. (You don't actually have to return a reference to a right "type" (e.g., HASH or C<CLASSNAME>) so long as it's a properly blessed object.)  You can also retrieve a reference to the underlying object using the tied() function. 
+In the tie() call, C<VARIABLE> is the name of the variable to be enchanted.  C<CLASSNAME> is the name of a class implementing objects of the correct type.  Any additional arguments in the C<LIST> are passed to the appropriate constructor method for that class--meaning TIESCALAR(), TIEARRAY(), TIEHASH(), or TIEHANDLE().  (Typically these are arguments such as might be passed to the dbminit() function of C.) The object returned by the "new" method is also returned by the tie() function, which would be useful if you wanted to access other methods in C<CLASSNAME>. (You don't actually have to return a reference to a right "type" (e.g., HASH or C<CLASSNAME>) so long as it's a properly blessed object.)  You can also retrieve a reference to the underlying object using the tied() function. 
 
 Unlike dbmopen(), the tie() function will not C<use> or C<require> a module for you--you need to do that explicitly yourself. 
 
@@ -33,9 +33,9 @@ Let's look at each in turn, using as an example a tie class for scalars that all
 
 
     tie $his_speed, 'Nice', getppid(); 
-    tie $my_speed, 'Nice', $$; 
+    tie $my_speed,  'Nice', $$; 
 
-And now whenever either of those variables is accessed, its current system priority is retrieved and returned.  If those variables are set,  then the process's priority is changed! 
+And now whenever either of those variables is accessed, its current system priority is retrieved and returned.  If those variables are set, then the process's priority is changed! 
 
 We'll use Jarkko Hietaniemi <F<jhi@iki.fi>>'s BSD::Resource class (not included) to access the PRIO_PROCESS, PRIO_MIN, and PRIO_MAX constants from your system, as well as the getpriority() and setpriority() system calls.  Here's the preamble of the class. 
 
@@ -73,7 +73,7 @@ This is the constructor for the class.  That means it is expected to return a bl
         return bless \$pid, $class; 
     } 
 
-This tie class has chosen to return an error rather than raising an exception if its constructor should fail.  While this is how dbmopen() works,  other classes may well not wish to be so forgiving.  It checks the global variable C<$^W> to see whether to emit a bit of noise anyway. 
+This tie class has chosen to return an error rather than raising an exception if its constructor should fail.  While this is how dbmopen() works, other classes may well not wish to be so forgiving.  It checks the global variable C<$^W> to see whether to emit a bit of noise anyway. 
 
 =item FETCH this X<FETCH> 
 
@@ -107,7 +107,7 @@ This method will be triggered every time the tied variable is set (assigned).  B
 
         if ($new_nicety < PRIO_MIN) { 
             carp sprintf 
-              "WARNING: priority %d less than minimum system priority %d",  
+              "WARNING: priority %d less than minimum system priority %d", 
                   $new_nicety, PRIO_MIN if $^W; 
             $new_nicety = PRIO_MIN; 
         } 
@@ -115,7 +115,7 @@ This method will be triggered every time the tied variable is set (assigned).  B
 
         if ($new_nicety > PRIO_MAX) { 
             carp sprintf 
-              "WARNING: priority %d greater than maximum system priority %d",  
+              "WARNING: priority %d greater than maximum system priority %d", 
                   $new_nicety, PRIO_MAX if $^W; 
             $new_nicety = PRIO_MAX; 
         } 
@@ -186,8 +186,8 @@ In our example, just to show you that you don't I<really> have to return an ARRA
         croak "usage: tie ARRAY, '" . __PACKAGE__ . "', elem_size"; 
       } 
       return bless { 
-        ELEMSIZE => $elemsize,  
-        ARRAY    => [],  
+        ELEMSIZE => $elemsize, 
+        ARRAY    => [], 
       }, $class; 
     } 
 
@@ -400,7 +400,7 @@ Hashes were the first Perl data type to be tied (see dbmopen()).  A class implem
 
 If this seems like a lot, then feel free to inherit from merely the standard Tie::StdHash module for most of your methods, redefining only the interesting ones.  See L<Tie::Hash> for details. 
 
-Remember that Perl distinguishes between a key not existing in the hash,  and the key existing in the hash but having a corresponding value of C<undef>.  The two possibilities can be tested with the C<exists()> and C<defined()> functions. 
+Remember that Perl distinguishes between a key not existing in the hash, and the key existing in the hash but having a corresponding value of C<undef>.  The two possibilities can be tested with the C<exists()> and C<defined()> functions. 
 
 Here's an example of a somewhat interesting tied hash class:  it gives you a hash representing a particular user's dot files.  You index into the hash with the name of the file (minus the dot) and you get back that dot file's contents.  For example: 
 
@@ -419,7 +419,7 @@ Or here's another sample of using our tied class:
 
     tie %him, 'DotFiles', 'daemon'; 
     foreach $f ( keys %him ) { 
-    printf "daemon dot file %s is size %d\n",  
+    printf "daemon dot file %s is size %d\n", 
         $f, length $him{$f}; 
     } 
 
@@ -479,10 +479,10 @@ Here's the constructor:
 
 
     my $node = { 
-        USER    => $user,  
-        HOME    => $dir,  
-        LIST    => {},  
-        CLOBBER => 0,  
+        USER    => $user, 
+        HOME    => $dir, 
+        LIST    => {}, 
+        CLOBBER => 0, 
     }; 
 
 
@@ -576,7 +576,7 @@ The clobber method is simply:
 
 =item DELETE this, key X<DELETE> 
 
-This method is triggered when we remove an element from the hash,  typically by using the delete() function.  Again, we'll be careful to check whether they really want to clobber files. 
+This method is triggered when we remove an element from the hash, typically by using the delete() function.  Again, we'll be careful to check whether they really want to clobber files. 
 
 
     sub DELETE   { 
@@ -594,7 +594,7 @@ This method is triggered when we remove an element from the hash,  typically by 
     $success; 
     } 
 
-The value returned by DELETE becomes the return value of the call to delete().  If you want to emulate the normal behavior of delete(),  you should return whatever FETCH would have returned for this key. In this example, we have chosen instead to return a value which tells the caller whether the file was successfully deleted. 
+The value returned by DELETE becomes the return value of the call to delete().  If you want to emulate the normal behavior of delete(), you should return whatever FETCH would have returned for this key. In this example, we have chosen instead to return a value which tells the caller whether the file was successfully deleted. 
 
 =item CLEAR this X<CLEAR> 
 
@@ -687,8 +687,8 @@ Note that functions such as keys() and values() may return huge lists when used 
     # print out history file offsets 
     use NDBM_File; 
     tie(%HIST, 'NDBM_File', '/usr/lib/news/history', 1, 0); 
-    while (($key, $val) = each %HIST) { 
-        print $key, ' = ', unpack('L', $val), "\n"; 
+    while (($key,$val) = each %HIST) { 
+        print $key, ' = ', unpack('L',$val), "\n"; 
     } 
     untie(%HIST); 
 
@@ -696,9 +696,9 @@ Note that functions such as keys() and values() may return huge lists when used 
 
 This is partially implemented now. 
 
-A class implementing a tied filehandle should define the following methods: TIEHANDLE, at least one of PRINT, PRINTF, WRITE, READLINE, GETC,  READ, and possibly CLOSE, UNTIE and DESTROY.  The class can also provide: BINMODE,  OPEN, EOF, FILENO, SEEK, TELL - if the corresponding perl operators are used on the handle. 
+A class implementing a tied filehandle should define the following methods: TIEHANDLE, at least one of PRINT, PRINTF, WRITE, READLINE, GETC, READ, and possibly CLOSE, UNTIE and DESTROY.  The class can also provide: BINMODE, OPEN, EOF, FILENO, SEEK, TELL - if the corresponding perl operators are used on the handle. 
 
-When STDERR is tied, its PRINT method will be called to issue warnings and error messages.  This feature is temporarily disabled during the call,  which means you can use C<warn()> inside PRINT without starting a recursive loop.  And just like C<__WARN__> and C<__DIE__> handlers, STDERR's PRINT method may be called to report parser errors, so the caveats mentioned under L<perlvar/%SIG> apply. 
+When STDERR is tied, its PRINT method will be called to issue warnings and error messages.  This feature is temporarily disabled during the call, which means you can use C<warn()> inside PRINT without starting a recursive loop.  And just like C<__WARN__> and C<__DIE__> handlers, STDERR's PRINT method may be called to report parser errors, so the caveats mentioned under L<perlvar/%SIG> apply. 
 
 All of this is especially useful when perl is embedded in some other program, where output to STDOUT and STDERR may have to be redirected in some special way.  See nvi and the Apache module for examples. 
 
@@ -725,7 +725,7 @@ This method will be called when the handle is written to via the C<syswrite> fun
 
     sub WRITE { 
     $r = shift; 
-    my($buf, $len, $offset) = @_; 
+    my($buf,$len,$offset) = @_; 
     print "WRITE called, \$buf=$buf, \$len=$len, \$offset=$offset"; 
     } 
 
@@ -734,7 +734,7 @@ This method will be called when the handle is written to via the C<syswrite> fun
 This method will be triggered every time the tied handle is printed to with the C<print()> or C<say()> functions.  Beyond its self reference it also expects the list that was passed to the print function. 
 
 
-    sub PRINT { $r = shift; $$r++; print join($, , map(uc($_), @_)), $\ } 
+    sub PRINT { $r = shift; $$r++; print join($,,map(uc($_),@_)),$\ } 
 
 C<say()> acts just like C<print()> except $\ will be localized to C<\n> so you need do nothing special to handle C<say()> in C<PRINT()>. 
 
@@ -757,7 +757,7 @@ This method will be called when the handle is read from via the C<read> or C<sys
     sub READ { 
     my $self = shift; 
     my $bufref = \$_[0]; 
-    my(undef, $len, $offset) = @_; 
+    my(undef,$len,$offset) = @_; 
     print "READ called, \$buf=$bufref, \$len=$len, \$offset=$offset"; 
     # add to $$bufref, set $len to number of characters read 
     $len; 
@@ -767,14 +767,14 @@ This method will be called when the handle is read from via the C<read> or C<sys
 
 This method is called when the handle is read via C<E<lt>HANDLEE<gt>> or C<readline HANDLE>. 
 
-As per L<C<readline>|perlfunc/readline>, in scalar context it should return the next line, or C<undef> for no more data.  In list context it should return all remaining lines, or an empty list for no more data.  The strings returned should include the input record separator C<$/> (see L<perlvar>),  unless it is C<undef> (which means "slurp" mode). 
+As per L<C<readline>|perlfunc/readline>, in scalar context it should return the next line, or C<undef> for no more data.  In list context it should return all remaining lines, or an empty list for no more data.  The strings returned should include the input record separator C<$/> (see L<perlvar>), unless it is C<undef> (which means "slurp" mode). 
 
 
     sub READLINE { 
       my $r = shift; 
       if (wantarray) { 
-        return ("all remaining\n",  
-                "lines up\n",  
+        return ("all remaining\n", 
+                "lines up\n", 
                 "to eof\n"); 
       } else { 
         return "READLINE called " . ++$$r . " times\n"; 
@@ -820,7 +820,7 @@ As with the other types of ties, this method will be called when the tied handle
 Here's how to use our little example: 
 
 
-    tie(*FOO, 'Shout'); 
+    tie(*FOO,'Shout'); 
     print FOO "hello\n"; 
     $a = 4; $b = 6; 
     print FOO $a, " plus ", $b, " equals ", $a + $b, "\n"; 
@@ -956,7 +956,7 @@ If the UNTIE method exists then the warning above does not occur. Instead the UN
 
     sub UNTIE 
     { 
-     my ($obj, $count) = @_; 
+     my ($obj,$count) = @_; 
      carp "untie attempted while $count inner references still exist" if $count; 
     } 
 
@@ -966,7 +966,7 @@ See L<DB_File> or L<Config> for some interesting tie() implementations. A good s
 
 =head1 BUGS 
 
-The bucket usage information provided by C<scalar(%hash)> is not available.  What this means is that using %tied_hash in boolean context doesn't work right (currently this always tests false,  regardless of whether the hash is empty or hash elements). 
+The bucket usage information provided by C<scalar(%hash)> is not available.  What this means is that using %tied_hash in boolean context doesn't work right (currently this always tests false, regardless of whether the hash is empty or hash elements). 
 
 Localizing tied arrays or hashes does not work.  After exiting the scope the arrays or the hashes are not restored. 
 
@@ -976,7 +976,7 @@ Tied hash/array slices cause multiple FETCH/STORE pairs, there are no tie method
 
 You cannot easily tie a multilevel data structure (such as a hash of hashes) to a dbm file.  The first problem is that all but GDBM and Berkeley DB have size limitations, but beyond that, you also have problems with how references are to be represented on disk.  One module that does attempt to address this need is DBM::Deep.  Check your nearest CPAN site as described in L<perlmodlib> for source code.  Note that despite its name, DBM::Deep does not use dbm.  Another earlier attempt at solving the problem is MLDBM, which is also available on the CPAN, but which has some fairly serious limitations. 
 
-Tied filehandles are still incomplete.  sysopen(), truncate(),  flock(), fcntl(), stat() and -X can't currently be trapped. 
+Tied filehandles are still incomplete.  sysopen(), truncate(), flock(), fcntl(), stat() and -X can't currently be trapped. 
 
 =head1 AUTHOR 
 

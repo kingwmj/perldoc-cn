@@ -12,11 +12,10 @@ use strict;
 use warnings;
 use 5.010;
 use autodie;
-use File::Slurp qw< read_file write_file>;
-use List::MoreUtils qw< mesh uniq >;
+use File::Slurp qw<read_file write_file>;
+use List::MoreUtils qw<mesh uniq>;
 use Lingua::Sentence;
 use Regexp::Common qw/URI/;
-use Text::Balanced qw<extract_variable>;
 
 # 字典转换成散列 my $ref_dict_hash = dict2hash($file1, $file2);
 sub dict2hash {
@@ -91,7 +90,7 @@ sub filter_format_str {
     my $text  = read_file $file;
     my @lines = read_file $file;
     # 获取 =head =over =item 等结构数组
-    my @head = $text =~ /^=[a-zA-Z0-9]+\s*[^a-zA-Z]*/xmsg;
+    my @head = $text =~ /^=[a-zA-Z0-9]+\s*[^a-zA-Z\n]*/xmsg;
 
     # 获取每行前有空格的代码原文格式数组
     my @code = grep { chomp; /^\s{1,}/ } @lines;
@@ -100,8 +99,7 @@ sub filter_format_str {
         $element =~ s/#.*//;
     }
 
-#  my @return_array = (@head, @code);
-   my @return_array = (@head);
+   my @return_array = (@head, @code);
    return \@return_array;
 }
 
@@ -146,7 +144,6 @@ sub filter_ignore_str {
        s/\n/ /g;
    }
    my @return_array = (@var, @email, @http, @ftp, @func, @file, @format);
-#   my @return_array = (@format);
    return \@return_array;
 }
 

@@ -39,7 +39,7 @@ Now just type in any legal Perl code, and it will be immediately evaluated.  You
 
 The C<psh> (Perl sh) is currently at version 1.8. The Perl Shell is a shell that combines the interactive nature of a Unix shell with the power of Perl. The goal is a full-featured shell that behaves as expected for normal shell activity and uses Perl syntax and functionality for control-flow statements and other things. You can get C<psh> at http://sourceforge.net/projects/psh/ . 
 
-C<Zoidberg> is a similar project and provides a shell written in perl,  configured in perl and operated in perl. It is intended as a login shell and development environment. It can be found at http://pardus-larus.student.utwente.nl/~pardus/projects/zoidberg/ or your local CPAN mirror. 
+C<Zoidberg> is a similar project and provides a shell written in perl, configured in perl and operated in perl. It is intended as a login shell and development environment. It can be found at http://pardus-larus.student.utwente.nl/~pardus/projects/zoidberg/ or your local CPAN mirror. 
 
 The C<Shell.pm> module (distributed with Perl) makes Perl try commands which aren't part of the Perl language as shell commands.  C<perlsh> from the source distribution is simplistic and uninteresting, but may still be what you want. 
 
@@ -89,10 +89,10 @@ If you do not have that module, you can do the same thing with C<File::Find> whi
         wanted => sub { 
             push @files, $File::Find::fullname 
             if -f $File::Find::fullname && /\.pm$/ 
-        },  
-        follow => 1,  
-        follow_skip => 2,  
-        },  
+        }, 
+        follow => 1, 
+        follow_skip => 2, 
+        }, 
         @INC 
     ); 
 
@@ -170,26 +170,26 @@ Like C<DProf>, it creates a database of the profile information that you can tur
 
 CPAN has several other profilers that you can invoke in the same fashion. You might also be interested in using the C<Benchmark> to measure and compare code snippets. 
 
-You can read more about profiling in I<Programming Perl>, chapter 20,  or I<Mastering Perl>, chapter 5. 
+You can read more about profiling in I<Programming Perl>, chapter 20, or I<Mastering Perl>, chapter 5. 
 
-L<perldebguts> documents creating a custom debugger if you need to create a special sort of profiler. brian d foy describes the process in I<The Perl Journal>, "Creating a Perl Debugger",  http://www.ddj.com/184404522, and "Profiling in Perl" http://www.ddj.com/184404580 . 
+L<perldebguts> documents creating a custom debugger if you need to create a special sort of profiler. brian d foy describes the process in I<The Perl Journal>, "Creating a Perl Debugger", http://www.ddj.com/184404522 , and "Profiling in Perl" http://www.ddj.com/184404580 . 
 
-Perl.com has two interesting articles on profiling: "Profiling Perl",  by Simon Cozens, http://www.perl.com/lpt/a/850 and "Debugging and Profiling mod_perl Applications", by Frank Wiles,  http://www.perl.com/pub/a/2006/02/09/debug_mod_perl.html . 
+Perl.com has two interesting articles on profiling: "Profiling Perl", by Simon Cozens, http://www.perl.com/lpt/a/850 and "Debugging and Profiling mod_perl Applications", by Frank Wiles, http://www.perl.com/pub/a/2006/02/09/debug_mod_perl.html . 
 
-Randal L. Schwartz writes about profiling in "Speeding up Your Perl Programs" for I<Unix Review>,  http://www.stonehenge.com/merlyn/UnixReview/col49.html, and "Profiling in Template Toolkit via Overriding" for I<Linux Magazine>,  http://www.stonehenge.com/merlyn/LinuxMag/col75.html . 
+Randal L. Schwartz writes about profiling in "Speeding up Your Perl Programs" for I<Unix Review>, http://www.stonehenge.com/merlyn/UnixReview/col49.html , and "Profiling in Template Toolkit via Overriding" for I<Linux Magazine>, http://www.stonehenge.com/merlyn/LinuxMag/col75.html . 
 
 =head2 How do I cross-reference my Perl programs? 
 
 The C<B::Xref> module can be used to generate cross-reference reports for Perl programs. 
 
 
-    perl -MO=Xref[, OPTIONS] scriptname.plx 
+    perl -MO=Xref[,OPTIONS] scriptname.plx 
 
 =head2 Is there a pretty-printer (formatter) for Perl? 
 
 C<Perltidy> is a Perl script which indents and reformats Perl scripts to make them easier to read by trying to follow the rules of the L<perlstyle>. If you write Perl scripts, or spend much time reading them, you will probably find it useful.  It is available at http://perltidy.sourceforge.net . 
 
-Of course, if you simply follow the guidelines in L<perlstyle>,  you shouldn't need to reformat.  The habit of formatting your code as you write it will help prevent bugs.  Your editor can and should help you with this.  The perl-mode or newer cperl-mode for emacs can provide remarkable amounts of help with most (but not all) code, and even less programmable editors can provide significant assistance.  Tom Christiansen and many other VI users swear by the following settings in vi and its clones: 
+Of course, if you simply follow the guidelines in L<perlstyle>, you shouldn't need to reformat.  The habit of formatting your code as you write it will help prevent bugs.  Your editor can and should help you with this.  The perl-mode or newer cperl-mode for emacs can provide remarkable amounts of help with most (but not all) code, and even less programmable editors can provide significant assistance.  Tom Christiansen and many other VI users swear by the following settings in vi and its clones: 
 
 
     set ai sw=4 
@@ -203,7 +203,7 @@ The a2ps http://www-inf.enst.fr/%7Edemaille/a2ps/black+white.ps.gz does lots of 
 
 (contributed by brian d foy) 
 
-Ctags uses an index to quickly find things in source code, and many popular editors support ctags for several different languages,  including Perl. 
+Ctags uses an index to quickly find things in source code, and many popular editors support ctags for several different languages, including Perl. 
 
 Exuberant ctags supports Perl: http://ctags.sourceforge.net/ 
 
@@ -235,7 +235,7 @@ Perl Editor by EngInSite is a complete integrated development environment (IDE) 
 
 http://www.ActiveState.com/Products/Komodo/ 
 
-ActiveState's cross-platform (as of October 2004, that's Windows, Linux,  and Solaris), multi-language IDE has Perl support, including a regular expression debugger and remote debugging. 
+ActiveState's cross-platform (as of October 2004, that's Windows, Linux, and Solaris), multi-language IDE has Perl support, including a regular expression debugger and remote debugging. 
 
 =item Notepad++ 
 
@@ -287,7 +287,7 @@ Zeus for Window is another Win32 multi-language editor/IDE that comes with suppo
 
 For editors: if you're on Unix you probably have vi or a vi clone already, and possibly an emacs too, so you may not need to download anything. In any emacs the cperl-mode (M-x cperl-mode) gives you perhaps the best available Perl editing mode in any editor. 
 
-If you are using Windows, you can use any editor that lets you work with plain text, such as NotePad or WordPad. Word processors, such as Microsoft Word or WordPerfect, typically do not work since they insert all sorts of behind-the-scenes information, although some allow you to save files as "Text Only". You can also download text editors designed specifically for programming, such as Textpad ( http://www.textpad.com/ ) and UltraEdit ( http://www.ultraedit.com/ ),  among others. 
+If you are using Windows, you can use any editor that lets you work with plain text, such as NotePad or WordPad. Word processors, such as Microsoft Word or WordPerfect, typically do not work since they insert all sorts of behind-the-scenes information, although some allow you to save files as "Text Only". You can also download text editors designed specifically for programming, such as Textpad ( http://www.textpad.com/ ) and UltraEdit ( http://www.ultraedit.com/ ), among others. 
 
 If you are using MacOS, the same concerns apply. MacPerl (for Classic environments) comes with a simple editor. Popular external editors are BBEdit ( http://www.bbedit.com/ ) or Alpha ( http://www.his.com/~jguyer/Alpha/Alpha8.html ). MacOS X users can use Unix editors as well. 
 
@@ -334,7 +334,7 @@ For vi lovers in general, Windows or elsewhere:
 
     http://www.thomer.com/thomer/vi/vi.html 
 
-nvi ( http://www.bostic.com/vi/, available from CPAN in src/misc/) is yet another vi clone, unfortunately not available for Windows, but in Unix platforms you might be interested in trying it out, firstly because strictly speaking it is not a vi clone, it is the real vi, or the new incarnation of it, and secondly because you can embed Perl inside it to use Perl as the scripting language.  nvi is not alone in this,  though: at least also vim and vile offer an embedded Perl. 
+nvi ( http://www.bostic.com/vi/ , available from CPAN in src/misc/) is yet another vi clone, unfortunately not available for Windows, but in Unix platforms you might be interested in trying it out, firstly because strictly speaking it is not a vi clone, it is the real vi, or the new incarnation of it, and secondly because you can embed Perl inside it to use Perl as the scripting language.  nvi is not alone in this, though: at least also vim and vile offer an embedded Perl. 
 
 The following are Win32 multilanguage editor/IDEs that support Perl: 
 
@@ -374,7 +374,7 @@ from the MKS Toolkit ( http://www.mkssoftware.com/ ), or the Bourne shell of the
 
 =item Tcsh 
 
-ftp://ftp.astron.com/pub/tcsh/, see also http://www.primate.wisc.edu/software/csh-tcsh-book/ 
+ftp://ftp.astron.com/pub/tcsh/ , see also http://www.primate.wisc.edu/software/csh-tcsh-book/ 
 
 =item Zsh 
 
@@ -382,7 +382,7 @@ http://www.zsh.org/
 
 =back 
 
-MKS and U/WIN are commercial (U/WIN is free for educational and research purposes), Cygwin is covered by the GNU General Public License (but that shouldn't matter for Perl use).  The Cygwin, MKS,  and U/WIN all contain (in addition to the shells) a comprehensive set of standard Unix toolkit utilities. 
+MKS and U/WIN are commercial (U/WIN is free for educational and research purposes), Cygwin is covered by the GNU General Public License (but that shouldn't matter for Perl use).  The Cygwin, MKS, and U/WIN all contain (in addition to the shells) a comprehensive set of standard Unix toolkit utilities. 
 
 If you're transferring text files between Unix and Windows using FTP be sure to transfer them in ASCII mode so the ends of lines are appropriately converted. 
 
@@ -396,7 +396,7 @@ is a full Perl development environment with full debugger support ( http://www.l
 
 =item Alpha 
 
-is an editor, written and extensible in Tcl, that nonetheless has built-in support for several popular markup and programming languages,  including Perl and HTML ( http://www.his.com/~jguyer/Alpha/Alpha8.html ). 
+is an editor, written and extensible in Tcl, that nonetheless has built-in support for several popular markup and programming languages, including Perl and HTML ( http://www.his.com/~jguyer/Alpha/Alpha8.html ). 
 
 =item BBEdit and BBEdit Lite 
 
@@ -406,7 +406,7 @@ are text editors for Mac OS that have a Perl sensitivity mode ( http://web.bareb
 
 =head2 Where can I get Perl macros for vi? 
 
-For a complete version of Tom Christiansen's vi configuration file,  see http://www.cpan.org/authors/Tom_Christiansen/scripts/toms.exrc.gz,  the standard benchmark file for vi emulators.  The file runs best with nvi,  the current version of vi out of Berkeley, which incidentally can be built with an embedded Perl interpreter--see http://www.cpan.org/src/misc/ . 
+For a complete version of Tom Christiansen's vi configuration file, see http://www.cpan.org/authors/Tom_Christiansen/scripts/toms.exrc.gz , the standard benchmark file for vi emulators.  The file runs best with nvi, the current version of vi out of Berkeley, which incidentally can be built with an embedded Perl interpreter--see http://www.cpan.org/src/misc/ . 
 
 =head2 Where can I get perl-mode or cperl-mode for emacs? X<emacs> 
 
@@ -434,11 +434,11 @@ This works under Unix and Windows, and the current version doesn't look half as 
 
 =item Wx 
 
-This is a Perl binding for the cross-platform wxWidgets toolkit ( http://www.wxwidgets.org ). It works under Unix, Win32 and Mac OS X,  using native widgets (Gtk under Unix). The interface follows the C++ interface closely, but the documentation is a little sparse for someone who doesn't know the library, mostly just referring you to the C++ documentation. 
+This is a Perl binding for the cross-platform wxWidgets toolkit ( http://www.wxwidgets.org ). It works under Unix, Win32 and Mac OS X, using native widgets (Gtk under Unix). The interface follows the C++ interface closely, but the documentation is a little sparse for someone who doesn't know the library, mostly just referring you to the C++ documentation. 
 
 =item Gtk and Gtk2 
 
-These are Perl bindings for the Gtk toolkit ( http://www.gtk.org ). The interface changed significantly between versions 1 and 2 so they have separate Perl modules. It runs under Unix, Win32 and Mac OS X (currently it requires an X server on Mac OS, but a 'native' port is underway), and the widgets look the same on every platform: i.e., they don't match the native widgets. As with Wx, the Perl bindings follow the C API closely,  and the documentation requires you to read the C documentation to understand it. 
+These are Perl bindings for the Gtk toolkit ( http://www.gtk.org ). The interface changed significantly between versions 1 and 2 so they have separate Perl modules. It runs under Unix, Win32 and Mac OS X (currently it requires an X server on Mac OS, but a 'native' port is underway), and the widgets look the same on every platform: i.e., they don't match the native widgets. As with Wx, the Perl bindings follow the C API closely, and the documentation requires you to read the C documentation to understand it. 
 
 =item Win32::GUI 
 
@@ -472,7 +472,7 @@ The undump program was an ancient attempt to speed up Perl program by storing th
 
 When it comes to time-space tradeoffs, Perl nearly always prefers to throw memory at a problem.  Scalars in Perl use more memory than strings in C, arrays take more than that, and hashes use even more.  While there's still a lot to be done, recent releases have been addressing these issues.  For example, as of 5.004, duplicate hash keys are shared amongst all hashes using them, so require no reallocation. 
 
-In some cases, using substr() or vec() to simulate arrays can be highly beneficial.  For example, an array of a thousand booleans will take at least 20, 000 bytes of space, but it can be turned into one 125-byte bit vector--a considerable memory savings.  The standard Tie::SubstrHash module can also help for certain types of data structure.  If you're working with specialist data structures (matrices, for instance) modules that implement these in C may use less memory than equivalent Perl modules. 
+In some cases, using substr() or vec() to simulate arrays can be highly beneficial.  For example, an array of a thousand booleans will take at least 20,000 bytes of space, but it can be turned into one 125-byte bit vector--a considerable memory savings.  The standard Tie::SubstrHash module can also help for certain types of data structure.  If you're working with specialist data structures (matrices, for instance) modules that implement these in C may use less memory than equivalent Perl modules. 
 
 Another thing to try is learning whether your Perl was compiled with the system malloc or with Perl's builtin malloc.  Whichever one it is, try using the other one and see whether this makes a difference. Information about malloc is in the F<INSTALL> file in the source distribution.  You can find out whether you are using perl's malloc by typing C<perl -V:usemymalloc>. 
 
@@ -621,7 +621,7 @@ First of all, however, you I<can't> take away read permission, because the sourc
 
 Some people regard this as a security problem.  If your program does insecure things and relies on people not knowing how to exploit those insecurities, it is not secure.  It is often possible for someone to determine the insecure things and exploit them without viewing the source.  Security through obscurity, the name for hiding your bugs instead of fixing them, is little security indeed. 
 
-You can try using encryption via source filters (Starting from Perl 5.8 the Filter::Simple and Filter::Util::Call modules are included in the standard distribution), but any decent programmer will be able to decrypt it.  You can try using the byte code compiler and interpreter described later in L<perlfaq3>, but the curious might still be able to de-compile it. You can try using the native-code compiler described later, but crackers might be able to disassemble it.  These pose varying degrees of difficulty to people wanting to get at your code,  but none can definitively conceal it (true of every language, not just Perl). 
+You can try using encryption via source filters (Starting from Perl 5.8 the Filter::Simple and Filter::Util::Call modules are included in the standard distribution), but any decent programmer will be able to decrypt it.  You can try using the byte code compiler and interpreter described later in L<perlfaq3>, but the curious might still be able to de-compile it. You can try using the native-code compiler described later, but crackers might be able to disassemble it.  These pose varying degrees of difficulty to people wanting to get at your code, but none can definitively conceal it (true of every language, not just Perl). 
 
 It is very easy to recover the source of Perl programs.  You simply feed the program to the perl interpreter and use the modules in the B:: hierarchy.  The B::Deparse module should be able to defeat most attempts to hide source.  Again, this is not unique to Perl. 
 
@@ -641,7 +641,7 @@ The Perl Dev Kit ( http://www.activestate.com/Products/Perl_Dev_Kit/ ) from Acti
 
 Perl2Exe ( http://www.indigostar.com/perl2exe.htm ) is a command line program for converting perl scripts to executable files.  It targets both Windows and Unix platforms. 
 
-=head2 How can I get C<#!perl> to work on [MS-DOS, NT, ...]? 
+=head2 How can I get C<#!perl> to work on [MS-DOS,NT,...]? 
 
 For OS/2 just use 
 
@@ -650,7 +650,7 @@ For OS/2 just use
 
 as the first line in C<*.cmd> file (C<-S> due to a bug in cmd.exe's "extproc" handling).  For DOS one should first invent a corresponding batch file and codify it in C<ALTERNATE_SHEBANG> (see the F<dosish.h> file in the source distribution for more information). 
 
-The Win95/NT installation, when using the ActiveState port of Perl,  will modify the Registry to associate the C<.pl> extension with the perl interpreter.  If you install another port, perhaps even building your own Win95/NT Perl from the standard sources by using a Windows port of gcc (e.g., with cygwin or mingw32), then you'll have to modify the Registry yourself.  In addition to associating C<.pl> with the interpreter, NT people can use: C<SET PATHEXT=%PATHEXT%;.PL> to let them run the program C<install-linux.pl> merely by typing C<install-linux>. 
+The Win95/NT installation, when using the ActiveState port of Perl, will modify the Registry to associate the C<.pl> extension with the perl interpreter.  If you install another port, perhaps even building your own Win95/NT Perl from the standard sources by using a Windows port of gcc (e.g., with cygwin or mingw32), then you'll have to modify the Registry yourself.  In addition to associating C<.pl> with the interpreter, NT people can use: C<SET PATHEXT=%PATHEXT%;.PL> to let them run the program C<install-linux.pl> merely by typing C<install-linux>. 
 
 Under "Classic" MacOS, a perl program will have the appropriate Creator and Type, so that double-clicking them will invoke the MacPerl application. Under Mac OS X, clickable apps can be made from any C<#!> script using Wil Sanchez' DropScript utility: http://www.wsanchez.net/software/ . 
 
@@ -674,7 +674,7 @@ Yes.  Read L<perlrun> for more information.  Some examples follow. (These assume
 
 
     # make file a month younger than today, defeating reaper daemons 
-    perl -e '$X=24*60*60; utime(time(), time() + 30 * $X, @ARGV)' * 
+    perl -e '$X=24*60*60; utime(time(),time() + 30 * $X,@ARGV)' * 
 
 
     # find first unused uid 
@@ -683,7 +683,7 @@ Yes.  Read L<perlrun> for more information.  Some examples follow. (These assume
 
     # display reasonable manpath 
     echo $PATH | perl -nl -072 -e ' 
-    s![^/+]*$!man!&&-d&&!$s{$_}++&&push@m, $_;END{print"@m"}' 
+    s![^/+]*$!man!&&-d&&!$s{$_}++&&push@m,$_;END{print"@m"}' 
 
 OK, the last one was actually an Obfuscated Perl Contest entry. :-) 
 
@@ -714,7 +714,7 @@ For example:
     # VMS 
     perl -e "print ""Hello world\n""" 
 
-The problem is that none of these examples are reliable: they depend on the command interpreter.  Under Unix, the first two often work. Under DOS,  it's entirely possible that neither works.  If 4DOS was the command shell,  you'd probably have better luck like this: 
+The problem is that none of these examples are reliable: they depend on the command interpreter.  Under Unix, the first two often work. Under DOS, it's entirely possible that neither works.  If 4DOS was the command shell, you'd probably have better luck like this: 
 
 
   perl -e "print <Ctrl-x>"Hello world\n<Ctrl-x>"" 
@@ -729,20 +729,20 @@ There is no general solution to all of this.  It is a mess.
 
 =head2 Where can I learn about CGI or Web programming in Perl? 
 
-For modules, get the CGI or LWP modules from CPAN.  For textbooks,  see the two especially dedicated to web stuff in the question on books.  For problems and questions related to the web, like "Why do I get 500 Errors" or "Why doesn't it run from the browser right when it runs fine on the command line", see the troubleshooting guides and references in L<perlfaq9> or in the CGI MetaFAQ: 
+For modules, get the CGI or LWP modules from CPAN.  For textbooks, see the two especially dedicated to web stuff in the question on books.  For problems and questions related to the web, like "Why do I get 500 Errors" or "Why doesn't it run from the browser right when it runs fine on the command line", see the troubleshooting guides and references in L<perlfaq9> or in the CGI MetaFAQ: 
 
 
     http://www.perl.org/CGI_MetaFAQ.html 
 
 =head2 Where can I learn about object-oriented Perl programming? 
 
-A good place to start is L<perltoot>, and you can use L<perlobj>,  L<perlboot>, L<perltoot>, L<perltooc>, and L<perlbot> for reference. 
+A good place to start is L<perltoot>, and you can use L<perlobj>, L<perlboot>, L<perltoot>, L<perltooc>, and L<perlbot> for reference. 
 
 A good book on OO on Perl is the "Object-Oriented Perl" by Damian Conway from Manning Publications, or "Intermediate Perl" by Randal Schwartz, brian d foy, and Tom Phoenix from O'Reilly Media. 
 
 =head2 Where can I learn about linking C with Perl? 
 
-If you want to call C from Perl, start with L<perlxstut>,  moving on to L<perlxs>, L<xsubpp>, and L<perlguts>.  If you want to call Perl from C, then read L<perlembed>, L<perlcall>, and L<perlguts>.  Don't forget that you can learn a lot from looking at how the authors of existing extension modules wrote their code and solved their problems. 
+If you want to call C from Perl, start with L<perlxstut>, moving on to L<perlxs>, L<xsubpp>, and L<perlguts>.  If you want to call Perl from C, then read L<perlembed>, L<perlcall>, and L<perlguts>.  Don't forget that you can learn a lot from looking at how the authors of existing extension modules wrote their code and solved their problems. 
 
 You might not need all the power of XS. The Inline::C module lets you put C code directly in your Perl source. It handles all the magic to make it work. You still have to learn at least some of the perl API but you won't have to deal with the complexity of the XS support files. 
 
@@ -772,7 +772,7 @@ or
 
 (contributed by brian d foy) 
 
-The C<ExtUtils::MakeMaker> module, better known simply as "MakeMaker",  turns a Perl script, typically called C<Makefile.PL>, into a Makefile. The Unix tool C<make> uses this file to manage dependencies and actions to process and install a Perl distribution. 
+The C<ExtUtils::MakeMaker> module, better known simply as "MakeMaker", turns a Perl script, typically called C<Makefile.PL>, into a Makefile. The Unix tool C<make> uses this file to manage dependencies and actions to process and install a Perl distribution. 
 
 =head1 AUTHOR AND COPYRIGHT 
 

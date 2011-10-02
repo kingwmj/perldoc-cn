@@ -25,7 +25,7 @@ First of all, there's a few things you can do to make your life a lot more strai
     print $var2; 
     exit; 
 
-While this compiles and runs happily, it probably won't do what's expected,  namely it doesn't print "Hello World\n" at all;  It will on the other hand do exactly what it was told to do, computers being a bit that way inclined.  That is, it will print out a newline character, and you'll get what looks like a blank line.  It looks like there's 2 variables when (because of the typo) there's really 3: 
+While this compiles and runs happily, it probably won't do what's expected, namely it doesn't print "Hello World\n" at all;  It will on the other hand do exactly what it was told to do, computers being a bit that way inclined.  That is, it will print out a newline character, and you'll get what looks like a blank line.  It looks like there's 2 variables when (because of the typo) there's really 3: 
 
 
     $var1 = 'Hello World'; 
@@ -79,10 +79,10 @@ Ok, but how about when you want to really see your data, what's in that dynamic 
 
     my $key = 'welcome'; 
     my %data = ( 
-        'this' => qw(that),  
-        'tom' => qw(and jerry),  
-        'welcome' => q(Hello World),  
-        'zip' => q(welcome),  
+        'this' => qw(that), 
+        'tom' => qw(and jerry), 
+        'welcome' => q(Hello World), 
+        'zip' => q(welcome), 
     ); 
     my @data = keys %data; 
 
@@ -160,7 +160,7 @@ DB<1>h
   h h         Complete help page          W expr|*    Delete a/all watch exprs 
   |[|]db_cmd  Send output to pager        ![!] syscmd Run cmd in a subprocess 
   q or ^D     Quit                        R           Attempt a restart 
- Data Examination:     expr     Execute perl code, also see: s, n, t expr 
+ Data Examination:     expr     Execute perl code, also see: s,n,t expr 
   x|m expr       Evals expr in list context, dumps the result or lists methods. 
   p expr         Print expression (uses script's current package). 
   S [[!]pat]     List subroutine names [not] matching pattern 
@@ -195,18 +195,18 @@ Remember we're in our tiny program with a problem, we should have a look at wher
     3 
     4==>    my $key = 'welcome'; 
     5:      my %data = ( 
-    6               'this' => qw(that),  
-    7               'tom' => qw(and jerry),  
-    8               'welcome' => q(Hello World),  
-    9               'zip' => q(welcome),  
+    6               'this' => qw(that), 
+    7               'tom' => qw(and jerry), 
+    8               'welcome' => q(Hello World), 
+    9               'zip' => q(welcome), 
     10      ); 
 
 At line number 4 is a helpful pointer, that tells you where you are now.  To see more code, type 'v' again: 
 
 
     DB<4> v 
-    8               'welcome' => q(Hello World),  
-    9               'zip' => q(welcome),  
+    8               'welcome' => q(Hello World), 
+    9               'zip' => q(welcome), 
     10      ); 
     11:     my @data = keys %data; 
     12:     print "All OK\n" if grep($key, keys %data); 
@@ -231,10 +231,10 @@ The line shown is the one that is about to be executed B<next>, it hasn't happen
 
     DB<6> s 
     main::(./data_a:5):     my %data = ( 
-    main::(./data_a:6):             'this' => qw(that),  
-    main::(./data_a:7):             'tom' => qw(and jerry),  
-    main::(./data_a:8):             'welcome' => q(Hello World),  
-    main::(./data_a:9):             'zip' => q(welcome),  
+    main::(./data_a:6):             'this' => qw(that), 
+    main::(./data_a:7):             'tom' => qw(and jerry), 
+    main::(./data_a:8):             'welcome' => q(Hello World), 
+    main::(./data_a:9):             'zip' => q(welcome), 
     main::(./data_a:10):    ); 
 
 Now we can have a look at that first ($key) variable: 
@@ -293,7 +293,7 @@ That's not much help, a couple of welcomes in there, but no indication of which 
 
 The reference is truly dumped and we can finally see what we're dealing with. Our quoting was perfectly valid but wrong for our purposes, with 'and jerry' being treated as 2 separate words rather than a phrase, thus throwing the evenly paired hash structure out of alignment. 
 
-The 'B<-w>' switch would have told us about this, had we used it at the start,  and saved us a lot of trouble: 
+The 'B<-w>' switch would have told us about this, had we used it at the start, and saved us a lot of trouble: 
 
 
     > perl -w data 
@@ -309,7 +309,7 @@ We fix our quoting: 'tom' => q(and jerry), and run it again, this time we get ou
 
 While we're here, take a closer look at the 'B<x>' command, it's really useful and will merrily dump out nested references, complete objects, partial objects - just about whatever you throw at it: 
 
-Let's make a quick object and x-plode it, first we'll start the debugger: it wants some form of input from STDIN, so we give it something non-committal,  a zero: 
+Let's make a quick object and x-plode it, first we'll start the debugger: it wants some form of input from STDIN, so we give it something non-committal, a zero: 
 
 
     > perl -de 0 
@@ -573,8 +573,8 @@ Looks good, let's just continue off the end of the script:
 
     DB<12> c 
     0.72 c 
-    Debugged program terminated.  Use q to quit or R to restart,  
-      use O inhibit_exit to avoid stopping after program termination,  
+    Debugged program terminated.  Use q to quit or R to restart, 
+      use O inhibit_exit to avoid stopping after program termination, 
       h q, h R or h O to get additional info. 
 
 A quick fix to the offending line (insert the missing parentheses) in the actual program and we're finished. 
@@ -611,7 +611,7 @@ Ever wanted to know what a regex looked like?  You'll need perl compiled with th
      at 0 
        1: BOL(2) 
        2: EXACTF <pe>(4) 
-       4: CURLYN[1] {0, 32767}(14) 
+       4: CURLYN[1] {0,32767}(14) 
        6:   NOTHING(8) 
        8:   EXACTF <a>(0) 
       12:   WHILEM(0) 
@@ -628,7 +628,7 @@ Ever wanted to know what a regex looked like?  You'll need perl compiled with th
 
     Freeing REx: `^pe(a)*rl$' 
 
-Did you really want to know? :-) For more gory details on getting regular expressions to work, have a look at L<perlre>, L<perlretut>, and to decode the mysterious labels (BOL and CURLYN,  etc. above), see L<perldebguts>. 
+Did you really want to know? :-) For more gory details on getting regular expressions to work, have a look at L<perlre>, L<perlretut>, and to decode the mysterious labels (BOL and CURLYN, etc. above), see L<perldebguts>. 
 
 
 
@@ -692,7 +692,7 @@ There is of course lots more to find out about, this has just scratched the surf
 
 =head1 SEE ALSO 
 
-L<perldebug>,  L<perldebguts>,  L<perldiag>,  L<dprofpp>,  L<perlrun> 
+L<perldebug>, L<perldebguts>, L<perldiag>, L<dprofpp>, L<perlrun> 
 
 
 

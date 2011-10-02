@@ -45,7 +45,7 @@ A precomputed hash value for the MRO's name, or 0.
 
 The C<resolve> function is called to generate a linearised ISA for the given stash, using this MRO. It is called with a pointer to the stash, and a I<level> of 0. The core always sets I<level> to 0 when it calls your function - the parameter is provided to allow your implementation to track depth if it needs to recurse. 
 
-The function should return a reference to an array containing the parent classes in order. The names of the classes should be the result of calling C<HvENAME()> on the stash. In those cases where C<HvENAME()> returns null,  C<HvNAME()> should be used instead. 
+The function should return a reference to an array containing the parent classes in order. The names of the classes should be the result of calling C<HvENAME()> on the stash. In those cases where C<HvENAME()> returns null, C<HvNAME()> should be used instead. 
 
 The caller is responsible for incrementing the reference count of the array returned if it wants to keep the structure. Hence, if you have created a temporary value that you keep no pointer to, C<sv_2mortal()> to ensure that it is disposed of correctly. If you have cached your return value, then return a pointer to it without changing the reference count. 
 
@@ -62,7 +62,7 @@ To set your private value, call C<Perl_mro_set_private_data()>:
 
     Perl_mro_set_private_data(aTHX_ meta, &c3_alg, private_sv); 
 
-The private data cache will take ownership of a reference to private_sv,  much the same way that C<hv_store()> takes ownership of a reference to the value that you pass it. 
+The private data cache will take ownership of a reference to private_sv, much the same way that C<hv_store()> takes ownership of a reference to the value that you pass it. 
 
 =head1 Examples 
 
@@ -70,5 +70,5 @@ For examples of MRO implementations, see C<S_mro_get_linear_isa_c3()> and the C<
 
 =head1 AUTHORS 
 
-The implementation of the C3 MRO and switchable MROs within the perl core was written by Brandon L Black. Nicholas Clark created the pluggable interface,  refactored Brandon's implementation to work with it, and wrote this document. 
+The implementation of the C3 MRO and switchable MROs within the perl core was written by Brandon L Black. Nicholas Clark created the pluggable interface, refactored Brandon's implementation to work with it, and wrote this document. 
 

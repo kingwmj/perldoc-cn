@@ -6,21 +6,21 @@ perlrebackslash - Perl Regular Expression Backslash Sequences and Escapes
 
 The top level documentation about Perl regular expressions is found in L<perlre>. 
 
-This document describes all backslash and escape sequences. After explaining the role of the backslash, it lists all the sequences that have a special meaning in Perl regular expressions (in alphabetical order),  then describes each of them. 
+This document describes all backslash and escape sequences. After explaining the role of the backslash, it lists all the sequences that have a special meaning in Perl regular expressions (in alphabetical order), then describes each of them. 
 
 Most sequences are described in detail in different documents; the primary purpose of this document is to have a quick reference guide describing all backslash and escape sequences. 
 
 =head2 The backslash 
 
-In a regular expression, the backslash can perform one of two tasks: it either takes away the special meaning of the character following it (for instance, C<\|> matches a vertical bar, it's not an alternation),  or it is the start of a backslash or escape sequence. 
+In a regular expression, the backslash can perform one of two tasks: it either takes away the special meaning of the character following it (for instance, C<\|> matches a vertical bar, it's not an alternation), or it is the start of a backslash or escape sequence. 
 
-The rules determining what it is are quite simple: if the character following the backslash is an ASCII punctuation (non-word) character (that is,  anything that is not a letter, digit, or underscore), then the backslash just takes away any special meaning of the character following it. 
+The rules determining what it is are quite simple: if the character following the backslash is an ASCII punctuation (non-word) character (that is, anything that is not a letter, digit, or underscore), then the backslash just takes away any special meaning of the character following it. 
 
-If the character following the backslash is an ASCII letter or an ASCII digit,  then the sequence may be special; if so, it's listed below. A few letters have not been used yet, so escaping them with a backslash doesn't change them to be special.  A future version of Perl may assign a special meaning to them, so if you have warnings turned on, Perl issues a warning if you use such a sequence.  [1]. 
+If the character following the backslash is an ASCII letter or an ASCII digit, then the sequence may be special; if so, it's listed below. A few letters have not been used yet, so escaping them with a backslash doesn't change them to be special.  A future version of Perl may assign a special meaning to them, so if you have warnings turned on, Perl issues a warning if you use such a sequence.  [1]. 
 
 It is however guaranteed that backslash or escape sequences never have a punctuation character following the backslash, not now, and not in a future version of Perl 5. So it is safe to put a backslash in front of a non-word character. 
 
-Note that the backslash itself is special; if you want to match a backslash,  you have to escape the backslash with a backslash: C</\\/> matches a single backslash. 
+Note that the backslash itself is special; if you want to match a backslash, you have to escape the backslash with a backslash: C</\\/> matches a single backslash. 
 
 =over 4 
 
@@ -85,7 +85,7 @@ Those not usable within a bracketed character class (like C<[\da-z]>) are marked
 
 =head3 Fixed characters 
 
-A handful of characters have a dedicated I<character escape>. The following table shows them, along with their ASCII code points (in decimal and hex),  their ASCII name, the control escape on ASCII platforms and a short description.  (For EBCDIC platforms, see L<perlebcdic/OPERATOR DIFFERENCES>.) 
+A handful of characters have a dedicated I<character escape>. The following table shows them, along with their ASCII code points (in decimal and hex), their ASCII name, the control escape on ASCII platforms and a short description.  (For EBCDIC platforms, see L<perlebcdic/OPERATOR DIFFERENCES>.) 
 
 
  Seq.  Code Point  ASCII   Cntrl   Description. 
@@ -162,7 +162,7 @@ There are two forms of octal escapes.  Each is used to specify a character by it
 
 One form, available starting in Perl 5.14 looks like C<\o{...}>, where the dots represent one or more octal digits.  It can be used for any Unicode character. 
 
-It was introduced to avoid the potential problems with the other form,  available in all Perls.  That form consists of a backslash followed by three octal digits.  One problem with this form is that it can look exactly like an old-style backreference (see L</Disambiguation rules between old-style octal escapes and backreferences> below.)  You can avoid this by making the first of the three digits always a zero, but that makes \077 the largest code point specifiable. 
+It was introduced to avoid the potential problems with the other form, available in all Perls.  That form consists of a backslash followed by three octal digits.  One problem with this form is that it can look exactly like an old-style backreference (see L</Disambiguation rules between old-style octal escapes and backreferences> below.)  You can avoid this by making the first of the three digits always a zero, but that makes \077 the largest code point specifiable. 
 
 In some contexts, a backslash followed by two or even one octal digits may be interpreted as an octal escape, sometimes with a warning, and because of some bugs, sometimes with surprising results.  Also, if you are creating a regex out of smaller snippets concatenated together, and you use fewer than three digits, the beginning of one snippet may be interpreted as adding digits to the ending of the snippet before it.  See L</Absolute referencing> for more discussion and examples of the snippet problem. 
 
@@ -200,7 +200,7 @@ If the first digit following the backslash is a 0, it's an octal escape.
 
 =item 3 
 
-If the number following the backslash is N (in decimal), and Perl already has seen N capture groups, Perl considers this a backreference.  Otherwise,  it considers it an octal escape. If N has more than three digits, Perl takes only the first three for the octal escape; the rest are matched as is. 
+If the number following the backslash is N (in decimal), and Perl already has seen N capture groups, Perl considers this a backreference.  Otherwise, it considers it an octal escape. If N has more than three digits, Perl takes only the first three for the octal escape; the rest are matched as is. 
 
 
  my $pat  = "(" x 999; 
@@ -212,7 +212,7 @@ If the number following the backslash is N (in decimal), and Perl already has se
 
 =back 
 
-You can force a backreference interpretation always by using the C<\g{...}> form.  You can the force an octal interpretation always by using the C<\o{...}> form, or for numbers up through \077 (= 63 decimal), by using three digits,  beginning with a "0". 
+You can force a backreference interpretation always by using the C<\g{...}> form.  You can the force an octal interpretation always by using the C<\o{...}> form, or for numbers up through \077 (= 63 decimal), by using three digits, beginning with a "0". 
 
 =head3 Hexadecimal escapes 
 
@@ -232,14 +232,14 @@ Mnemonic: heI<x>adecimal.
 
 
  /\x{2603}\x{2602}/ # Snowman with an umbrella. 
-                    # The Unicode character 2603 is a snowman,  
+                    # The Unicode character 2603 is a snowman, 
                     # the Unicode character 2602 is an umbrella. 
  /\x{263B}/         # Black smiling face. 
  /\x{263b}/         # Same, the hex digits A - F are case insensitive. 
 
 =head2 Modifiers 
 
-A number of backslash sequences have to do with changing the character,  or characters following them. C<\l> will lowercase the character following it, while C<\u> will uppercase (or, more accurately, titlecase) the character following it. They provide functionality similar to the functions C<lcfirst> and C<ucfirst>. 
+A number of backslash sequences have to do with changing the character, or characters following them. C<\l> will lowercase the character following it, while C<\u> will uppercase (or, more accurately, titlecase) the character following it. They provide functionality similar to the functions C<lcfirst> and C<ucfirst>. 
 
 To uppercase or lowercase several characters, one might want to use C<\L> or C<\U>, which will lowercase/uppercase all characters following them, until either the end of the pattern or the next occurrence of C<\E>, whichever comes first. They provide functionality similar to what the functions C<lc> and C<uc> provide. 
 
@@ -307,7 +307,7 @@ Mnemonic: I<g>roup.
 
 C<\g-I<N>> (starting in Perl 5.10.0) is used for relative addressing.  (It can be written as C<\g{-I<N>>.)  It refers to the I<N>th group before the C<\g{-I<N>}>. 
 
-The big advantage of this form is that it makes it much easier to write patterns with references that can be interpolated in larger patterns,  even if the larger pattern also contains capture groups. 
+The big advantage of this form is that it makes it much easier to write patterns with references that can be interpolated in larger patterns, even if the larger pattern also contains capture groups. 
 
 =head4 Examples 
 
@@ -359,9 +359,9 @@ C<\z> is just like C<\Z>, except that it does not match before a trailing newlin
 
 =item \G 
 
-C<\G> is usually used only in combination with the C</g> modifier. If the C</g> modifier is used and the match is done in scalar context, Perl remembers where in the source string the last match ended, and the next time,  it will start the match from where it ended the previous time. 
+C<\G> is usually used only in combination with the C</g> modifier. If the C</g> modifier is used and the match is done in scalar context, Perl remembers where in the source string the last match ended, and the next time, it will start the match from where it ended the previous time. 
 
-C<\G> matches the point where the previous match on that string ended,  or the beginning of that string if there was no previous match. 
+C<\G> matches the point where the previous match on that string ended, or the beginning of that string if there was no previous match. 
 
 =for later add link to perlremodifiers 
 
@@ -433,7 +433,7 @@ Mnemonic: Complement of I<\n>.
 
 C<\R> matches a I<generic newline>; that is, anything considered a linebreak sequence by Unicode. This includes all characters matched by C<\v> (vertical whitespace), and the multi character sequence C<"\x0D\x0A"> (carriage return followed by a line feed, sometimes called the network newline; it's the end of line sequence used in Microsoft text files opened in binary mode). C<\R> is equivalent to C<< (?>\x0D\x0A)|\v) >>. Since C<\R> can match a sequence of more than one character, it cannot be put inside a bracketed character class; C</[\R]/> is an error; use C<\v> instead.  C<\R> was introduced in perl 5.10.0. 
 
-Mnemonic: none really. C<\R> was picked because PCRE already uses C<\R>,  and more importantly because Unicode recommends such a regular expression metacharacter, and suggests C<\R> as its notation. 
+Mnemonic: none really. C<\R> was picked because PCRE already uses C<\R>, and more importantly because Unicode recommends such a regular expression metacharacter, and suggests C<\R> as its notation. 
 
 =item \X X<\X> 
 

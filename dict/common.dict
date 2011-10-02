@@ -1,30 +1,86 @@
+ACKNOWLEDGEMENTS||权利
+ACKNOWLEDGMENTS||权利
 AIX||是IBM开发的一套UNIX操作系统
+ASCII||美国信息交换标准码
 AUTHOR||作者
 AUTHOR AND COPYRIGHT||作者及版权
+AUTHORS||作者
 AVAILABILITY||有效性
+Acknowledgements||权利
+Acknowledgments||权利
+Administration||管理员
+Affrus||Affrus 在Mac OS X 上的Perl IDE
+Aggregation||汇总
+Allocation||分配
+Alpha||内部测试版
 AmigaOS||AmigaOS第一个提供真彩色的操作系统
 Archive||存档文件
+Arithmetic||算法
+Arrays||数组
 Artistic||艺术的
+Assertions||断言
+Author||作者
+Authors||作者
 BC||二进制代码
+BENCHMARKS||基准测试
+BLOCK||块
 BUGS||待改进
+Backreferences||反向引用
+Backticks||反引号（`）
+Backtracking||回溯
+Barewords||裸词
 BeOS||是由Be公司开发的一种多媒体操作系统
-CAVEATS||注意
+Bibliography||参考文献
+Binmode||binmode（二进制模式）
+Bisecting||凝集素
+Boolean||布尔值
+CAVEATS||警告说明
+CGI||（CGI）通用网关界面
 CHANGES||变更
+CHECK||检查
+CLOBBER||击倒
+CONCEPTS||概念
+CONCLUSION||结论
+CONSTRUCT||构造
+CONTRIBUTORS||参与者
+CONVERSIONS||转化
+COPYRIGHT||版权
 COPYRIGHT AND LICENSE||授权协议
+CREDITS||授权
 Classic||高级的
 Compilation||编译
 Considerations||注意事项
+Copyrights||版权
 Cygwin||Windows上小型的UNIX模拟环境
+DEBUGGING||调试错误
+DELEGATION||授权
+DESTRUCT||自毁
 DG||国防指南
-DIAGNOSTICS||错误警告
+DIAGNOSTICS||诊断
+DOCUMENTATION||文档
+Datatypes||数据类型
+Declarations||声明
+Decoding||解码
+Definitions||定义
+Deprecations||反对
+Destructors||自毁装置
+Development||开发
+Diagnostics||诊断
+Died||消亡
+Digits||数码
 Divining||占卜
-EBCDIC||扩充的二进制编码的十进制交换码
+Documentation||文档
+Dup||复制品
+EBCDIC||扩展二进制编码
+EOF||结束标志
 EPOC||EPOC操作系统
+ERRORS||错误
 ESA||欧洲航天局
 EUC||日本语
 EXAMPLES||实例
 Extraction||提取
 FAQ||常见问题
+FIFO||先入先出
 FILES||文件
 Formats||格式
 FreeBSD||一种操作系统
@@ -1236,10 +1292,12 @@ championship||锦标（赛）
 chances||机会
 changeable||变化的
 changed||改变
+changes in version||版本变更
 channel||沟渠
 chaos||混乱
 chap||伙计
 chapter||章
+character classes||character classes字符集
 characteristic||特征
 characteristical||特征的
 characterize||具有
@@ -1255,6 +1313,7 @@ chase||追逐
 chat||聊天
 chatter||喋喋不休
 cheap||便宜的
+cheat sheet||备忘录
 cheating||欺骗行为
 cheats||骗子
 check-out||结帐
@@ -5616,6 +5675,8 @@ photographer||摄影师
 photography||摄影术
 photostatic||静电复印的
 phrase||词组
+phrase book||短语集
+phrase structure grammar||短语结构文法
 physical||身体的
 physically||物质上
 physician||内科医生
@@ -5714,7 +5775,7 @@ ply||出力
 pneumatic||气体的
 pneumonia||风湿病
 pocket||衣袋
-pod||圆荚体
+pod||B<pod>
 poem||诗歌
 poet||诗人
 poetry||诗
@@ -6316,6 +6377,7 @@ regret||懊悔
 regretful||遗憾的
 regretfully||遗憾地
 regrettable||可遗憾的
+regular expression||正则表达式
 regularity||整齐
 regularly||整齐地
 regulate||管理
@@ -7741,7 +7803,7 @@ thoughtful||深思的
 thoughtless||轻率的
 thousandnum||千
 thrash||抽打
-thread||线
+thread||线程
 threads||线程
 threat||恐吓
 threaten||恐吓
@@ -7772,7 +7834,7 @@ ticket||票
 tickle||挠
 tide||潮汐
 tidy||整齐的
-tie||捆
+tie||tie（绑定操作符）
 tie-up||（资金）占用
 tiebreaking||最后
 tiger||虎
@@ -7803,10 +7865,13 @@ toad||蟾蜍
 toast||烤面包
 tobacco||烟草
 today||今天现在
+todo||正在改进
 toe||脚趾
 toil||苦干
 toilet||卫生间
-token||象征
+token||标记
+tokener||标志
+tokenizing||词汇单元化
 tolerable||可容忍的
 tolerance||宽容
 tolerant||宽容的

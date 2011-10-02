@@ -25,20 +25,20 @@ Perl history in brief, by Larry Wall:
 
 =head1 THE KEEPERS OF THE PUMPKIN 
 
-Larry Wall, Andy Dougherty, Tom Christiansen, Charles Bailey, Nick Ing-Simmons, Chip Salzenberg, Tim Bunce, Malcolm Beattie, Gurusamy Sarathy, Graham Barr, Jarkko Hietaniemi, Hugo van der Sanden,  Michael Schwern, Rafael Garcia-Suarez, Nicholas Clark, Richard Clamp,  Leon Brocard, Dave Mitchell, Jesse Vincent, Ricardo Signes, Steve Hay,  Matt S Trout, David Golden, Florian Ragwitz, Tatsuhiko Miyagawa,  Chris C<BinGOs> Williams, Zefram and Ævar Arnfjörð Bjarmason. 
+Larry Wall, Andy Dougherty, Tom Christiansen, Charles Bailey, Nick Ing-Simmons, Chip Salzenberg, Tim Bunce, Malcolm Beattie, Gurusamy Sarathy, Graham Barr, Jarkko Hietaniemi, Hugo van der Sanden, Michael Schwern, Rafael Garcia-Suarez, Nicholas Clark, Richard Clamp, Leon Brocard, Dave Mitchell, Jesse Vincent, Ricardo Signes, Steve Hay, Matt S Trout, David Golden, Florian Ragwitz, Tatsuhiko Miyagawa, Chris C<BinGOs> Williams, Zefram and Ævar Arnfjörð Bjarmason. 
 
 =head2 PUMPKIN? 
 
 [from Porting/pumpkin.pod in the Perl source code distribution] 
 
-Chip Salzenberg gets credit for that, with a nod to his cow orker,  David Croy.  We had passed around various names (baton, token, hot potato) but none caught on.  Then, Chip asked: 
+Chip Salzenberg gets credit for that, with a nod to his cow orker, David Croy.  We had passed around various names (baton, token, hot potato) but none caught on.  Then, Chip asked: 
 
 [begin quote] 
 
 
    Who has the patch pumpkin? 
 
-To explain:  David Croy once told me once that at a previous job,  there was one tape drive and multiple systems that used it for backups. But instead of some high-tech exclusion software, they used a low-tech method to prevent multiple simultaneous backups: a stuffed pumpkin. No one was allowed to make backups unless they had the "backup pumpkin". 
+To explain:  David Croy once told me once that at a previous job, there was one tape drive and multiple systems that used it for backups. But instead of some high-tech exclusion software, they used a low-tech method to prevent multiple simultaneous backups: a stuffed pumpkin. No one was allowed to make backups unless they had the "backup pumpkin". 
 
 [end quote] 
 
@@ -49,7 +49,7 @@ The name has stuck.  The holder of the pumpkin is sometimes called the pumpking 
 
  Pump-  Release         Date            Notes 
  king                                   (by no means 
-                                         comprehensive,  
+                                         comprehensive, 
                                          see Changes* 
                                          for details) 
  ====================================================================== 
@@ -565,10 +565,10 @@ The "core"..."doc" mean the following files from the Perl source code distributi
 
  core   *.[hcy] 
  lib    lib/**/*.p[ml] 
- ext    ext/**/*.{[hcyt], xs, pm} (for -5.10.1) or 
-        {dist, ext, cpan}/**/*.{[hcyt], xs, pm} (for 5.12.0-) 
+ ext    ext/**/*.{[hcyt],xs,pm} (for -5.10.1) or 
+        {dist,ext,cpan}/**/*.{[hcyt],xs,pm} (for 5.12.0-) 
  t      t/**/*(.) (for 1-5.005_56) or **/*.t (for 5.6.0-5.7.3) 
- doc    {README*, INSTALL, *[_.]man{, .?}, pod/**/*.pod} 
+ doc    {README*,INSTALL,*[_.]man{,.?},pod/**/*.pod} 
 
 Here are some statistics for the other subdirectories and one file in the Perl source distribution for somewhat more selected releases. 
 
@@ -999,5 +999,5 @@ In more modern times, named releases don't come as often, and as progress can be
 
 Jarkko Hietaniemi <F<jhi@iki.fi>>. 
 
-Thanks to the collective memory of the Perlfolk.  In addition to the Keepers of the Pumpkin also Alan Champion, Mark Dominus,  Andreas KE<0xf6>nig, John Macdonald, Matthias Neeracher, Jeff Okamoto,  Michael Peppler, Randal Schwartz, and Paul D. Smith sent corrections and additions. Abigail added file and patch size data for the 5.6.0 - 5.10 era. 
+Thanks to the collective memory of the Perlfolk.  In addition to the Keepers of the Pumpkin also Alan Champion, Mark Dominus, Andreas KE<0xf6>nig, John Macdonald, Matthias Neeracher, Jeff Okamoto, Michael Peppler, Randal Schwartz, and Paul D. Smith sent corrections and additions. Abigail added file and patch size data for the 5.6.0 - 5.10 era. 
 

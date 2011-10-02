@@ -14,13 +14,13 @@ Throughout Perl's documentation, you'll find numerous examples intended to help 
 
 These examples often reflect the style and preference of the author of that piece of the documentation, and may be briefer than a corresponding line of code in a real program.  Except where otherwise noted, you should assume that C<use strict> and C<use warnings> statements appear earlier in the "program", and that any variables used have already been declared, even if those declarations have been omitted to make the example easier to read. 
 
-Do note that the examples have been written by many different authors over a period of several decades. Styles and techniques will therefore differ,  although some effort has been made to not vary styles too widely in the same sections. Do not consider one style to be better than others - "There Is More Than One Way Of Doing It" is one Perl's mottos. After all, in your journey as a programmer, you are likely to encounter different styles. 
+Do note that the examples have been written by many different authors over a period of several decades. Styles and techniques will therefore differ, although some effort has been made to not vary styles too widely in the same sections. Do not consider one style to be better than others - "There Is More Than One Way Of Doing It" is one Perl's mottos. After all, in your journey as a programmer, you are likely to encounter different styles. 
 
 =head2 What is Perl? 
 
 Perl is a general-purpose programming language originally developed for text manipulation and now used for a wide range of tasks including system administration, web development, network programming, GUI development, and more. 
 
-The language is intended to be practical (easy to use, efficient,  complete) rather than beautiful (tiny, elegant, minimal).  Its major features are that it's easy to use, supports both procedural and object-oriented (OO) programming, has powerful built-in support for text processing, and has one of the world's most impressive collections of third-party modules. 
+The language is intended to be practical (easy to use, efficient, complete) rather than beautiful (tiny, elegant, minimal).  Its major features are that it's easy to use, supports both procedural and object-oriented (OO) programming, has powerful built-in support for text processing, and has one of the world's most impressive collections of third-party modules. 
 
 Different definitions of Perl are given in L<perl>, L<perlfaq1> and no doubt other places.  From this we can determine that Perl is different things to different people, but that lots of people think it's at least worth writing about. 
 
@@ -159,12 +159,12 @@ You might be tempted to use C<$#array + 1> to tell you how many items there are 
 
     if (@animals < 5) { ... } 
 
-The elements we're getting from the array start with a C<$> because we're getting just a single value out of the array; you ask for a scalar,  you get a scalar. 
+The elements we're getting from the array start with a C<$> because we're getting just a single value out of the array; you ask for a scalar, you get a scalar. 
 
 To get multiple values from an array: 
 
 
-    @animals[0, 1];                  # gives ("camel", "llama"); 
+    @animals[0,1];                  # gives ("camel", "llama"); 
     @animals[0..2];                 # gives ("camel", "llama", "owl"); 
     @animals[1..$#animals];         # gives all except the first element 
 
@@ -189,8 +189,8 @@ You can use whitespace and the C<< => >> operator to lay them out more nicely:
 
 
     my %fruit_color = ( 
-        apple  => "red",  
-        banana => "yellow",  
+        apple  => "red", 
+        banana => "yellow", 
     ); 
 
 To get at hash elements: 
@@ -219,17 +219,17 @@ A reference is a scalar value and can refer to any other Perl data type. So by s
 
     my $variables = { 
         scalar  =>  { 
-                     description => "single item",  
-                     sigil => '$',  
-                    },  
+                     description => "single item", 
+                     sigil => '$', 
+                    }, 
         array   =>  { 
-                     description => "ordered list of items",  
-                     sigil => '@',  
-                    },  
+                     description => "ordered list of items", 
+                     sigil => '@', 
+                    }, 
         hash    =>  { 
-                     description => "key/value pairs",  
-                     sigil => '%',  
-                    },  
+                     description => "key/value pairs", 
+                     sigil => '%', 
+                    }, 
     }; 
 
 
@@ -268,7 +268,7 @@ Using C<my> in combination with a C<use strict;> at the top of your Perl scripts
 
 Perl has most of the usual conditional and looping constructs.  As of Perl 5.10, it even has a case/switch statement (spelled C<given>/C<when>).  See L<perlsyn/"Switch statements"> for more details. 
 
-The conditions can be any Perl expression.  See the list of operators in the next section for information on comparison and boolean logic operators,  which are commonly used in conditional statements. 
+The conditions can be any Perl expression.  See the list of operators in the next section for information on comparison and boolean logic operators, which are commonly used in conditional statements. 
 
 =over 4 
 
@@ -421,11 +421,11 @@ Many operators can be combined with a C<=> as follows:
 
 =head2 Files and I/O 
 
-You can open a file for input or output using the C<open()> function. It's documented in extravagant detail in L<perlfunc> and L<perlopentut>,  but in short: 
+You can open a file for input or output using the C<open()> function. It's documented in extravagant detail in L<perlfunc> and L<perlopentut>, but in short: 
 
 
-    open(my $in, "<", "input.txt")  or die "Can't open input.txt: $!"; 
-    open(my $out, ">", "output.txt") or die "Can't open output.txt: $!"; 
+    open(my $in,  "<",  "input.txt")  or die "Can't open input.txt: $!"; 
+    open(my $out, ">",  "output.txt") or die "Can't open output.txt: $!"; 
     open(my $log, ">>", "my.log")     or die "Can't open my.log: $!"; 
 
 You can read from an open filehandle using the C<< <> >> operator.  In scalar context it reads a single line from the filehandle, and in list context it reads the whole file in, assigning each line to an element of the list: 
@@ -505,8 +505,8 @@ Quantifiers can be used to specify how many of the previous thing you want to ma
     +                   one or more of the previous thing 
     ?                   zero or one of the previous thing 
     {3}                 matches exactly 3 of the previous thing 
-    {3, 6}               matches between 3 and 6 of the previous thing 
-    {3, }                matches 3 or more of the previous thing 
+    {3,6}               matches between 3 and 6 of the previous thing 
+    {3,}                matches 3 or more of the previous thing 
 
 Some brief examples: 
 
@@ -540,7 +540,7 @@ As well as grouping, parentheses serve a second purpose.  They can be used to ca
 
 =item Other regexp features 
 
-Perl regexps also support backreferences, lookaheads, and all kinds of other complex details.  Read all about them in L<perlrequick>,  L<perlretut>, and L<perlre>. 
+Perl regexps also support backreferences, lookaheads, and all kinds of other complex details.  Read all about them in L<perlrequick>, L<perlretut>, and L<perlre>. 
 
 =back 
 

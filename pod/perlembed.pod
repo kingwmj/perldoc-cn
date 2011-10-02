@@ -80,11 +80,11 @@ Embedding Perl under Win32
 
 =head2 Compiling your C program 
 
-If you have trouble compiling the scripts in this documentation,  you're not alone.  The cardinal rule: COMPILE THE PROGRAMS IN EXACTLY THE SAME WAY THAT YOUR PERL WAS COMPILED.  (Sorry for yelling.) 
+If you have trouble compiling the scripts in this documentation, you're not alone.  The cardinal rule: COMPILE THE PROGRAMS IN EXACTLY THE SAME WAY THAT YOUR PERL WAS COMPILED.  (Sorry for yelling.) 
 
 Also, every C program that uses Perl must link in the I<perl library>. What's that, you ask?  Perl is itself written in C; the perl library is the collection of compiled C programs that were used to create your perl executable (I</usr/bin/perl> or equivalent).  (Corollary: you can't use Perl from your C program unless Perl has been compiled on your machine, or installed properly--that's why you shouldn't blithely copy Perl executables from machine to machine without also copying the I<lib> directory.) 
 
-When you use Perl from C, your C program will--usually--allocate,  "run", and deallocate a I<PerlInterpreter> object, which is defined by the perl library. 
+When you use Perl from C, your C program will--usually--allocate, "run", and deallocate a I<PerlInterpreter> object, which is defined by the perl library. 
 
 If your copy of Perl is recent enough to contain this documentation (version 5.002 or later), then the perl library (and I<EXTERN.h> and I<perl.h>, which you'll also need) will reside in a directory that looks like this: 
 
@@ -106,7 +106,7 @@ Execute this statement for a hint about where to find CORE:
 
     perl -MConfig -e 'print $Config{archlib}' 
 
-Here's how you'd compile the example in the next section,  L<Adding a Perl interpreter to your C program>, on my Linux box: 
+Here's how you'd compile the example in the next section, L<Adding a Perl interpreter to your C program>, on my Linux box: 
 
 
     % gcc -O2 -Dbool=char -DHAS_BOOL -I/usr/local/include 
@@ -122,7 +122,7 @@ Here's how you'd compile the example in the next section,  L<Adding a Perl inter
     -L/usr/local/lib/perl5/alpha-dec_osf/5.00305/CORE -L/usr/local/lib 
     -D__LANGUAGE_C__ -D_NO_PROTO -o interp interp.c -lperl -lm 
 
-How can you figure out what to add?  Assuming your Perl is post-5.001,  execute a C<perl -V> command and pay special attention to the "cc" and "ccflags" information. 
+How can you figure out what to add?  Assuming your Perl is post-5.001, execute a C<perl -V> command and pay special attention to the "cc" and "ccflags" information. 
 
 You'll have to choose the appropriate compiler (I<cc>, I<gcc>, et al.) for your machine: C<perl -MConfig -e 'print $Config{cc}'> will tell you what to use. 
 
@@ -138,13 +138,13 @@ Provided your perl binary was properly configured and installed the B<ExtUtils::
 
    % cc -o interp interp.c `perl -MExtUtils::Embed -e ccopts -e ldopts` 
 
-If the B<ExtUtils::Embed> module isn't part of your Perl distribution,  you can retrieve it from http://www.perl.com/perl/CPAN/modules/by-module/ExtUtils/ (If this documentation came from your Perl distribution, then you're running 5.004 or better and you already have it.) 
+If the B<ExtUtils::Embed> module isn't part of your Perl distribution, you can retrieve it from http://www.perl.com/perl/CPAN/modules/by-module/ExtUtils/ (If this documentation came from your Perl distribution, then you're running 5.004 or better and you already have it.) 
 
 The B<ExtUtils::Embed> kit on CPAN also contains all source code for the examples in this document, tests, additional examples and other information you may find useful. 
 
 =head2 Adding a Perl interpreter to your C program 
 
-In a sense, perl (the C program) is a good example of embedding Perl (the language), so I'll demonstrate embedding with I<miniperlmain.c>,  included in the source distribution.  Here's a bastardized, non-portable version of I<miniperlmain.c> containing the essentials of embedding: 
+In a sense, perl (the C program) is a good example of embedding Perl (the language), so I'll demonstrate embedding with I<miniperlmain.c>, included in the source distribution.  Here's a bastardized, non-portable version of I<miniperlmain.c> containing the essentials of embedding: 
 
 
     #include <EXTERN.h>               /* from the Perl distribution     */ 
@@ -156,7 +156,7 @@ In a sense, perl (the C program) is a good example of embedding Perl (the langua
 
     int main(int argc, char **argv, char **env) 
     { 
-    PERL_SYS_INIT3(&argc, &argv, &env); 
+    PERL_SYS_INIT3(&argc,&argv,&env); 
         my_perl = perl_alloc(); 
         perl_construct(my_perl); 
     PL_exit_flags |= PERL_EXIT_DESTRUCT_END; 
@@ -173,7 +173,7 @@ The macros PERL_SYS_INIT3() and PERL_SYS_TERM() provide system-specific tune up 
 
 Since PERL_SYS_INIT3() may change C<env>, it may be more appropriate to provide C<env> as an argument to perl_parse(). 
 
-Also notice that no matter what arguments you pass to perl_parse(),  PERL_SYS_INIT3() must be invoked on the C main() argc, argv and env and only once. 
+Also notice that no matter what arguments you pass to perl_parse(), PERL_SYS_INIT3() must be invoked on the C main() argc, argv and env and only once. 
 
 Now compile this program (I'll call it I<interp.c>) into an executable: 
 
@@ -215,7 +215,7 @@ That's shown below, in a program I'll call I<showtime.c>.
     int main(int argc, char **argv, char **env) 
     { 
         char *args[] = { NULL }; 
-    PERL_SYS_INIT3(&argc, &argv, &env); 
+    PERL_SYS_INIT3(&argc,&argv,&env); 
         my_perl = perl_alloc(); 
         perl_construct(my_perl); 
 
@@ -260,7 +260,7 @@ yielding the number of seconds that elapsed between January 1, 1970 (the beginni
 
 In this particular case we don't have to call I<perl_run>, as we set the PL_exit_flag PERL_EXIT_DESTRUCT_END which executes END blocks in perl_destruct. 
 
-If you want to pass arguments to the Perl subroutine, you can add strings to the C<NULL>-terminated C<args> list passed to I<call_argv>.  For other data types, or to examine return values,  you'll need to manipulate the Perl stack.  That's demonstrated in L<Fiddling with the Perl stack from your C program>. 
+If you want to pass arguments to the Perl subroutine, you can add strings to the C<NULL>-terminated C<args> list passed to I<call_argv>.  For other data types, or to examine return values, you'll need to manipulate the Perl stack.  That's demonstrated in L<Fiddling with the Perl stack from your C program>. 
 
 =head2 Evaluating a Perl statement from your C program 
 
@@ -268,7 +268,7 @@ Perl provides two API functions to evaluate pieces of Perl code. These are L<per
 
 Arguably, these are the only routines you'll ever need to execute snippets of Perl code from within your C program.  Your code can be as long as you wish; it can contain multiple statements; it can employ L<perlfunc/use>, L<perlfunc/require>, and L<perlfunc/do> to include external Perl files. 
 
-I<eval_pv> lets us evaluate individual Perl strings, and then extract variables for coercion into C types.  The following program,  I<string.c>, executes three Perl strings, extracting an C<int> from the first, a C<float> from the second, and a C<char *> from the third. 
+I<eval_pv> lets us evaluate individual Perl strings, and then extract variables for coercion into C types.  The following program, I<string.c>, executes three Perl strings, extracting an C<int> from the first, a C<float> from the second, and a C<char *> from the third. 
 
 
    #include <EXTERN.h> 
@@ -283,7 +283,7 @@ I<eval_pv> lets us evaluate individual Perl strings, and then extract variables 
        char *embedding[] = { "", "-e", "0" }; 
 
 
-       PERL_SYS_INIT3(&argc, &argv, &env); 
+       PERL_SYS_INIT3(&argc,&argv,&env); 
        my_perl = perl_alloc(); 
        perl_construct( my_perl ); 
 
@@ -344,12 +344,12 @@ Given a string and a pattern (e.g., C<m/clasp/> or C</\b\w*\b/>, which in your C
 
    int substitute(SV **string, char *pattern); 
 
-Given a pointer to an C<SV> and an C<=~> operation (e.g.,  C<s/bob/robert/g> or C<tr[A-Z][a-z]>), substitute() modifies the string within the C<SV> as according to the operation, returning the number of substitutions made. 
+Given a pointer to an C<SV> and an C<=~> operation (e.g., C<s/bob/robert/g> or C<tr[A-Z][a-z]>), substitute() modifies the string within the C<SV> as according to the operation, returning the number of substitutions made. 
 
 
    int matches(SV *string, char *pattern, AV **matches); 
 
-Given an C<SV>, a pattern, and a pointer to an empty C<AV>,  matches() evaluates C<$string =~ $pattern> in a list context, and fills in I<matches> with the array elements, returning the number of matches found. 
+Given an C<SV>, a pattern, and a pointer to an empty C<AV>, matches() evaluates C<$string =~ $pattern> in a list context, and fills in I<matches> with the array elements, returning the number of matches found. 
 
 Here's a sample program, I<match.c>, that uses all three (long lines have been wrapped here): 
 
@@ -362,7 +362,7 @@ Here's a sample program, I<match.c>, that uses all three (long lines have been w
 
 
  /** my_eval_sv(code, error_check) 
- ** kinda like eval_sv(),  
+ ** kinda like eval_sv(), 
  ** but we pop the return value off the stack 
  **/ 
  SV* my_eval_sv(SV *sv, I32 croak_on_error) 
@@ -403,7 +403,7 @@ Here's a sample program, I<match.c>, that uses all three (long lines have been w
      SV *command = newSV(0), *retval; 
 
 
-     sv_setpvf(command, "my $string = '%s'; $string =~ %s",  
+     sv_setpvf(command, "my $string = '%s'; $string =~ %s", 
            SvPV_nolen(string), pattern); 
 
 
@@ -429,7 +429,7 @@ Here's a sample program, I<match.c>, that uses all three (long lines have been w
      SV *command = newSV(0), *retval; 
 
 
-     sv_setpvf(command, "$string = '%s'; ($string =~ %s)",  
+     sv_setpvf(command, "$string = '%s'; ($string =~ %s)", 
            SvPV_nolen(*string), pattern); 
 
 
@@ -446,7 +446,7 @@ Here's a sample program, I<match.c>, that uses all three (long lines have been w
  ** 
  ** Used for matches in a list context. 
  ** 
- ** Returns the number of matches,  
+ ** Returns the number of matches, 
  ** and fills in **matches with the matching substrings 
  **/ 
 
@@ -457,7 +457,7 @@ Here's a sample program, I<match.c>, that uses all three (long lines have been w
      I32 num_matches; 
 
 
-     sv_setpvf(command, "my $string = '%s'; @array = ($string =~ %s)",  
+     sv_setpvf(command, "my $string = '%s'; @array = ($string =~ %s)", 
            SvPV_nolen(string), pattern); 
 
 
@@ -481,7 +481,7 @@ Here's a sample program, I<match.c>, that uses all three (long lines have been w
      SV *text; 
 
 
-     PERL_SYS_INIT3(&argc, &argv, &env); 
+     PERL_SYS_INIT3(&argc,&argv,&env); 
      my_perl = perl_alloc(); 
      perl_construct(my_perl); 
      perl_parse(my_perl, NULL, 3, embedding, NULL); 
@@ -526,7 +526,7 @@ Here's a sample program, I<match.c>, that uses all three (long lines have been w
      /** Remove all vowels from text **/ 
      num_matches = substitute(&text, "s/[aeiou]//gi"); 
      if (num_matches) { 
-     printf("substitute: s/[aeiou]//gi...%d substitutions made.\n",  
+     printf("substitute: s/[aeiou]//gi...%d substitutions made.\n", 
             num_matches); 
      printf("Now text is: %s\n\n", SvPV_nolen(text)); 
      } 
@@ -560,7 +560,7 @@ which produces the output (again, long lines have been wrapped here)
 
 
    substitute: s/[aeiou]//gi...139 substitutions made. 
-   Now text is: Whn h s t  cnvnnc str nd th bll cms t sm mnt lk 76 cnts,  
+   Now text is: Whn h s t  cnvnnc str nd th bll cms t sm mnt lk 76 cnts, 
    Mynrd s wr tht thr s smthng h *shld* d, smthng tht wll nbl hm t gt bck 
    qrtr, bt h hs n d *wht*.  H fmbls thrgh hs rd sqzy chngprs nd gvs th by 
    thr xtr pnns wth hs dllr, hpng tht h mght lck nt th crrct mnt.  Th by gvs 
@@ -622,7 +622,7 @@ Now I'll create a C program, I<power.c>, with a function I<PerlPower()> that con
       char *my_argv[] = { "", "power.pl" }; 
 
 
-      PERL_SYS_INIT3(&argc, &argv, &env); 
+      PERL_SYS_INIT3(&argc,&argv,&env); 
       my_perl = perl_alloc(); 
       perl_construct( my_perl ); 
 
@@ -681,9 +681,9 @@ Note that the process will continue to grow for each file that it uses.  In addi
 
  sub valid_package_name { 
      my($string) = @_; 
-     $string =~ s/([^A-Za-z0-9\/])/sprintf("_%2x", unpack("C", $1))/eg; 
+     $string =~ s/([^A-Za-z0-9\/])/sprintf("_%2x",unpack("C",$1))/eg; 
      # second pass only for words starting with a digit 
-     $string =~ s|/(\d)|sprintf("/_%2x", unpack("C", $1))|eg; 
+     $string =~ s|/(\d)|sprintf("/_%2x",unpack("C",$1))|eg; 
 
 
      # Dress it up as a real package name 
@@ -700,7 +700,7 @@ Note that the process will continue to grow for each file that it uses.  In addi
         && 
         $Cache{$package}{mtime} <= $mtime) 
      { 
-        # we have compiled this subroutine already,  
+        # we have compiled this subroutine already, 
         # it has not been updated on disk, nothing left to do 
         print STDERR "already compiled $package->handler\n"; 
      } 
@@ -716,7 +716,7 @@ Note that the process will continue to grow for each file that it uses.  In addi
         my $eval = qq{package $package; sub handler { $sub; }}; 
         { 
             # hide our variables within this block 
-            my($filename, $mtime, $package, $sub); 
+            my($filename,$mtime,$package,$sub); 
             eval $eval; 
         } 
         die $@ if $@; 
@@ -771,7 +771,7 @@ Note that the process will continue to grow for each file that it uses.  In addi
      int exitstatus = 0; 
 
 
-     PERL_SYS_INIT3(&argc, &argv, &env); 
+     PERL_SYS_INIT3(&argc,&argv,&env); 
      if((my_perl = perl_alloc()) == NULL) { 
         fprintf(stderr, "no memory!"); 
         exit(1); 
@@ -793,7 +793,7 @@ Note that the process will continue to grow for each file that it uses.  In addi
             filename[strlen(filename)-1] = '\0'; /* strip \n */ 
             /* call the subroutine, passing it the filename as an argument */ 
             args[0] = filename; 
-            call_argv("Embed::Persistent::eval_file",  
+            call_argv("Embed::Persistent::eval_file", 
                            G_DISCARD | G_EVAL, args); 
 
 
@@ -902,7 +902,7 @@ Let's give it a try:
      char *two_args[] = { "two_perl", SAY_HELLO }; 
 
 
-     PERL_SYS_INIT3(&argc, &argv, &env); 
+     PERL_SYS_INIT3(&argc,&argv,&env); 
      one_perl = perl_alloc(); 
      two_perl = perl_alloc(); 
 
@@ -956,7 +956,7 @@ Run it, Run it:
 
 =head2 Using Perl modules, which themselves use C libraries, from your C program 
 
-If you've played with the examples above and tried to embed a script that I<use()>s a Perl module (such as I<Socket>) which itself uses a C or C++ library,  this probably happened: 
+If you've played with the examples above and tried to embed a script that I<use()>s a Perl module (such as I<Socket>) which itself uses a C or C++ library, this probably happened: 
 
 
 
@@ -995,7 +995,7 @@ That's where the glue code can be inserted to create the initial contact between
         newXS("Socket::bootstrap", boot_Socket, file); 
  } 
 
-Simply put: for each extension linked with your Perl executable (determined during its initial configuration on your computer or when adding a new extension),  a Perl subroutine is created to incorporate the extension's routines.  Normally, that subroutine is named I<Module::bootstrap()> and is invoked when you say I<use Module>.  In turn, this hooks into an XSUB, I<boot_Module>, which creates a Perl counterpart for each of the extension's XSUBs.  Don't worry about this part; leave that to the I<xsubpp> and extension authors.  If your extension is dynamically loaded, DynaLoader creates I<Module::bootstrap()> for you on the fly.  In fact, if you have a working DynaLoader then there is rarely any need to link in any other extensions statically. 
+Simply put: for each extension linked with your Perl executable (determined during its initial configuration on your computer or when adding a new extension), a Perl subroutine is created to incorporate the extension's routines.  Normally, that subroutine is named I<Module::bootstrap()> and is invoked when you say I<use Module>.  In turn, this hooks into an XSUB, I<boot_Module>, which creates a Perl counterpart for each of the extension's XSUBs.  Don't worry about this part; leave that to the I<xsubpp> and extension authors.  If your extension is dynamically loaded, DynaLoader creates I<Module::bootstrap()> for you on the fly.  In fact, if you have a working DynaLoader then there is rarely any need to link in any other extensions statically. 
 
 
 
@@ -1033,7 +1033,7 @@ Consult L<perlxs>, L<perlguts>, and L<perlapi> for more details.
 
 =head1 Hiding Perl_ 
 
-If you completely hide the short forms of the Perl public API,  add -DPERL_NO_SHORT_NAMES to the compilation flags.  This means that for example instead of writing 
+If you completely hide the short forms of the Perl public API, add -DPERL_NO_SHORT_NAMES to the compilation flags.  This means that for example instead of writing 
 
 
     warn("%d bottles of beer on the wall", bottlecount); 
@@ -1043,7 +1043,7 @@ you will have to write the explicit full form
 
     Perl_warn(aTHX_ "%d bottles of beer on the wall", bottlecount); 
 
-(See L<perlguts/"Background and PERL_IMPLICIT_CONTEXT"> for the explanation of the C<aTHX_>. )  Hiding the short forms is very useful for avoiding all sorts of nasty (C preprocessor or otherwise) conflicts with other software packages (Perl defines about 2400 APIs with these short names,  take or leave few hundred, so there certainly is room for conflict.) 
+(See L<perlguts/"Background and PERL_IMPLICIT_CONTEXT"> for the explanation of the C<aTHX_>. )  Hiding the short forms is very useful for avoiding all sorts of nasty (C preprocessor or otherwise) conflicts with other software packages (Perl defines about 2400 APIs with these short names, take or leave few hundred, so there certainly is room for conflict.) 
 
 =head1 MORAL 
 

@@ -73,7 +73,7 @@ To browse existing Perl bugs and patches, you can use the web interface at L<htt
 
 Please check the archive of the perl5-porters list (see below) and/or the bug tracking system before submitting a bug report. Often, you'll find that the bug has been reported already. 
 
-You can log in to the bug tracking system and comment on existing bug reports. If you have additional information regarding an existing bug,  please add it. This will help the porters fix the bug. 
+You can log in to the bug tracking system and comment on existing bug reports. If you have additional information regarding an existing bug, please add it. This will help the porters fix the bug. 
 
 =head1 PERL 5 PORTERS 
 
@@ -107,7 +107,7 @@ If you cannot use the git protocol for firewall reasons, you can also clone via 
 
 =head2 Read access via the web 
 
-You may access the repository over the web. This allows you to browse the tree, see recent commits, subscribe to RSS feeds for the changes,  search for particular commits and more. You may access it at L<http://perl5.git.perl.org/perl.git>. A mirror of the repository is found at L<http://github.com/mirrors/perl>. 
+You may access the repository over the web. This allows you to browse the tree, see recent commits, subscribe to RSS feeds for the changes, search for particular commits and more. You may access it at L<http://perl5.git.perl.org/perl.git>. A mirror of the repository is found at L<http://github.com/mirrors/perl>. 
 
 =head2 Read access via rsync 
 
@@ -134,7 +134,7 @@ If you have a commit bit, please see L<perlgit> for more details on using git.
 
 =head1 PATCHING PERL 
 
-If you're planning to do more extensive work than a single small fix,  we encourage you to read the documentation below. This will help you focus your work and make your patches easier to incorporate into the Perl source. 
+If you're planning to do more extensive work than a single small fix, we encourage you to read the documentation below. This will help you focus your work and make your patches easier to incorporate into the Perl source. 
 
 =head2 Submitting patches 
 
@@ -142,13 +142,13 @@ If you have a small patch to submit, please submit it via perlbug. You can also 
 
 You'll know your submission has been processed when you receive an email from our ticket tracking system. This email will give you a ticket number. Once your patch has made it to the ticket tracking system, it will also be sent to the perl5-porters@perl.org list. 
 
-Patches are reviewed and discussed on the p5p list. Simple,  uncontroversial patches will usually be applied without any discussion. When the patch is applied, the ticket will be updated and you will receive email. In addition, an email will be sent to the p5p list. 
+Patches are reviewed and discussed on the p5p list. Simple, uncontroversial patches will usually be applied without any discussion. When the patch is applied, the ticket will be updated and you will receive email. In addition, an email will be sent to the p5p list. 
 
 In other cases, the patch will need more work or discussion. That will happen on the p5p list. 
 
 You are encouraged to participate in the discussion and advocate for your patch. Sometimes your patch may get lost in the shuffle. It's appropriate to send a reminder email to p5p if no action has been taken in a month. Please remember that the Perl 5 developers are all volunteers, and be polite. 
 
-Changes are always applied directly to the main development branch,  called "blead". Some patches may be backported to a maintenance branch. If you think your patch is appropriate for the maintenance branch,  please explain why when you submit it. 
+Changes are always applied directly to the main development branch, called "blead". Some patches may be backported to a maintenance branch. If you think your patch is appropriate for the maintenance branch, please explain why when you submit it. 
 
 =head2 Getting your patch accepted 
 
@@ -206,7 +206,7 @@ While it's not necessary for documentation changes, new tests or trivial patches
 
 A commit message isn't intended to take the place of comments in your code. Commit messages should describe the change you made, while code comments should describe the current state of the code. 
 
-If you've just implemented a new feature, complete with doc, tests and well-commented code, a brief commit message will often suffice. If,  however, you've just changed a single character deep in the parser or lexer, you might need to write a small novel to ensure that future readers understand what you did and why you did it. 
+If you've just implemented a new feature, complete with doc, tests and well-commented code, a brief commit message will often suffice. If, however, you've just changed a single character deep in the parser or lexer, you might need to write a small novel to ensure that future readers understand what you did and why you did it. 
 
 =head3 Comments, Comments, Comments 
 
@@ -278,7 +278,7 @@ Avoid assignments in conditionals, but if they're unavoidable, use extra paren, 
 
 =head3 Test suite 
 
-If your patch changes code (rather than just changing documentation),  you should also include one or more test cases which illustrate the bug you're fixing or validate the new functionality you're adding. In general, you should update an existing test file rather than create a new one. 
+If your patch changes code (rather than just changing documentation), you should also include one or more test cases which illustrate the bug you're fixing or validate the new functionality you're adding. In general, you should update an existing test file rather than create a new one. 
 
 Your test suite additions should generally follow these guidelines (courtesy of Gurusamy Sarathy <gsar@activestate.com>): 
 
@@ -362,7 +362,7 @@ In contrast, modules in the F<dist/> directory are maintained in the core.
 
 =head2 Updating perldelta 
 
-For changes significant enough to warrant a F<pod/perldelta.pod> entry,  the porters will greatly appreciate it if you submit a delta entry along with your actual change. Significant changes include, but are not limited to: 
+For changes significant enough to warrant a F<pod/perldelta.pod> entry, the porters will greatly appreciate it if you submit a delta entry along with your actual change. Significant changes include, but are not limited to: 
 
 =over 4 
 
@@ -404,7 +404,7 @@ Please make sure you add the perldelta entry to the right section within F<pod/p
 
 =head2 What makes for a good patch? 
 
-New features and extensions to the language can be contentious. There is no specific set of criteria which determine what features get added,  but here are some questions to consider when developing a patch: 
+New features and extensions to the language can be contentious. There is no specific set of criteria which determine what features get added, but here are some questions to consider when developing a patch: 
 
 =head3 Does the concept match the general goals of Perl? 
 
@@ -452,7 +452,7 @@ Whenever possible, new features should be prototyped in a CPAN module before the
 
 =head3 Is the feature generic enough? 
 
-Is this something that only the submitter wants added to the language,  or is it broadly useful?  Sometimes, instead of adding a feature with a tight focus, the porters might decide to wait until someone implements the more generalized feature. 
+Is this something that only the submitter wants added to the language, or is it broadly useful?  Sometimes, instead of adding a feature with a tight focus, the porters might decide to wait until someone implements the more generalized feature. 
 
 =head3 Does it potentially introduce new bugs? 
 
@@ -482,7 +482,7 @@ Without tests provided by the original author, how can anyone else changing perl
 
 =head3 Is there enough documentation? 
 
-Patches without documentation are probably ill-thought out or incomplete. No features can be added or changed without documentation,  so submitting a patch for the appropriate pod docs as well as the source code is important. 
+Patches without documentation are probably ill-thought out or incomplete. No features can be added or changed without documentation, so submitting a patch for the appropriate pod docs as well as the source code is important. 
 
 =head3 Is there another way to do it? 
 
@@ -500,7 +500,7 @@ Working code is always preferred to pie-in-the-sky ideas. A patch to add a featu
 
 The core uses the same testing style as the rest of Perl, a simple "ok/not ok" run through Test::Harness, but there are a few special considerations. 
 
-There are three ways to write a test in the core. L<Test::More>,  F<t/test.pl> and ad hoc C<print $test ? "ok 42\n" : "not ok 42\n">. The decision of which to use depends on what part of the test suite you're working on. This is a measure to prevent a high-level failure (such as Config.pm breaking) from causing basic functionality tests to fail. 
+There are three ways to write a test in the core. L<Test::More>, F<t/test.pl> and ad hoc C<print $test ? "ok 42\n" : "not ok 42\n">. The decision of which to use depends on what part of the test suite you're working on. This is a measure to prevent a high-level failure (such as Config.pm breaking) from causing basic functionality tests to fail. 
 
 The F<t/test.pl> library provides some of the features of L<Test::More>, but avoids loading most modules and uses as few core features as possible. 
 
@@ -524,7 +524,7 @@ Now that the core of Perl is tested, L<Test::More> can and should be used. You c
 
 =back 
 
-When you say "make test", Perl uses the F<t/TEST> program to run the test suite (except under Win32 where it uses F<t/harness> instead). All tests are run from the F<t/> directory, B<not> the directory which contains the test. This causes some problems with the tests in F<lib/>,  so here's some opportunity for some patching. 
+When you say "make test", Perl uses the F<t/TEST> program to run the test suite (except under Win32 where it uses F<t/harness> instead). All tests are run from the F<t/> directory, B<not> the directory which contains the test. This causes some problems with the tests in F<lib/>, so here's some opportunity for some patching. 
 
 You must be triply conscious of cross-platform concerns. This usually boils down to using L<File::Spec> and avoiding things like C<fork()> and C<system()> unless absolutely necessary. 
 
@@ -558,7 +558,7 @@ Run all tests with the B<-t> command-line switch. Not all tests are expected to 
 
 =item * minitest 
 
-Run F<miniperl> on F<t/base>, F<t/comp>, F<t/cmd>, F<t/run>, F<t/io>,  F<t/op>, F<t/uni> and F<t/mro> tests. 
+Run F<miniperl> on F<t/base>, F<t/comp>, F<t/cmd>, F<t/run>, F<t/io>, F<t/op>, F<t/uni> and F<t/mro> tests. 
 
 =item * test.valgrind check.valgrind utest.valgrind ucheck.valgrind 
 
@@ -588,7 +588,7 @@ C<make utest.utf16> runs the test suite with a combination of C<-utf8> and C<-ut
 
 Run the test suite with the F<t/harness> controlling program, instead of F<t/TEST>. F<t/harness> is more sophisticated, and uses the L<Test::Harness> module, thus using this test target supposes that perl mostly works. The main advantage for our purposes is that it prints a detailed summary of failed tests at the end. Also, unlike F<t/TEST>, it doesn't redirect stderr to stdout. 
 
-Note that under Win32 F<t/harness> is always used instead of F<t/TEST>,  so there is no special "test_harness" target. 
+Note that under Win32 F<t/harness> is always used instead of F<t/TEST>, so there is no special "test_harness" target. 
 
 Under Win32's "test" target you may use the TEST_SWITCHES and TEST_FILES environment variables to control the behaviour of F<t/harness>. This means you can say 
 
@@ -609,7 +609,7 @@ The core distribution can now run its regression tests in parallel on Unix-like 
 
     TEST_JOBS=3 make test_harness  # Run 3 tests in parallel 
 
-An environment variable is used, rather than parallel make itself,  because L<TAP::Harness> needs to be able to schedule individual non-conflicting test scripts itself, and there is no standard interface to C<make> utilities to interact with their job schedulers. 
+An environment variable is used, rather than parallel make itself, because L<TAP::Harness> needs to be able to schedule individual non-conflicting test scripts itself, and there is no standard interface to C<make> utilities to interact with their job schedulers. 
 
 Note that currently some test scripts may fail when run in parallel (most notably C<ext/IO/t/io_dir.t>). If necessary, run just the failing scripts again sequentially and see if the failures go away. 
 
@@ -641,7 +641,7 @@ If C<LIST OF FILES TO TEST> is omitted, the file list is obtained from the manif
 
 =item * -v 
 
-Run the tests under verbose mode so you can see what tests were run,  and debug output. 
+Run the tests under verbose mode so you can see what tests were run, and debug output. 
 
 =item * -torture 
 
@@ -724,7 +724,7 @@ This document walks through the creation of a small patch to Perl's C code. If y
 
 =item * L<perlhacktips> 
 
-More details on hacking the Perl core. This document focuses on lower level details such as how to write tests, compilation issues,  portability, debugging, etc. 
+More details on hacking the Perl core. This document focuses on lower level details such as how to write tests, compilation issues, portability, debugging, etc. 
 
 If you plan on doing serious C hacking, make sure to read this. 
 
@@ -806,7 +806,7 @@ I<The Hobbit>, by J.R.R. Tolkien. The hardcover, 70th-anniversary edition of 200
 
 =item * 
 
-I<The Lord of the Rings>, by J.R.R. Tolkien. The hardcover,  50th-anniversary edition of 2004 was used, published in the UK by Harper Collins Publishers and in the US by the Houghton Mifflin Company. 
+I<The Lord of the Rings>, by J.R.R. Tolkien. The hardcover, 50th-anniversary edition of 2004 was used, published in the UK by Harper Collins Publishers and in the US by the Houghton Mifflin Company. 
 
 =item * 
 
@@ -814,7 +814,7 @@ I<The Lays of Beleriand>, by J.R.R. Tolkien and published posthumously by his so
 
 =back 
 
-Other JRRT books fair game for quotes would thus include I<The Adventures of Tom Bombadil>, I<The Silmarillion>, I<Unfinished Tales>,  and I<The Tale of the Children of Hurin>, all but the first posthumously assembled by CJRT. But I<The Lord of the Rings> itself is perfectly fine and probably best to quote from, provided you can find a suitable quote there. 
+Other JRRT books fair game for quotes would thus include I<The Adventures of Tom Bombadil>, I<The Silmarillion>, I<Unfinished Tales>, and I<The Tale of the Children of Hurin>, all but the first posthumously assembled by CJRT. But I<The Lord of the Rings> itself is perfectly fine and probably best to quote from, provided you can find a suitable quote there. 
 
 So if you were to supply a new, complete, top-level source file to add to Perl, you should conform to this peculiar practice by yourself selecting an appropriate quotation from Tolkien, retaining the original spelling and punctuation and using the same format the rest of the quotes are in. Indirect and oblique is just fine; remember, it's a metaphor, so being meta is, after all, what it's for. 
 

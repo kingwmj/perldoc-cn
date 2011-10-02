@@ -45,7 +45,7 @@ Like many languages, Perl provides for user-defined subroutines. These may be lo
 
 The Perl model for function call and return values is simple: all functions are passed as parameters one single flat list of scalars, and all functions likewise return to their caller one single flat list of scalars.  Any arrays or hashes in these call and return lists will collapse, losing their identities--but you may always use pass-by-reference instead to avoid this.  Both call and return lists may contain as many or as few scalar elements as you'd like.  (Often a function without an explicit return statement is called a subroutine, but there's really no difference from Perl's perspective.) X<subroutine, parameter> X<parameter> 
 
-Any arguments passed in show up in the array C<@_>.  Therefore, if you called a function with two arguments, those would be stored in C<$_[0]> and C<$_[1]>.  The array C<@_> is a local array, but its elements are aliases for the actual scalar parameters.  In particular,  if an element C<$_[0]> is updated, the corresponding argument is updated (or an error occurs if it is not updatable).  If an argument is an array or hash element which did not exist when the function was called, that element is created only when (and if) it is modified or a reference to it is taken.  (Some earlier versions of Perl created the element whether or not the element was assigned to.) Assigning to the whole array C<@_> removes that aliasing, and does not update any arguments. X<subroutine, argument> X<argument> X<@_> 
+Any arguments passed in show up in the array C<@_>.  Therefore, if you called a function with two arguments, those would be stored in C<$_[0]> and C<$_[1]>.  The array C<@_> is a local array, but its elements are aliases for the actual scalar parameters.  In particular, if an element C<$_[0]> is updated, the corresponding argument is updated (or an error occurs if it is not updatable).  If an argument is an array or hash element which did not exist when the function was called, that element is created only when (and if) it is modified or a reference to it is taken.  (Some earlier versions of Perl created the element whether or not the element was assigned to.) Assigning to the whole array C<@_> removes that aliasing, and does not update any arguments. X<subroutine, argument> X<argument> X<@_> 
 
 A C<return> statement may be used to exit a subroutine, optionally specifying the returned value, which will be evaluated in the appropriate context (list, scalar, or void) depending on the context of the subroutine call.  If you specify no return value, the subroutine returns an empty list in list context, the undefined value in scalar context, or nothing in void context.  If you return one or more aggregates (arrays and hashes), these will be flattened together into one large indistinguishable list. 
 
@@ -63,7 +63,7 @@ Example:
     } 
     return $max; 
     } 
-    $bestday = max($mon, $tue, $wed, $thu, $fri); 
+    $bestday = max($mon,$tue,$wed,$thu,$fri); 
 
 Example: 
 
@@ -123,7 +123,7 @@ It would be much safer if the C<upcase_in()> function were written to return a c
       return wantarray ? @parms : $parms[0]; 
     } 
 
-Notice how this (unprototyped) function doesn't care whether it was passed real scalars or arrays.  Perl sees all arguments as one big,  long, flat parameter list in C<@_>.  This is one area where Perl's simple argument-passing style shines.  The C<upcase()> function would work perfectly well without changing the C<upcase()> definition even if we fed it things like this: 
+Notice how this (unprototyped) function doesn't care whether it was passed real scalars or arrays.  Perl sees all arguments as one big, long, flat parameter list in C<@_>.  This is one area where Perl's simple argument-passing style shines.  The C<upcase()> function would work perfectly well without changing the C<upcase()> definition even if we fed it things like this: 
 
 
     @newlist   = upcase(@list1, @list2); 
@@ -136,13 +136,13 @@ Do not, however, be tempted to do this:
 
 Like the flattened incoming parameter list, the return list is also flattened on return.  So all you have managed to do here is stored everything in C<@a> and made C<@b> empty.  See L<Pass by Reference> for alternatives. 
 
-A subroutine may be called using an explicit C<&> prefix.  The C<&> is optional in modern Perl, as are parentheses if the subroutine has been predeclared.  The C<&> is I<not> optional when just naming the subroutine, such as when it's used as an argument to defined() or undef().  Nor is it optional when you want to do an indirect subroutine call with a subroutine name or reference using the C<&$subref()> or C<&{$subref}()> constructs,  although the C<< $subref->() >> notation solves that problem. See L<perlref> for more about all that. X<&> 
+A subroutine may be called using an explicit C<&> prefix.  The C<&> is optional in modern Perl, as are parentheses if the subroutine has been predeclared.  The C<&> is I<not> optional when just naming the subroutine, such as when it's used as an argument to defined() or undef().  Nor is it optional when you want to do an indirect subroutine call with a subroutine name or reference using the C<&$subref()> or C<&{$subref}()> constructs, although the C<< $subref->() >> notation solves that problem. See L<perlref> for more about all that. X<&> 
 
-Subroutines may be called recursively.  If a subroutine is called using the C<&> form, the argument list is optional, and if omitted,  no C<@_> array is set up for the subroutine: the C<@_> array at the time of the call is visible to subroutine instead.  This is an efficiency mechanism that new users may wish to avoid. X<recursion> 
+Subroutines may be called recursively.  If a subroutine is called using the C<&> form, the argument list is optional, and if omitted, no C<@_> array is set up for the subroutine: the C<@_> array at the time of the call is visible to subroutine instead.  This is an efficiency mechanism that new users may wish to avoid. X<recursion> 
 
 
-    &foo(1, 2, 3);    # pass three arguments 
-    foo(1, 2, 3);        # the same 
+    &foo(1,2,3);    # pass three arguments 
+    foo(1,2,3);        # the same 
 
 
     foo();        # pass a null list 
@@ -154,7 +154,7 @@ Subroutines may be called recursively.  If a subroutine is called using the C<&>
 
 Not only does the C<&> form make the argument list optional, it also disables any prototype checking on arguments you do provide.  This is partly for historical reasons, and partly for having a convenient way to cheat if you know what you're doing.  See L<Prototypes> below. X<&> 
 
-Subroutines whose names are in all upper case are reserved to the Perl core, as are modules whose names are in all lower case.  A subroutine in all capitals is a loosely-held convention meaning it will be called indirectly by the run-time system itself, usually due to a triggered event. Subroutines that do special, pre-defined things include C<AUTOLOAD>, C<CLONE>,  C<DESTROY> plus all functions mentioned in L<perltie> and L<PerlIO::via>. 
+Subroutines whose names are in all upper case are reserved to the Perl core, as are modules whose names are in all lower case.  A subroutine in all capitals is a loosely-held convention meaning it will be called indirectly by the run-time system itself, usually due to a triggered event. Subroutines that do special, pre-defined things include C<AUTOLOAD>, C<CLONE>, C<DESTROY> plus all functions mentioned in L<perltie> and L<PerlIO::via>. 
 
 The C<BEGIN>, C<UNITCHECK>, C<CHECK>, C<INIT> and C<END> subroutines are not so much subroutines as named special code blocks, of which you can have more than one in a package, and which you can B<not> call explicitly.  See L<perlmod/"BEGIN, UNITCHECK, CHECK, INIT and END"> 
 
@@ -171,7 +171,7 @@ Synopsis:
 
 B<WARNING>: The use of attribute lists on C<my> declarations is still evolving.  The current semantics and interface are subject to change. See L<attributes> and L<Attribute::Handlers>. 
 
-The C<my> operator declares the listed variables to be lexically confined to the enclosing block, conditional (C<if/unless/elsif/else>),  loop (C<for/foreach/while/until/continue>), subroutine, C<eval>,  or C<do/require/use>'d file.  If more than one value is listed, the list must be placed in parentheses.  All listed elements must be legal lvalues.  Only alphanumeric identifiers may be lexically scoped--magical built-ins like C<$/> must currently be C<local>ized with C<local> instead. 
+The C<my> operator declares the listed variables to be lexically confined to the enclosing block, conditional (C<if/unless/elsif/else>), loop (C<for/foreach/while/until/continue>), subroutine, C<eval>, or C<do/require/use>'d file.  If more than one value is listed, the list must be placed in parentheses.  All listed elements must be legal lvalues.  Only alphanumeric identifiers may be lexically scoped--magical built-ins like C<$/> must currently be C<local>ized with C<local> instead. 
 
 Unlike dynamic variables created by the C<local> operator, lexical variables declared with C<my> are totally hidden from the outside world, including any called subroutines.  This is true if it's the same subroutine called from itself or elsewhere--every call gets its own copy. X<local> 
 
@@ -220,7 +220,7 @@ That has the same effect as
     my $foo; 
     $bar = 1; 
 
-The declared variable is not introduced (is not visible) until after the current statement.  Thus,  
+The declared variable is not introduced (is not visible) until after the current statement.  Thus, 
 
 
     my $x = $x; 
@@ -253,7 +253,7 @@ the scope of $line extends from its declaration throughout the rest of the loop 
         die "'$answer' is neither 'yes' nor 'no'"; 
     } 
 
-the scope of $answer extends from its declaration through the rest of that conditional, including any C<elsif> and C<else> clauses,  but not beyond it.  See L<perlsyn/"Simple Statements"> for information on the scope of variables in statements with modifiers. 
+the scope of $answer extends from its declaration through the rest of that conditional, including any C<elsif> and C<else> clauses, but not beyond it.  See L<perlsyn/"Simple Statements"> for information on the scope of variables in statements with modifiers. 
 
 The C<foreach> loop defaults to scoping its index variable dynamically in the manner of C<local>.  However, if the index variable is prefixed with the keyword C<my>, or if there is already a lexical by that name in scope, then a new lexical is created instead.  Thus in the loop X<foreach> X<for> 
 
@@ -262,9 +262,9 @@ The C<foreach> loop defaults to scoping its index variable dynamically in the ma
         some_function(); 
     } 
 
-the scope of $i extends to the end of the loop, but not beyond it,  rendering the value of $i inaccessible within C<some_function()>. X<foreach> X<for> 
+the scope of $i extends to the end of the loop, but not beyond it, rendering the value of $i inaccessible within C<some_function()>. X<foreach> X<for> 
 
-Some users may wish to encourage the use of lexically scoped variables. As an aid to catching implicit uses to package variables,  which are always global, if you say 
+Some users may wish to encourage the use of lexically scoped variables. As an aid to catching implicit uses to package variables, which are always global, if you say 
 
 
     use strict 'vars'; 
@@ -295,13 +295,13 @@ You may declare C<my> variables at the outermost scope of a file to hide any suc
     my $secret_sub = sub { print $secret_version }; 
     &$secret_sub(); 
 
-As long as the reference is never returned by any function within the module, no outside module can see the subroutine, because its name is not in any package's symbol table.  Remember that it's not I<REALLY> called C<$some_pack::secret_version> or anything; it's just $secret_version,  unqualified and unqualifiable. 
+As long as the reference is never returned by any function within the module, no outside module can see the subroutine, because its name is not in any package's symbol table.  Remember that it's not I<REALLY> called C<$some_pack::secret_version> or anything; it's just $secret_version, unqualified and unqualifiable. 
 
 This does not work with object methods, however; all object methods have to be in the symbol table of some package to be found.  See L<perlref/"Function Templates"> for something of a work-around to this. 
 
 =head2 Persistent Private Variables X<state> X<state variable> X<static> X<variable, persistent> X<variable, static> X<closure> 
 
-There are two ways to build persistent private variables in Perl 5.10. First, you can simply use the C<state> feature. Or, you can use closures,  if you want to stay compatible with releases older than 5.10. 
+There are two ways to build persistent private variables in Perl 5.10. First, you can simply use the C<state> feature. Or, you can use closures, if you want to stay compatible with releases older than 5.10. 
 
 =head3 Persistent variables via state() 
 
@@ -323,7 +323,7 @@ Just because a lexical variable is lexically (also called statically) scoped to 
 
 Unlike local variables in C or C++, Perl's lexical variables don't necessarily get recycled just because their scope has exited. If something more permanent is still aware of the lexical, it will stick around.  So long as something else references a lexical, that lexical won't be freed--which is as it should be.  You wouldn't want memory being free until you were done using it, or kept around once you were done.  Automatic garbage collection takes care of this for you. 
 
-This means that you can pass back or save away references to lexical variables, whereas to return a pointer to a C auto is a grave error. It also gives us a way to simulate C's function statics.  Here's a mechanism for giving a function private variables with both lexical scoping and a static lifetime.  If you do want to create something like C's static variables, just enclose the whole function in an extra block,  and put the static variable outside the function but in the block. 
+This means that you can pass back or save away references to lexical variables, whereas to return a pointer to a C auto is a grave error. It also gives us a way to simulate C's function statics.  Here's a mechanism for giving a function private variables with both lexical scoping and a static lifetime.  If you do want to create something like C's static variables, just enclose the whole function in an extra block, and put the static variable outside the function but in the block. 
 
 
     { 
@@ -345,7 +345,7 @@ If this function is being sourced in from a separate file via C<require> or C<us
     } 
     } 
 
-See L<perlmod/"BEGIN, UNITCHECK, CHECK, INIT and END"> about the special triggered code blocks, C<BEGIN>, C<UNITCHECK>, C<CHECK>,  C<INIT> and C<END>. 
+See L<perlmod/"BEGIN, UNITCHECK, CHECK, INIT and END"> about the special triggered code blocks, C<BEGIN>, C<UNITCHECK>, C<CHECK>, C<INIT> and C<END>. 
 
 If declared at the outermost scope (the file scope), then lexicals work somewhat like C's file statics.  They are available to all functions in that same file declared below them, but are inaccessible from outside that file.  This strategy is sometimes used in modules to create private variables that the whole module can see. 
 
@@ -405,7 +405,7 @@ supplies a scalar context.
 
 =head3 Localization of special variables X<local, special variable> 
 
-If you localize a special variable, you'll be giving a new value to it,  but its magic won't go away.  That means that all side-effects related to this magic still work with the localized value. 
+If you localize a special variable, you'll be giving a new value to it, but its magic won't go away.  That means that all side-effects related to this magic still work with the localized value. 
 
 This feature allows code like this to work : 
 
@@ -429,7 +429,7 @@ The construct
 
     local *name; 
 
-creates a whole new symbol table entry for the glob C<name> in the current package.  That means that all variables in its glob slot ($name,  @name, %name, &name, and the C<name> filehandle) are dynamically reset. 
+creates a whole new symbol table entry for the glob C<name> in the current package.  That means that all variables in its glob slot ($name, @name, %name, &name, and the C<name> filehandle) are dynamically reset. 
 
 This implies, among other things, that any magic eventually carried by those variables is locally lost.  In other words, saying C<local */> will not have any effect on the internal value of the input record separator. 
 
@@ -452,9 +452,9 @@ It's also worth taking a moment to explain what happens when you C<local>ize a m
              delete $hash{'a'}; 
          } 
     } 
-    print join(' ', map { "$_ $hash{$_}" } sort keys %hash), ".\n"; 
-    print "The array has ", scalar(@ary), " elements: ",  
-          join(', ', map { defined $_ ? $_ : 'undef' } @ary), "\n"; 
+    print join(' ', map { "$_ $hash{$_}" } sort keys %hash),".\n"; 
+    print "The array has ",scalar(@ary)," elements: ", 
+          join(', ', map { defined $_ ? $_ : 'undef' } @ary),"\n"; 
 
 Perl will print 
 
@@ -469,7 +469,7 @@ The behavior of local() on non-existent members of composite types is subject to
 
 =head3 Localized deletion of elements of composite types X<delete> X<local, composite type element> X<local, array element> X<local, hash element> 
 
-You can use the C<delete local $array[$idx]> and C<delete local $hash{key}> constructs to delete a composite type entry for the current block and restore it when it ends. They return the array/hash value before the localization,  which means that they are respectively equivalent to 
+You can use the C<delete local $array[$idx]> and C<delete local $hash{key}> constructs to delete a composite type entry for the current block and restore it when it ends. They return the array/hash value before the localization, which means that they are respectively equivalent to 
 
 
     do { 
@@ -493,8 +493,8 @@ except that for those the C<local> is scoped to the C<do> block. Slices are also
 
 
     my %hash = ( 
-     a => [ 7, 8, 9 ],  
-     b => 1,  
+     a => [ 7, 8, 9 ], 
+     b => 1, 
     ) 
 
 
@@ -541,17 +541,17 @@ It is possible to return a modifiable value from a subroutine. To do this, you h
 The scalar/list context for the subroutine and for the right-hand side of assignment is determined as if the subroutine call is replaced by a scalar. For example, consider: 
 
 
-    data(2, 3) = get_data(3, 4); 
+    data(2,3) = get_data(3,4); 
 
 Both subroutines here are called in a scalar context, while in: 
 
 
-    (data(2, 3)) = get_data(3, 4); 
+    (data(2,3)) = get_data(3,4); 
 
 and in: 
 
 
-    (data(2), data(3)) = get_data(3, 4); 
+    (data(2),data(3)) = get_data(3,4); 
 
 all the subroutines are called in a list context. 
 
@@ -638,14 +638,14 @@ A function that needs a filehandle of its own must use C<local()> on a complete 
 
     sub ioqueue { 
         local  (*READER, *WRITER);    # not my! 
-        pipe    (READER, WRITER)     or die "pipe: $!"; 
+        pipe    (READER,  WRITER)     or die "pipe: $!"; 
         return (*READER, *WRITER); 
     } 
     ($head, $tail) = ioqueue(); 
 
 See the Symbol module for a way to create anonymous symbol table entries. 
 
-Because assignment of a reference to a typeglob creates an alias, this can be used to create what is effectively a local function, or at least,  a local alias. 
+Because assignment of a reference to a typeglob creates an alias, this can be used to create what is effectively a local function, or at least, a local alias. 
 
 
     { 
@@ -670,7 +670,7 @@ You can C<local>ize just one element of an aggregate.  Usually this is done on d
     } 
     # interruptibility automatically restored here 
 
-But it also works on lexically declared aggregates.  Prior to 5.005,  this operation could on occasion misbehave. 
+But it also works on lexically declared aggregates.  Prior to 5.005, this operation could on occasion misbehave. 
 
 =back 
 
@@ -707,7 +707,7 @@ Here's how you might write a function that returns a list of keys occurring in a
     return grep { $seen{$_} == @_ } keys %seen; 
     } 
 
-So far, we're using just the normal list return mechanism. What happens if you want to pass or return a hash?  Well,  if you're using only one of them, or you don't mind them concatenating, then the normal calling convention is ok, although a little expensive. 
+So far, we're using just the normal list return mechanism. What happens if you want to pass or return a hash?  Well, if you're using only one of them, or you don't mind them concatenating, then the normal calling convention is ok, although a little expensive. 
 
 Where people get into trouble is here: 
 
@@ -715,7 +715,7 @@ Where people get into trouble is here:
     (@a, @b) = func(@c, @d); or 
     (%a, %b) = func(%c, %d); 
 
-That syntax simply won't work.  It sets just C<@a> or C<%a> and clears the C<@b> or C<%b>.  Plus the function didn't get passed into two separate arrays or hashes: it got one long list in C<@_>,  as always. 
+That syntax simply won't work.  It sets just C<@a> or C<%a> and clears the C<@b> or C<%b>.  Plus the function didn't get passed into two separate arrays or hashes: it got one long list in C<@_>, as always. 
 
 If you can arrange for everyone to deal with this through references, it's cleaner code, although not so nice to look at.  Here's a function that takes two array references as arguments, returning the two array elements in order of how many elements they have in them: 
 
@@ -779,7 +779,7 @@ Perl supports a very limited kind of compile-time argument checking using functi
 
     sub mypush (+@) 
 
-then C<mypush()> takes arguments exactly like C<push()> does.  The function declaration must be visible at compile time.  The prototype affects only interpretation of new-style calls to the function,  where new-style is defined as not using the C<&> character.  In other words, if you call it like a built-in function, then it behaves like a built-in function.  If you call it like an old-fashioned subroutine, then it behaves like an old-fashioned subroutine.  It naturally falls out from this rule that prototypes have no influence on subroutine references like C<\&foo> or on indirect subroutine calls like C<&{$subref}> or C<< $subref->() >>. 
+then C<mypush()> takes arguments exactly like C<push()> does.  The function declaration must be visible at compile time.  The prototype affects only interpretation of new-style calls to the function, where new-style is defined as not using the C<&> character.  In other words, if you call it like a built-in function, then it behaves like a built-in function.  If you call it like an old-fashioned subroutine, then it behaves like an old-fashioned subroutine.  It naturally falls out from this rule that prototypes have no influence on subroutine references like C<\&foo> or on indirect subroutine calls like C<&{$subref}> or C<< $subref->() >>. 
 
 Method calls are not influenced by prototypes either, because the function to be called is indeterminate at compile time, since the exact code called depends on inheritance. 
 
@@ -804,7 +804,7 @@ Because the intent of this feature is primarily to let you define subroutines th
     sub myrand (;$)         myrand 42 
     sub mytime ()         mytime 
 
-Any backslashed prototype character represents an actual argument that must start with that character (optionally preceded by C<my>,  C<our> or C<local>), with the exception of C<$>, which will accept a hash or array element even without a dollar sign, such as C<< my_function()->[0] >>. The value passed as part of C<@_> will be a reference to the actual argument given in the subroutine call,  obtained by applying C<\> to that argument. 
+Any backslashed prototype character represents an actual argument that must start with that character (optionally preceded by C<my>, C<our> or C<local>), with the exception of C<$>, which will accept a hash or array element even without a dollar sign, such as C<< my_function()->[0] >>. The value passed as part of C<@_> will be a reference to the actual argument given in the subroutine call, obtained by applying C<\> to that argument. 
 
 You can use the C<\[]> backslash group notation to specify more than one allowed argument type. For example: 
 
@@ -824,7 +824,7 @@ and the first argument of myref() will be a reference to a scalar, an array, a h
 
 Unbackslashed prototype characters have special meanings.  Any unbackslashed C<@> or C<%> eats all remaining arguments, and forces list context.  An argument represented by C<$> forces scalar context.  An C<&> requires an anonymous subroutine, which, if passed as the first argument, does not require the C<sub> keyword or a subsequent comma. 
 
-A C<*> allows the subroutine to accept a bareword, constant, scalar expression,  typeglob, or a reference to a typeglob in that slot.  The value will be available to the subroutine either as a simple scalar, or (in the latter two cases) as a reference to the typeglob.  If you wish to always convert such arguments to a typeglob reference, use Symbol::qualify_to_ref() as follows: 
+A C<*> allows the subroutine to accept a bareword, constant, scalar expression, typeglob, or a reference to a typeglob in that slot.  The value will be available to the subroutine either as a simple scalar, or (in the latter two cases) as a reference to the typeglob.  If you wish to always convert such arguments to a typeglob reference, use Symbol::qualify_to_ref() as follows: 
 
 
     use Symbol 'qualify_to_ref'; 
@@ -857,11 +857,11 @@ Note how the last three examples in the table above are treated specially by the
 
 you'll get C<mytime() + 2>, not C<mytime(2)>, which is how it would be parsed without a prototype. 
 
-The interesting thing about C<&> is that you can generate new syntax with it,  provided it's in the initial position: X<&> 
+The interesting thing about C<&> is that you can generate new syntax with it, provided it's in the initial position: X<&> 
 
 
     sub try (&@) { 
-    my($try, $catch) = @_; 
+    my($try,$catch) = @_; 
     eval { &$try }; 
     if ($@) { 
         local $_ = $@; 
@@ -877,7 +877,7 @@ The interesting thing about C<&> is that you can generate new syntax with it,  p
     /phooey/ and print "unphooey\n"; 
     }; 
 
-That prints C<"unphooey">.  (Yes, there are still unresolved issues having to do with visibility of C<@_>.  I'm ignoring that question for the moment.  (But note that if we make C<@_> lexically scoped, those anonymous subroutines can act like closures... (Gee,  is this sounding a little Lispish?  (Never mind.)))) 
+That prints C<"unphooey">.  (Yes, there are still unresolved issues having to do with visibility of C<@_>.  I'm ignoring that question for the moment.  (But note that if we make C<@_> lexically scoped, those anonymous subroutines can act like closures... (Gee, is this sounding a little Lispish?  (Never mind.)))) 
 
 And here's a reimplementation of the Perl C<grep> operator: X<grep> 
 
@@ -895,7 +895,7 @@ Some folks would prefer full alphanumeric prototypes.  Alphanumerics have been i
 
 If you try to use an alphanumeric sequence in a prototype you will generate an optional warning - "Illegal character in prototype...". Unfortunately earlier versions of Perl allowed the prototype to be used as long as its prefix was a valid prototype.  The warning may be upgraded to a fatal error in a future version of Perl once the majority of offending code is fixed. 
 
-It's probably best to prototype new functions, not retrofit prototyping into older ones.  That's because you must be especially careful about silent impositions of differing list versus scalar contexts.  For example,  if you decide that a function should take just one parameter, like this: 
+It's probably best to prototype new functions, not retrofit prototyping into older ones.  That's because you must be especially careful about silent impositions of differing list versus scalar contexts.  For example, if you decide that a function should take just one parameter, like this: 
 
 
     sub func ($) { 
@@ -909,7 +909,7 @@ and someone has been calling it with an array or expression returning a list:
     func(@foo); 
     func( split /:/ ); 
 
-Then you've just supplied an automatic C<scalar> in front of their argument, which can be more than a bit surprising.  The old C<@foo> which used to hold one thing doesn't get passed in.  Instead,  C<func()> now gets passed in a C<1>; that is, the number of elements in C<@foo>.  And the C<split> gets called in scalar context so it starts scribbling on your C<@_> parameter list.  Ouch! 
+Then you've just supplied an automatic C<scalar> in front of their argument, which can be more than a bit surprising.  The old C<@foo> which used to hold one thing doesn't get passed in.  Instead, C<func()> now gets passed in a C<1>; that is, the number of elements in C<@foo>.  And the C<split> gets called in scalar context so it starts scribbling on your C<@_> parameter list.  Ouch! 
 
 This is all very powerful, of course, and should be used only in moderation to make the world a better place. 
 
@@ -921,7 +921,7 @@ The following functions would all be inlined:
 
 
     sub pi ()        { 3.14159 }        # Not exact, but close. 
-    sub PI ()        { 4 * atan2 1, 1 }    # As good as it gets,  
+    sub PI ()        { 4 * atan2 1, 1 }    # As good as it gets, 
                         # and it's inlined, too! 
     sub ST_DEV ()    { 0 } 
     sub ST_INO ()    { 1 } 
@@ -940,7 +940,7 @@ The following functions would all be inlined:
 
     sub FOO_SET () { 1 if FLAG_MASK & FLAG_FOO } 
 
-Be aware that these will not be inlined; as they contain inner scopes,  the constant folding doesn't reduce them to a single constant: 
+Be aware that these will not be inlined; as they contain inner scopes, the constant folding doesn't reduce them to a single constant: 
 
 
     sub foo_set () { if (FLAG_MASK & FLAG_FOO) { 1 } } 
@@ -973,7 +973,7 @@ Overriding may be done only by importing the name from a module at compile time-
     chdir $somewhere; 
     sub chdir { ... } 
 
-To unambiguously refer to the built-in form, precede the built-in name with the special package qualifier C<CORE::>.  For example,  saying C<CORE::open()> always refers to the built-in C<open()>, even if the current package has imported some other subroutine called C<&open()> from elsewhere.  Even though it looks like a regular function call, it isn't: you can't take a reference to it, such as the incorrect C<\&CORE::open> might appear to produce. 
+To unambiguously refer to the built-in form, precede the built-in name with the special package qualifier C<CORE::>.  For example, saying C<CORE::open()> always refers to the built-in C<open()>, even if the current package has imported some other subroutine called C<&open()> from elsewhere.  Even though it looks like a regular function call, it isn't: you can't take a reference to it, such as the incorrect C<\&CORE::open> might appear to produce. 
 
 Library modules should not in general export built-in names like C<open> or C<chdir> as part of their default C<@EXPORT> list, because these may sneak into someone else's namespace and change the semantics unexpectedly. Instead, if the module adds that name to C<@EXPORT_OK>, then it's possible for a user to import the name explicitly, but not implicitly. That is, they could say 
 
@@ -1024,11 +1024,11 @@ And here's how it could be (ab)used:
     use REGlob 'glob';            # override glob() in Foo:: only 
     print for <^[a-z_]+\.pm\$>;        # show all pragmatic modules 
 
-The initial comment shows a contrived, even dangerous example. By overriding C<glob> globally, you would be forcing the new (and subversive) behavior for the C<glob> operator for I<every> namespace,  without the complete cognizance or cooperation of the modules that own those namespaces.  Naturally, this should be done with extreme caution--if it must be done at all. 
+The initial comment shows a contrived, even dangerous example. By overriding C<glob> globally, you would be forcing the new (and subversive) behavior for the C<glob> operator for I<every> namespace, without the complete cognizance or cooperation of the modules that own those namespaces.  Naturally, this should be done with extreme caution--if it must be done at all. 
 
 The C<REGlob> example above does not implement all the support needed to cleanly override perl's C<glob> operator.  The built-in C<glob> has different behaviors depending on whether it appears in a scalar or list context, but our C<REGlob> doesn't.  Indeed, many perl built-in have such context sensitive behaviors, and these must be adequately supported by a properly written override.  For a fully functional example of overriding C<glob>, study the implementation of C<File::DosGlob> in the standard library. 
 
-When you override a built-in, your replacement should be consistent (if possible) with the built-in native syntax.  You can achieve this by using a suitable prototype.  To get the prototype of an overridable built-in,  use the C<prototype> function with an argument of C<"CORE::builtin_name"> (see L<perlfunc/prototype>). 
+When you override a built-in, your replacement should be consistent (if possible) with the built-in native syntax.  You can achieve this by using a suitable prototype.  To get the prototype of an overridable built-in, use the C<prototype> function with an argument of C<"CORE::builtin_name"> (see L<perlfunc/prototype>). 
 
 Note however that some built-ins can't have their syntax expressed by a prototype (such as C<system> or C<chomp>).  If you override them you won't be able to fully mimic their original syntax. 
 
@@ -1048,7 +1048,7 @@ If you call a subroutine that is undefined, you would ordinarily get an immediat
 
 
 
-Many C<AUTOLOAD> routines load in a definition for the requested subroutine using eval(), then execute that subroutine using a special form of goto() that erases the stack frame of the C<AUTOLOAD> routine without a trace.  (See the source to the standard module documented in L<AutoLoader>, for example.)  But an C<AUTOLOAD> routine can also just emulate the routine and never define it.   For example,  let's pretend that a function that wasn't defined should just invoke C<system> with those arguments.  All you'd do is: 
+Many C<AUTOLOAD> routines load in a definition for the requested subroutine using eval(), then execute that subroutine using a special form of goto() that erases the stack frame of the C<AUTOLOAD> routine without a trace.  (See the source to the standard module documented in L<AutoLoader>, for example.)  But an C<AUTOLOAD> routine can also just emulate the routine and never define it.   For example, let's pretend that a function that wasn't defined should just invoke C<system> with those arguments.  All you'd do is: 
 
 
     sub AUTOLOAD { 
@@ -1076,19 +1076,19 @@ Mechanisms are available to help modules writers split their modules into autolo
 
 A subroutine declaration or definition may have a list of attributes associated with it.  If such an attribute list is present, it is broken up at space or colon boundaries and treated as though a C<use attributes> had been seen.  See L<attributes> for details about what attributes are currently supported. Unlike the limitation with the obsolescent C<use attrs>, the C<sub : ATTRLIST> syntax works to associate the attributes with a pre-declaration, and not just with a subroutine definition. 
 
-The attributes must be valid as simple identifier names (without any punctuation other than the '_' character).  They may have a parameter list appended, which is only checked for whether its parentheses ('(', ')') nest properly. 
+The attributes must be valid as simple identifier names (without any punctuation other than the '_' character).  They may have a parameter list appended, which is only checked for whether its parentheses ('(',')') nest properly. 
 
 Examples of valid syntax (even though the attributes are unknown): 
 
 
-    sub fnord (&\%) : switch(10, foo(7, 3))  :  expensive; 
+    sub fnord (&\%) : switch(10,foo(7,3))  :  expensive; 
     sub plugh () : Ugly('\(") :Bad; 
     sub xyzzy : _5x5 { ... } 
 
 Examples of invalid syntax: 
 
 
-    sub fnord : switch(10, foo(); # ()-string not balanced 
+    sub fnord : switch(10,foo(); # ()-string not balanced 
     sub snoid : Ugly('(');      # ()-string not balanced 
     sub xyzzy : 5x5;          # "5x5" not a valid identifier 
     sub plugh : Y2::north;      # "Y2::north" not a simple identifier 
@@ -1099,7 +1099,7 @@ The attribute list is passed as a list of constant strings to the code which ass
 
     use attributes __PACKAGE__, \&plugh, q[Ugly('\(")], 'Bad'; 
 
-For further details on attribute lists and their manipulation,  see L<attributes> and L<Attribute::Handlers>. 
+For further details on attribute lists and their manipulation, see L<attributes> and L<Attribute::Handlers>. 
 
 =head1 SEE ALSO 
 

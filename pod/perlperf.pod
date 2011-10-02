@@ -17,7 +17,7 @@ Perhaps the most common mistake programmers make is to attempt to optimize their
 
 =head2 ONE STEP SIDEWAYS 
 
-Firstly, you need to establish a baseline time for the existing code, which timing needs to be reliable and repeatable.  You'll probably want to use the C<Benchmark> or C<Devel::DProf> modules, or something similar, for this step,  or perhaps the Unix system C<time> utility, whichever is appropriate.  See the base of this document for a longer list of benchmarking and profiling modules,  and recommended further reading. 
+Firstly, you need to establish a baseline time for the existing code, which timing needs to be reliable and repeatable.  You'll probably want to use the C<Benchmark> or C<Devel::DProf> modules, or something similar, for this step, or perhaps the Unix system C<time> utility, whichever is appropriate.  See the base of this document for a longer list of benchmarking and profiling modules, and recommended further reading. 
 
 =head2 ONE STEP FORWARD 
 
@@ -31,9 +31,9 @@ It's not enough to say: "that will make it run faster", you have to check it. Re
 
 The critical thing when considering performance is to remember there is no such thing as a C<Golden Bullet>, which is why there are no rules, only guidelines. 
 
-It is clear that inline code is going to be faster than subroutine or method calls, because there is less overhead, but this approach has the disadvantage of being less maintainable and comes at the cost of greater memory usage - there is no such thing as a free lunch.  If you are searching for an element in a list, it can be more efficient to store the data in a hash structure, and then simply look to see whether the key is defined, rather than to loop through the entire array using grep() for instance.  substr() may be (a lot) faster than grep() but not as flexible, so you have another trade-off to access.  Your code may contain a line which takes 0.01 of a second to execute which if you call it 1, 000 times, quite likely in a program parsing even medium sized files for instance, you already have a 10 second delay, in just one single code location, and if you call that line 100, 000 times, your entire program will slow down to an unbearable crawl. 
+It is clear that inline code is going to be faster than subroutine or method calls, because there is less overhead, but this approach has the disadvantage of being less maintainable and comes at the cost of greater memory usage - there is no such thing as a free lunch.  If you are searching for an element in a list, it can be more efficient to store the data in a hash structure, and then simply look to see whether the key is defined, rather than to loop through the entire array using grep() for instance.  substr() may be (a lot) faster than grep() but not as flexible, so you have another trade-off to access.  Your code may contain a line which takes 0.01 of a second to execute which if you call it 1,000 times, quite likely in a program parsing even medium sized files for instance, you already have a 10 second delay, in just one single code location, and if you call that line 100,000 times, your entire program will slow down to an unbearable crawl. 
 
-Using a subroutine as part of your sort is a powerful way to get exactly what you want, but will usually be slower than the built-in I<alphabetic> C<cmp> and I<numeric> C<E<lt>=E<gt>> sort operators.  It is possible to make multiple passes over your data, building indices to make the upcoming sort more efficient, and to use what is known as the C<OM> (Orcish Maneuver) to cache the sort keys in advance.  The cache lookup, while a good idea, can itself be a source of slowdown by enforcing a double pass over the data - once to setup the cache, and once to sort the data.  Using C<pack()> to extract the required sort key into a consistent string can be an efficient way to build a single string to compare, instead of using multiple sort keys, which makes it possible to use the standard, written in C<c> and fast, perl C<sort()> function on the output,  and is the basis of the C<GRT> (Guttman Rossler Transform).  Some string combinations can slow the C<GRT> down, by just being too plain complex for it's own good. 
+Using a subroutine as part of your sort is a powerful way to get exactly what you want, but will usually be slower than the built-in I<alphabetic> C<cmp> and I<numeric> C<E<lt>=E<gt>> sort operators.  It is possible to make multiple passes over your data, building indices to make the upcoming sort more efficient, and to use what is known as the C<OM> (Orcish Maneuver) to cache the sort keys in advance.  The cache lookup, while a good idea, can itself be a source of slowdown by enforcing a double pass over the data - once to setup the cache, and once to sort the data.  Using C<pack()> to extract the required sort key into a consistent string can be an efficient way to build a single string to compare, instead of using multiple sort keys, which makes it possible to use the standard, written in C<c> and fast, perl C<sort()> function on the output, and is the basis of the C<GRT> (Guttman Rossler Transform).  Some string combinations can slow the C<GRT> down, by just being too plain complex for it's own good. 
 
 For applications using database backends, the standard C<DBIx> namespace has tries to help with keeping things nippy, not least because it tries to I<not> query the database until the latest possible moment, but always read the docs which come with your choice of libraries.  Among the many issues facing developers dealing with databases should remain aware of is to always use C<SQL> placeholders and to consider pre-fetching data sets when this might prove advantageous.  Splitting up a large file by assigning multiple processes to parsing a single file, using say C<POE>, C<threads> or C<fork> can also be a useful way of optimizing your usage of the available C<CPU> resources, though this technique is fraught with concurrency issues and demands high attention to detail. 
 
@@ -68,22 +68,22 @@ This sort of code can be a real eyesore to read, as well as being very sensitive
 
     my $ref = { 
             'ref'   => { 
-                _myscore    => '100 + 1',  
-                _yourscore  => '102 - 1',  
-            },  
+                _myscore    => '100 + 1', 
+                _yourscore  => '102 - 1', 
+            }, 
     }; 
 
 
     timethese(1000000, { 
             'direct'       => sub { 
                 my $x = $ref->{ref}->{_myscore} . $ref->{ref}->{_yourscore} ; 
-            },  
+            }, 
             'dereference'  => sub { 
                 my $ref  = $ref->{ref}; 
                 my $myscore = $ref->{_myscore}; 
                 my $yourscore = $ref->{_yourscore}; 
                 my $x = $myscore . $yourscore; 
-            },  
+            }, 
     }); 
 
 It's essential to run any timing measurements a sufficient number of times so the numbers settle on a numerical average, otherwise each run will naturally fluctuate due to variations in the environment, to reduce the effect of contention for C<CPU> resources and network bandwidth for instance.  Running the above code for one million iterations, we can take a look at the report output by the C<Benchmark> module, to see which approach is the most effective. 
@@ -96,7 +96,7 @@ It's essential to run any timing measurements a sufficient number of times so th
     dereference:  2 wallclock secs ( 1.59 usr +  0.00 sys =  1.59 CPU) @ 628930.82/s (n=1000000) 
         direct:  1 wallclock secs ( 1.20 usr +  0.00 sys =  1.20 CPU) @ 833333.33/s (n=1000000) 
 
-The difference is clear to see and the dereferencing approach is slower.  While it managed to execute an average of 628, 930 times a second during our test, the direct approach managed to run an additional 204, 403 times, unfortunately. Unfortunately, because there are many examples of code written using the multiple layer direct variable access, and it's usually horrible.  It is,  however, minusculy faster.  The question remains whether the minute gain is actually worth the eyestrain, or the loss of maintainability. 
+The difference is clear to see and the dereferencing approach is slower.  While it managed to execute an average of 628,930 times a second during our test, the direct approach managed to run an additional 204,403 times, unfortunately. Unfortunately, because there are many examples of code written using the multiple layer direct variable access, and it's usually horrible.  It is, however, minusculy faster.  The question remains whether the minute gain is actually worth the eyestrain, or the loss of maintainability. 
 
 =head2 Search and replace or tr 
 
@@ -129,8 +129,8 @@ We can put that into a test file which we can run to check which approach is the
 
 
     timethese( 1000000, { 
-            'sr'  => sub { my $str = $STR; $str =~ s/[aeiou]/x/g; return $str; },  
-            'tr'  => sub { my $str = $STR; $str =~ tr/aeiou/xxxxx/; return $str; },  
+            'sr'  => sub { my $str = $STR; $str =~ s/[aeiou]/x/g; return $str; }, 
+            'tr'  => sub { my $str = $STR; $str =~ tr/aeiou/xxxxx/; return $str; }, 
     }); 
 
 Running the code gives us our results: 
@@ -193,8 +193,8 @@ A slightly larger piece of code will provide something on which a profiler can p
 
 
     my $result = GetOptions ( 
-        'debug'         => \$debug,  
-        'file=s'        => \$file,  
+        'debug'         => \$debug, 
+        'file=s'        => \$file, 
     ); 
     die("invalid args") unless $result; 
 
@@ -312,7 +312,7 @@ This venerable module has been the de-facto standard for Perl code profiling for
     words with only capital letters: 1316 
     words with only vowels: 1701 
 
-C<Devel::DProf> produces a special file, called F<tmon.out> by default, and this file is read by the C<dprofpp> program, which is already installed as part of the C<Devel::DProf> distribution.  If you call C<dprofpp> with no options,  it will read the F<tmon.out> file in the current directory and produce a human readable statistics report of the run of your program.  Note that this may take a little time. 
+C<Devel::DProf> produces a special file, called F<tmon.out> by default, and this file is read by the C<dprofpp> program, which is already installed as part of the C<Devel::DProf> distribution.  If you call C<dprofpp> with no options, it will read the F<tmon.out> file in the current directory and produce a human readable statistics report of the run of your program.  Note that this may take a little time. 
 
 
     $> dprofpp 
@@ -400,7 +400,7 @@ See also C<Devel::Apache::Profiler> which hooks C<Devel::Profiler> into C<mod_pe
 
 =head2 Devel::SmallProf 
 
-The C<Devel::SmallProf> profiler examines the runtime of your Perl program and produces a line-by-line listing to show how many times each line was called,  and how long each line took to execute.  It is called by supplying the familiar C<-d> flag to Perl at runtime. 
+The C<Devel::SmallProf> profiler examines the runtime of your Perl program and produces a line-by-line listing to show how many times each line was called, and how long each line took to execute.  It is called by supplying the familiar C<-d> flag to Perl at runtime. 
 
 
     $> perl -d:SmallProf wordmatch -f perl5db.pl 
@@ -440,11 +440,11 @@ When the program has terminated, the output may be examined and sorted using any
     251215   0.02766   3.68000    71: my $word  = shift; 
      50243   0.59726   1.00000    59:  $count{$i_LINES}{cons} = 
      50243   0.48175   0.92000    61:  $count{$i_LINES}{spec} = 
-     50243   0.00644   0.89000    56:  my $i_cons = matches($i_word, $word,  
+     50243   0.00644   0.89000    56:  my $i_cons = matches($i_word, $word, 
      50243   0.48837   0.88000    63:  $count{$i_LINES}{caps} = 
      50243   0.00516   0.88000    58:  my $i_caps = matches($i_word, $word, '^[(A- 
      50243   0.00631   0.81000    54:  my $i_spec = matches($i_word, $word, '[^a- 
-     50243   0.00496   0.80000    57:  my $i_vows = matches($i_word, $word,  
+     50243   0.00496   0.80000    57:  my $i_vows = matches($i_word, $word, 
      50243   0.00688   0.80000    53:  $i_word++; 
      50243   0.48469   0.79000    62:  $count{$i_LINES}{only} = 
      50243   0.48928   0.77000    60:  $count{$i_LINES}{vows} = 
@@ -456,7 +456,7 @@ See also C<Apache::SmallProf> which hooks C<Devel::SmallProf> into C<mod_perl>.
 
 =head2 Devel::FastProf 
 
-C<Devel::FastProf> is another Perl line profiler.  This was written with a view to getting a faster line profiler, than is possible with for example C<Devel::SmallProf>, because it's written in C<C>.  To use C<Devel::FastProf>,  supply the C<-d> argument to Perl: 
+C<Devel::FastProf> is another Perl line profiler.  This was written with a view to getting a faster line profiler, than is possible with for example C<Devel::SmallProf>, because it's written in C<C>.  To use C<Devel::FastProf>, supply the C<-d> argument to Perl: 
 
 
     $> perl -d:FastProf wordmatch -f perl5db.pl 
@@ -627,7 +627,7 @@ At this point, if you're using the I<html> report, you can click through the var
     |    |      |         |       |# spent 0.21404s making 1 calls to main::report| 
     |63  |      |         |       |                                               | 
     |    |      |         |       |# spent 23.56955s (10.47692+2.61571) within    | 
-    |    |      |         |       |main::matches which was called 251215 times, | 
+    |    |      |         |       |main::matches which was called 251215 times,   | 
     |    |      |         |       |avg 0.00005s/call: # 50243 times               | 
     |    |      |         |       |(2.12134+0.51939s) at line 57 of wordmatch, avg| 
     |    |      |         |       |0.00005s/call # 50243 times (2.17735+0.54550s) | 
@@ -698,7 +698,7 @@ A command such as this can vastly reduce the volume of material to actually sort
     dslb-088-064-005-154.pools.arcor-ip.net - - [08/Feb/2007:14:12:15 +0000] "GET / HTTP/1.1" 200 3309 "-" "www.clamav.net" 
     196.201.92.41 - - [08/Feb/2007:14:15:01 +0000] "GET / HTTP/1.1" 200 3309 "-" "MOT-L7/08.B7.DCR MIB/2.2.1 Profile/MIDP-2.0 Configuration/CLDC-1.1" 
 
-The specific task here is to sort the 286, 525 lines of this file by Response Code, Query, Browser, Referring Url, and lastly Date.  One solution might be to use the following code, which iterates over the files given on the command-line. 
+The specific task here is to sort the 286,525 lines of this file by Response Code, Query, Browser, Referring Url, and lastly Date.  One solution might be to use the following code, which iterates over the files given on the command-line. 
 
 # sort-apache-log 
 
@@ -874,7 +874,7 @@ The problem is that this code will always be parsed and executed, even when the 
 
     logger->debug( "A logging message via process-id: $$ INC: " . Dumper(\%INC) ) if $DEBUG; 
 
-This effect can be demonstrated by setting up a test script with both forms,  including a C<debug()> subroutine to emulate typical C<logger()> functionality. 
+This effect can be demonstrated by setting up a test script with both forms, including a C<debug()> subroutine to emulate typical C<logger()> functionality. 
 
 # ifdebug 
 
@@ -904,10 +904,10 @@ This effect can be demonstrated by setting up a test script with both forms,  in
     timethese(100000, { 
             'debug'       => sub { 
                 debug( "A $0 logging message via process-id: $$" . Dumper(\%INC) ) 
-            },  
+            }, 
             'ifdebug'  => sub { 
                 debug( "A $0 logging message via process-id: $$" . Dumper(\%INC) ) if $DEBUG 
-            },  
+            }, 
     }); 
 
 Let's see what C<Benchmark> makes of this: 
@@ -919,7 +919,7 @@ Let's see what C<Benchmark> makes of this:
                 (warning: too few iterations for a reliable count) 
          debug: 14 wallclock secs (13.18 usr +  0.04 sys = 13.22 CPU) @ 7564.30/s (n=100000) 
 
-In the one case the code, which does exactly the same thing as far as outputting any debugging information is concerned, in other words nothing,  takes 14 seconds, and in the other case the code takes one hundredth of a second.  Looks fairly definitive.  Use a C<$DEBUG> variable BEFORE you call the subroutine, rather than relying on the smart functionality inside it. 
+In the one case the code, which does exactly the same thing as far as outputting any debugging information is concerned, in other words nothing, takes 14 seconds, and in the other case the code takes one hundredth of a second.  Looks fairly definitive.  Use a C<$DEBUG> variable BEFORE you call the subroutine, rather than relying on the smart functionality inside it. 
 
 =head2 Logging if DEBUG (constant) 
 
@@ -953,10 +953,10 @@ It's possible to take the previous idea a little further, by using a compile tim
     timethese(100000, { 
             'debug'       => sub { 
                 debug( "A $0 logging message via process-id: $$" . Dumper(\%INC) ) 
-            },  
+            }, 
             'constant'  => sub { 
                 debug( "A $0 logging message via process-id: $$" . Dumper(\%INC) ) if DEBUG 
-            },  
+            }, 
     }); 
 
 Running this program produces the following output: 
@@ -968,7 +968,7 @@ Running this program produces the following output:
                 (warning: too few iterations for a reliable count) 
            sub: 14 wallclock secs (13.09 usr +  0.00 sys = 13.09 CPU) @ 7639.42/s (n=100000) 
 
-The C<DEBUG> constant wipes the floor with even the C<$debug> variable,  clocking in at minus zero seconds, and generates a "warning: too few iterations for a reliable count" message into the bargain.  To see what is really going on, and why we had too few iterations when we thought we asked for 100000, we can use the very useful C<B::Deparse> to inspect the new code: 
+The C<DEBUG> constant wipes the floor with even the C<$debug> variable, clocking in at minus zero seconds, and generates a "warning: too few iterations for a reliable count" message into the bargain.  To see what is really going on, and why we had too few iterations when we thought we asked for 100000, we can use the very useful C<B::Deparse> to inspect the new code: 
 
 
     $> perl -MO=Deparse ifdebug-constant 
@@ -986,7 +986,8 @@ The C<DEBUG> constant wipes the floor with even the C<$debug> variable,  clockin
     use strict 'refs'; 
     timethese(100000, {'sub', sub { 
         debug "A $0 logging message via process-id: $$" . Dumper(\%INC); 
-    } , 'constant', sub { 
+    } 
+    , 'constant', sub { 
         0; 
     } 
     }); 
@@ -998,7 +999,7 @@ The output shows the constant() subroutine we're testing being replaced with the
 
 This document has provided several way to go about identifying hot-spots, and checking whether any modifications have improved the runtime of the code. 
 
-As a final thought, remember that it's not (at the time of writing) possible to produce a useful program which will run in zero or negative time and this basic principle can be written as: I<useful programs are slow> by their very definition.  It is of course possible to write a nearly instantaneous program,  but it's not going to do very much, here's a very efficient one: 
+As a final thought, remember that it's not (at the time of writing) possible to produce a useful program which will run in zero or negative time and this basic principle can be written as: I<useful programs are slow> by their very definition.  It is of course possible to write a nearly instantaneous program, but it's not going to do very much, here's a very efficient one: 
 
 
     $> perl -e 0 

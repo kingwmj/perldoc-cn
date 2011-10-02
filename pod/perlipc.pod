@@ -24,7 +24,7 @@ For example, to trap an interrupt signal, set up a handler like this:
     $SIG{INT} = __PACKAGE__ . "::catch_zap"; 
     $SIG{INT} = \&catch_zap;  # best strategy 
 
-Prior to Perl 5.7.3 it was necessary to do as little as you possibly could in your handler; notice how all we do is set a global variable and then raise an exception.  That's because on most systems,  libraries are not re-entrant; particularly, memory allocation and I/O routines are not.  That meant that doing nearly I<anything> in your handler could in theory trigger a memory fault and subsequent core dump - see L</Deferred Signals (Safe Signals)> below. 
+Prior to Perl 5.7.3 it was necessary to do as little as you possibly could in your handler; notice how all we do is set a global variable and then raise an exception.  That's because on most systems, libraries are not re-entrant; particularly, memory allocation and I/O routines are not.  That meant that doing nearly I<anything> in your handler could in theory trigger a memory fault and subsequent core dump - see L</Deferred Signals (Safe Signals)> below. 
 
 The names of the signals are the ones listed out by C<kill -l> on your system, or you can retrieve them from the Config module.  Set up an @signame list indexed by number to get the name and a %signo hash table indexed by name to get the number: 
 
@@ -176,7 +176,7 @@ For more complex signal handling, you might see the standard POSIX module.  Lame
 
 =head2 Handling the SIGHUP Signal in Daemons 
 
-A process that usually starts when the system boots and shuts down when the system is shut down is called a daemon (Disk And Execution MONitor). If a daemon process has a configuration file which is modified after the process has been started, there should be a way to tell that process to reread its configuration file without stopping the process. Many daemons provide this mechanism using a C<SIGHUP> signal handler. When you want to tell the daemon to reread the file,  simply send it the C<SIGHUP> signal. 
+A process that usually starts when the system boots and shuts down when the system is shut down is called a daemon (Disk And Execution MONitor). If a daemon process has a configuration file which is modified after the process has been started, there should be a way to tell that process to reread its configuration file without stopping the process. Many daemons provide this mechanism using a C<SIGHUP> signal handler. When you want to tell the daemon to reread the file, simply send it the C<SIGHUP> signal. 
 
 Not all platforms automatically reinstall their (native) signal handlers after a signal delivery.  This means that the handler works the first time the signal is sent, only. The solution to this problem is to use C<POSIX> signal handlers if available; their behavior is well-defined. 
 
@@ -203,8 +203,8 @@ The following example implements a simple daemon, which restarts itself every ti
 
   # POSIX unmasks the sigprocmask properly 
   my $sigset = POSIX::SigSet->new(); 
-  my $action = POSIX::SigAction->new("sigHUP_handler",  
-                                     $sigset,  
+  my $action = POSIX::SigAction->new("sigHUP_handler", 
+                                     $sigset, 
                                      &POSIX::SA_NODEFER); 
   POSIX::sigaction(&POSIX::SIGHUP, $action); 
 
@@ -232,11 +232,11 @@ The following example implements a simple daemon, which restarts itself every ti
 
 =head2 Deferred Signals (Safe Signals) 
 
-Before Perl 5.7.3, installing Perl code to deal with signals exposed you to danger from two things.  First, few system library functions are re-entrant.  If the signal interrupts while Perl is executing one function (like malloc(3) or printf(3)), and your signal handler then calls the same function again, you could get unpredictable behavior--often, a core dump. Second, Perl isn't itself re-entrant at the lowest levels.  If the signal interrupts Perl while Perl is changing its own internal data structures,  similarly unpredictable behavior may result. 
+Before Perl 5.7.3, installing Perl code to deal with signals exposed you to danger from two things.  First, few system library functions are re-entrant.  If the signal interrupts while Perl is executing one function (like malloc(3) or printf(3)), and your signal handler then calls the same function again, you could get unpredictable behavior--often, a core dump. Second, Perl isn't itself re-entrant at the lowest levels.  If the signal interrupts Perl while Perl is changing its own internal data structures, similarly unpredictable behavior may result. 
 
-There were two things you could do, knowing this: be paranoid or be pragmatic.  The paranoid approach was to do as little as possible in your signal handler.  Set an existing integer variable that already has a value, and return.  This doesn't help you if you're in a slow system call,  which will just restart.  That means you have to C<die> to longjmp(3) out of the handler.  Even this is a little cavalier for the true paranoiac,  who avoids C<die> in a handler because the system I<is> out to get you. The pragmatic approach was to say "I know the risks, but prefer the convenience", and to do anything you wanted in your signal handler,  and be prepared to clean up core dumps now and again. 
+There were two things you could do, knowing this: be paranoid or be pragmatic.  The paranoid approach was to do as little as possible in your signal handler.  Set an existing integer variable that already has a value, and return.  This doesn't help you if you're in a slow system call, which will just restart.  That means you have to C<die> to longjmp(3) out of the handler.  Even this is a little cavalier for the true paranoiac, who avoids C<die> in a handler because the system I<is> out to get you. The pragmatic approach was to say "I know the risks, but prefer the convenience", and to do anything you wanted in your signal handler, and be prepared to clean up core dumps now and again. 
 
-Perl 5.7.3 and later avoid these problems by "deferring" signals.  That is,  when the signal is delivered to the process by the system (to the C code that implements Perl) a flag is set, and the handler returns immediately. Then at strategic "safe" points in the Perl interpreter (e.g. when it is about to execute a new opcode) the flags are checked and the Perl level handler from %SIG is executed. The "deferred" scheme allows much more flexibility in the coding of signal handlers as we know the Perl interpreter is in a safe state, and that we are not in a system library function when the handler is called.  However the implementation does differ from previous Perls in the following ways: 
+Perl 5.7.3 and later avoid these problems by "deferring" signals.  That is, when the signal is delivered to the process by the system (to the C code that implements Perl) a flag is set, and the handler returns immediately. Then at strategic "safe" points in the Perl interpreter (e.g. when it is about to execute a new opcode) the flags are checked and the Perl level handler from %SIG is executed. The "deferred" scheme allows much more flexibility in the coding of signal handlers as we know the Perl interpreter is in a safe state, and that we are not in a system library function when the handler is called.  However the implementation does differ from previous Perls in the following ways: 
 
 =over 4 
 
@@ -248,7 +248,7 @@ If a signal of any given type fires multiple times during an opcode (such as fro
 
 =item Interrupting IO 
 
-When a signal is delivered (e.g., SIGINT from a control-C) the operating system breaks into IO operations like I<read>(2), which is used to implement Perl's readline() function, the C<< <> >> operator. On older Perls the handler was called immediately (and as C<read> is not "unsafe",  this worked well). With the "deferred" scheme the handler is I<not> called immediately, and if Perl is using the system's C<stdio> library that library may restart the C<read> without returning to Perl to give it a chance to call the %SIG handler. If this happens on your system the solution is to use the C<:perlio> layer to do IO--at least on those handles that you want to be able to break into with signals. (The C<:perlio> layer checks the signal flags and calls %SIG handlers before resuming IO operation.) 
+When a signal is delivered (e.g., SIGINT from a control-C) the operating system breaks into IO operations like I<read>(2), which is used to implement Perl's readline() function, the C<< <> >> operator. On older Perls the handler was called immediately (and as C<read> is not "unsafe", this worked well). With the "deferred" scheme the handler is I<not> called immediately, and if Perl is using the system's C<stdio> library that library may restart the C<read> without returning to Perl to give it a chance to call the %SIG handler. If this happens on your system the solution is to use the C<:perlio> layer to do IO--at least on those handles that you want to be able to break into with signals. (The C<:perlio> layer checks the signal flags and calls %SIG handlers before resuming IO operation.) 
 
 The default in Perl 5.7.3 and later is to automatically use the C<:perlio> layer. 
 
@@ -265,7 +265,7 @@ try something like the following:
 
 
     use POSIX qw(SIGALRM); 
-    POSIX::sigaction(SIGALRM,  
+    POSIX::sigaction(SIGALRM, 
                      POSIX::SigAction->new(sub { die "alarm" })) 
             || die "Error setting SIGALRM handler: $!\n"; 
 
@@ -273,7 +273,7 @@ Another way to disable the safe signal behavior locally is to use the C<Perl::Un
 
 =item Restartable system calls 
 
-On systems that supported it, older versions of Perl used the SA_RESTART flag when installing %SIG handlers.  This meant that restartable system calls would continue rather than returning when a signal arrived.  In order to deliver deferred signals promptly,  Perl 5.7.3 and later do I<not> use SA_RESTART.  Consequently,  restartable system calls can fail (with $! set to C<EINTR>) in places where they previously would have succeeded. 
+On systems that supported it, older versions of Perl used the SA_RESTART flag when installing %SIG handlers.  This meant that restartable system calls would continue rather than returning when a signal arrived.  In order to deliver deferred signals promptly, Perl 5.7.3 and later do I<not> use SA_RESTART.  Consequently, restartable system calls can fail (with $! set to C<EINTR>) in places where they previously would have succeeded. 
 
 The default C<:perlio> layer retries C<read>, C<write> and C<close> as described above; interrupted C<wait> and C<waitpid> calls will always be retried. 
 
@@ -305,10 +305,10 @@ You can also use the Unix command mknod(1), or on some systems, mkfifo(1).  Thes
     # system return val is backwards, so && not || 
     # 
     $ENV{PATH} .= ":/etc:/usr/etc"; 
-    if  (      system("mknod", $path, "p") 
+    if  (      system("mknod",  $path, "p") 
             && system("mkfifo", $path) ) 
     { 
-        die "mk{nod, fifo} $path failed"; 
+        die "mk{nod,fifo} $path failed"; 
     } 
 
 
@@ -375,7 +375,7 @@ You might notice that you could use backticks for much the same effect as openin
 
 While this is true on the surface, it's much more efficient to process the file one line or record at a time because then you don't have to read the whole thing into memory at once.  It also gives you finer control of the whole process, letting you kill off the child process early if you'd like. 
 
-Be careful to check the return values from both open() and close().  If you're I<writing> to a pipe, you should also trap SIGPIPE.  Otherwise,  think of what happens when you start up a pipe to a command that doesn't exist: the open() will in all likelihood succeed (it only reflects the fork()'s success), but then your output will fail--spectacularly.  Perl can't know whether the command worked, because your command is actually running in a separate process whose exec() might have failed.  Therefore,  while readers of bogus commands return just a quick EOF, writers to bogus commands will get hit with a signal, which they'd best be prepared to handle.  Consider: 
+Be careful to check the return values from both open() and close().  If you're I<writing> to a pipe, you should also trap SIGPIPE.  Otherwise, think of what happens when you start up a pipe to a command that doesn't exist: the open() will in all likelihood succeed (it only reflects the fork()'s success), but then your output will fail--spectacularly.  Perl can't know whether the command worked, because your command is actually running in a separate process whose exec() might have failed.  Therefore, while readers of bogus commands return just a quick EOF, writers to bogus commands will get hit with a signal, which they'd best be prepared to handle.  Consider: 
 
 
     open(FH, "|bogus")      || die "can't fork: $!"; 
@@ -414,7 +414,7 @@ In some cases (starting server processes, for instance) you'll want to completel
 
     sub daemonize { 
         chdir("/")                      || die "can't chdir to /: $!"; 
-        open(STDIN, "< /dev/null")     || die "can't read /dev/null: $!"; 
+        open(STDIN,  "< /dev/null")     || die "can't read /dev/null: $!"; 
         open(STDOUT, "> /dev/null")     || die "can't write to /dev/null: $!"; 
         defined(my $pid = fork())       || die "can't fork: $!"; 
         exit if $pid;                   # non-zero now means I am the parent 
@@ -585,7 +585,7 @@ One would use either of these:
 
 Because there are more than three arguments to open(), forks the ps(1) command I<without> spawning a shell, and reads its standard output via the C<PS_PIPE> filehandle.  The corresponding syntax to I<write> to command pipes is to use C<"|-"> in place of C<"-|">. 
 
-This was admittedly a rather silly example, because you're using string literals whose content is perfectly safe.  There is therefore no cause to resort to the harder-to-read, multi-argument form of pipe open().  However,  whenever you cannot be assured that the program arguments are free of shell metacharacters, the fancier form of open() should be used.  For example: 
+This was admittedly a rather silly example, because you're using string literals whose content is perfectly safe.  There is therefore no cause to resort to the harder-to-read, multi-argument form of pipe open().  However, whenever you cannot be assured that the program arguments are free of shell metacharacters, the fancier form of open() should be used.  For example: 
 
 
     @grep_args = ("egrep", "-i", $some_pattern, @many_files); 
@@ -602,7 +602,7 @@ Whenever you have more than one subprocess, you must be careful that each closes
 
 Certain built-in Unix features help prevent this most of the time.  For instance, filehandles have a "close on exec" flag, which is set I<en masse> under control of the C<$^F> variable.  This is so any filehandles you didn't explicitly route to the STDIN, STDOUT or STDERR of a child I<program> will be automatically closed. 
 
-Always explicitly and immediately call close() on the writable end of any pipe, unless that process is actually writing to it.  Even if you don't explicitly call close(), Perl will still close() all filehandles during global destruction.  As previously discussed, if those filehandles have been opened with Safe Pipe Open, this will result in calling waitpid(),  which may again deadlock. 
+Always explicitly and immediately call close() on the writable end of any pipe, unless that process is actually writing to it.  Even if you don't explicitly call close(), Perl will still close() all filehandles during global destruction.  As previously discussed, if those filehandles have been opened with Safe Pipe Open, this will result in calling waitpid(), which may again deadlock. 
 
 =head2 Bidirectional Communication with Another Process 
 
@@ -646,7 +646,7 @@ If you want, you may make low-level pipe() and fork() syscalls to stitch this to
     #         designed for the socketpair-challenged 
     use IO::Handle;               # thousands of lines just for autoflush :-( 
     pipe(PARENT_RDR, CHILD_WTR);  # XXX: check failure? 
-    pipe(CHILD_RDR, PARENT_WTR); # XXX: check failure? 
+    pipe(CHILD_RDR,  PARENT_WTR); # XXX: check failure? 
     CHILD_WTR->autoflush(1); 
     PARENT_WTR->autoflush(1); 
 
@@ -723,7 +723,7 @@ If you're not writing a server/client for an existing protocol like NNTP or SMTP
 
 =head2 Internet Line Terminators 
 
-The Internet line terminator is "\015\012".  Under ASCII variants of Unix, that could usually be written as "\r\n", but under other systems,  "\r\n" might at times be "\015\015\012", "\012\012\015", or something completely different.  The standards specify writing "\015\012" to be conformant (be strict in what you provide), but they also recommend accepting a lone "\012" on input (be lenient in what you require). We haven't always been very good about that in the code in this manpage,  but unless you're on a Mac from way back in its pre-Unix dark ages, you'll probably be ok. 
+The Internet line terminator is "\015\012".  Under ASCII variants of Unix, that could usually be written as "\r\n", but under other systems, "\r\n" might at times be "\015\015\012", "\012\012\015", or something completely different.  The standards specify writing "\015\012" to be conformant (be strict in what you provide), but they also recommend accepting a lone "\012" on input (be lenient in what you require). We haven't always been very good about that in the code in this manpage, but unless you're on a Mac from way back in its pre-Unix dark ages, you'll probably be ok. 
 
 =head2 Internet TCP Clients and Servers 
 
@@ -799,12 +799,12 @@ And here's a corresponding server to go along with it.  We'll leave the address 
         my $name = gethostbyaddr($iaddr, AF_INET); 
 
 
-        logmsg "connection from $name [",  
+        logmsg "connection from $name [", 
                 inet_ntoa($iaddr), "] 
                 at port $port"; 
 
 
-        print Client "Hello there, $name, it's now ",  
+        print Client "Hello there, $name, it's now ", 
                         scalar localtime(), $EOL; 
     } 
 
@@ -870,8 +870,8 @@ And here's a multithreaded version.  It's multithreaded in that like most typica
         my $name = gethostbyaddr($iaddr, AF_INET); 
 
 
-        logmsg "connection from $name [",  
-               inet_ntoa($iaddr),  
+        logmsg "connection from $name [", 
+               inet_ntoa($iaddr), 
                "] at port $port"; 
 
 
@@ -906,7 +906,7 @@ And here's a multithreaded version.  It's multithreaded in that like most typica
         # else I'm the child -- go spawn 
 
 
-        open(STDIN, "<&Client")    || die "can't dup client to stdin"; 
+        open(STDIN,  "<&Client")    || die "can't dup client to stdin"; 
         open(STDOUT, ">&Client")    || die "can't dup client to stdout"; 
         ## open(STDERR, ">&STDOUT") || die "can't dup stdout to stderr"; 
         exit($coderef->()); 
@@ -1071,21 +1071,21 @@ And here's a corresponding server.  You don't have to worry about silly network 
         } 
 
 
-        open(STDIN, "<&Client")    || die "can't dup client to stdin"; 
+        open(STDIN,  "<&Client")    || die "can't dup client to stdin"; 
         open(STDOUT, ">&Client")    || die "can't dup client to stdout"; 
         ## open(STDERR, ">&STDOUT") || die "can't dup stdout to stderr"; 
         exit($coderef->()); 
     } 
 
-As you see, it's remarkably similar to the Internet domain TCP server, so much so, in fact, that we've omitted several duplicate functions--spawn(),  logmsg(), ctime(), and REAPER()--which are the same as in the other server. 
+As you see, it's remarkably similar to the Internet domain TCP server, so much so, in fact, that we've omitted several duplicate functions--spawn(), logmsg(), ctime(), and REAPER()--which are the same as in the other server. 
 
-So why would you ever want to use a Unix domain socket instead of a simpler named pipe?  Because a named pipe doesn't give you sessions.  You can't tell one process's data from another's.  With socket programming,  you get a separate session for each client; that's why accept() takes two arguments. 
+So why would you ever want to use a Unix domain socket instead of a simpler named pipe?  Because a named pipe doesn't give you sessions.  You can't tell one process's data from another's.  With socket programming, you get a separate session for each client; that's why accept() takes two arguments. 
 
 For example, let's say that you have a long-running database server daemon that you want folks to be able to access from the Web, but only if they go through a CGI interface.  You'd have a small, simple CGI program that does whatever checks and logging you feel like, and then acts as a Unix-domain client and connects to your private server. 
 
 =head1 TCP Clients with IO::Socket 
 
-For those preferring a higher-level interface to socket programming, the IO::Socket module provides an object-oriented approach.  IO::Socket has been included in the standard Perl distribution ever since Perl 5.004.  If you're running an earlier version of Perl (in which case, how are you reading this manpage?), just fetch IO::Socket from CPAN, where you'll also find modules providing easy interfaces to the following systems: DNS, FTP,  Ident (RFC 931), NIS and NISPlus, NNTP, Ping, POP3, SMTP, SNMP, SSLeay,  Telnet, and Time--to name just a few. 
+For those preferring a higher-level interface to socket programming, the IO::Socket module provides an object-oriented approach.  IO::Socket has been included in the standard Perl distribution ever since Perl 5.004.  If you're running an earlier version of Perl (in which case, how are you reading this manpage?), just fetch IO::Socket from CPAN, where you'll also find modules providing easy interfaces to the following systems: DNS, FTP, Ident (RFC 931), NIS and NISPlus, NNTP, Ping, POP3, SMTP, SNMP, SSLeay, Telnet, and Time--to name just a few. 
 
 =head2 A Simple Client 
 
@@ -1095,9 +1095,9 @@ Here's a client that creates a TCP connection to the "daytime" service at port 1
     #!/usr/bin/perl -w 
     use IO::Socket; 
     $remote = IO::Socket::INET->new( 
-                        Proto    => "tcp",  
-                        PeerAddr => "localhost",  
-                        PeerPort => "daytime(13)",  
+                        Proto    => "tcp", 
+                        PeerAddr => "localhost", 
+                        PeerPort => "daytime(13)", 
                     ) 
                   || die "can't connect to daytime service on localhost"; 
     while (<$remote>) { print } 
@@ -1117,11 +1117,11 @@ This is which protocol to use.  In this case, the socket handle returned will be
 
 =item C<PeerAddr> 
 
-This is the name or Internet address of the remote host the server is running on.  We could have specified a longer name like C<"www.perl.com">,  or an address like C<"207.171.7.72">.  For demonstration purposes, we've used the special hostname C<"localhost">, which should always mean the current machine you're running on.  The corresponding Internet address for localhost is C<"127.0.0.1">, if you'd rather use that. 
+This is the name or Internet address of the remote host the server is running on.  We could have specified a longer name like C<"www.perl.com">, or an address like C<"207.171.7.72">.  For demonstration purposes, we've used the special hostname C<"localhost">, which should always mean the current machine you're running on.  The corresponding Internet address for localhost is C<"127.0.0.1">, if you'd rather use that. 
 
 =item C<PeerPort> 
 
-This is the service name or port number we'd like to connect to. We could have gotten away with using just C<"daytime"> on systems with a well-configured system services file, [FOOTNOTE: The system services file is found in I</etc/services> under Unixy systems.] but here we've specified the port number (13) in parentheses.  Using just the number would have also worked, but numeric literals make careful programmers nervous. 
+This is the service name or port number we'd like to connect to. We could have gotten away with using just C<"daytime"> on systems with a well-configured system services file,[FOOTNOTE: The system services file is found in I</etc/services> under Unixy systems.] but here we've specified the port number (13) in parentheses.  Using just the number would have also worked, but numeric literals make careful programmers nervous. 
 
 =back 
 
@@ -1152,9 +1152,9 @@ Here's a simple client that takes a remote host to fetch a document from, and th
     $EOL = "\015\012"; 
     $BLANK = $EOL x 2; 
     for my $document (@ARGV) { 
-        $remote = IO::Socket::INET->new( Proto     => "tcp",  
-                                         PeerAddr  => $host,  
-                                         PeerPort  => "http(80)",  
+        $remote = IO::Socket::INET->new( Proto     => "tcp", 
+                                         PeerAddr  => $host, 
+                                         PeerPort  => "http(80)", 
                   )     || die "cannot connect to httpd on $host"; 
         $remote->autoflush(1); 
         print $remote "GET $document HTTP/1.0" . $BLANK; 
@@ -1188,7 +1188,7 @@ For a more featureful version of this program, you should look to the I<lwp-requ
 
 =head2 Interactive Client with IO::Socket 
 
-Well, that's all fine if you want to send one command and get one answer,  but what about setting up something fully interactive, somewhat like the way I<telnet> works?  That way you can type a line, get the answer,  type a line, get the answer, etc. 
+Well, that's all fine if you want to send one command and get one answer, but what about setting up something fully interactive, somewhat like the way I<telnet> works?  That way you can type a line, get the answer, type a line, get the answer, etc. 
 
 This client is more complicated than the two we've done so far, but if you're on a system that supports the powerful C<fork> call, the solution isn't that rough.  Once you've made the connection to whatever service you'd like to chat with, call C<fork> to clone your process.  Each of these two identical process has a very simple job to do: the parent copies everything from the socket to standard output, while the child simultaneously copies everything from standard input to the socket. To accomplish the same thing using just one process would be I<much> harder, because it's easier to code two processes to do one thing than it is to code one process to do two things.  (This keep-it-simple principle a cornerstones of the Unix philosophy, and good software engineering as well, which is probably why it's spread to other systems.) 
 
@@ -1206,8 +1206,8 @@ Here's the code:
 
 
     # create a tcp connection to the specified host and port 
-    $handle = IO::Socket::INET->new(Proto     => "tcp",  
-                                    PeerAddr  => $host,  
+    $handle = IO::Socket::INET->new(Proto     => "tcp", 
+                                    PeerAddr  => $host, 
                                     PeerPort  => $port) 
                || die "can't connect to port $port on $host: $!"; 
 
@@ -1237,9 +1237,9 @@ Here's the code:
         exit(0);                # just in case 
     } 
 
-The C<kill> function in the parent's C<if> block is there to send a signal to our child process, currently running in the C<else> block,  as soon as the remote server has closed its end of the connection. 
+The C<kill> function in the parent's C<if> block is there to send a signal to our child process, currently running in the C<else> block, as soon as the remote server has closed its end of the connection. 
 
-If the remote server sends data a byte at time, and you need that data immediately without waiting for a newline (which might not happen),  you may wish to replace the C<while> loop in the parent with the following: 
+If the remote server sends data a byte at time, and you need that data immediately without waiting for a newline (which might not happen), you may wish to replace the C<while> loop in the parent with the following: 
 
 
     my $byte; 
@@ -1275,7 +1275,7 @@ The C<Reuse> parameter is needed so that we restart our server manually without 
 
 Once the generic server socket has been created using the parameters listed above, the server then waits for a new client to connect to it.  The server blocks in the C<accept> method, which eventually accepts a bidirectional connection from the remote client.  (Make sure to autoflush this handle to circumvent buffering.) 
 
-To add to user-friendliness, our server prompts the user for commands. Most servers don't do this.  Because of the prompt without a newline,  you'll have to use the C<sysread> variant of the interactive client above. 
+To add to user-friendliness, our server prompts the user for commands. Most servers don't do this.  Because of the prompt without a newline, you'll have to use the C<sysread> variant of the interactive client above. 
 
 This server accepts one of five different commands, sending output back to the client.  Unlike most network servers, this one handles only one incoming client at a time.  Multithreaded servers are covered in Chapter 16 of the Camel. 
 
@@ -1290,9 +1290,9 @@ Here's the code.  We'll
  $PORT = 9000;          # pick something not in use 
 
 
- $server = IO::Socket::INET->new( Proto     => "tcp",  
-                                  LocalPort => $PORT,  
-                                  Listen    => SOMAXCONN,  
+ $server = IO::Socket::INET->new( Proto     => "tcp", 
+                                  LocalPort => $PORT, 
+                                  Listen    => SOMAXCONN, 
                                   Reuse     => 1); 
 
 
@@ -1337,8 +1337,8 @@ Here's a UDP program similar to the sample Internet TCP client given earlier.  H
     use Sys::Hostname; 
 
 
-    my ( $count, $hisiaddr, $hispaddr, $histime,  
-         $host, $iaddr, $paddr, $port, $proto,  
+    my ( $count, $hisiaddr, $hispaddr, $histime, 
+         $host, $iaddr, $paddr, $port, $proto, 
          $rin, $rout, $rtime, $SECS_OF_70_YEARS); 
 
 
@@ -1356,7 +1356,7 @@ Here's a UDP program similar to the sample Internet TCP client given earlier.  H
 
 
     $| = 1; 
-    printf "%-12s %8s %s\n", "localhost", 0, scalar localtime(); 
+    printf "%-12s %8s %s\n",  "localhost", 0, scalar localtime(); 
     $count = 0; 
     for $host (@ARGV) { 
         $count++; 
@@ -1450,7 +1450,7 @@ Put this code in a separate file to be run in more than one process. Call the fi
 
     # Increment the semaphore count 
     $semop = 1; 
-    $opstring2 = pack("s!s!s!", $semnum, $semop, $semflag); 
+    $opstring2 = pack("s!s!s!", $semnum, $semop,  $semflag); 
     $opstring  = $opstring1 . $opstring2; 
 
 

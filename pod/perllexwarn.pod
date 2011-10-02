@@ -77,7 +77,7 @@ The problem is that Perl has both compile-time and run-time warnings. To disable
      my $b; chop $b; 
      } 
 
-The other big problem with C<$^W> is the way you can inadvertently change the warning setting in unexpected places in your code. For example,  when the code below is run (without the B<-w> flag), the second call to C<doit> will trip a C<"Use of uninitialized value"> warning, whereas the first will not. 
+The other big problem with C<$^W> is the way you can inadvertently change the warning setting in unexpected places in your code. For example, when the code below is run (without the B<-w> flag), the second call to C<doit> will trip a C<"Use of uninitialized value"> warning, whereas the first will not. 
 
 
     sub doit 
@@ -140,7 +140,7 @@ Apart from now being a boolean, the C<$^W> variable operates in exactly the same
 
 =item 4. 
 
-If a piece of code is under the control of the C<warnings> pragma,  both the C<$^W> variable and the B<-w> flag will be ignored for the scope of the lexical warning. 
+If a piece of code is under the control of the C<warnings> pragma, both the C<$^W> variable and the B<-w> flag will be ignored for the scope of the lexical warning. 
 
 =item 5. 
 
@@ -297,7 +297,7 @@ The presence of the word "FATAL" in the category list will escalate any warnings
     } 
 
 
-    join "", 1, 2, 3; 
+    join "", 1,2,3; 
 
 
     print "done\n"; 
@@ -316,7 +316,7 @@ To explicitly turn off a "FATAL" warning you just disable the warning it is asso
     no warnings qw(void); 
     no warnings FATAL => qw(void); 
 
-If you want to downgrade a warning that has been escalated into a fatal error back to a normal warning, you can use the "NONFATAL" keyword. For example, the code below will promote all warnings into fatal errors,  except for those in the "syntax" category. 
+If you want to downgrade a warning that has been escalated into a fatal error back to a normal warning, you can use the "NONFATAL" keyword. For example, the code below will promote all warnings into fatal errors, except for those in the "syntax" category. 
 
 
     use warnings FATAL => 'all', NONFATAL => 'syntax'; 
@@ -361,7 +361,7 @@ It is also possible to test whether the pre-defined warnings categories are set 
 
 
     sub open { 
-        warnings::warnif("deprecated",  
+        warnings::warnif("deprecated", 
                          "open is deprecated, use new instead"); 
         new(@_); 
     } 

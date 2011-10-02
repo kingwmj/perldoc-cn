@@ -6,9 +6,9 @@ perllocale - Perl locale handling (internationalization and localization)
 
 Locales these days have been mostly been supplanted by Unicode, but Perl continues to support them.  See L</Unicode and UTF-8> below. 
 
-Perl supports language-specific notions of data such as "is this a letter", "what is the uppercase equivalent of this letter", and "which of these letters comes first".  These are important issues,  especially for languages other than English--but also for English: it would be naE<iuml>ve to imagine that C<A-Za-z> defines all the "letters" needed to write correct English. Perl is also aware that some character other than "." may be preferred as a decimal point, and that output date representations may be language-specific.  The process of making an application take account of its users' preferences in such matters is called B<internationalization> (often abbreviated as B<i18n>); telling such an application about a particular set of preferences is known as B<localization> (B<l10n>). 
+Perl supports language-specific notions of data such as "is this a letter", "what is the uppercase equivalent of this letter", and "which of these letters comes first".  These are important issues, especially for languages other than English--but also for English: it would be naE<iuml>ve to imagine that C<A-Za-z> defines all the "letters" needed to write correct English. Perl is also aware that some character other than "." may be preferred as a decimal point, and that output date representations may be language-specific.  The process of making an application take account of its users' preferences in such matters is called B<internationalization> (often abbreviated as B<i18n>); telling such an application about a particular set of preferences is known as B<localization> (B<l10n>). 
 
-Perl can understand language-specific data via the standardized (ISO C,  XPG4, POSIX 1.c) method called "the locale system". The locale system is controlled per application using one pragma, one function call, and several environment variables. 
+Perl can understand language-specific data via the standardized (ISO C, XPG4, POSIX 1.c) method called "the locale system". The locale system is controlled per application using one pragma, one function call, and several environment variables. 
 
 B<NOTE>: This feature is new in Perl 5.004, and does not apply unless an application specifically requests it--see L<Backward compatibility>. The one exception is that write() now B<always> uses the current locale - see L<"NOTES">. 
 
@@ -20,7 +20,7 @@ If Perl applications are to understand and present your data correctly according
 
 =item * 
 
-B<Your operating system must support the locale system>.  If it does,  you should find that the setlocale() function is a documented part of its C library. 
+B<Your operating system must support the locale system>.  If it does, you should find that the setlocale() function is a documented part of its C library. 
 
 =item * 
 
@@ -28,7 +28,7 @@ B<Definitions for locales that you use must be installed>.  You, or your system 
 
 =item * 
 
-B<Perl must believe that the locale system is supported>.  If it does,  C<perl -V:d_setlocale> will say that the value for C<d_setlocale> is C<define>. 
+B<Perl must believe that the locale system is supported>.  If it does, C<perl -V:d_setlocale> will say that the value for C<d_setlocale> is C<define>. 
 
 =back 
 
@@ -66,7 +66,7 @@ B<Note:> C<eq> and C<ne> are unaffected by locale: they always perform a char-by
 
 =item * 
 
-B<Regular expressions and case-modification functions> (uc(), lc(),  ucfirst(), and lcfirst()) use C<LC_CTYPE> 
+B<Regular expressions and case-modification functions> (uc(), lc(), ucfirst(), and lcfirst()) use C<LC_CTYPE> 
 
 =item * 
 
@@ -121,7 +121,7 @@ If no second argument is provided and the category is something else than LC_ALL
 
 If no second argument is provided and the category is LC_ALL, the result is implementation-dependent.  It may be a string of concatenated locale names (separator also implementation-dependent) or a single locale name.  Please consult your setlocale(3) man page for details. 
 
-If a second argument is given and it corresponds to a valid locale,  the locale for the category is set to that value, and the function returns the now-current locale value.  You can then use this in yet another call to setlocale().  (In some implementations, the return value may sometimes differ from the value you gave as the second argument--think of it as an alias for the value you gave.) 
+If a second argument is given and it corresponds to a valid locale, the locale for the category is set to that value, and the function returns the now-current locale value.  You can then use this in yet another call to setlocale().  (In some implementations, the return value may sometimes differ from the value you gave as the second argument--think of it as an alias for the value you gave.) 
 
 As the example shows, if the second argument is an empty string, the category's locale is returned to the default specified by the corresponding environment variables.  Generally, this results in a return to the default that was in force when Perl started up: changes to the environment made by the application after startup may or may not be noticed, depending on your system's C library. 
 
@@ -175,12 +175,12 @@ You may encounter the following warning message at Perl startup:
 
     perl: warning: Setting locale failed. 
     perl: warning: Please check that your locale settings: 
-            LC_ALL = "En_US",  
+            LC_ALL = "En_US", 
             LANG = (unset) 
         are supported and installed on your system. 
     perl: warning: Falling back to the standard locale ("C"). 
 
-This means that your locale settings had LC_ALL set to "En_US" and LANG exists but has no value.  Perl tried to believe you but could not. Instead, Perl gave up and fell back to the "C" locale, the default locale that is supposed to work no matter what.  This usually means your locale settings were wrong, they mention locales your system has never heard of, or the locale installation in your system has problems (for example,  some system files are broken or missing).  There are quick and temporary fixes to these problems, as well as more thorough and lasting fixes. 
+This means that your locale settings had LC_ALL set to "En_US" and LANG exists but has no value.  Perl tried to believe you but could not. Instead, Perl gave up and fell back to the "C" locale, the default locale that is supposed to work no matter what.  This usually means your locale settings were wrong, they mention locales your system has never heard of, or the locale installation in your system has problems (for example, some system files are broken or missing).  There are quick and temporary fixes to these problems, as well as more thorough and lasting fixes. 
 
 =head2 Temporarily fixing locale problems 
 
@@ -212,7 +212,7 @@ If you do not know what shell you have, consult your local helpdesk or the equiv
 
 The slower but superior fixes are when you may be able to yourself fix the misconfiguration of your own environment variables.  The mis(sing)configuration of the whole system's locales usually requires the help of your friendly system administrator. 
 
-First, see earlier in this document about L<Finding locales>.  That tells how to find which locales are really supported--and more importantly,  installed--on your system.  In our example error message, environment variables affecting the locale are listed in the order of decreasing importance (and unset variables do not matter).  Therefore, having LC_ALL set to "En_US" must have been the bad choice, as shown by the error message.  First try fixing locale settings listed first. 
+First, see earlier in this document about L<Finding locales>.  That tells how to find which locales are really supported--and more importantly, installed--on your system.  In our example error message, environment variables affecting the locale are listed in the order of decreasing importance (and unset variables do not matter).  Therefore, having LC_ALL set to "En_US" must have been the bad choice, as shown by the error message.  First try fixing locale settings listed first. 
 
 Second, if using the listed commands you see something B<exactly> (prefix matches do not count and case usually counts) like "En_US" without the quotes, then you should be okay because you are using a locale name that should be installed and available in your system. In this case, see L<Permanently fixing your system's locale configuration>. 
 
@@ -222,7 +222,7 @@ This is when you see something like:
 
 
     perl: warning: Please check that your locale settings: 
-            LC_ALL = "En_US",  
+            LC_ALL = "En_US", 
             LANG = (unset) 
         are supported and installed on your system. 
 
@@ -265,7 +265,7 @@ Here's a simple-minded example program that rewrites its command-line parameters
 
 
         # Apply defaults if values are missing 
-        $thousands_sep = ', ' unless $thousands_sep; 
+        $thousands_sep = ',' unless $thousands_sep; 
 
 
     # grouping and mon_grouping are packed lists 
@@ -319,7 +319,7 @@ See L<I18N::Langinfo> for more information.
 
 =head1 LOCALE CATEGORIES 
 
-The following subsections describe basic locale categories.  Beyond these,  some combination categories allow manipulation of more than one basic category at a time.  See L<"ENVIRONMENT"> for a discussion of these. 
+The following subsections describe basic locale categories.  Beyond these, some combination categories allow manipulation of more than one basic category at a time.  See L<"ENVIRONMENT"> for a discussion of these. 
 
 =head2 Category LC_COLLATE: Collation 
 
@@ -374,7 +374,7 @@ Note: C<use locale> isn't shown in some of these examples because it isn't neede
 
 =head2 Category LC_CTYPE: Character Types 
 
-In the scope of S<C<use locale>>, Perl obeys the C<LC_CTYPE> locale setting.  This controls the application's notion of which characters are alphabetic.  This affects Perl's C<\w> regular expression metanotation,  which stands for alphanumeric characters--that is, alphabetic,  numeric, and including other special characters such as the underscore or hyphen.  (Consult L<perlre> for more information about regular expressions.)  Thanks to C<LC_CTYPE>, depending on your locale setting, characters like "E<aelig>", "E<eth>", "E<szlig>", and "E<oslash>" may be understood as C<\w> characters. 
+In the scope of S<C<use locale>>, Perl obeys the C<LC_CTYPE> locale setting.  This controls the application's notion of which characters are alphabetic.  This affects Perl's C<\w> regular expression metanotation, which stands for alphanumeric characters--that is, alphabetic, numeric, and including other special characters such as the underscore or hyphen.  (Consult L<perlre> for more information about regular expressions.)  Thanks to C<LC_CTYPE>, depending on your locale setting, characters like "E<aelig>", "E<eth>", "E<szlig>", and "E<oslash>" may be understood as C<\w> characters. 
 
 The C<LC_CTYPE> locale also provides the map used in transliterating characters between lower and uppercase.  This affects the case-mapping functions--lc(), lcfirst, uc(), and ucfirst(); case-mapping interpolation with C<\l>, C<\L>, C<\u>, or C<\U> in double-quoted strings and C<s///> substitutions; and case-independent regular expression pattern matching using the C<i> modifier. 
 
@@ -384,7 +384,7 @@ B<Note:> A broken or malicious C<LC_CTYPE> locale definition may result in clear
 
 =head2 Category LC_NUMERIC: Numeric Formatting 
 
-After a proper POSIX::setlocale() call, Perl obeys the C<LC_NUMERIC> locale information, which controls an application's idea of how numbers should be formatted for human readability by the printf(), sprintf(), and write() functions. String-to-numeric conversion by the POSIX::strtod() function is also affected.  In most implementations the only effect is to change the character used for the decimal point--perhaps from "."  to ", ". These functions aren't aware of such niceties as thousands separation and so on. (See L<The localeconv function> if you care about these things.) 
+After a proper POSIX::setlocale() call, Perl obeys the C<LC_NUMERIC> locale information, which controls an application's idea of how numbers should be formatted for human readability by the printf(), sprintf(), and write() functions. String-to-numeric conversion by the POSIX::strtod() function is also affected.  In most implementations the only effect is to change the character used for the decimal point--perhaps from "."  to ",". These functions aren't aware of such niceties as thousands separation and so on. (See L<The localeconv function> if you care about these things.) 
 
 Output produced by print() is also affected by the current locale: it corresponds to what you'd get from printf() in the "C" locale.  The same is true for Perl's internal conversions between numeric and string formats: 
 
@@ -408,7 +408,7 @@ Output produced by print() is also affected by the current locale: it correspond
 
 
         print "DECIMAL POINT IS COMMA\n" 
-            if $n == (strtod("2, 5"))[0]; # Locale-dependent conversion 
+            if $n == (strtod("2,5"))[0]; # Locale-dependent conversion 
 
 See also L<I18N::Langinfo> and C<RADIXCHAR>. 
 
@@ -431,7 +431,7 @@ Output produced by POSIX::strftime(), which builds a formatted human-readable da
 
 Note: C<use locale> isn't needed in this example: as a function that exists only to generate locale-dependent results, strftime() always obeys the current C<LC_TIME> locale. 
 
-See also L<I18N::Langinfo> and C<ABDAY_1>..C<ABDAY_7>, C<DAY_1>..C<DAY_7>,  C<ABMON_1>..C<ABMON_12>, and C<ABMON_1>..C<ABMON_12>. 
+See also L<I18N::Langinfo> and C<ABDAY_1>..C<ABDAY_7>, C<DAY_1>..C<DAY_7>, C<ABMON_1>..C<ABMON_12>, and C<ABMON_1>..C<ABMON_12>. 
 
 =head2 Other categories 
 
@@ -489,19 +489,19 @@ B<Matching operator> (C<m//>):
 
 Scalar true/false result never tainted. 
 
-Subpatterns, either delivered as a list-context result or as $1 etc. are tainted if C<use locale> is in effect, and the subpattern regular expression contains C<\w> (to match an alphanumeric character), C<\W> (non-alphanumeric character), C<\s> (whitespace character), or C<\S> (non whitespace character).  The matched-pattern variable, $&, $` (pre-match), $' (post-match), and $+ (last match) are also tainted if C<use locale> is in effect and the regular expression contains C<\w>,  C<\W>, C<\s>, or C<\S>. 
+Subpatterns, either delivered as a list-context result or as $1 etc. are tainted if C<use locale> is in effect, and the subpattern regular expression contains C<\w> (to match an alphanumeric character), C<\W> (non-alphanumeric character), C<\s> (whitespace character), or C<\S> (non whitespace character).  The matched-pattern variable, $&, $` (pre-match), $' (post-match), and $+ (last match) are also tainted if C<use locale> is in effect and the regular expression contains C<\w>, C<\W>, C<\s>, or C<\S>. 
 
 =item * 
 
 B<Substitution operator> (C<s///>): 
 
-Has the same behavior as the match operator.  Also, the left operand of C<=~> becomes tainted when C<use locale> in effect if modified as a result of a substitution based on a regular expression match involving C<\w>, C<\W>, C<\s>, or C<\S>; or of case-mapping with C<\l>, C<\L>, C<\u> or C<\U>. 
+Has the same behavior as the match operator.  Also, the left operand of C<=~> becomes tainted when C<use locale> in effect if modified as a result of a substitution based on a regular expression match involving C<\w>, C<\W>, C<\s>, or C<\S>; or of case-mapping with C<\l>, C<\L>,C<\u> or C<\U>. 
 
 =item * 
 
 B<Output formatting functions> (printf() and write()): 
 
-Results are never tainted because otherwise even output from print,  for example C<print(1/7)>, should be tainted if C<use locale> is in effect. 
+Results are never tainted because otherwise even output from print, for example C<print(1/7)>, should be tainted if C<use locale> is in effect. 
 
 =item * 
 
@@ -511,13 +511,13 @@ Results are tainted if C<use locale> is in effect.
 
 =item * 
 
-B<POSIX locale-dependent functions> (localeconv(), strcoll(),  strftime(), strxfrm()): 
+B<POSIX locale-dependent functions> (localeconv(), strcoll(), strftime(), strxfrm()): 
 
 Results are never tainted. 
 
 =item * 
 
-B<POSIX character class tests> (isalnum(), isalpha(), isdigit(),  isgraph(), islower(), isprint(), ispunct(), isspace(), isupper(),  isxdigit()): 
+B<POSIX character class tests> (isalnum(), isalpha(), isdigit(), isgraph(), islower(), isprint(), ispunct(), isspace(), isupper(), isxdigit()): 
 
 True/false results are never tainted. 
 
@@ -576,7 +576,7 @@ This third program fails to run because $& is tainted: it is the result of a mat
 
 A string that can suppress Perl's warning about failed locale settings at startup.  Failure can occur if the locale support in the operating system is lacking (broken) in some way--or if you mistyped the name of a locale when you set up your environment.  If this environment variable is absent, or has a value that does not evaluate to integer zero--that is, "0" or ""-- Perl will complain about locale setting failures. 
 
-B<NOTE>: PERL_BADLANG only gives you a way to hide the warning message. The message tells about some problem in your system's locale support,  and you should investigate what the problem is. 
+B<NOTE>: PERL_BADLANG only gives you a way to hide the warning message. The message tells about some problem in your system's locale support, and you should investigate what the problem is. 
 
 =back 
 
@@ -600,11 +600,11 @@ In the absence of C<LC_ALL>, C<LC_CTYPE> chooses the character type locale.  In 
 
 =item LC_COLLATE 
 
-In the absence of C<LC_ALL>, C<LC_COLLATE> chooses the collation (sorting) locale.  In the absence of both C<LC_ALL> and C<LC_COLLATE>,  C<LANG> chooses the collation locale. 
+In the absence of C<LC_ALL>, C<LC_COLLATE> chooses the collation (sorting) locale.  In the absence of both C<LC_ALL> and C<LC_COLLATE>, C<LANG> chooses the collation locale. 
 
 =item LC_MONETARY 
 
-In the absence of C<LC_ALL>, C<LC_MONETARY> chooses the monetary formatting locale.  In the absence of both C<LC_ALL> and C<LC_MONETARY>,  C<LANG> chooses the monetary formatting locale. 
+In the absence of C<LC_ALL>, C<LC_MONETARY> chooses the monetary formatting locale.  In the absence of both C<LC_ALL> and C<LC_MONETARY>, C<LANG> chooses the monetary formatting locale. 
 
 =item LC_NUMERIC 
 
@@ -612,7 +612,7 @@ In the absence of C<LC_ALL>, C<LC_NUMERIC> chooses the numeric format locale.  I
 
 =item LC_TIME 
 
-In the absence of C<LC_ALL>, C<LC_TIME> chooses the date and time formatting locale.  In the absence of both C<LC_ALL> and C<LC_TIME>,  C<LANG> chooses the date and time formatting locale. 
+In the absence of C<LC_ALL>, C<LC_TIME> chooses the date and time formatting locale.  In the absence of both C<LC_ALL> and C<LC_TIME>, C<LANG> chooses the date and time formatting locale. 
 
 =item LANG 
 
@@ -628,7 +628,7 @@ The LC_NUMERIC controls the numeric output:
         use locale; 
         use POSIX qw(locale_h); # Imports setlocale() and the LC_ constants. 
         setlocale(LC_NUMERIC, "fr_FR") or die "Pardon"; 
-        printf "%g\n", 1.23; # If the "fr_FR" succeeded, probably shows 1, 23. 
+        printf "%g\n", 1.23; # If the "fr_FR" succeeded, probably shows 1,23. 
 
 and also how strings are parsed by POSIX::strtod() as numbers: 
 
@@ -636,20 +636,20 @@ and also how strings are parsed by POSIX::strtod() as numbers:
         use locale; 
         use POSIX qw(locale_h strtod); 
         setlocale(LC_NUMERIC, "de_DE") or die "Entschuldigung"; 
-        my $x = strtod("2, 34") + 5; 
-        print $x, "\n"; # Probably shows 7, 34. 
+        my $x = strtod("2,34") + 5; 
+        print $x, "\n"; # Probably shows 7,34. 
 
 =head1 NOTES 
 
 =head2 Backward compatibility 
 
-Versions of Perl prior to 5.004 B<mostly> ignored locale information,  generally behaving as if something similar to the C<"C"> locale were always in force, even if the program environment suggested otherwise (see L<The setlocale function>).  By default, Perl still behaves this way for backward compatibility.  If you want a Perl application to pay attention to locale information, you B<must> use the S<C<use locale>> pragma (see L<The use locale pragma>) or for just pattern matching, the C</l> regular expression modifier (see L<perlre/Character set modifiers>) to instruct it to do so. 
+Versions of Perl prior to 5.004 B<mostly> ignored locale information, generally behaving as if something similar to the C<"C"> locale were always in force, even if the program environment suggested otherwise (see L<The setlocale function>).  By default, Perl still behaves this way for backward compatibility.  If you want a Perl application to pay attention to locale information, you B<must> use the S<C<use locale>> pragma (see L<The use locale pragma>) or for just pattern matching, the C</l> regular expression modifier (see L<perlre/Character set modifiers>) to instruct it to do so. 
 
 Versions of Perl from 5.002 to 5.003 did use the C<LC_CTYPE> information if available; that is, C<\w> did understand what were the letters according to the locale environment variables. The problem was that the user had no control over the feature: if the C library supported locales, Perl used them. 
 
 =head2 I18N:Collate obsolete 
 
-In versions of Perl prior to 5.004, per-locale collation was possible using the C<I18N::Collate> library module.  This module is now mildly obsolete and should be avoided in new applications.  The C<LC_COLLATE> functionality is now integrated into the Perl core language: One can use locale-specific scalar data completely normally with C<use locale>,  so there is no longer any need to juggle with the scalar references of C<I18N::Collate>. 
+In versions of Perl prior to 5.004, per-locale collation was possible using the C<I18N::Collate> library module.  This module is now mildly obsolete and should be avoided in new applications.  The C<LC_COLLATE> functionality is now integrated into the Perl core language: One can use locale-specific scalar data completely normally with C<use locale>, so there is no longer any need to juggle with the scalar references of C<I18N::Collate>. 
 
 =head2 Sort speed and memory use impacts 
 
@@ -688,7 +688,7 @@ However, there are places where this breaks down.  Certain constructs are for Un
 
 
 
-The same problem ensues if you enable automatic UTF-8-ification of your standard file handles, default C<open()> layer, and C<@ARGV> on non-ISO8859-1,  non-UTF-8 locales (by using either the B<-C> command line switch or the C<PERL_UNICODE> environment variable; see L<perlrun>). Things are read in as UTF-8, which would normally imply a Unicode interpretation, but the presence of a locale causes them to be interpreted in that locale instead.  For example, a 0xD7 code point in the Unicode input, which should mean the multiplication sign, won't be interpreted by Perl that way under the Greek locale.  Again, this is not a problem I<provided> you make certain that all locales will always and only be either an ISO8859-1 or a UTF-8 locale. 
+The same problem ensues if you enable automatic UTF-8-ification of your standard file handles, default C<open()> layer, and C<@ARGV> on non-ISO8859-1, non-UTF-8 locales (by using either the B<-C> command line switch or the C<PERL_UNICODE> environment variable; see L<perlrun>). Things are read in as UTF-8, which would normally imply a Unicode interpretation, but the presence of a locale causes them to be interpreted in that locale instead.  For example, a 0xD7 code point in the Unicode input, which should mean the multiplication sign, won't be interpreted by Perl that way under the Greek locale.  Again, this is not a problem I<provided> you make certain that all locales will always and only be either an ISO8859-1 or a UTF-8 locale. 
 
 Vendor locales are notoriously buggy, and it is difficult for Perl to test its locale-handling code because this interacts with code that Perl has no control over; therefore the locale-handling code in Perl may be buggy as well.  But if you I<do> have locales that work, using them may be worthwhile for certain specific purposes, as long as you keep in mind the gotchas already mentioned.  For example, collation runs faster under locales than under L<Unicode::Collate> (albeit with less flexibility), and you gain access to such things as the local currency symbol and the names of the months and days of the week. 
 
@@ -696,11 +696,11 @@ Vendor locales are notoriously buggy, and it is difficult for Perl to test its l
 
 =head2 Broken systems 
 
-In certain systems, the operating system's locale support is broken and cannot be fixed or used by Perl.  Such deficiencies can and will result in mysterious hangs and/or Perl core dumps when C<use locale> is in effect.  When confronted with such a system,  please report in excruciating detail to <F<perlbug@perl.org>>, and also contact your vendor: bug fixes may exist for these problems in your operating system.  Sometimes such bug fixes are called an operating system upgrade. 
+In certain systems, the operating system's locale support is broken and cannot be fixed or used by Perl.  Such deficiencies can and will result in mysterious hangs and/or Perl core dumps when C<use locale> is in effect.  When confronted with such a system, please report in excruciating detail to <F<perlbug@perl.org>>, and also contact your vendor: bug fixes may exist for these problems in your operating system.  Sometimes such bug fixes are called an operating system upgrade. 
 
 =head1 SEE ALSO 
 
-L<I18N::Langinfo>, L<perluniintro>, L<perlunicode>, L<open>,  L<POSIX/isalnum>, L<POSIX/isalpha>,  L<POSIX/isdigit>, L<POSIX/isgraph>, L<POSIX/islower>,  L<POSIX/isprint>, L<POSIX/ispunct>, L<POSIX/isspace>,  L<POSIX/isupper>, L<POSIX/isxdigit>, L<POSIX/localeconv>,  L<POSIX/setlocale>, L<POSIX/strcoll>, L<POSIX/strftime>,  L<POSIX/strtod>, L<POSIX/strxfrm>. 
+L<I18N::Langinfo>, L<perluniintro>, L<perlunicode>, L<open>, L<POSIX/isalnum>, L<POSIX/isalpha>, L<POSIX/isdigit>, L<POSIX/isgraph>, L<POSIX/islower>, L<POSIX/isprint>, L<POSIX/ispunct>, L<POSIX/isspace>, L<POSIX/isupper>, L<POSIX/isxdigit>, L<POSIX/localeconv>, L<POSIX/setlocale>, L<POSIX/strcoll>, L<POSIX/strftime>, L<POSIX/strtod>, L<POSIX/strxfrm>. 
 
 =head1 HISTORY 
 

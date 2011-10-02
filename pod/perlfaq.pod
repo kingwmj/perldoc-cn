@@ -35,7 +35,7 @@ If you have a question that isn't in the FAQ and you would like help with it, tr
 
 =head1 CREDITS 
 
-Tom Christiansen wrote the original perlfaq then expanded it with the help of Nat Torkington. The perlfaq-workers maintain current document and the denizens of comp.lang.perl.misc regularly review and update the FAQ. Several people have contributed answers, corrections, and comments,  and the perlfaq notes those contributions wherever appropriate. 
+Tom Christiansen wrote the original perlfaq then expanded it with the help of Nat Torkington. The perlfaq-workers maintain current document and the denizens of comp.lang.perl.misc regularly review and update the FAQ. Several people have contributed answers, corrections, and comments, and the perlfaq notes those contributions wherever appropriate. 
 
 =head1 AUTHOR AND COPYRIGHT 
 
@@ -315,7 +315,7 @@ How can I compile my Perl program into byte code or C?
 
 =item * 
 
-How can I get C<#!perl> to work on [MS-DOS, NT, ...]? 
+How can I get C<#!perl> to work on [MS-DOS,NT,...]? 
 
 =item * 
 

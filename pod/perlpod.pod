@@ -1,6 +1,6 @@
 
 
-=for comment This document is in Pod format.  To read this, use a Pod formatter,  like "perldoc perlpod". 
+=for comment This document is in Pod format.  To read this, use a Pod formatter, like "perldoc perlpod". 
 
 =head1 NAME X<POD> X<plain old documentation> 
 
@@ -12,23 +12,23 @@ Pod is a simple-to-use markup language used for writing documentation for Perl, 
 
 Translators are available for converting Pod to various formats like plain text, HTML, man pages, and more. 
 
-Pod markup consists of three basic kinds of paragraphs: L<ordinary|/"Ordinary Paragraph">,  L<verbatim|/"Verbatim Paragraph">, and L<command|/"Command Paragraph">. 
+Pod markup consists of three basic kinds of paragraphs: L<ordinary|/"Ordinary Paragraph">, L<verbatim|/"Verbatim Paragraph">, and L<command|/"Command Paragraph">. 
 
 
 
 =head2 Ordinary Paragraph X<POD, ordinary paragraph> 
 
-Most paragraphs in your documentation will be ordinary blocks of text, like this one.  You can simply type in your text without any markup whatsoever, and with just a blank line before and after.  When it gets formatted, it will undergo minimal formatting,  like being rewrapped, probably put into a proportionally spaced font, and maybe even justified. 
+Most paragraphs in your documentation will be ordinary blocks of text, like this one.  You can simply type in your text without any markup whatsoever, and with just a blank line before and after.  When it gets formatted, it will undergo minimal formatting, like being rewrapped, probably put into a proportionally spaced font, and maybe even justified. 
 
-You can use formatting codes in ordinary paragraphs, for B<bold>,  I<italic>, C<code-style>, L<hyperlinks|perlfaq>, and more.  Such codes are explained in the "L<Formatting Codes|/"Formatting Codes">" section, below. 
+You can use formatting codes in ordinary paragraphs, for B<bold>, I<italic>, C<code-style>, L<hyperlinks|perlfaq>, and more.  Such codes are explained in the "L<Formatting Codes|/"Formatting Codes">" section, below. 
 
 
 
 =head2 Verbatim Paragraph X<POD, verbatim paragraph> X<verbatim> 
 
-Verbatim paragraphs are usually used for presenting a codeblock or other text which does not require any special parsing or formatting,  and which shouldn't be wrapped. 
+Verbatim paragraphs are usually used for presenting a codeblock or other text which does not require any special parsing or formatting, and which shouldn't be wrapped. 
 
-A verbatim paragraph is distinguished by having its first character be a space or a tab.  (And commonly, all its lines begin with spaces and/or tabs.)  It should be reproduced exactly, with tabs assumed to be on 8-column boundaries.  There are no special formatting codes,  so you can't italicize or anything like that.  A \ means \, and nothing else. 
+A verbatim paragraph is distinguished by having its first character be a space or a tab.  (And commonly, all its lines begin with spaces and/or tabs.)  It should be reproduced exactly, with tabs assumed to be on 8-column boundaries.  There are no special formatting codes, so you can't italicize or anything like that.  A \ means \, and nothing else. 
 
 
 
@@ -108,7 +108,7 @@ Don't put "=headI<n>" commands inside an "=over" ... "=back" region.
 
 =item * 
 
-And perhaps most importantly, keep the items consistent: either use "=item *" for all of them, to produce bullets; or use "=item 1.",  "=item 2.", etc., to produce numbered lists; or use "=item foo",  "=item bar", etc.--namely, things that look nothing like bullets or numbers. 
+And perhaps most importantly, keep the items consistent: either use "=item *" for all of them, to produce bullets; or use "=item 1.", "=item 2.", etc., to produce numbered lists; or use "=item foo", "=item bar", etc.--namely, things that look nothing like bullets or numbers. 
 
 If you start with bullets or numbers, stick with them, as formatters use the first "=item" type to decide how to format the list. 
 
@@ -116,7 +116,7 @@ If you start with bullets or numbers, stick with them, as formatters use the fir
 
 =item C<=cut> X<=cut> X<cut> 
 
-To end a Pod block, use a blank line,  then a line beginning with "=cut", and a blank line after it.  This lets Perl (and the Pod formatter) know that this is where Perl code is resuming.  (The blank line before the "=cut" is not technically necessary, but many older Pod processors require it.) 
+To end a Pod block, use a blank line, then a line beginning with "=cut", and a blank line after it.  This lets Perl (and the Pod formatter) know that this is where Perl code is resuming.  (The blank line before the "=cut" is not technically necessary, but many older Pod processors require it.) 
 
 =item C<=pod> X<=pod> X<pod> 
 
@@ -156,7 +156,7 @@ The "=pod" command by itself doesn't do much of anything, but it signals to Perl
 
 For, begin, and end will let you have regions of text/code/data that are not generally interpreted as normal Pod text, but are passed directly to particular formatters, or are otherwise special.  A formatter that can use that format will use the region, otherwise it will be completely ignored. 
 
-A command "=begin I<formatname>", some paragraphs, and a command "=end I<formatname>", mean that the text/data in between is meant for formatters that understand the special format called I<formatname>.  For example,  
+A command "=begin I<formatname>", some paragraphs, and a command "=end I<formatname>", mean that the text/data in between is meant for formatters that understand the special format called I<formatname>.  For example, 
 
 
   =begin html 
@@ -212,11 +212,11 @@ A format name of "comment" is common for just making notes (presumably to yourse
   =for comment 
   Make sure that all the available options are documented! 
 
-Some I<formatnames> will require a leading colon (as in C<"=for :formatname">, or C<"=begin :formatname" ... "=end :formatname">),  to signal that the text is not raw data, but instead I<is> Pod text (i.e., possibly containing formatting codes) that's just not for normal formatting (e.g., may not be a normal-use paragraph, but might be for formatting as a footnote). 
+Some I<formatnames> will require a leading colon (as in C<"=for :formatname">, or C<"=begin :formatname" ... "=end :formatname">), to signal that the text is not raw data, but instead I<is> Pod text (i.e., possibly containing formatting codes) that's just not for normal formatting (e.g., may not be a normal-use paragraph, but might be for formatting as a footnote). 
 
 =item C<=encoding I<encodingname>> X<=encoding> X<encoding> 
 
-This command is used for declaring the encoding of a document.  Most users won't need this; but if your encoding isn't US-ASCII or Latin-1,  then put a C<=encoding I<encodingname>> command early in the document so that pod formatters will know how to decode the document.  For I<encodingname>, use a name recognized by the L<Encode::Supported> module.  Examples: 
+This command is used for declaring the encoding of a document.  Most users won't need this; but if your encoding isn't US-ASCII or Latin-1, then put a C<=encoding I<encodingname>> command early in the document so that pod formatters will know how to decode the document.  For I<encodingname>, use a name recognized by the L<Encode::Supported> module.  Examples: 
 
 
   =encoding utf8 
@@ -292,7 +292,7 @@ Used for emphasis ("C<be IE<lt>careful!E<gt>>") and parameters ("C<redo IE<lt>LA
 
 =item C<BE<lt>textE<gt>> -- bold text X<B> X<< BZ<><> >> X<POD, formatting code, bold> X<bold> 
 
-Used for switches ("C<perl's BE<lt>-nE<gt> switch>"), programs ("C<some systems provide a BE<lt>chfnE<gt> for that>"),  emphasis ("C<be BE<lt>careful!E<gt>>"), and so on ("C<and that feature is known as BE<lt>autovivificationE<gt>>"). 
+Used for switches ("C<perl's BE<lt>-nE<gt> switch>"), programs ("C<some systems provide a BE<lt>chfnE<gt> for that>"), emphasis ("C<be BE<lt>careful!E<gt>>"), and so on ("C<and that feature is known as BE<lt>autovivificationE<gt>>"). 
 
 =item C<CE<lt>codeE<gt>> -- code text X<C> X<< CZ<><> >> X<POD, formatting code, code> X<code> 
 
@@ -300,7 +300,7 @@ Renders code in a typewriter font, or gives some other indication that this repr
 
 =item C<LE<lt>nameE<gt>> -- a hyperlink X<L> X<< LZ<><> >> X<POD, formatting code, hyperlink> X<hyperlink> 
 
-There are various syntaxes, listed below.  In the syntaxes given,  C<text>, C<name>, and C<section> cannot contain the characters '/' and '|'; and any '<' or '>' should be matched. 
+There are various syntaxes, listed below.  In the syntaxes given, C<text>, C<name>, and C<section> cannot contain the characters '/' and '|'; and any '<' or '>' should be matched. 
 
 =over 
 
@@ -314,13 +314,13 @@ Link to a Perl manual page (e.g., C<LE<lt>Net::PingE<gt>>).  Note that C<name> s
 
 C<LE<lt>name/"sec"E<gt>> or C<LE<lt>name/secE<gt>> 
 
-Link to a section in other manual page.  E.g.,  C<LE<lt>perlsyn/"For Loops"E<gt>> 
+Link to a section in other manual page.  E.g., C<LE<lt>perlsyn/"For Loops"E<gt>> 
 
 =item * 
 
 C<LE<lt>/"sec"E<gt>> or C<LE<lt>/secE<gt>> 
 
-Link to a section in this manual page.  E.g.,  C<LE<lt>/"Object Methods"E<gt>> 
+Link to a section in this manual page.  E.g., C<LE<lt>/"Object Methods"E<gt>> 
 
 =back 
 
@@ -334,19 +334,19 @@ To control what text is used for display, you use "C<LE<lt>text|...E<gt>>", as i
 
 C<LE<lt>text|nameE<gt>> 
 
-Link this text to that manual page.  E.g.,  C<LE<lt>Perl Error Messages|perldiagE<gt>> 
+Link this text to that manual page.  E.g., C<LE<lt>Perl Error Messages|perldiagE<gt>> 
 
 =item * 
 
 C<LE<lt>text|name/"sec"E<gt>> or C<LE<lt>text|name/secE<gt>> 
 
-Link this text to that section in that manual page.  E.g.,  C<LE<lt>postfix "if"|perlsyn/"Statement Modifiers"E<gt>> 
+Link this text to that section in that manual page.  E.g., C<LE<lt>postfix "if"|perlsyn/"Statement Modifiers"E<gt>> 
 
 =item * 
 
 C<LE<lt>text|/"sec"E<gt>> or C<LE<lt>text|/secE<gt>> or C<LE<lt>text|"sec"E<gt>> 
 
-Link this text to that section in this manual page.  E.g.,  C<LE<lt>the various attributes|/"Member Data"E<gt>> 
+Link this text to that section in this manual page.  E.g., C<LE<lt>the various attributes|/"Member Data"E<gt>> 
 
 =back 
 
@@ -386,19 +386,19 @@ C<EE<lt>verbarE<gt>> -- a literal | (I<ver>tical I<bar>)
 
 C<EE<lt>solE<gt>> -- a literal / (I<sol>idus) 
 
-The above four are optional except in other formatting codes,  notably C<LE<lt>...E<gt>>, and when preceded by a capital letter. 
+The above four are optional except in other formatting codes, notably C<LE<lt>...E<gt>>, and when preceded by a capital letter. 
 
 =item * 
 
 C<EE<lt>htmlnameE<gt>> 
 
-Some non-numeric HTML entity name, such as C<EE<lt>eacuteE<gt>>,  meaning the same thing as C<&eacute;> in HTML -- i.e., a lowercase e with an acute (/-shaped) accent. 
+Some non-numeric HTML entity name, such as C<EE<lt>eacuteE<gt>>, meaning the same thing as C<&eacute;> in HTML -- i.e., a lowercase e with an acute (/-shaped) accent. 
 
 =item * 
 
 C<EE<lt>numberE<gt>> 
 
-The ASCII/Latin-1/Unicode character with that number.  A leading "0x" means that I<number> is hex, as in C<EE<lt>0x201EE<gt>>.  A leading "0" means that I<number> is octal,  as in C<EE<lt>075E<gt>>.  Otherwise I<number> is interpreted as being in decimal, as in C<EE<lt>181E<gt>>. 
+The ASCII/Latin-1/Unicode character with that number.  A leading "0x" means that I<number> is hex, as in C<EE<lt>0x201EE<gt>>.  A leading "0" means that I<number> is octal, as in C<EE<lt>075E<gt>>.  Otherwise I<number> is interpreted as being in decimal, as in C<EE<lt>181E<gt>>. 
 
 Note that older Pod formatters might not recognize octal or hex numeric escapes, and that many formatters cannot reliably render characters above 255.  (Some formatters may even have to use compromised renderings of Latin-1 characters, like rendering C<EE<lt>eacuteE<gt>> as just a plain "e".) 
 
@@ -428,7 +428,7 @@ This is rarely used.  It's one way to get around using an EE<lt>...E<gt> code so
 
 =back 
 
-Most of the time, you will need only a single set of angle brackets to delimit the beginning and end of formatting codes.  However,  sometimes you will want to put a real right angle bracket (a greater-than sign, '>') inside of a formatting code.  This is particularly common when using a formatting code to provide a different font-type for a snippet of code.  As with all things in Perl, there is more than one way to do it.  One way is to simply escape the closing bracket using an C<E> code: 
+Most of the time, you will need only a single set of angle brackets to delimit the beginning and end of formatting codes.  However, sometimes you will want to put a real right angle bracket (a greater-than sign, '>') inside of a formatting code.  This is particularly common when using a formatting code to provide a different font-type for a snippet of code.  As with all things in Perl, there is more than one way to do it.  One way is to simply escape the closing bracket using an C<E> code: 
 
 
     C<$a E<lt>=E<gt> $b> 
@@ -474,13 +474,13 @@ which is presumably easier to read than the old way:
     C<open(X, "E<gt>E<gt>thing.dat") || die $!> 
     C<$foo-E<gt>bar();> 
 
-This is currently supported by pod2text (Pod::Text), pod2man (Pod::Man),  and any other pod2xxx or Pod::Xxxx translators that use Pod::Parser 1.093 or later, or Pod::Tree 1.02 or later. 
+This is currently supported by pod2text (Pod::Text), pod2man (Pod::Man), and any other pod2xxx or Pod::Xxxx translators that use Pod::Parser 1.093 or later, or Pod::Tree 1.02 or later. 
 
 =head2 The Intent X<POD, intent of> 
 
-The intent is simplicity of use, not power of expression.  Paragraphs look like paragraphs (block format), so that they stand out visually, and so that I could run them through C<fmt> easily to reformat them (that's F7 in my version of B<vi>, or Esc Q in my version of B<emacs>).  I wanted the translator to always leave the C<'> and C<`> and C<"> quotes alone, in verbatim mode, so I could slurp in a working program, shift it over four spaces, and have it print out, er,  verbatim.  And presumably in a monospace font. 
+The intent is simplicity of use, not power of expression.  Paragraphs look like paragraphs (block format), so that they stand out visually, and so that I could run them through C<fmt> easily to reformat them (that's F7 in my version of B<vi>, or Esc Q in my version of B<emacs>).  I wanted the translator to always leave the C<'> and C<`> and C<"> quotes alone, in verbatim mode, so I could slurp in a working program, shift it over four spaces, and have it print out, er, verbatim.  And presumably in a monospace font. 
 
-The Pod format is not necessarily sufficient for writing a book.  Pod is just meant to be an idiot-proof common source for nroff, HTML,  TeX, and other markup languages, as used for online documentation.  Translators exist for B<pod2text>, B<pod2html>,  B<pod2man> (that's for nroff(1) and troff(1)), B<pod2latex>, and B<pod2fm>.  Various others are available in CPAN. 
+The Pod format is not necessarily sufficient for writing a book.  Pod is just meant to be an idiot-proof common source for nroff, HTML, TeX, and other markup languages, as used for online documentation.  Translators exist for B<pod2text>, B<pod2html>, B<pod2man> (that's for nroff(1) and troff(1)), B<pod2latex>, and B<pod2fm>.  Various others are available in CPAN. 
 
 
 
@@ -509,7 +509,7 @@ The B<podchecker> command is provided for checking Pod syntax for errors and war
 
 =item * 
 
-If you're more familiar with writing in HTML than with writing in Pod, you can try your hand at writing documentation in simple HTML, and converting it to Pod with the experimental L<Pod::HTML2Pod|Pod::HTML2Pod> module,  (available in CPAN), and looking at the resulting code.  The experimental L<Pod::PXML|Pod::PXML> module in CPAN might also be useful. 
+If you're more familiar with writing in HTML than with writing in Pod, you can try your hand at writing documentation in simple HTML, and converting it to Pod with the experimental L<Pod::HTML2Pod|Pod::HTML2Pod> module, (available in CPAN), and looking at the resulting code.  The experimental L<Pod::PXML|Pod::PXML> module in CPAN might also be useful. 
 
 =item * 
 
@@ -561,7 +561,7 @@ Going past the 70th column in a verbatim block might be ungracefully wrapped by 
 
 =head1 SEE ALSO 
 
-L<perlpodspec>, L<perlsyn/"PODs: Embedded Documentation">,  L<perlnewmod>, L<perldoc>, L<pod2html>, L<pod2man>, L<podchecker>. 
+L<perlpodspec>, L<perlsyn/"PODs: Embedded Documentation">, L<perlnewmod>, L<perldoc>, L<pod2html>, L<pod2man>, L<podchecker>. 
 
 =head1 AUTHOR 
 

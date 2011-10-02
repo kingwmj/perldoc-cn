@@ -58,7 +58,7 @@ For the Perl Artistic License, see L<perlartistic>.
    When we speak of free software, we are referring to freedom, not 
  price.  Specifically, the General Public License is designed to make 
  sure that you have the freedom to give away or sell copies of free 
- software, that you receive source code or can get it if you want it,  
+ software, that you receive source code or can get it if you want it, 
  that you can change the software or use pieces of it in new free 
  programs; and that you know you can do these things. 
 
@@ -76,7 +76,7 @@ For the Perl Artistic License, see L<perlartistic>.
 
 
    We protect your rights with two steps: (1) copyright the software, and 
- (2) offer you this license which gives you legal permission to copy,  
+ (2) offer you this license which gives you legal permission to copy, 
  distribute and/or modify the software. 
 
 
@@ -159,14 +159,14 @@ For the Perl Artistic License, see L<perlartistic>.
 
      a) accompany it with the complete corresponding machine-readable 
      source code, which must be distributed under the terms of 
-     Paragraphs 1 and 2 above; or,  
+     Paragraphs 1 and 2 above; or, 
 
 
      b) accompany it with a written offer, valid for at least three 
      years, to give any third party free (except for a nominal charge 
      for the cost of distribution) a complete machine-readable copy of the 
      corresponding source code, to be distributed under the terms of 
-     Paragraphs 1 and 2 above; or,  
+     Paragraphs 1 and 2 above; or, 
 
 
      c) accompany it with the information you received as to where the 
@@ -195,7 +195,7 @@ For the Perl Artistic License, see L<perlartistic>.
 
 
    5. By copying, distributing or modifying the Program (or any work based 
- on the Program) you indicate your acceptance of this license to do so,  
+ on the Program) you indicate your acceptance of this license to do so, 
  and all its terms and conditions. 
 
 
@@ -240,13 +240,13 @@ For the Perl Artistic License, see L<perlartistic>.
  OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS 
  TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE 
- PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,  
+ PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, 
  REPAIR OR CORRECTION. 
 
 
    10. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING 
  WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
- REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,  
+ REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, 
  INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING 
  OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED 
  TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY 
@@ -283,14 +283,14 @@ For the Perl Artistic License, see L<perlartistic>.
      any later version. 
 
 
-     This program is distributed in the hope that it will be useful,  
+     This program is distributed in the hope that it will be useful, 
      but WITHOUT ANY WARRANTY; without even the implied warranty of 
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
      GNU General Public License for more details. 
 
 
      You should have received a copy of the GNU General Public License 
-     along with this program; if not, write to the Free Software Foundation,  
+     along with this program; if not, write to the Free Software Foundation, 
      Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA. 
 
 

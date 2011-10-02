@@ -10,17 +10,17 @@ Perl is a B<free-form> language, you can format and indent it however you like. 
 
 Many of Perl's syntactic elements are B<optional>.  Rather than requiring you to put parentheses around every function call and declare every variable, you can often leave such explicit elements off and Perl will figure out what you meant.  This is known as B<Do What I Mean>, abbreviated B<DWIM>.  It allows programmers to be B<lazy> and to code in a style with which they are comfortable. 
 
-Perl B<borrows syntax> and concepts from many languages: awk, sed, C,  Bourne Shell, Smalltalk, Lisp and even English.  Other languages have borrowed syntax from Perl, particularly its regular expression extensions.  So if you have programmed in another language you will see familiar pieces in Perl.  They often work the same, but see L<perltrap> for information about how they differ. 
+Perl B<borrows syntax> and concepts from many languages: awk, sed, C, Bourne Shell, Smalltalk, Lisp and even English.  Other languages have borrowed syntax from Perl, particularly its regular expression extensions.  So if you have programmed in another language you will see familiar pieces in Perl.  They often work the same, but see L<perltrap> for information about how they differ. 
 
 =head2 Declarations X<declaration> X<undef> X<undefined> X<uninitialized> 
 
-The only things you need to declare in Perl are report formats and subroutines (and sometimes not even subroutines).  A variable holds the undefined value (C<undef>) until it has been assigned a defined value, which is anything other than C<undef>.  When used as a number,  C<undef> is treated as C<0>; when used as a string, it is treated as the empty string, C<"">; and when used as a reference that isn't being assigned to, it is treated as an error.  If you enable warnings,  you'll be notified of an uninitialized value whenever you treat C<undef> as a string or a number.  Well, usually.  Boolean contexts,  such as: 
+The only things you need to declare in Perl are report formats and subroutines (and sometimes not even subroutines).  A variable holds the undefined value (C<undef>) until it has been assigned a defined value, which is anything other than C<undef>.  When used as a number, C<undef> is treated as C<0>; when used as a string, it is treated as the empty string, C<"">; and when used as a reference that isn't being assigned to, it is treated as an error.  If you enable warnings, you'll be notified of an uninitialized value whenever you treat C<undef> as a string or a number.  Well, usually.  Boolean contexts, such as: 
 
 
     my $a; 
     if ($a) {} 
 
-are exempt from warnings (because they care about truth rather than definedness).  Operators such as C<++>, C<-->, C<+=>,  C<-=>, and C<.=>, that operate on undefined left values such as: 
+are exempt from warnings (because they care about truth rather than definedness).  Operators such as C<++>, C<-->, C<+=>, C<-=>, and C<.=>, that operate on undefined left values such as: 
 
 
     my $a; 
@@ -44,7 +44,7 @@ A statement sequence may contain declarations of lexically-scoped variables, but
 
 =head2 Comments X<comment> X<#> 
 
-Text from a C<"#"> character until the end of the line is a comment,  and is ignored.  Exceptions include C<"#"> inside a string or regular expression. 
+Text from a C<"#"> character until the end of the line is a comment, and is ignored.  Exceptions include C<"#"> inside a string or regular expression. 
 
 =head2 Simple Statements X<statement> X<semicolon> X<expression> X<;> 
 
@@ -56,7 +56,7 @@ The number 0, the strings C<'0'> and C<''>, the empty list C<()>, and C<undef> a
 
 =head2 Statement Modifiers X<statement modifier> X<modifier> X<if> X<unless> X<while> X<until> X<when> X<foreach> X<for> 
 
-Any simple statement may optionally be followed by a I<SINGLE> modifier,  just before the terminating semicolon (or block ending).  The possible modifiers are: 
+Any simple statement may optionally be followed by a I<SINGLE> modifier, just before the terminating semicolon (or block ending).  The possible modifiers are: 
 
 
     if EXPR 
@@ -154,7 +154,7 @@ The following compound statements may be used to control flow:
     LABEL foreach VAR (LIST) BLOCK continue BLOCK 
     LABEL BLOCK continue BLOCK 
 
-Note that, unlike C and Pascal, these are defined in terms of BLOCKs,  not statements.  This means that the curly brackets are I<required>--no dangling statements allowed.  If you want to write conditionals without curly brackets there are several other ways to do it.  The following all do the same thing: 
+Note that, unlike C and Pascal, these are defined in terms of BLOCKs, not statements.  This means that the curly brackets are I<required>--no dangling statements allowed.  If you want to write conditionals without curly brackets there are several other ways to do it.  The following all do the same thing: 
 
 
     if (!open(FOO)) { die "Can't open $FOO: $!"; } 
@@ -163,7 +163,7 @@ Note that, unlike C and Pascal, these are defined in terms of BLOCKs,  not state
     open(FOO) ? 'hi mom' : die "Can't open $FOO: $!"; 
             # a bit exotic, that last one 
 
-The C<if> statement is straightforward.  Because BLOCKs are always bounded by curly brackets, there is never any ambiguity about which C<if> an C<else> goes with.  If you use C<unless> in place of C<if>,  the sense of the test is reversed. Like C<if>, C<unless> can be followed by C<else>. C<unless> can even be followed by one or more C<elsif> statements, though you may want to think twice before using that particular language construct, as everyone reading your code will have to think at least twice before they can understand what's going on. 
+The C<if> statement is straightforward.  Because BLOCKs are always bounded by curly brackets, there is never any ambiguity about which C<if> an C<else> goes with.  If you use C<unless> in place of C<if>, the sense of the test is reversed. Like C<if>, C<unless> can be followed by C<else>. C<unless> can even be followed by one or more C<elsif> statements, though you may want to think twice before using that particular language construct, as everyone reading your code will have to think at least twice before they can understand what's going on. 
 
 The C<while> statement executes the block as long as the expression is L<true|/"Truth and Falsehood">. The C<until> statement executes the block as long as the expression is false. The LABEL is optional, and if present, consists of an identifier followed by a colon.  The LABEL identifies the loop for the loop control statements C<next>, C<last>, and C<redo>. If the LABEL is omitted, the loop control statement refers to the innermost enclosing loop.  This may include dynamically looking back your call-stack at run time to find the LABEL.  Such desperate behavior triggers a warning if you use the C<use warnings> pragma or the B<-w> flag. 
 
@@ -218,7 +218,7 @@ which is Perl short-hand for the more explicitly written version:
 Note that if there were a C<continue> block on the above code, it would get executed only on lines discarded by the regex (since redo skips the continue block). A continue block is often used to reset line counters or C<m?pat?> one-time matches: 
 
 
-    # inspired by :1, $g/fred/s//WILMA/ 
+    # inspired by :1,$g/fred/s//WILMA/ 
     while (<>) { 
     m?(fred)?    && s//WILMA $1 WILMA/; 
     m?(barney)?  && s//BETTY $1 BETTY/; 
@@ -287,7 +287,7 @@ The C<foreach> loop iterates over a normal list value and sets the variable VAR 
 
 The C<foreach> keyword is actually a synonym for the C<for> keyword, so you can use C<foreach> for readability or C<for> for brevity.  (Or because the Bourne shell is more familiar to you than I<csh>, so writing C<for> comes more naturally.)  If VAR is omitted, C<$_> is set to each value. X<$_> 
 
-If any element of LIST is an lvalue, you can modify it by modifying VAR inside the loop.  Conversely, if any element of LIST is NOT an lvalue, any attempt to modify that element will fail.  In other words,  the C<foreach> loop index variable is an implicit alias for each item in the list that you're looping over. X<alias> 
+If any element of LIST is an lvalue, you can modify it by modifying VAR inside the loop.  Conversely, if any element of LIST is NOT an lvalue, any attempt to modify that element will fail.  In other words, the C<foreach> loop index variable is an implicit alias for each item in the list that you're looping over. X<alias> 
 
 If any part of LIST is an array, C<foreach> will get very confused if you add or remove elements within the loop body, for example with C<splice>.   So don't do that. X<splice> 
 
@@ -304,7 +304,7 @@ Examples:
     } 
 
 
-    for $count (10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 'BOOM') { 
+    for $count (10,9,8,7,6,5,4,3,2,1,'BOOM') { 
     print $count, "\n"; sleep(1); 
     } 
 
@@ -387,7 +387,7 @@ This construct is very flexible and powerful. For example:
     when ("foo") { 
         say '$foo is the string "foo"'; 
     } 
-    when ([1, 3, 5, 7, 9]) { 
+    when ([1,3,5,7,9]) { 
         say '$foo is an odd digit'; 
         continue; # Fall through 
     } 
@@ -429,7 +429,7 @@ a subroutine or method call
 
 =item * 
 
-a regular expression match, i.e. C</REGEX/> or C<$foo =~ /REGEX/>,  or a negated regular expression match (C<!/REGEX/> or C<$foo !~ /REGEX/>). 
+a regular expression match, i.e. C</REGEX/> or C<$foo =~ /REGEX/>, or a negated regular expression match (C<!/REGEX/> or C<$foo !~ /REGEX/>). 
 
 =item * 
 
@@ -445,7 +445,7 @@ a negated expression C<!(...)> or C<not (...)>, or a logical exclusive-or C<(...
 
 =item * 
 
-a filetest operator, with the exception of C<-s>, C<-M>, C<-A>, and C<-C>,  that return numerical values, not boolean ones. 
+a filetest operator, with the exception of C<-s>, C<-M>, C<-A>, and C<-C>, that return numerical values, not boolean ones. 
 
 =item * 
 
@@ -507,7 +507,7 @@ This will optimize down to C<'foo'>, so C<'bar'> will never be considered (even 
 
 This is somewhat equivalent to the C-style switch statement's fallthrough functionality (not to be confused with I<Perl's> fallthrough functionality - see below), wherein the same block is used for several C<case> statements. 
 
-Another useful shortcut is that, if you use a literal array or hash as the argument to C<given>, it is turned into a reference. So C<given(@foo)> is the same as C<given(\@foo)>,  for example. 
+Another useful shortcut is that, if you use a literal array or hash as the argument to C<given>, it is turned into a reference. So C<given(@foo)> is the same as C<given(\@foo)>, for example. 
 
 C<default> behaves exactly like C<when(1 == 1)>, which is to say that it always matches. 
 
@@ -573,7 +573,7 @@ Instead of using C<given()>, you can use a C<foreach()> loop. For example, here'
 
 At the end of all C<when> blocks, there is an implicit C<next>. You can override that with an explicit C<last> if you're only interested in the first match. 
 
-This doesn't work if you explicitly specify a loop variable,  as in C<for $item (@array)>. You have to use the default variable C<$_>. (You can use C<for my $_ (@array)>.) 
+This doesn't work if you explicitly specify a loop variable, as in C<for $item (@array)>. You have to use the default variable C<$_>. (You can use C<for my $_ (@array)>.) 
 
 =head3 Smart matching in detail 
 
@@ -639,13 +639,13 @@ Note also that smart match's matching rules take precedence over overloading, so
 
     $obj ~~ X 
 
-will not automatically invoke the overload method with X as an argument; instead the table above is consulted as normal, and based in the type of X,  overloading may or may not be invoked. 
+will not automatically invoke the overload method with X as an argument; instead the table above is consulted as normal, and based in the type of X, overloading may or may not be invoked. 
 
 See L<overload>. 
 
 =head3 Differences from Perl 6 
 
-The Perl 5 smart match and C<given>/C<when> constructs are not absolutely identical to their Perl 6 analogues. The most visible difference is that, in Perl 5, parentheses are required around the argument to C<given()> and C<when()> (except when this last one is used as a statement modifier). Parentheses in Perl 6 are always optional in a control construct such as C<if()>,  C<while()>, or C<when()>; they can't be made optional in Perl 5 without a great deal of potential confusion, because Perl 5 would parse the expression 
+The Perl 5 smart match and C<given>/C<when> constructs are not absolutely identical to their Perl 6 analogues. The most visible difference is that, in Perl 5, parentheses are required around the argument to C<given()> and C<when()> (except when this last one is used as a statement modifier). Parentheses in Perl 6 are always optional in a control construct such as C<if()>, C<while()>, or C<when()>; they can't be made optional in Perl 5 without a great deal of potential confusion, because Perl 5 would parse the expression 
 
 
   given $foo { 
@@ -656,13 +656,13 @@ as though the argument to C<given> were an element of the hash C<%foo>, interpre
 
 The table of smart matches is not identical to that proposed by the Perl 6 specification, mainly due to the differences between Perl 6's and Perl 5's data models. 
 
-In Perl 6, C<when()> will always do an implicit smart match with its argument, whilst it is convenient in Perl 5 to suppress this implicit smart match in certain situations,  as documented above. (The difference is largely because Perl 5 does not, even internally, have a boolean type.) 
+In Perl 6, C<when()> will always do an implicit smart match with its argument, whilst it is convenient in Perl 5 to suppress this implicit smart match in certain situations, as documented above. (The difference is largely because Perl 5 does not, even internally, have a boolean type.) 
 
 =head2 Goto X<goto> 
 
 Although not for the faint of heart, Perl does support a C<goto> statement.  There are three forms: C<goto>-LABEL, C<goto>-EXPR, and C<goto>-&NAME.  A loop's LABEL is not actually a valid target for a C<goto>; it's just the name of the loop. 
 
-The C<goto>-LABEL form finds the statement labeled with LABEL and resumes execution there.  It may not be used to go into any construct that requires initialization, such as a subroutine or a C<foreach> loop.  It also can't be used to go into a construct that is optimized away.  It can be used to go almost anywhere else within the dynamic scope,  including out of subroutines, but it's usually better to use some other construct such as C<last> or C<die>.  The author of Perl has never felt the need to use this form of C<goto> (in Perl, that is--C is another matter). 
+The C<goto>-LABEL form finds the statement labeled with LABEL and resumes execution there.  It may not be used to go into any construct that requires initialization, such as a subroutine or a C<foreach> loop.  It also can't be used to go into a construct that is optimized away.  It can be used to go almost anywhere else within the dynamic scope, including out of subroutines, but it's usually better to use some other construct such as C<last> or C<die>.  The author of Perl has never felt the need to use this form of C<goto> (in Perl, that is--C is another matter). 
 
 The C<goto>-EXPR form expects a label name, whose scope will be resolved dynamically.  This allows for computed C<goto>s per FORTRAN, but isn't necessarily recommended if you're optimizing for maintainability: 
 

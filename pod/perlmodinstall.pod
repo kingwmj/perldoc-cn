@@ -4,7 +4,7 @@ perlmodinstall - Installing CPAN Modules
 
 =head1 DESCRIPTION 
 
-You can think of a module as the fundamental unit of reusable Perl code; see L<perlmod> for details.  Whenever anyone creates a chunk of Perl code that they think will be useful to the world, they register as a Perl developer at http://www.cpan.org/modules/04pause.html so that they can then upload their code to the CPAN.  The CPAN is the Comprehensive Perl Archive Network and can be accessed at http://www.cpan.org/, and searched at http://search.cpan.org/ . 
+You can think of a module as the fundamental unit of reusable Perl code; see L<perlmod> for details.  Whenever anyone creates a chunk of Perl code that they think will be useful to the world, they register as a Perl developer at http://www.cpan.org/modules/04pause.html so that they can then upload their code to the CPAN.  The CPAN is the Comprehensive Perl Archive Network and can be accessed at http://www.cpan.org/ , and searched at http://search.cpan.org/ . 
 
 This documentation is for people who want to download CPAN modules and install them on their own computer. 
 
@@ -36,7 +36,7 @@ Also note that these instructions are tailored for installing the module into yo
 
 =item * 
 
-B<If you're on a Unix or Unix-like system, > 
+B<If you're on a Unix or Unix-like system,> 
 
 You can use Andreas Koenig's CPAN module ( http://www.cpan.org/modules/by-module/CPAN ) to automate the following steps, from DECOMPRESS through INSTALL. 
 
@@ -122,7 +122,7 @@ While still in that directory, type:
 
 =item * 
 
-B<If you're using a Macintosh with "Classic" MacOS and MacPerl, > 
+B<If you're using a Macintosh with "Classic" MacOS and MacPerl,> 
 
 
 
@@ -157,7 +157,7 @@ As a last resort, you can use the perl one-liner:
 
 on the source files. 
 
-Then move the files (probably just the F<.pm> files, though there may be some additional ones, too; check the module documentation) to their final destination: This will most likely be in C<$ENV{MACPERL}site_lib:> (i.e.,  C<HD:MacPerl folder:site_lib:>).  You can add new paths to the default C<@INC> in the Preferences menu item in the MacPerl application (C<$ENV{MACPERL}site_lib:> is added automagically).  Create whatever directory structures are required (i.e., for C<Some::Module>, create C<$ENV{MACPERL}site_lib:Some:> and put C<Module.pm> in that directory). 
+Then move the files (probably just the F<.pm> files, though there may be some additional ones, too; check the module documentation) to their final destination: This will most likely be in C<$ENV{MACPERL}site_lib:> (i.e., C<HD:MacPerl folder:site_lib:>).  You can add new paths to the default C<@INC> in the Preferences menu item in the MacPerl application (C<$ENV{MACPERL}site_lib:> is added automagically).  Create whatever directory structures are required (i.e., for C<Some::Module>, create C<$ENV{MACPERL}site_lib:Some:> and put C<Module.pm> in that directory). 
 
 Then run the following script (or something like it): 
 
@@ -169,7 +169,7 @@ Then run the following script (or something like it):
 
 =item * 
 
-B<If you're on the DJGPP port of DOS, > 
+B<If you're on the DJGPP port of DOS,> 
 
 
    A. DECOMPRESS 
@@ -204,15 +204,15 @@ You will need the packages mentioned in F<README.dos> in the Perl distribution.
 
 =item * 
 
-B<If you're on OS/2, > 
+B<If you're on OS/2,> 
 
 Get the EMX development suite and gzip/tar, from either Hobbes ( http://hobbes.nmsu.edu ) or Leo ( http://www.leo.org ), and then follow the instructions for Unix. 
 
 =item * 
 
-B<If you're on VMS, > 
+B<If you're on VMS,> 
 
-When downloading from CPAN, save your file with a C<.tgz> extension instead of C<.tar.gz>.  All other periods in the filename should be replaced with underscores.  For example,  C<Your-Module-1.33.tar.gz> should be downloaded as C<Your-Module-1_33.tgz>. 
+When downloading from CPAN, save your file with a C<.tgz> extension instead of C<.tar.gz>.  All other periods in the filename should be replaced with underscores.  For example, C<Your-Module-1.33.tar.gz> should be downloaded as C<Your-Module-1_33.tgz>. 
 
 A. DECOMPRESS 
 
@@ -275,7 +275,7 @@ Substitute C<mmk> for C<mms> above if you're using MMK.
 
 =item * 
 
-B<If you're on MVS>,  
+B<If you're on MVS>, 
 
 Introduce the F<.tar.gz> file into an HFS as binary; don't translate from ASCII to EBCDIC. 
 
@@ -290,7 +290,7 @@ B. UNPACK
 Unpack the result with 
 
 
-     pax -o to=IBM-1047, from=ISO8859-1 -r < yourmodule.tar 
+     pax -o to=IBM-1047,from=ISO8859-1 -r < yourmodule.tar 
 
 The BUILD and INSTALL steps are identical to those for Unix.  Some modules generate Makefiles that work better with GNU make, which is available from http://www.mks.com/s390/gnu/ 
 
@@ -320,7 +320,7 @@ B<Those that are targeted at a specific platform.> (Such as the Win32:: modules.
 
 
 
-Check the CPAN Testers if a module should work with your platform but it doesn't behave as you'd expect, or you aren't sure whether or not a module will work under your platform.  If the module you want isn't listed there, you can test it yourself and let CPAN Testers know,  you can join CPAN Testers, or you can request it be tested. 
+Check the CPAN Testers if a module should work with your platform but it doesn't behave as you'd expect, or you aren't sure whether or not a module will work under your platform.  If the module you want isn't listed there, you can test it yourself and let CPAN Testers know, you can join CPAN Testers, or you can request it be tested. 
 
 
     http://testers.cpan.org/ 
@@ -337,7 +337,7 @@ Jon Orwant
 
 orwant@medita.mit.edu 
 
-with invaluable help from Chris Nandor, and valuable help from Brandon Allbery, Charles Bailey, Graham Barr, Dominic Dunlop, Jarkko Hietaniemi, Ben Holzman, Tom Horsley, Nick Ing-Simmons, Tuomas J. Lukka, Laszlo Molnar, Alan Olsen, Peter Prymmer, Gurusamy Sarathy,  Christoph Spalinger, Dan Sugalski, Larry Virden, and Ilya Zakharevich. 
+with invaluable help from Chris Nandor, and valuable help from Brandon Allbery, Charles Bailey, Graham Barr, Dominic Dunlop, Jarkko Hietaniemi, Ben Holzman, Tom Horsley, Nick Ing-Simmons, Tuomas J. Lukka, Laszlo Molnar, Alan Olsen, Peter Prymmer, Gurusamy Sarathy, Christoph Spalinger, Dan Sugalski, Larry Virden, and Ilya Zakharevich. 
 
 First version July 22, 1998; last revised November 21, 2001. 
 

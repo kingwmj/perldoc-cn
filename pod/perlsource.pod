@@ -29,7 +29,7 @@ Modules shipped as part of the Perl core live in four subdirectories. Two of the
 
 =item * F<lib/> 
 
-This directory contains pure-Perl modules which are only released as part of the core. This directory contains I<all> of the modules and their tests,  unlike other core modules. 
+This directory contains pure-Perl modules which are only released as part of the core. This directory contains I<all> of the modules and their tests, unlike other core modules. 
 
 =item * F<ext/> 
 
@@ -65,7 +65,7 @@ Tests for the absolute basic functionality of Perl. This includes C<if>, basic f
 
 =item * F<t/cmd/> 
 
-Tests for basic control structures, C<if/else>, C<while>,  subroutines, etc. 
+Tests for basic control structures, C<if/else>, C<while>, subroutines, etc. 
 
 =item * F<t/comp/> 
 
@@ -127,7 +127,7 @@ The F<Porting> directory contains a grab bag of code and documentation intended 
 
 =item * F<check*> 
 
-These are scripts which will check the source things like ANSI C violations,  POD encoding issues, etc. 
+These are scripts which will check the source things like ANSI C violations, POD encoding issues, etc. 
 
 =item * F<Maintainers>, F<Maintainers.pl>, and F<Maintainers.pm> 
 

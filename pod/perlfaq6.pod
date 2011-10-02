@@ -4,7 +4,7 @@ perlfaq6 - Regular Expressions
 
 =head1 DESCRIPTION 
 
-This section is surprisingly small because the rest of the FAQ is littered with answers involving regular expressions. For example,  decoding a URL and checking whether something is a number are handled with regular expressions, but those answers are found elsewhere in this document (in L<perlfaq9>: "How do I decode or create those %-encodings on the web" and L<perlfaq4>: "How do I determine whether a scalar is a number/whole/integer/float", to be precise). 
+This section is surprisingly small because the rest of the FAQ is littered with answers involving regular expressions. For example, decoding a URL and checking whether something is a number are handled with regular expressions, but those answers are found elsewhere in this document (in L<perlfaq9>: "How do I decode or create those %-encodings on the web" and L<perlfaq4>: "How do I determine whether a scalar is a number/whole/integer/float", to be precise). 
 
 =head2 How can I hope to use regular expressions without creating illegible and unmaintainable code? X<regex, legibility> X<regexp, legibility> X<regular expression, legibility> X</x> 
 
@@ -125,7 +125,7 @@ Here's another example of using C<..>:
 
 If you just want to get work done, use a module and forget about the regular expressions. The C<XML::Parser> and C<HTML::Parser> modules are good starts, although each namespace has other parsing modules specialized for certain tasks and different ways of doing it. Start at CPAN Search ( http://search.cpan.org ) and wonder at all the work people have done for you already! :) 
 
-The problem with things such as XML is that they have balanced text containing multiple levels of balanced text, but sometimes it isn't balanced text, as in an empty tag (C<< <br/> >>, for instance). Even then,  things can occur out-of-order. Just when you think you've got a pattern that matches your input, someone throws you a curveball. 
+The problem with things such as XML is that they have balanced text containing multiple levels of balanced text, but sometimes it isn't balanced text, as in an empty tag (C<< <br/> >>, for instance). Even then, things can occur out-of-order. Just when you think you've got a pattern that matches your input, someone throws you a curveball. 
 
 If you'd like to do it the hard way, scratching and clawing your way toward a right answer but constantly being disappointed, besieged by bug reports, and weary from the inordinate amount of time you have to spend reinventing a triangular wheel, then there are several things you can try before you give up in frustration: 
 
@@ -156,8 +156,8 @@ If you have File::Stream, this is easy.
 
 
     my $stream = File::Stream->new( 
-        $filehandle,  
-        separator => qr/\s*, \s*/,  
+        $filehandle, 
+        separator => qr/\s*,\s*/, 
         ); 
 
 
@@ -249,7 +249,7 @@ As an alternative, to keep the case of the replacement word if it is longer than
 
 This changes the sentence to "this is a SUcCess case." 
 
-Just to show that C programmers can write C in any programming language,  if you prefer a more C-like solution, the following script makes the substitution have the same case, letter by letter, as the original. (It also happens to run about 240% slower than the Perlish solution runs.) If the substitution has more characters than the string being substituted,  the case of the last character is used for the rest of the substitution. 
+Just to show that C programmers can write C in any programming language, if you prefer a more C-like solution, the following script makes the substitution have the same case, letter by letter, as the original. (It also happens to run about 240% slower than the Perlish solution runs.) If the substitution has more characters than the string being substituted, the case of the last character is used for the rest of the substitution. 
 
 
     # Original by Nathan Torkington, massaged by Jeffrey Friedl 
@@ -294,11 +294,11 @@ See L<perllocale> for details.
 
 You can use the POSIX character class syntax C</[[:alpha:]]/> documented in L<perlre>. 
 
-No matter which locale you are in, the alphabetic characters are the characters in \w without the digits and the underscore. As a regex, that looks like C</[^\W\d_]/>. Its complement,  the non-alphabetics, is then everything in \W along with the digits and the underscore, or C</[\W\d_]/>. 
+No matter which locale you are in, the alphabetic characters are the characters in \w without the digits and the underscore. As a regex, that looks like C</[^\W\d_]/>. Its complement, the non-alphabetics, is then everything in \W along with the digits and the underscore, or C</[\W\d_]/>. 
 
 =head2 How can I quote a variable to use in a regex? X<regex, escaping> X<regexp, escaping> X<regular expression, escaping> 
 
-The Perl parser will expand $variable and @variable references in regular expressions unless the delimiter is a single quote. Remember,  too, that the right-hand side of a C<s///> substitution is considered a double-quoted string (see L<perlop> for more details). Remember also that any regex special characters will be acted on unless you precede the substitution with \Q. Here's an example: 
+The Perl parser will expand $variable and @variable references in regular expressions unless the delimiter is a single quote. Remember, too, that the right-hand side of a C<s///> substitution is considered a double-quoted string (see L<perlop> for more details). Remember also that any regex special characters will be acted on unless you precede the substitution with \Q. Here's an example: 
 
 
     $string = "Placido P. Octopus"; 
@@ -328,7 +328,7 @@ The use of C<\Q> causes the <.> in the regex to be treated as a regular characte
 
 The C</o> option for regular expressions (documented in L<perlop> and L<perlreref>) tells Perl to compile the regular expression only once. This is only useful when the pattern contains a variable. Perls 5.6 and later handle this automatically if the pattern does not change. 
 
-Since the match operator C<m//>, the substitution operator C<s///>,  and the regular expression quoting operator C<qr//> are double-quotish constructs, you can interpolate variables into the pattern. See the answer to "How can I quote a variable to use in a regex?" for more details. 
+Since the match operator C<m//>, the substitution operator C<s///>, and the regular expression quoting operator C<qr//> are double-quotish constructs, you can interpolate variables into the pattern. See the answer to "How can I quote a variable to use in a regex?" for more details. 
 
 This example takes a regular expression from the argument list and prints the lines of input that match it: 
 
@@ -372,7 +372,7 @@ While this actually can be done, it's much harder than you'd think. For example,
 
     perl -0777 -pe 's{/\*.*?\*/}{}gs' foo.c 
 
-will work in many but not all cases. You see, it's too simple-minded for certain kinds of C programs, in particular, those with what appear to be comments in quoted strings. For that, you'd need something like this,  created by Jeffrey Friedl and later modified by Fred Curtis. 
+will work in many but not all cases. You see, it's too simple-minded for certain kinds of C programs, in particular, those with what appear to be comments in quoted strings. For that, you'd need something like this, created by Jeffrey Friedl and later modified by Fred Curtis. 
 
 
     $/ = undef; 
@@ -450,7 +450,7 @@ The regular expression to match the balanced text uses two new (to Perl 5.10) re
 
 First, adding the new possessive C<+> to any quantifier finds the longest match and does not backtrack. That's important since you want to handle any angle brackets through the recursion, not backtracking. The group C<< [^<>]++ >> finds one or more non-angle brackets without backtracking. 
 
-Second, the new C<(?PARNO)> refers to the sub-pattern in the particular capture group given by C<PARNO>. In the following regex,  the first capture group finds (and remembers) the balanced text, and you need that same pattern within the first buffer to get past the nested text. That's the recursive part. The C<(?1)> uses the pattern in the outer capture group as an independent part of the regex. 
+Second, the new C<(?PARNO)> refers to the sub-pattern in the particular capture group given by C<PARNO>. In the following regex, the first capture group finds (and remembers) the balanced text, and you need that same pattern within the first buffer to get past the nested text. That's the recursive part. The C<(?1)> uses the pattern in the outer capture group as an independent part of the regex. 
 
 Putting it all together, you have: 
 
@@ -550,7 +550,7 @@ The output shows all of the groups. The outermost matches show up first and the 
 
 =head2 What does it mean that regexes are greedy? How can I get around it? X<greedy> X<greediness> 
 
-Most people mean that greedy regexes match as much as they can. Technically speaking, it's actually the quantifiers (C<?>, C<*>, C<+>,  C<{}>) that are greedy rather than the whole pattern; Perl prefers local greed and immediate gratification to overall greed. To get non-greedy versions of the same quantifiers, use (C<??>, C<*?>, C<+?>, C<{}?>). 
+Most people mean that greedy regexes match as much as they can. Technically speaking, it's actually the quantifiers (C<?>, C<*>, C<+>, C<{}>) that are greedy rather than the whole pattern; Perl prefers local greed and immediate gratification to overall greed. To get non-greedy versions of the same quantifiers, use (C<??>, C<*?>, C<+?>, C<{}?>). 
 
 An example: 
 
@@ -674,7 +674,7 @@ In some cases, you may be able to make several patterns into a single regular ex
         print if /\b(?:$regex)\b/i; 
         } 
 
-For more details on regular expression efficiency, see I<Mastering Regular Expressions> by Jeffrey Friedl. He explains how regular expressions engine work and why some patterns are surprisingly inefficient. Once you understand how perl applies regular expressions,  you can tune them for individual situations. 
+For more details on regular expression efficiency, see I<Mastering Regular Expressions> by Jeffrey Friedl. He explains how regular expressions engine work and why some patterns are surprisingly inefficient. Once you understand how perl applies regular expressions, you can tune them for individual situations. 
 
 =head2 Why don't word-boundary searches with C<\b> work for me? X<\b> 
 
@@ -682,9 +682,9 @@ For more details on regular expression efficiency, see I<Mastering Regular Expre
 
 Ensure that you know what \b really does: it's the boundary between a word character, \w, and something that isn't a word character. That thing that isn't a word character might be \W, but it can also be the start or end of the string. 
 
-It's not (not!) the boundary between whitespace and non-whitespace,  and it's not the stuff between words we use to create sentences. 
+It's not (not!) the boundary between whitespace and non-whitespace, and it's not the stuff between words we use to create sentences. 
 
-In regex speak, a word boundary (\b) is a "zero width assertion",  meaning that it doesn't represent a character in the string, but a condition at a certain position. 
+In regex speak, a word boundary (\b) is a "zero width assertion", meaning that it doesn't represent a character in the string, but a condition at a certain position. 
 
 For the regular expression, /\bPerl\b/, there has to be a word boundary before the "P" and after the "l". As long as something other than a word character precedes the "P" and succeeds the "l", the pattern will match. These strings match /\bPerl\b/. 
 
@@ -774,7 +774,7 @@ After the match fails at the letter C<a>, perl resets C<pos()> and the next matc
 
     print "Found $1 after while" if m/(\d\d)/g; # finds "11" 
 
-You can disable C<pos()> resets on fail with the C<c> flag, documented in L<perlop> and L<perlreref>. Subsequent matches start where the last successful match ended (the value of C<pos()>) even if a match on the same string has failed in the meantime. In this case, the match after the C<while()> loop starts at the C<a> (where the last match stopped),  and since it does not use any anchor it can skip over the C<a> to find C<44>. 
+You can disable C<pos()> resets on fail with the C<c> flag, documented in L<perlop> and L<perlreref>. Subsequent matches start where the last successful match ended (the value of C<pos()>) even if a match on the same string has failed in the meantime. In this case, the match after the C<while()> loop starts at the C<a> (where the last match stopped), and since it does not use any anchor it can skip over the C<a> to find C<44>. 
 
 
     $_ = "1122a44"; 
@@ -786,7 +786,7 @@ You can disable C<pos()> resets on fail with the C<c> flag, documented in L<perl
 
     print "Found $1 after while" if m/(\d\d)/g; # finds "44" 
 
-Typically you use the C<\G> anchor with the C<c> flag when you want to try a different match if one fails,  such as in a tokenizer. Jeffrey Friedl offers this example which works in 5.004 or later. 
+Typically you use the C<\G> anchor with the C<c> flag when you want to try a different match if one fails, such as in a tokenizer. Jeffrey Friedl offers this example which works in 5.004 or later. 
 
 
     while (<>) { 
@@ -803,7 +803,7 @@ For each line, the C<PARSER> loop first tries to match a series of digits follow
 
 =head2 Are Perl regexes DFAs or NFAs? Are they POSIX compliant? X<DFA> X<NFA> X<POSIX> 
 
-While it's true that Perl's regular expressions resemble the DFAs (deterministic finite automata) of the egrep(1) program, they are in fact implemented as NFAs (non-deterministic finite automata) to allow backtracking and backreferencing. And they aren't POSIX-style either,  because those guarantee worst-case behavior for all cases. (It seems that some people prefer guarantees of consistency, even when what's guaranteed is slowness.) See the book "Mastering Regular Expressions" (from O'Reilly) by Jeffrey Friedl for all the details you could ever hope to know on these matters (a full citation appears in L<perlfaq2>). 
+While it's true that Perl's regular expressions resemble the DFAs (deterministic finite automata) of the egrep(1) program, they are in fact implemented as NFAs (non-deterministic finite automata) to allow backtracking and backreferencing. And they aren't POSIX-style either, because those guarantee worst-case behavior for all cases. (It seems that some people prefer guarantees of consistency, even when what's guaranteed is slowness.) See the book "Mastering Regular Expressions" (from O'Reilly) by Jeffrey Friedl for all the details you could ever hope to know on these matters (a full citation appears in L<perlfaq2>). 
 
 =head2 What's wrong with using grep in a void context? X<grep> 
 
@@ -813,13 +813,13 @@ In perls older than 5.8.1, map suffers from this problem as well. But since 5.8.
 
 =head2 How can I match strings with multibyte characters? X<regex, and multibyte characters> X<regexp, and multibyte characters> X<regular expression, and multibyte characters> X<martian> X<encoding, Martian> 
 
-Starting from Perl 5.6 Perl has had some level of multibyte character support. Perl 5.8 or later is recommended. Supported multibyte character repertoires include Unicode, and legacy encodings through the Encode module. See L<perluniintro>, L<perlunicode>,  and L<Encode>. 
+Starting from Perl 5.6 Perl has had some level of multibyte character support. Perl 5.8 or later is recommended. Supported multibyte character repertoires include Unicode, and legacy encodings through the Encode module. See L<perluniintro>, L<perlunicode>, and L<Encode>. 
 
 If you are stuck with older Perls, you can do Unicode with the C<Unicode::String> module, and character conversions using the C<Unicode::Map8> and C<Unicode::Map> modules. If you are using Japanese encodings, you might try using the jperl 5.005_03. 
 
 Finally, the following set of approaches was offered by Jeffrey Friedl, whose article in issue #5 of The Perl Journal talks about this very matter. 
 
-Let's suppose you have some weird Martian encoding where pairs of ASCII uppercase letters encode single Martian letters (i.e. the two bytes "CV" make a single Martian letter, as do the two bytes "SG",  "VS", "XX", etc.). Other bytes represent single characters, just like ASCII. 
+Let's suppose you have some weird Martian encoding where pairs of ASCII uppercase letters encode single Martian letters (i.e. the two bytes "CV" make a single Martian letter, as do the two bytes "SG", "VS", "XX", etc.). Other bytes represent single characters, just like ASCII. 
 
 So, the string of Martian "I am CVSGXX!" uses 12 bytes to encode the nine characters 'I', ' ', 'a', 'm', ' ', 'CV', 'SG', 'XX', '!'. 
 
@@ -862,7 +862,7 @@ Here's another, slightly less painful, way to do it from Benjamin Goldberg, who 
 
 This succeeds if the "martian" character GX is in the string, and fails otherwise. If you don't like using (?<!), a zero-width negative look-behind assertion, you can replace (?<![A-Z]) with (?:^|[^A-Z]). 
 
-It does have the drawback of putting the wrong thing in $-[0] and $+[0],  but this usually can be worked around. 
+It does have the drawback of putting the wrong thing in $-[0] and $+[0], but this usually can be worked around. 
 
 =head2 How do I match a regular expression that's in a variable? X<regex, in variable> X<eval> X<regex> X<quotemeta> X<\Q, regex> X<\E, regex>, X<qr//> 
 
@@ -908,7 +908,7 @@ You can also do this directly in the match operator using the C<\Q> and C<\E> se
 
     if( $string =~ m/\Q$regex\E/ ) { ... } 
 
-Alternately, you can use C<qr//>, the regular expression quote operator (see L<perlop> for more details). It quotes and perhaps compiles the pattern,  and you can apply regular expression flags to the pattern. 
+Alternately, you can use C<qr//>, the regular expression quote operator (see L<perlop> for more details). It quotes and perhaps compiles the pattern, and you can apply regular expression flags to the pattern. 
 
 
     chomp( my $input = <STDIN> ); 

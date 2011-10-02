@@ -22,7 +22,7 @@ See below for more description of the switches.
 
 =head1 DESCRIPTION 
 
-I<perldoc> looks up a piece of documentation in .pod format that is embedded in the perl installation tree or in a perl script, and displays it via C<pod2man | nroff -man | $PAGER>. (In addition, if running under HP-UX,  C<col -x> will be used.) This is primarily used for the documentation for the perl library modules. 
+I<perldoc> looks up a piece of documentation in .pod format that is embedded in the perl installation tree or in a perl script, and displays it via C<pod2man | nroff -man | $PAGER>. (In addition, if running under HP-UX, C<col -x> will be used.) This is primarily used for the documentation for the perl library modules. 
 
 Your system may also have man pages installed for those modules, in which case you can probably just use the man(1) command. 
 
@@ -42,7 +42,7 @@ B<D>escribes search for the item in B<d>etail.
 
 =item B<-t> 
 
-Display docs using plain B<t>ext converter, instead of nroff. This may be faster,  but it probably won't look as nice. 
+Display docs using plain B<t>ext converter, instead of nroff. This may be faster, but it probably won't look as nice. 
 
 =item B<-u> 
 
@@ -117,7 +117,7 @@ You can specify several classes to try by joining them with commas or semicolons
 
 =item B<-w> I<option:value> or B<-w> I<option> 
 
-This specifies an option to call the formatter B<w>ith.  For example,  C<-w textsize:15> will call C<< $formatter->textsize(15) >> on the formatter object before it is used to format the object.  For this to be valid, the formatter class must provide such a method, and the value you pass should be valid. (So if C<textsize> expects an integer, and you do C<-w textsize:big>,  expect trouble.) 
+This specifies an option to call the formatter B<w>ith.  For example, C<-w textsize:15> will call C<< $formatter->textsize(15) >> on the formatter object before it is used to format the object.  For this to be valid, the formatter class must provide such a method, and the value you pass should be valid. (So if C<textsize> expects an integer, and you do C<-w textsize:big>, expect trouble.) 
 
 You can use C<-w optionname> (without a value) as shorthand for C<-w optionname:I<TRUE>>.  This is presumably useful in cases of on/off features like: C<-w page_numbering>. 
 
@@ -169,7 +169,7 @@ Because B<perldoc> does not run properly tainted, and is known to have security 
 
 Any switches in the C<PERLDOC> environment variable will be used before the command line arguments. 
 
-Useful values for C<PERLDOC> include C<-oman>, C<-otext>, C<-otk>, C<-ortf>,  C<-oxml>, and so on, depending on what modules you have on hand; or the formatter class may be specified exactly with C<-MPod::Perldoc::ToMan> or the like. 
+Useful values for C<PERLDOC> include C<-oman>, C<-otext>, C<-otk>, C<-ortf>, C<-oxml>, and so on, depending on what modules you have on hand; or the formatter class may be specified exactly with C<-MPod::Perldoc::ToMan> or the like. 
 
 C<perldoc> also searches directories specified by the C<PERL5LIB> (or C<PERLLIB> if C<PERL5LIB> is not defined) and C<PATH> environment variables. (The latter is so that embedded pods for executables, such as C<perldoc> itself, are available.) 
 
@@ -193,7 +193,7 @@ L<perlpod>, L<Pod::Perldoc>
 
 Current maintainer: Adriano R. Ferreira <ferreira@cpan.org> 
 
-Past contributors are: Sean M. Burke <sburke@cpan.org>,  Kenneth Albanowski <kjahds@kjahds.com>,  Andy Dougherty  <doughera@lafcol.lafayette.edu>,  and many others. 
+Past contributors are: Sean M. Burke <sburke@cpan.org>, Kenneth Albanowski <kjahds@kjahds.com>, Andy Dougherty  <doughera@lafcol.lafayette.edu>, and many others. 
 
 =cut 
 

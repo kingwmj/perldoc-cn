@@ -36,11 +36,11 @@ Each scalar C<${"_<$filename"}> contains C<"_<$filename">.  This is also the cas
 
 =item * 
 
-After each C<require>d file is compiled, but before it is executed,  C<DB::postponed(*{"_<$filename"})> is called if the subroutine C<DB::postponed> exists.  Here, the $filename is the expanded name of the C<require>d file, as found in the values of %INC. 
+After each C<require>d file is compiled, but before it is executed, C<DB::postponed(*{"_<$filename"})> is called if the subroutine C<DB::postponed> exists.  Here, the $filename is the expanded name of the C<require>d file, as found in the values of %INC. 
 
 =item * 
 
-After each subroutine C<subname> is compiled, the existence of C<$DB::postponed{subname}> is checked.  If this key exists,  C<DB::postponed(subname)> is called if the C<DB::postponed> subroutine also exists. 
+After each subroutine C<subname> is compiled, the existence of C<$DB::postponed{subname}> is checked.  If this key exists, C<DB::postponed(subname)> is called if the C<DB::postponed> subroutine also exists. 
 
 =item * 
 
@@ -96,7 +96,7 @@ After the rc file is read, the debugger reads the PERLDB_OPTS environment variab
 
 =head3 Debugger Internal Variables 
 
-In addition to the file and subroutine-related variables mentioned above,  the debugger also maintains various magical internal variables. 
+In addition to the file and subroutine-related variables mentioned above, the debugger also maintains various magical internal variables. 
 
 =over 4 
 
@@ -126,7 +126,7 @@ See L<perldebug/"Configurable Options"> for a description of options parsed by C
 
 =item * 
 
-C<DB::dump_trace(skip[, count])> skips the specified number of frames and returns a list containing information about the calling frames (all of them, if C<count> is missing).  Each entry is reference to a hash with keys C<context> (either C<.>, C<$>, or C<@>), C<sub> (subroutine name, or info about C<eval>), C<args> (C<undef> or a reference to an array), C<file>, and C<line>. 
+C<DB::dump_trace(skip[,count])> skips the specified number of frames and returns a list containing information about the calling frames (all of them, if C<count> is missing).  Each entry is reference to a hash with keys C<context> (either C<.>, C<$>, or C<@>), C<sub> (subroutine name, or info about C<eval>), C<args> (C<undef> or a reference to an array), C<file>, and C<line>. 
 
 =item * 
 
@@ -340,7 +340,7 @@ The debugging output at compile time looks like this:
   rarest char d at 0 
      1: ANYOF[bc](12) 
     12: EXACT <d>(14) 
-    14: CURLYX[0] {1, 32767}(28) 
+    14: CURLYX[0] {1,32767}(28) 
     16:   OPEN1(18) 
     18:     EXACT <e>(20) 
     20:     STAR(23) 
@@ -542,9 +542,9 @@ Here are the possible types, with short descriptions:
  EXACTFL    str     Match this string, folded in locale (w/len). 
  EXACTFU    str     Match this string, folded, Unicode semantics for non-utf8 
                     (prec. by length). 
- EXACTFA    str        Match this string, folded, Unicode semantics for non-utf8,  
+ EXACTFA    str        Match this string, folded, Unicode semantics for non-utf8, 
                     but no ASCII-range character matches outside ASCII (prec. 
-                    by length), . 
+                    by length),. 
 
 
  # Do nothing types 
@@ -558,7 +558,7 @@ Here are the possible types, with short descriptions:
  # Loops 
 
 
- # STAR, PLUS    '?', and complex '*' and '+', are implemented as circular 
+ # STAR,PLUS    '?', and complex '*' and '+', are implemented as circular 
  #               BRANCH structures using BACK.  Simple cases (one character 
  #               per match) are implemented with STAR and PLUS for speed 
  #               and to minimize recursive plunges. 
@@ -567,10 +567,10 @@ Here are the possible types, with short descriptions:
  PLUS       node    Match this (simple) thing 1 or more times. 
 
 
- CURLY      sv 2    Match this simple thing {n, m} times. 
+ CURLY      sv 2    Match this simple thing {n,m} times. 
  CURLYN     no 2    Capture next-after-this simple thing 
- CURLYM     no 2    Capture this medium-complex thing {n, m} times. 
- CURLYX     sv 2    Match this complex thing {n, m} times. 
+ CURLYM     no 2    Capture this medium-complex thing {n,m} times. 
+ CURLYX     sv 2    Match this complex thing {n,m} times. 
 
 
  # This terminator creates a loop structure for CURLYX 
@@ -580,7 +580,7 @@ Here are the possible types, with short descriptions:
  # Buffer related 
 
 
- # OPEN, CLOSE, GROUPP     ...are numbered at compile time. 
+ # OPEN,CLOSE,GROUPP     ...are numbered at compile time. 
  OPEN       num 1   Mark this point in input as start of #n. 
  CLOSE      num 1   Analogous to OPEN. 
 
@@ -724,7 +724,7 @@ Following the optimizer information is a dump of the offset/length table, here s
       11[1] 0[0] 12[0] 12[0] 13[1] 0[0] 14[4] 0[0] 0[0] 0[0] 0[0] 
       0[0] 0[0] 0[0] 0[0] 0[0] 0[0] 18[1] 0[0] 19[1] 20[0] 
 
-The first line here indicates that the offset/length table contains 45 entries.  Each entry is a pair of integers, denoted by C<offset[length]>. Entries are numbered starting with 1, so entry #1 here is C<1[4]> and entry #12 is C<5[1]>.  C<1[4]> indicates that the node labeled C<1:> (the C<1: ANYOF[bc]>) begins at character position 1 in the pre-compiled form of the regex, and has a length of 4 characters. C<5[1]> in position 12 indicates that the node labeled C<12:> (the C<< 12: EXACT <d> >>) begins at character position 5 in the pre-compiled form of the regex, and has a length of 1 character. C<12[1]> in position 14 indicates that the node labeled C<14:> (the C<< 14: CURLYX[0] {1, 32767} >>) begins at character position 12 in the pre-compiled form of the regex, and has a length of 1 character---that is, it corresponds to the C<+> symbol in the precompiled regex. 
+The first line here indicates that the offset/length table contains 45 entries.  Each entry is a pair of integers, denoted by C<offset[length]>. Entries are numbered starting with 1, so entry #1 here is C<1[4]> and entry #12 is C<5[1]>.  C<1[4]> indicates that the node labeled C<1:> (the C<1: ANYOF[bc]>) begins at character position 1 in the pre-compiled form of the regex, and has a length of 4 characters. C<5[1]> in position 12 indicates that the node labeled C<12:> (the C<< 12: EXACT <d> >>) begins at character position 5 in the pre-compiled form of the regex, and has a length of 1 character. C<12[1]> in position 14 indicates that the node labeled C<14:> (the C<< 14: CURLYX[0] {1,32767} >>) begins at character position 12 in the pre-compiled form of the regex, and has a length of 1 character---that is, it corresponds to the C<+> symbol in the precompiled regex. 
 
 C<0[0]> items indicate that there is no corresponding node. 
 
@@ -739,7 +739,7 @@ If the regex engine was entered, the output may look like this:
     Setting an EVAL scope, savestack=3 
      2 <ab> <cdefg__gh_>    |  1: ANYOF 
      3 <abc> <defg__gh_>    | 11: EXACT <d> 
-     4 <abcd> <efg__gh_>    | 13: CURLYX {1, 32767} 
+     4 <abcd> <efg__gh_>    | 13: CURLYX {1,32767} 
      4 <abcd> <efg__gh_>    | 26:   WHILEM 
                 0 out of 1..32767  cc=effff31c 
      4 <abcd> <efg__gh_>    | 15:     OPEN1 
@@ -771,7 +771,7 @@ The I<TYPE> info is indented with respect to the backtracking level. Other incid
 
 Perl is a profligate wastrel when it comes to memory use.  There is a saying that to estimate memory usage of Perl, assume a reasonable algorithm for memory allocation, multiply that estimate by 10, and while you still may miss the mark, at least you won't be quite so astonished.  This is not absolutely true, but may provide a good grasp of what happens. 
 
-Assume that an integer cannot take less than 20 bytes of memory, a float cannot take less than 24 bytes, a string cannot take less than 32 bytes (all these examples assume 32-bit architectures, the result are quite a bit worse on 64-bit architectures).  If a variable is accessed in two of three different ways (which require an integer,  a float, or a string), the memory footprint may increase yet another 20 bytes.  A sloppy malloc(3) implementation can inflate these numbers dramatically. 
+Assume that an integer cannot take less than 20 bytes of memory, a float cannot take less than 24 bytes, a string cannot take less than 32 bytes (all these examples assume 32-bit architectures, the result are quite a bit worse on 64-bit architectures).  If a variable is accessed in two of three different ways (which require an integer, a float, or a string), the memory footprint may increase yet another 20 bytes.  A sloppy malloc(3) implementation can inflate these numbers dramatically. 
 
 On the opposite end of the scale, a declaration like 
 
@@ -823,7 +823,7 @@ In a Perl built for debugging, some buckets may have negative usable size.  This
 
 =item Free/Used 
 
-The 1 or 2 rows of numbers following that correspond to the number of buckets of each size between C<SMALLEST> and C<GREATEST>.  In the first row, the sizes (memory footprints) of buckets are powers of two--or possibly one page greater.  In the second row, if present,  the memory footprints of the buckets are between the memory footprints of two buckets "above". 
+The 1 or 2 rows of numbers following that correspond to the number of buckets of each size between C<SMALLEST> and C<GREATEST>.  In the first row, the sizes (memory footprints) of buckets are powers of two--or possibly one page greater.  In the second row, if present, the memory footprints of the buckets are between the memory footprints of two buckets "above". 
 
 For example, suppose under the previous example, the memory footprints were 
 

@@ -41,7 +41,8 @@ This 'cheat sheet' is a handy reference, meant for beginning Perl programmers. N
   || //            $     str. end (before \n) /m line based ^$ 
   .. ...           +     one or more          /s . includes \n 
   ?:               *     zero or more         /x ign. wh.space 
-  = += -= *= etc.  ?     zero or one          /g global , =>             {3, 7} repeat in range      /o cmpl pat. once 
+  = += -= *= etc.  ?     zero or one          /g global 
+  , =>             {3,7} repeat in range      /o cmpl pat. once 
   list ops         ()    capture 
   not              (?:)  no capture       REGEX CHARCLASSES 
   and              []    character class  .  == [^\n] 
@@ -76,7 +77,7 @@ This 'cheat sheet' is a handy reference, meant for beginning Perl programmers. N
 
 The first version of this document appeared on Perl Monks, where several people had useful suggestions. Thank you, Perl Monks. 
 
-A special thanks to Damian Conway, who didn't only suggest important changes,  but also took the time to count the number of listed features and make a Perl 6 version to show that Perl will stay Perl. 
+A special thanks to Damian Conway, who didn't only suggest important changes, but also took the time to count the number of listed features and make a Perl 6 version to show that Perl will stay Perl. 
 
 =head1 AUTHOR 
 

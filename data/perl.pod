@@ -1,0 +1,295 @@
+=EN F<perl.pod> - The Perl 5 language interpreter 
+
+=CN F<perl.pod> - Perl 5 语言简介 
+
+=EN The F<perldoc> program gives you access to all the documentation that comes with Perl.
+
+=CN F<perldoc>程序为您提供了访问所有Perl文档的入口.
+
+=EN You can get more documentation, tutorials and community support online at L<http://www.perl.org/>.
+
+=CN 如果您想获得更多的文档支持，教程指南和社区在线支持，请访问L<http://www.perl.org/>.
+
+=EN If you're new to Perl, you should start by running C<perldoc perlintro>,  which is a general intro for beginners and provides some background to help you navigate the rest of Perl's extensive documentation.
+
+=CN 如果您第一次了解 Perl, 应当从运行C<perldoc perlintro>开始, 那是一个为初学者专门准备的简单介绍，为你讲解一些 Perl 的基础知识， 并且帮助你浏览其他的大量 Perl 文档。
+
+=EN Run C<perldoc perldoc> to learn more things you can do with F<perldoc>. 
+
+=CN 尽可能使用 C<perldoc> 来学习所有你想学的东西吧。 
+
+=EN For ease of access, the Perl manual has been split up into several sections. 
+
+=CN 为了更容易开始，Perl 的帮助文档被分成几个部分. 
+
+=EN F<perl.pod> - Perl overview (this section) 
+
+=CN F<perl.pod> - Perl 预览(你在看的就是) 
+
+=EN F<perlintro.pod> - Perl introduction for beginners 
+
+=CN F<perlintro.pod> - Perl 为初学者准备的简介 
+
+=EN F<perltoc.pod> - Perl documentation table of contents 
+
+=CN F<perltoc.pod> - Perl 文档的索引目录 
+
+=EN F<perlreftut.pod> - Perl references short introduction 
+
+=CN F<perlreftut.pod> - Perl 引用的简短介绍 
+
+=EN F<perldsc.pod> - Perl data structures intro 
+
+=CN F<perldsc.pod> - Perl 数据结构介绍 
+
+=EN F<perllol.pod> - Perl data structures: arrays of arrays 
+
+=CN F<perllol.pod> - Perl 数据结构: 数组的数组 
+
+=EN F<perlrequick.pod> - Perl regular expressions quick start 
+
+=CN F<perlrequick.pod> - Perl 正则表达式预览 
+
+=EN F<perlretut.pod> - Perl regular expressions tutorial 
+
+=CN F<perlretut.pod> - Perl 正则表达式详细介绍 
+
+=EN F<perlboot.pod> - Perl OO tutorial for beginners 
+
+=CN F<perlboot.pod> - Perl 为初学者准备的面向对象编程介绍 
+
+=EN F<perltoot.pod> - Perl OO tutorial, part 1 
+
+=CN F<perltoot.pod> - Perl 面向对象编程介绍，第一部分 
+
+=EN F<perltooc.pod> - Perl OO tutorial, part 2 
+
+=CN F<perltooc.pod> - Perl 面向对象编程介绍，第二部分 
+
+=EN F<perlbot.pod> - Perl OO tricks and examples 
+
+=CN F<perlbot.pod> - Perl 面向对象的一些技巧和实例 
+
+=EN F<perlperf.pod> - Perl Performance and Optimization Techniques 
+
+=CN F<perlperf.pod> - Perl 性能和优化技术 
+
+=EN F<perlstyle.pod> - Perl style guide 
+
+=CN F<perlstyle.pod> - Perl 风格向导 
+
+=EN F<perlcheat.pod> - Perl cheat sheet 
+
+=CN F<perlcheat.pod> - Perl 备忘录 
+
+=EN F<perltrap.pod> - Perl traps for the unwary 
+
+=CN F<perltrap.pod> - Perl 对于粗心者的陷阱 
+
+=EN F<perldebtut.pod> - Perl debugging tutorial 
+
+=CN F<perldebtut.pod> - Perl 调试指南 
+
+=EN F<perlfaq.pod> - Perl frequently asked questions 
+
+=CN F<perlfaq.pod> - Perl 经常问的问题 
+
+=EN F<perlfaq1.pod> - General Questions About Perl 
+
+=CN F<perlfaq1.pod> - 关于 Perl 通常的问题 
+
+=EN F<perlfaq2.pod> - Obtaining and Learning about Perl 
+
+=CN F<perlfaq2.pod> - 如何获得并学习 Perl 
+
+=EN F<perlfaq4.pod> - Data Manipulation 
+
+=CN F<perlfaq4.pod> - 数据操作 
+
+=EN F<perlfaq5.pod> - Files and Formats 
+
+=CN F<perlfaq5.pod> - 文件和格式 
+
+=EN F<perlfaq6.pod> - Regexes 
+
+=CN F<perlfaq6.pod> - 正则表达式 
+
+=EN F<perlfaq7.pod> - Perl Language Issues 
+
+=CN F<perlfaq7.pod> - Perl 语言问题 
+
+=EN F<perlfaq8.pod> - System Interaction 
+
+=CN F<perlfaq8.pod> - 系统交互 
+
+=EN F<perlfaq9.pod> - Networking 
+
+=CN F<perlfaq9.pod> - 利用网络通信 
+
+=EN F<perlsyn.pod> - Perl syntax 
+
+=CN F<perlsyn.pod> - Perl 语法
+
+=EN F<perldata.pod> - Perl data structures 
+
+=CN F<perldata.pod> - Perl 数据结构
+
+=EN F<perlop.pod> - Perl operators and precedence 
+
+=CN F<perlop.pod> - Perl 操作符和优先级 
+
+=EN F<perlsub.pod> - Perl subroutines 
+
+=CN F<perlsub.pod> - Perl 子程序 
+
+=EN F<perlfunc.pod> - Perl built-in functions 
+
+=CN F<perlfunc.pod> - Perl 内置函数 
+
+=EN F<perlopentut.pod> - Perl open() tutorial 
+
+=CN F<perlopentut.pod> - Perl open() 简介 
+
+=EN F<perlpacktut.pod> - Perl pack() and unpack() tutorial 
+
+=CN F<perlpacktut.pod> - Perl pack() 和 unpack() 简介 
+
+=EN F<perlpod.pod> - Perl plain old documentation 
+
+=CN F<perlpod.pod> - Perl 简易老式文档 POD 
+
+=EN F<perlpodspec.pod> - Perl plain old documentation format specification 
+
+=CN F<perlpodspec.pod> - Perl POD 格式定义 
+
+=EN F<perlpodstyle.pod> - Perl pod: style guide 
+
+=CN F<perlpodstyle.pod> - Perl POD: 风格向导 
+
+=EN F<perlrun.pod> - Perl execution and options 
+
+=CN F<perlrun.pod> - Perl 执行和选项 
+
+=EN F<perldiag.pod> - Perl diagnostic messages 
+
+=CN F<perldiag.pod> - Perl 诊断信息 
+
+=EN F<perllexwarn.pod> - Perl warnings and their control 
+
+=CN F<perllexwarn.pod> - Perl 警告和控制原理l 
+
+=EN F<perldebug.pod> - Perl debugging 
+
+=CN F<perldebug.pod> - Perl 调试
+
+=EN F<perlvar.pod> - Perl predefined variables 
+
+=CN F<perlvar.pod> - Perl 预定义变量 
+
+=EN F<perlre.pod> - Perl regular expressions, the rest of the story 
+
+=CN F<perlre.pod> - Perl 正则表达式，剩下的故事
+
+=EN F<perlrebackslash.pod> - Perl regular expression backslash sequences 
+
+=CN F<perlrebackslash.pod> - Perl 正则表达式转义优先级 
+
+=EN F<perlrecharclass.pod> - Perl regular expression character classes 
+
+=CN F<perlrecharclass.pod> - Perl 正则字符集
+
+=EN F<perlreref.pod> - Perl regular expressions quick reference 
+
+=CN F<perlreref.pod> - Perl 正则表达式快速参考 
+
+=EN F<perlref.pod> - Perl references, the rest of the story 
+
+=CN F<perlref.pod> - Perl 参考, 剩下的故事 
+
+=EN F<perlform.pod> - Perl formats 
+
+=CN F<perlform.pod> - Perl 格式
+
+=EN F<perlobj.pod> - Perl objects 
+
+=CN F<perlobj.pod> - Perl 对象 
+
+=EN F<perl.pod> - Perl objects hidden behind simple variables 
+
+=CN F<perl.pod> - Perl 绑定（隐藏在简单变量后的对象） 
+
+=EN F<perldbmfilter.pod> - Perl DBM filters 
+
+=CN F<perldbmfilter.pod> - Perl DBM 过滤器
+
+=EN F<perlipc.pod> - Perl interprocess communication 
+
+=CN F<perlipc.pod> - Perl 进程间通信 
+
+=EN F<perlfork.pod> - Perl fork() information 
+
+=CN F<perlfork.pod> - Perl fork() 信息 
+
+=EN F<perlnumber.pod> - Perl number semantics 
+
+=CN F<perlnumber.pod> - Perl 数字符号 
+
+=EN F<perlthrtut.pod> - Perl threads tutorial 
+
+=CN F<perlthrtut.pod> - Perl 线程教程 
+
+=EN F<perlport.pod> - Perl portability guide 
+
+=CN F<perlport.pod> - Perl 移植向导 
+
+=EN F<perllocale.pod> - Perl locale support 
+
+=CN F<perllocale.pod> - Perl 区域支持 
+
+=EN F<perluniintro.pod> - Perl Unicode introduction 
+
+=CN F<perluniintro.pod> - Perl Unicode 介绍 
+
+=EN F<perlunicode.pod> - Perl Unicode support 
+
+=CN F<perlunicode.pod> - Perl Unicode 支持 
+
+=EN F<perluniprops.pod> - Index of Unicode Version 6.0.0 propers in Perl 
+
+=CN F<perluniprops.pod> - Unicode 6.0.0 版本中适合 Perl 的特性
+
+=EN F<perlunitut.pod> - Perl Unicode tutorial 
+
+=CN F<perlunitut.pod> - Perl Unicode 教程 
+
+=EN F<perlebcdic.pod> - Considerations for running Perl on EBCDIC platforms 
+
+=CN F<perlebcdic.pod> - 考虑将 Perl 运行在 EBCDIC 编码的平台上 
+
+=EN F<perlsec.pod> - Perl security 
+
+=CN F<perlsec.pod> - Perl 安全 
+
+=EN F<perlmod.pod> - Perl modules: how they work 
+
+=CN F<perlmod.pod> - Perl 模块: 他们如何工作 
+
+=EN F<perlmodlib.pod> - Perl modules: how to write and use 
+
+=CN F<perlmodlib.pod> - Perl 模块: 如何写和使用 
+
+=EN F<perlmodstyle.pod> - Perl modules: how to write modules with style 
+
+=CN F<perlmodstyle.pod> - Perl 模块: 如何有风格的写模块 
+
+=EN F<perlmodinstall.pod> - Perl modules: how to install from CPAN 
+
+=CN F<perlmodinstall.pod> - Perl 模块: 如何通过 CPAN 安装模块  
+
+=EN F<perlnewmod.pod> - Perl modules: preparing a new module for distribution 
+
+=CN F<perlnewmod.pod> - Perl 模块: 准备发布自己的模块 
+
+=EN F<perlpragma.pod> - Perl modules: writing a user pragma 
+
+=CN F<perlpragma.pod> - Perl 模块: 编写用户使用接口

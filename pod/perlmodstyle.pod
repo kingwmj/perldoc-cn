@@ -4,7 +4,7 @@ perlmodstyle - Perl module style guide
 
 =head1 INTRODUCTION 
 
-This document attempts to describe the Perl Community's "best practice" for writing Perl modules.  It extends the recommendations found in L<perlstyle>, which should be considered required reading before reading this document. 
+This document attempts to describe the Perl Community's "best practice" for writing Perl modules.  It extends the recommendations found in L<perlstyle> , which should be considered required reading before reading this document. 
 
 While this document is intended to be useful to all module authors, it is particularly aimed at authors who wish to publish their modules on CPAN. 
 
@@ -172,7 +172,7 @@ Good example:
 
 "Foo.pm provides an implementation of the FOO protocol.  Bar.pm implements the related BAR protocol." 
 
-This means that if a developer only needs a module for the BAR standard,  they should not be forced to install libraries for FOO as well. 
+This means that if a developer only needs a module for the BAR standard, they should not be forced to install libraries for FOO as well. 
 
 =head2 What's in a name? 
 
@@ -270,7 +270,7 @@ It's better to have numerous simple routines than a few monolithic ones. If your
 
 =item Separate functionality from output. 
 
-Return your results in the most generic form possible and allow the user to choose how to use them.  The most generic form possible is usually a Perl data structure which can then be used to generate a text report,  HTML, XML, a database query, or whatever else your users require. 
+Return your results in the most generic form possible and allow the user to choose how to use them.  The most generic form possible is usually a Perl data structure which can then be used to generate a text report, HTML, XML, a database query, or whatever else your users require. 
 
 If your routine iterates through some kind of list (such as a list of files, or records in a database) you may consider providing a callback so that users can manipulate each element of the list in turn. File::Find provides an example of this with its C<find(\&wanted, $dir)> syntax. 
 
@@ -302,9 +302,9 @@ Use named parameters. It's easier to use a hash like this:
 
 
     $obj->do_something( 
-        name => "wibble",  
-        type => "text",  
-        size => 1024,  
+        name => "wibble", 
+        type => "text", 
+        size => 1024, 
     ); 
 
 ... than to have a long list of unnamed parameters like this: 
@@ -397,7 +397,7 @@ A contact email address for the author/maintainer
 
 =back 
 
-The level of detail in Perl module documentation generally goes from less detailed to more detailed.  Your SYNOPSIS section should contain a minimal example of use (perhaps as little as one line of code; skip the unusual use cases or anything not needed by most users); the DESCRIPTION should describe your module in broad terms, generally in just a few paragraphs; more detail of the module's routines or methods,  lengthy code examples, or other in-depth material should be given in subsequent sections. 
+The level of detail in Perl module documentation generally goes from less detailed to more detailed.  Your SYNOPSIS section should contain a minimal example of use (perhaps as little as one line of code; skip the unusual use cases or anything not needed by most users); the DESCRIPTION should describe your module in broad terms, generally in just a few paragraphs; more detail of the module's routines or methods, lengthy code examples, or other in-depth material should be given in subsequent sections. 
 
 Ideally, someone who's slightly familiar with your module should be able to refresh their memory without hitting "page down".  As your reader continues through the document, they should receive a progressively greater amount of knowledge. 
 
@@ -534,7 +534,7 @@ Be sure to specify Perl version requirements both in Makefile.PL or Build.PL and
 
 =head2 Testing 
 
-All modules should be tested before distribution (using "make disttest"),  and the tests should also be available to people installing the modules (using "make test"). For Module::Build you would use the C<make test> equivalent C<perl Build test>. 
+All modules should be tested before distribution (using "make disttest"), and the tests should also be available to people installing the modules (using "make test"). For Module::Build you would use the C<make test> equivalent C<perl Build test>. 
 
 The importance of these tests is proportional to the alleged stability of a module. A module which purports to be stable or which hopes to achieve wide use should adhere to as strict a testing regime as possible. 
 

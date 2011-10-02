@@ -44,7 +44,7 @@ The pipeline model divides up a task into a series of steps, and passes the resu
 
 This model makes the most sense if you have multiple processors so two or more threads will be executing in parallel, though it can often make sense in other contexts as well.  It tends to keep the individual tasks small and simple, as well as allowing some parts of the pipeline to block (on I/O or system calls, for example) while other parts keep going.  If you're running different parts of the pipeline on different processors you may also take advantage of the caches on each processor. 
 
-This model is also handy for a form of recursive programming where,  rather than having a subroutine call itself, it instead creates another thread.  Prime and Fibonacci generators both map well to this form of the pipeline model. (A version of a prime number generator is presented later on.) 
+This model is also handy for a form of recursive programming where, rather than having a subroutine call itself, it instead creates another thread.  Prime and Fibonacci generators both map well to this form of the pipeline model. (A version of a prime number generator is presented later on.) 
 
 =head1 What kind of threads are Perl threads? 
 
@@ -70,7 +70,7 @@ See also L</"Thread-Safety of System Libraries">.
 
 =head1 Thread Basics 
 
-The L<threads> module provides the basic functions you need to write threaded programs.  In the following sections, we'll cover the basics,  showing you what you need to do to create a threaded program.   After that, we'll go over some of the features of the L<threads> module that make threaded programming easier. 
+The L<threads> module provides the basic functions you need to write threaded programs.  In the following sections, we'll cover the basics, showing you what you need to do to create a threaded program.   After that, we'll go over some of the features of the L<threads> module that make threaded programming easier. 
 
 =head2 Basic Thread Support 
 
@@ -173,7 +173,7 @@ NOTE: In the example above, the thread returns a list, thus necessitating that t
 
 C<join()> does three things: it waits for a thread to exit, cleans up after it, and returns any data the thread may have produced.  But what if you're not interested in the thread's return values, and you don't really care when the thread finishes? All you want is for the thread to get cleaned up after when it's done. 
 
-In this case, you use the C<detach()> method.  Once a thread is detached,  it'll run until it's finished; then Perl will clean up after it automatically. 
+In this case, you use the C<detach()> method.  Once a thread is detached, it'll run until it's finished; then Perl will clean up after it automatically. 
 
 
     use threads; 
@@ -217,7 +217,7 @@ C<detach()> can also be called as a class method to allow a thread to detach its
 
 With threads one must be careful to make sure they all have a chance to run to completion, assuming that is what you want. 
 
-An action that terminates a process will terminate I<all> running threads.  die() and exit() have this property,  and perl does an exit when the main thread exits,  perhaps implicitly by falling off the end of your code,  even if that's not what you want. 
+An action that terminates a process will terminate I<all> running threads.  die() and exit() have this property, and perl does an exit when the main thread exits, perhaps implicitly by falling off the end of your code, even if that's not what you want. 
 
 As an example of this case, this code prints the message "Perl exited with active threads: 2 running and unjoined": 
 
@@ -245,7 +245,7 @@ Now that we've covered the basics of threads, it's time for our next topic: Data
 
 =head2 Shared And Unshared Data 
 
-The biggest difference between Perl I<ithreads> and the old 5.005 style threading, or for that matter, to most other threading systems out there,  is that by default, no data is shared. When a new Perl thread is created,  all the data associated with the current thread is copied to the new thread, and is subsequently private to that new thread! This is similar in feel to what happens when a Unix process forks,  except that in this case, the data is just copied to a different part of memory within the same process rather than a real fork taking place. 
+The biggest difference between Perl I<ithreads> and the old 5.005 style threading, or for that matter, to most other threading systems out there, is that by default, no data is shared. When a new Perl thread is created, all the data associated with the current thread is copied to the new thread, and is subsequently private to that new thread! This is similar in feel to what happens when a Unix process forks, except that in this case, the data is just copied to a different part of memory within the same process rather than a real fork taking place. 
 
 To make use of threading, however, one usually wants the threads to share at least some data between themselves. This is done with the L<threads::shared> module and the C<:shared> attribute: 
 
@@ -308,7 +308,7 @@ While threads bring a new set of useful tools, they also bring a number of pitfa
     sub sub1 { my $foo = $a; $a = $foo + 1; } 
     sub sub2 { my $bar = $a; $a = $bar + 1; } 
 
-What do you think C<$a> will be? The answer, unfortunately, is I<it depends>. Both C<sub1()> and C<sub2()> access the global variable C<$a>, once to read and once to write.  Depending on factors ranging from your thread implementation's scheduling algorithm to the phase of the moon,  C<$a> can be 2 or 3. 
+What do you think C<$a> will be? The answer, unfortunately, is I<it depends>. Both C<sub1()> and C<sub2()> access the global variable C<$a>, once to read and once to write.  Depending on factors ranging from your thread implementation's scheduling algorithm to the phase of the moon, C<$a> can be 2 or 3. 
 
 Race conditions are caused by unsynchronized access to shared data.  Without explicit synchronization, there's no way to be sure that nothing has happened to the shared data between the time you access it and the time you update it.  Even this simple code fragment has the possibility of error: 
 
@@ -369,7 +369,7 @@ C<lock()> blocks the thread until the variable being locked is available.  When 
 
 It's important to note that locks don't prevent access to the variable in question, only lock attempts.  This is in keeping with Perl's longstanding tradition of courteous programming, and the advisory file locking that C<flock()> gives you. 
 
-You may lock arrays and hashes as well as scalars.  Locking an array,  though, will not block subsequent locks on array elements, just lock attempts on the array itself. 
+You may lock arrays and hashes as well as scalars.  Locking an array, though, will not block subsequent locks on array elements, just lock attempts on the array itself. 
 
 Locks are recursive, which means it's okay for a thread to lock a variable more than once.  The lock will last until the outermost C<lock()> on the variable goes out of scope. For example: 
 
@@ -573,7 +573,7 @@ Perl's threading package provides the C<yield()> function that does this. C<yiel
     my $thr2 = threads->create(\&loop, 'second'); 
     my $thr3 = threads->create(\&loop, 'third'); 
 
-It is important to remember that C<yield()> is only a hint to give up the CPU,  it depends on your hardware, OS and threading libraries what actually happens. B<On many operating systems, yield() is a no-op.>  Therefore it is important to note that one should not build the scheduling of the threads around C<yield()> calls. It might work on your platform but it won't work on another platform. 
+It is important to remember that C<yield()> is only a hint to give up the CPU, it depends on your hardware, OS and threading libraries what actually happens. B<On many operating systems, yield() is a no-op.>  Therefore it is important to note that one should not build the scheduling of the threads around C<yield()> calls. It might work on your platform but it won't work on another platform. 
 
 =head1 General Thread Utility Routines 
 
@@ -595,7 +595,7 @@ Thread objects also have an overloaded C<==> comparison so that you can do compa
 
 =head2 What Threads Are Running? 
 
-C<threads-E<gt>list()> returns a list of thread objects, one for each thread that's currently running and not detached.  Handy for a number of things,  including cleaning up at the end of your program (from the main Perl thread,  of course): 
+C<threads-E<gt>list()> returns a list of thread objects, one for each thread that's currently running and not detached.  Handy for a number of things, including cleaning up at the end of your program (from the main Perl thread, of course): 
 
 
     # Loop through all the threads 
@@ -661,27 +661,27 @@ Finally, once the loop terminates (because we got a 0 or C<undef> in the queue, 
 
 Meanwhile, back in the main thread, we first create a queue (line 33) and queue up all the numbers from 3 to 1000 for checking, plus a termination notice.  Then all we have to do to get the ball rolling is pass the queue and the first prime to the C<check_num()> subroutine (line 34). 
 
-That's how it works.  It's pretty simple; as with many Perl programs,  the explanation is much longer than the program. 
+That's how it works.  It's pretty simple; as with many Perl programs, the explanation is much longer than the program. 
 
 =head1 Different implementations of threads 
 
-Some background on thread implementations from the operating system viewpoint.  There are three basic categories of threads: user-mode threads,  kernel threads, and multiprocessor kernel threads. 
+Some background on thread implementations from the operating system viewpoint.  There are three basic categories of threads: user-mode threads, kernel threads, and multiprocessor kernel threads. 
 
 User-mode threads are threads that live entirely within a program and its libraries.  In this model, the OS knows nothing about threads.  As far as it's concerned, your process is just a process. 
 
 This is the easiest way to implement threads, and the way most OSes start.  The big disadvantage is that, since the OS knows nothing about threads, if one thread blocks they all do.  Typical blocking activities include most system calls, most I/O, and things like C<sleep()>. 
 
-Kernel threads are the next step in thread evolution.  The OS knows about kernel threads, and makes allowances for them.  The main difference between a kernel thread and a user-mode thread is blocking.  With kernel threads, things that block a single thread don't block other threads.  This is not the case with user-mode threads,  where the kernel blocks at the process level and not the thread level. 
+Kernel threads are the next step in thread evolution.  The OS knows about kernel threads, and makes allowances for them.  The main difference between a kernel thread and a user-mode thread is blocking.  With kernel threads, things that block a single thread don't block other threads.  This is not the case with user-mode threads, where the kernel blocks at the process level and not the thread level. 
 
-This is a big step forward, and can give a threaded program quite a performance boost over non-threaded programs.  Threads that block performing I/O, for example, won't block threads that are doing other things.  Each process still has only one thread running at once,  though, regardless of how many CPUs a system might have. 
+This is a big step forward, and can give a threaded program quite a performance boost over non-threaded programs.  Threads that block performing I/O, for example, won't block threads that are doing other things.  Each process still has only one thread running at once, though, regardless of how many CPUs a system might have. 
 
 Since kernel threading can interrupt a thread at any time, they will uncover some of the implicit locking assumptions you may make in your program.  For example, something as simple as C<$a = $a + 2> can behave unpredictably with kernel threads if C<$a> is visible to other threads, as another thread may have changed C<$a> between the time it was fetched on the right hand side and the time the new value is stored. 
 
 Multiprocessor kernel threads are the final step in thread support.  With multiprocessor kernel threads on a machine with multiple CPUs, the OS may schedule two or more threads to run simultaneously on different CPUs. 
 
-This can give a serious performance boost to your threaded program,  since more than one thread will be executing at the same time.  As a tradeoff, though, any of those nagging synchronization issues that might not have shown with basic kernel threads will appear with a vengeance. 
+This can give a serious performance boost to your threaded program, since more than one thread will be executing at the same time.  As a tradeoff, though, any of those nagging synchronization issues that might not have shown with basic kernel threads will appear with a vengeance. 
 
-In addition to the different levels of OS involvement in threads,  different OSes (and different thread implementations for a particular OS) allocate CPU cycles to threads in different ways. 
+In addition to the different levels of OS involvement in threads, different OSes (and different thread implementations for a particular OS) allocate CPU cycles to threads in different ways. 
 
 Cooperative multitasking systems have running threads give up control if one of two things happen.  If a thread calls a yield function, it gives up control.  It also gives up control if the thread does something that would cause it to block, such as perform I/O.  In a cooperative multitasking implementation, one thread can starve all the others for CPU time if it so chooses. 
 
@@ -693,7 +693,7 @@ Most modern operating systems support preemptive multitasking nowadays.
 
 =head1 Performance considerations 
 
-The main thing to bear in mind when comparing Perl's I<ithreads> to other threading models is the fact that for each new thread created, a complete copy of all the variables and data of the parent thread has to be taken. Thus,  thread creation can be quite expensive, both in terms of memory usage and time spent in creation. The ideal way to reduce these costs is to have a relatively short number of long-lived threads, all created fairly early on (before the base thread has accumulated too much data). Of course, this may not always be possible, so compromises have to be made. However, after a thread has been created, its performance and extra memory usage should be little different than ordinary code. 
+The main thing to bear in mind when comparing Perl's I<ithreads> to other threading models is the fact that for each new thread created, a complete copy of all the variables and data of the parent thread has to be taken. Thus, thread creation can be quite expensive, both in terms of memory usage and time spent in creation. The ideal way to reduce these costs is to have a relatively short number of long-lived threads, all created fairly early on (before the base thread has accumulated too much data). Of course, this may not always be possible, so compromises have to be made. However, after a thread has been created, its performance and extra memory usage should be little different than ordinary code. 
 
 Also note that under the current implementation, shared variables use a little more memory and are a little slower than ordinary variables. 
 
@@ -713,7 +713,7 @@ Similarly, mixing signals and threads may be problematic. Implementations are pl
 
 =head1 Thread-Safety of System Libraries 
 
-Whether various library calls are thread-safe is outside the control of Perl.  Calls often suffering from not being thread-safe include: C<localtime()>, C<gmtime()>, functions fetching user, group and network information (such as C<getgrent()>, C<gethostent()>,  C<getnetent()> and so on), C<readdir()>, C<rand()>, and C<srand()>. In general, calls that depend on some global external state. 
+Whether various library calls are thread-safe is outside the control of Perl.  Calls often suffering from not being thread-safe include: C<localtime()>, C<gmtime()>,  functions fetching user, group and network information (such as C<getgrent()>, C<gethostent()>, C<getnetent()> and so on), C<readdir()>, C<rand()>, and C<srand()>. In general, calls that depend on some global external state. 
 
 If the system Perl is compiled in has thread-safe variants of such calls, they will be used.  Beyond that, Perl is at the mercy of the thread-safety or -unsafety of the calls.  Please consult your C library call documentation. 
 
@@ -721,7 +721,7 @@ On some platforms the thread-safe library interfaces may fail if the result buff
 
 =head1 Conclusion 
 
-A complete thread tutorial could fill a book (and has, many times),  but with what we've covered in this introduction, you should be well on your way to becoming a threaded Perl expert. 
+A complete thread tutorial could fill a book (and has, many times), but with what we've covered in this introduction, you should be well on your way to becoming a threaded Perl expert. 
 
 =head1 SEE ALSO 
 
@@ -755,19 +755,19 @@ Nichols, Bradford, Dick Buttlar, and Jacqueline Proulx Farrell. Pthreads Program
 
 Boykin, Joseph, David Kirschen, Alan Langerman, and Susan LoVerso. Programming under Mach. Addison-Wesley, 1994, ISBN 0-201-52739-1. 
 
-Tanenbaum, Andrew S. Distributed Operating Systems. Prentice Hall,  1995, ISBN 0-13-219908-4 (great textbook). 
+Tanenbaum, Andrew S. Distributed Operating Systems. Prentice Hall, 1995, ISBN 0-13-219908-4 (great textbook). 
 
-Silberschatz, Abraham, and Peter B. Galvin. Operating System Concepts,  4th ed. Addison-Wesley, 1995, ISBN 0-201-59292-4 
+Silberschatz, Abraham, and Peter B. Galvin. Operating System Concepts, 4th ed. Addison-Wesley, 1995, ISBN 0-201-59292-4 
 
 =head2 Other References 
 
 Arnold, Ken and James Gosling. The Java Programming Language, 2nd ed. Addison-Wesley, 1998, ISBN 0-201-31006-6. 
 
-comp.programming.threads FAQ,  L<http://www.serpentine.com/~bos/threads-faq/> 
+comp.programming.threads FAQ, L<http://www.serpentine.com/~bos/threads-faq/> 
 
-Le Sergent, T. and B. Berthomieu. "Incremental MultiThreaded Garbage Collection on Virtually Shared Memory Architectures" in Memory Management: Proc. of the International Workshop IWMM 92, St. Malo,  France, September 1992, Yves Bekkers and Jacques Cohen, eds. Springer,  1992, ISBN 3540-55940-X (real-life thread applications). 
+Le Sergent, T. and B. Berthomieu. "Incremental MultiThreaded Garbage Collection on Virtually Shared Memory Architectures" in Memory Management: Proc. of the International Workshop IWMM 92, St. Malo, France, September 1992, Yves Bekkers and Jacques Cohen, eds. Springer, 1992, ISBN 3540-55940-X (real-life thread applications). 
 
-Artur Bergman, "Where Wizards Fear To Tread", June 11, 2002,  L<http://www.perl.com/pub/a/2002/06/11/threads.html> 
+Artur Bergman, "Where Wizards Fear To Tread", June 11, 2002, L<http://www.perl.com/pub/a/2002/06/11/threads.html> 
 
 =head1 Acknowledgements 
 

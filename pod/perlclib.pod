@@ -4,7 +4,7 @@ perlclib - Internal replacements for standard C library functions
 
 =head1 DESCRIPTION 
 
-One thing Perl porters should note is that F<perl> doesn't tend to use that much of the C standard library internally; you'll see very little use of,  for example, the F<ctype.h> functions in there. This is because Perl tends to reimplement or abstract standard library functions, so that we know exactly how they're going to operate. 
+One thing Perl porters should note is that F<perl> doesn't tend to use that much of the C standard library internally; you'll see very little use of, for example, the F<ctype.h> functions in there. This is because Perl tends to reimplement or abstract standard library functions, so that we know exactly how they're going to operate. 
 
 This is a reference card for people who are familiar with the C library and who want to do things the Perl way; to tell them which functions they ought to use instead of the more normal C functions. 
 
@@ -119,7 +119,7 @@ There is no equivalent to C<fgets>; one should use C<sv_gets> instead:
 
 
     strstr(big, little)         instr(big, little) 
-    strcmp(s1, s2)              strLE(s1, s2) / strEQ(s1, s2) / strGT(s1, s2) 
+    strcmp(s1, s2)              strLE(s1, s2) / strEQ(s1, s2) / strGT(s1,s2) 
     strncmp(s1, s2, n)          strnNE(s1, s2, n) / strnEQ(s1, s2, n) 
 
 Notice the different order of arguments to C<Copy> and C<Move> than used in C<memcpy> and C<memmove>. 

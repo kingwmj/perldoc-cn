@@ -44,7 +44,7 @@ The kind of computer you're working on, where one "kind" of computer means all t
 
 =item argument 
 
-A piece of data supplied to a L<program|/executable file>,  L</subroutine>, L</function>, or L</method> to tell it what it's supposed to do.  Also called a "parameter". 
+A piece of data supplied to a L<program|/executable file>, L</subroutine>, L</function>, or L</method> to tell it what it's supposed to do.  Also called a "parameter". 
 
 =item ARGV 
 
@@ -120,7 +120,7 @@ To split a string automatically, as the B<-a> L</switch> does when running under
 
 =item autovivification 
 
-A Greco-Roman word meaning "to bring oneself to life".  In Perl,  storage locations (L<lvalues|/lvalue>) spontaneously generate themselves as needed, including the creation of any L</hard reference> values to point to the next level of storage.  The assignment C<$a[5][5][5][5][5] = "quintet"> potentially creates five scalar storage locations, plus four references (in the first four scalar locations) pointing to four new anonymous arrays (to hold the last four scalar locations).  But the point of autovivification is that you don't have to worry about it. 
+A Greco-Roman word meaning "to bring oneself to life".  In Perl, storage locations (L<lvalues|/lvalue>) spontaneously generate themselves as needed, including the creation of any L</hard reference> values to point to the next level of storage.  The assignment C<$a[5][5][5][5][5] = "quintet"> potentially creates five scalar storage locations, plus four references (in the first four scalar locations) pointing to four new anonymous arrays (to hold the last four scalar locations).  But the point of autovivification is that you don't have to worry about it. 
 
 =item AV 
 
@@ -138,11 +138,11 @@ Descriptive editing term--short for "awkward".  Also coincidentally refers to a 
 
 =item backreference 
 
-A substring L<captured|/capturing> by a subpattern within unadorned parentheses in a L</regex>, also referred to as a capture group.  The sequences (C<\g1>, C<\g2>, etc.)  later in the same pattern refer back to the corresponding subpattern in the current match.  Outside the pattern,  the numbered variables (C<$1>, C<$2>, etc.) continue to refer to these same values, as long as the pattern was the last successful match of the current dynamic scope.  C<\g{-1}> can be used to refer to a group by relative rather than absolute position; and groups can be also be named, and referred to later by name rather than number.  See L<perlre/"Capture groups">. 
+A substring L<captured|/capturing> by a subpattern within unadorned parentheses in a L</regex>, also referred to as a capture group.  The sequences (C<\g1>, C<\g2>, etc.)  later in the same pattern refer back to the corresponding subpattern in the current match.  Outside the pattern, the numbered variables (C<$1>, C<$2>, etc.) continue to refer to these same values, as long as the pattern was the last successful match of the current dynamic scope.  C<\g{-1}> can be used to refer to a group by relative rather than absolute position; and groups can be also be named, and referred to later by name rather than number.  See L<perlre/"Capture groups">. 
 
 =item backtracking 
 
-The practice of saying, "If I had to do it all over, I'd do it differently, " and then actually going back and doing it all over differently.  Mathematically speaking, it's returning from an unsuccessful recursion on a tree of possibilities.  Perl backtracks when it attempts to match patterns with a L</regular expression>, and its earlier attempts don't pan out.  See L<perlre/Backtracking>. 
+The practice of saying, "If I had to do it all over, I'd do it differently," and then actually going back and doing it all over differently.  Mathematically speaking, it's returning from an unsuccessful recursion on a tree of possibilities.  Perl backtracks when it attempts to match patterns with a L</regular expression>, and its earlier attempts don't pan out.  See L<perlre/Backtracking>. 
 
 =item backward compatibility 
 
@@ -162,7 +162,7 @@ From Swift: someone who eats eggs big end first.  Also used of computers that st
 
 =item binary 
 
-Having to do with numbers represented in base 2.  That means there's basically two numbers, 0 and 1.  Also used to describe a "non-text file", presumably because such a file makes full use of all the binary bits in its bytes.  With the advent of L</Unicode>, this distinction,  already suspect, loses even more of its meaning. 
+Having to do with numbers represented in base 2.  That means there's basically two numbers, 0 and 1.  Also used to describe a "non-text file", presumably because such a file makes full use of all the binary bits in its bytes.  With the advent of L</Unicode>, this distinction, already suspect, loses even more of its meaning. 
 
 =item binary operator 
 
@@ -222,7 +222,7 @@ A psychoactive drug, popular in the 80s, probably developed at U. C. Berkeley or
 
 =item bucket 
 
-A location in a L</hash table> containing (potentially) multiple entries whose keys "hash" to the same hash value according to its hash function.  (As internal policy, you don't have to worry about it,  unless you're into internals, or policy.) 
+A location in a L</hash table> containing (potentially) multiple entries whose keys "hash" to the same hash value according to its hash function.  (As internal policy, you don't have to worry about it, unless you're into internals, or policy.) 
 
 =item buffer 
 
@@ -252,7 +252,7 @@ A pidgin-like language spoken among 'droids when they don't wish to reveal their
 
 =item C 
 
-A language beloved by many for its inside-out L</type> definitions,  inscrutable L</precedence> rules, and heavy L</overloading> of the function-call mechanism.  (Well, actually, people first switched to C because they found lowercase identifiers easier to read than upper.) Perl is written in C, so it's not surprising that Perl borrowed a few ideas from it. 
+A language beloved by many for its inside-out L</type> definitions, inscrutable L</precedence> rules, and heavy L</overloading> of the function-call mechanism.  (Well, actually, people first switched to C because they found lowercase identifiers easier to read than upper.) Perl is written in C, so it's not surprising that Perl borrowed a few ideas from it. 
 
 =item C preprocessor 
 
@@ -284,7 +284,7 @@ The use of parentheses around a L</subpattern> in a L</regular expression> to st
 
 =item character 
 
-A small integer representative of a unit of orthography. Historically, characters were usually stored as fixed-width integers (typically in a byte, or maybe two, depending on the character set),  but with the advent of UTF-8, characters are often stored in a variable number of bytes depending on the size of the integer that represents the character.  Perl manages this transparently for you,  for the most part. 
+A small integer representative of a unit of orthography. Historically, characters were usually stored as fixed-width integers (typically in a byte, or maybe two, depending on the character set), but with the advent of UTF-8, characters are often stored in a variable number of bytes depending on the size of the integer that represents the character.  Perl manages this transparently for you, for the most part. 
 
 =item character class 
 
@@ -370,7 +370,7 @@ The L</file> (or L</string>, in the case of L<eval|perlfunc/eval>) that is curre
 
 =item compile phase 
 
-Any time before Perl starts running your main program.  See also L</run phase>.  Compile phase is mostly spent in L</compile time>, but may also be spent in L</run time> when C<BEGIN> blocks,  L<use|perlfunc/use> declarations, or constant subexpressions are being evaluated.  The startup and import code of any L<use|perlfunc/use> declaration is also run during compile phase. 
+Any time before Perl starts running your main program.  See also L</run phase>.  Compile phase is mostly spent in L</compile time>, but may also be spent in L</run time> when C<BEGIN> blocks, L<use|perlfunc/use> declarations, or constant subexpressions are being evaluated.  The startup and import code of any L<use|perlfunc/use> declaration is also run during compile phase. 
 
 =item compile time 
 
@@ -378,11 +378,11 @@ The time when Perl is trying to make sense of your code, as opposed to when it t
 
 =item compiler 
 
-Strictly speaking, a program that munches up another program and spits out yet another file containing the program in a "more executable" form, typically containing native machine instructions.  The I<perl> program is not a compiler by this definition, but it does contain a kind of compiler that takes a program and turns it into a more executable form (L<syntax trees|/syntax tree>) within the I<perl> process itself, which the L</interpreter> then interprets.  There are,  however, extension L<modules|/module> to get Perl to act more like a "real" compiler.  See L<O>. 
+Strictly speaking, a program that munches up another program and spits out yet another file containing the program in a "more executable" form, typically containing native machine instructions.  The I<perl> program is not a compiler by this definition, but it does contain a kind of compiler that takes a program and turns it into a more executable form (L<syntax trees|/syntax tree>) within the I<perl> process itself, which the L</interpreter> then interprets.  There are, however, extension L<modules|/module> to get Perl to act more like a "real" compiler.  See L<O>. 
 
 =item composer 
 
-A "constructor" for a L</referent> that isn't really an L</object>,  like an anonymous array or a hash (or a sonata, for that matter).  For example, a pair of braces acts as a composer for a hash, and a pair of brackets acts as a composer for an array.  See L<perlref/Making References>. 
+A "constructor" for a L</referent> that isn't really an L</object>, like an anonymous array or a hash (or a sonata, for that matter).  For example, a pair of braces acts as a composer for a hash, and a pair of brackets acts as a composer for an array.  See L<perlref/Making References>. 
 
 =item concatenation 
 
@@ -406,7 +406,7 @@ Any L</class method>, instance L</method>, or L</subroutine> that composes, init
 
 =item context 
 
-The surroundings, or environment.  The context given by the surrounding code determines what kind of data a particular L</expression> is expected to return.  The three primary contexts are L</list context>, L</scalar context>, and L</void context>.  Scalar context is sometimes subdivided into L</Boolean context>, L</numeric context>, L</string context>, and L</void context>.  There's also a "don't care" scalar context (which is dealt with in Programming Perl,  Third Edition, Chapter 2, "Bits and Pieces" if you care). 
+The surroundings, or environment.  The context given by the surrounding code determines what kind of data a particular L</expression> is expected to return.  The three primary contexts are L</list context>, L</scalar context>, and L</void context>.  Scalar context is sometimes subdivided into L</Boolean context>, L</numeric context>, L</string context>, and L</void context>.  There's also a "don't care" scalar context (which is dealt with in Programming Perl, Third Edition, Chapter 2, "Bits and Pieces" if you care). 
 
 =item continuation 
 
@@ -496,7 +496,7 @@ A fancy computer science term meaning "to follow a L</reference> to what it poin
 
 =item derived class 
 
-A L</class> that defines some of its L<methods|/method> in terms of a more generic class, called a L</base class>.  Note that classes aren't classified exclusively into base classes or derived classes: a class can function as both a derived class and a base class simultaneously,  which is kind of classy. 
+A L</class> that defines some of its L<methods|/method> in terms of a more generic class, called a L</base class>.  Note that classes aren't classified exclusively into base classes or derived classes: a class can function as both a derived class and a base class simultaneously, which is kind of classy. 
 
 =item descriptor 
 
@@ -536,7 +536,7 @@ A standard, bundled release of a system of software.  The default usage implies 
 
 =item (to be) dropped modules 
 
-When Perl 5 was first released (see L<perlhist>), several modules were included, which have now fallen out of common use.  It has been suggested that these modules should be removed, since the distribution became rather large, and the common criterion for new module additions is now limited to modules that help to build, test, and extend perl itself.  Furthermore,  the CPAN (which didn't exist at the time of Perl 5.0) can become the new home of dropped modules. Dropping modules is currently not an option, but further developments may clear the last barriers. 
+When Perl 5 was first released (see L<perlhist>), several modules were included, which have now fallen out of common use.  It has been suggested that these modules should be removed, since the distribution became rather large, and the common criterion for new module additions is now limited to modules that help to build, test, and extend perl itself.  Furthermore, the CPAN (which didn't exist at the time of Perl 5.0) can become the new home of dropped modules. Dropping modules is currently not an option, but further developments may clear the last barriers. 
 
 =item dweomer 
 
@@ -590,7 +590,7 @@ The collective set of L<environment variables|/environment variable> your L</pro
 
 =item environment variable 
 
-A mechanism by which some high-level agent such as a user can pass its preferences down to its future offspring (child L<processes|/process>,  grandchild processes, great-grandchild processes, and so on).  Each environment variable is a L</key>/L</value> pair, like one entry in a L</hash>. 
+A mechanism by which some high-level agent such as a user can pass its preferences down to its future offspring (child L<processes|/process>, grandchild processes, great-grandchild processes, and so on).  Each environment variable is a L</key>/L</value> pair, like one entry in a L</hash>. 
 
 =item EOF 
 
@@ -630,7 +630,7 @@ To run a L<program|/executable file> or L</subroutine>.  (Has nothing to do with
 
 =item execute bit 
 
-The special mark that tells the operating system it can run this program.  There are actually three execute bits under Unix, and which bit gets used depends on whether you own the file singularly,  collectively, or not at all. 
+The special mark that tells the operating system it can run this program.  There are actually three execute bits under Unix, and which bit gets used depends on whether you own the file singularly, collectively, or not at all. 
 
 =item exit status 
 
@@ -642,11 +642,11 @@ To make symbols from a L</module> available for L</import> by other modules.
 
 =item expression 
 
-Anything you can legally say in a spot where a L</value> is required. Typically composed of L<literals|/literal>, L<variables|/variable>,  L<operators|/operator>, L<functions|/function>, and L</subroutine> calls, not necessarily in that order. 
+Anything you can legally say in a spot where a L</value> is required. Typically composed of L<literals|/literal>, L<variables|/variable>, L<operators|/operator>, L<functions|/function>, and L</subroutine> calls, not necessarily in that order. 
 
 =item extension 
 
-A Perl module that also pulls in compiled C or C++ code.  More generally, any experimental option that can be compiled into Perl,  such as multithreading. 
+A Perl module that also pulls in compiled C or C++ code.  More generally, any experimental option that can be compiled into Perl, such as multithreading. 
 
 =back 
 
@@ -664,7 +664,7 @@ Frequently Asked Question (although not necessarily frequently answered, especia
 
 =item fatal error 
 
-An uncaught L</exception>, which causes termination of the L</process> after printing a message on your L</standard error> stream.  Errors that happen inside an L<eval|perlfunc/eval> are not fatal.  Instead,  the L<eval|perlfunc/eval> terminates after placing the exception message in the C<$@> (C<$EVAL_ERROR>) variable.  You can try to provoke a fatal error with the L<die|perlfunc/die> operator (known as throwing or raising an exception), but this may be caught by a dynamically enclosing L<eval|perlfunc/eval>.  If not caught, the L<die|perlfunc/die> becomes a fatal error. 
+An uncaught L</exception>, which causes termination of the L</process> after printing a message on your L</standard error> stream.  Errors that happen inside an L<eval|perlfunc/eval> are not fatal.  Instead, the L<eval|perlfunc/eval> terminates after placing the exception message in the C<$@> (C<$EVAL_ERROR>) variable.  You can try to provoke a fatal error with the L<die|perlfunc/die> operator (known as throwing or raising an exception), but this may be caught by a dynamically enclosing L<eval|perlfunc/eval>.  If not caught, the L<die|perlfunc/die> becomes a fatal error. 
 
 =item field 
 
@@ -700,7 +700,7 @@ One name for a file.  This name is listed in a L</directory>, and you can use it
 
 =item filesystem 
 
-A set of L<directories|/directory> and L<files|/file> residing on a partition of the disk.  Sometimes known as a "partition".  You can change the file's name or even move a file around from directory to directory within a filesystem without actually moving the file itself,  at least under Unix. 
+A set of L<directories|/directory> and L<files|/file> residing on a partition of the disk.  Sometimes known as a "partition".  You can change the file's name or even move a file around from directory to directory within a filesystem without actually moving the file itself, at least under Unix. 
 
 =item filter 
 
@@ -812,11 +812,11 @@ An internal "glob value" typedef, holding a L</typeglob>.  The L</GV> type is a 
 
 =item hacker 
 
-Someone who is brilliantly persistent in solving technical problems,  whether these involve golfing, fighting orcs, or programming.  Hacker is a neutral term, morally speaking.  Good hackers are not to be confused with evil L<crackers|/cracker> or clueless L<script kiddies|/script kiddie>.  If you confuse them, we will presume that you are either evil or clueless. 
+Someone who is brilliantly persistent in solving technical problems, whether these involve golfing, fighting orcs, or programming.  Hacker is a neutral term, morally speaking.  Good hackers are not to be confused with evil L<crackers|/cracker> or clueless L<script kiddies|/script kiddie>.  If you confuse them, we will presume that you are either evil or clueless. 
 
 =item handler 
 
-A L</subroutine> or L</method> that is called by Perl when your program needs to respond to some internal event, such as a L</signal>,  or an encounter with an operator subject to L</operator overloading>. See also L</callback>. 
+A L</subroutine> or L</method> that is called by Perl when your program needs to respond to some internal event, such as a L</signal>, or an encounter with an operator subject to L</operator overloading>. See also L</callback>. 
 
 =item hard reference 
 
@@ -908,7 +908,7 @@ In modern Perl, calling methods this way is often considered bad practice and to
 The syntactic position falling between a method call and its arguments when using the indirect object invocation syntax.  (The slot is distinguished by the absence of a comma between it and the next argument.) L</STDERR> is in the indirect object slot here: 
 
 
-  print STDERR "Awake!  Awake!  Fear, Fire,  
+  print STDERR "Awake!  Awake!  Fear, Fire, 
       Foes!  Awake!\n"; 
 
 =item indirection 
@@ -945,11 +945,11 @@ The insertion of a scalar or list value somewhere in the middle of another value
 
 =item interpreter 
 
-Strictly speaking, a program that reads a second program and does what the second program says directly without turning the program into a different form first, which is what L<compilers|/compiler> do.  Perl is not an interpreter by this definition, because it contains a kind of compiler that takes a program and turns it into a more executable form (L<syntax trees|/syntax tree>) within the I<perl> process itself,  which the Perl L</run time> system then interprets. 
+Strictly speaking, a program that reads a second program and does what the second program says directly without turning the program into a different form first, which is what L<compilers|/compiler> do.  Perl is not an interpreter by this definition, because it contains a kind of compiler that takes a program and turns it into a more executable form (L<syntax trees|/syntax tree>) within the I<perl> process itself, which the Perl L</run time> system then interprets. 
 
 =item invocand 
 
-The agent on whose behalf a L</method> is invoked.  In a L</class> method, the invocand is a package name.  In an L</instance> method,  the invocand is an object reference. 
+The agent on whose behalf a L</method> is invoked.  In a L</class> method, the invocand is a package name.  In an L</instance> method, the invocand is an object reference. 
 
 =item invocation 
 
@@ -973,7 +973,7 @@ Interprocess Communication.
 
 =item is-a 
 
-A relationship between two L<objects|/object> in which one object is considered to be a more specific version of the other, generic object: "A camel is a mammal."  Since the generic object really only exists in a Platonic sense, we usually add a little abstraction to the notion of objects and think of the relationship as being between a generic L</base class> and a specific L</derived class>.  Oddly enough,  Platonic classes don't always have Platonic relationships--see L</inheritance>. 
+A relationship between two L<objects|/object> in which one object is considered to be a more specific version of the other, generic object: "A camel is a mammal."  Since the generic object really only exists in a Platonic sense, we usually add a little abstraction to the notion of objects and think of the relationship as being between a generic L</base class> and a specific L</derived class>.  Oddly enough, Platonic classes don't always have Platonic relationships--see L</inheritance>. 
 
 =item iteration 
 
@@ -995,7 +995,7 @@ The integer four, not to be confused with six, Tom's favorite editor. IV also me
 
 =item JAPH 
 
-"Just Another Perl Hacker, " a clever but cryptic bit of Perl code that when executed, evaluates to that string.  Often used to illustrate a particular Perl feature, and something of an ongoing Obfuscated Perl Contest seen in Usenix signatures. 
+"Just Another Perl Hacker," a clever but cryptic bit of Perl code that when executed, evaluates to that string.  Often used to illustrate a particular Perl feature, and something of an ongoing Obfuscated Perl Contest seen in Usenix signatures. 
 
 =back 
 
@@ -1091,7 +1091,7 @@ The situation in which an L</expression> is expected by its surroundings (the co
 
 =item list operator 
 
-An L</operator> that does something with a list of values, such as L<join|perlfunc/join> or L<grep|perlfunc/grep>.  Usually used for named built-in operators (such as L<print|perlfunc/print>,  L<unlink|perlfunc/unlink>, and L<system|perlfunc/system>) that do not require parentheses around their L</argument> list. 
+An L</operator> that does something with a list of values, such as L<join|perlfunc/join> or L<grep|perlfunc/grep>.  Usually used for named built-in operators (such as L<print|perlfunc/print>, L<unlink|perlfunc/unlink>, and L<system|perlfunc/system>) that do not require parentheses around their L</argument> list. 
 
 =item list value 
 
@@ -1173,7 +1173,7 @@ The Unix program that displays online documentation (manual pages) for you.
 
 =item manpage 
 
-A "page" from the manuals, typically accessed via the I<man>(1) command.  A manpage contains a SYNOPSIS, a DESCRIPTION, a list of BUGS, and so on, and is typically longer than a page.  There are manpages documenting L<commands|/command>, L<syscalls|/syscall>,  L</library> L<functions|/function>, L<devices|/device>,  L<protocols|/protocol>, L<files|/file>, and such.  In this book, we call any piece of standard Perl documentation (like I<perlop> or I<perldelta>) a manpage, no matter what format it's installed in on your system. 
+A "page" from the manuals, typically accessed via the I<man>(1) command.  A manpage contains a SYNOPSIS, a DESCRIPTION, a list of BUGS, and so on, and is typically longer than a page.  There are manpages documenting L<commands|/command>, L<syscalls|/syscall>, L</library> L<functions|/function>, L<devices|/device>, L<protocols|/protocol>, L<files|/file>, and such.  In this book, we call any piece of standard Perl documentation (like I<perlop> or I<perldelta>) a manpage, no matter what format it's installed in on your system. 
 
 =item matching 
 
@@ -1355,7 +1355,7 @@ The one user (apart from the superuser) who has absolute control over a L</file>
 
 =item package 
 
-A L</namespace> for global L<variables|/variable>,  L<subroutines|/subroutine>, and the like, such that they can be kept separate from like-named L<symbols|/symbol> in other namespaces.  In a sense, only the package is global, since the symbols in the package's symbol table are only accessible from code compiled outside the package by naming the package.  But in another sense, all package symbols are also globals--they're just well-organized globals. 
+A L</namespace> for global L<variables|/variable>, L<subroutines|/subroutine>, and the like, such that they can be kept separate from like-named L<symbols|/symbol> in other namespaces.  In a sense, only the package is global, since the symbols in the package's symbol table are only accessible from code compiled outside the package by naming the package.  But in another sense, all package symbols are also globals--they're just well-organized globals. 
 
 =item pad 
 
@@ -1428,7 +1428,7 @@ A L</variable> in a language like C that contains the exact memory location of s
 
 =item polymorphism 
 
-The notion that you can tell an L</object> to do something generic,  and the object will interpret the command in different ways depending on its type.  [E<lt>Gk many shapes] 
+The notion that you can tell an L</object> to do something generic, and the object will interpret the command in different ways depending on its type.  [E<lt>Gk many shapes] 
 
 =item port 
 
@@ -1460,7 +1460,7 @@ A standard module whose practical hints and suggestions are received (and possib
 
 =item precedence 
 
-The rules of conduct that, in the absence of other guidance, determine what should happen first.  For example, in the absence of parentheses,  you always do multiplication before addition. 
+The rules of conduct that, in the absence of other guidance, determine what should happen first.  For example, in the absence of parentheses, you always do multiplication before addition. 
 
 =item prefix 
 
@@ -1500,7 +1500,7 @@ An optional part of a L</subroutine> declaration telling the Perl compiler how m
 
 =item pseudofunction 
 
-A construct that sometimes looks like a function but really isn't. Usually reserved for L</lvalue> modifiers like L<my|perlfunc/my>, for L</context> modifiers like L<scalar|perlfunc/scalar>, and for the pick-your-own-quotes constructs, C<q//>, C<qq//>, C<qx//>, C<qw//>,  C<qr//>, C<m//>, C<s///>, C<y///>, and C<tr///>. 
+A construct that sometimes looks like a function but really isn't. Usually reserved for L</lvalue> modifiers like L<my|perlfunc/my>, for L</context> modifiers like L<scalar|perlfunc/scalar>, and for the pick-your-own-quotes constructs, C<q//>, C<qq//>, C<qx//>, C<qw//>, C<qr//>, C<m//>, C<s///>, C<y///>, and C<tr///>. 
 
 =item pseudohash 
 
@@ -1560,7 +1560,7 @@ A set of related data values in a L</file> or L</stream>, often associated with 
 
 =item recursion 
 
-The art of defining something (at least partly) in terms of itself,  which is a naughty no-no in dictionaries but often works out okay in computer programs if you're careful not to recurse forever, which is like an infinite loop with more spectacular failure modes. 
+The art of defining something (at least partly) in terms of itself, which is a naughty no-no in dictionaries but often works out okay in computer programs if you're careful not to recurse forever, which is like an infinite loop with more spectacular failure modes. 
 
 =item reference 
 
@@ -1592,7 +1592,7 @@ An L</operator> that says whether a particular ordering relationship is L</true>
 
 =item reserved words 
 
-A word with a specific, built-in meaning to a L</compiler>, such as C<if> or L<delete|perlfunc/delete>.  In many languages (not Perl),  it's illegal to use reserved words to name anything else.  (Which is why they're reserved, after all.)  In Perl, you just can't use them to name L<labels|/label> or L<filehandles|/filehandle>.  Also called "keywords". 
+A word with a specific, built-in meaning to a L</compiler>, such as C<if> or L<delete|perlfunc/delete>.  In many languages (not Perl), it's illegal to use reserved words to name anything else.  (Which is why they're reserved, after all.)  In Perl, you just can't use them to name L<labels|/label> or L<filehandles|/filehandle>.  Also called "keywords". 
 
 =item return value 
 
@@ -1616,7 +1616,7 @@ What you are told when someone thinks you should Read The Fine Manual.
 
 =item run phase 
 
-Any time after Perl starts running your main program.  See also L</compile phase>.  Run phase is mostly spent in L</run time> but may also be spent in L</compile time> when L<require|perlfunc/require>,  L<do|perlfunc/do> C<FILE>, or L<eval|perlfunc/eval> C<STRING> operators are executed or when a substitution uses the C</ee> modifier. 
+Any time after Perl starts running your main program.  See also L</compile phase>.  Run phase is mostly spent in L</run time> but may also be spent in L</compile time> when L<require|perlfunc/require>, L<do|perlfunc/do> C<FILE>, or L<eval|perlfunc/eval> C<STRING> operators are executed or when a substitution uses the C</ee> modifier. 
 
 =item run time 
 
@@ -1646,7 +1646,7 @@ A simple, singular value; a number, L</string>, or L</reference>.
 
 =item scalar context 
 
-The situation in which an L</expression> is expected by its surroundings (the code calling it) to return a single L</value> rather than a L</list> of values.  See also L</context> and L</list context>. A scalar context sometimes imposes additional constraints on the return value--see L</string context> and L</numeric context>. Sometimes we talk about a L</Boolean context> inside conditionals, but this imposes no additional constraints, since any scalar value,  whether numeric or L</string>, is already true or false. 
+The situation in which an L</expression> is expected by its surroundings (the code calling it) to return a single L</value> rather than a L</list> of values.  See also L</context> and L</list context>. A scalar context sometimes imposes additional constraints on the return value--see L</string context> and L</numeric context>. Sometimes we talk about a L</Boolean context> inside conditionals, but this imposes no additional constraints, since any scalar value, whether numeric or L</string>, is already true or false. 
 
 =item scalar literal 
 
@@ -1662,7 +1662,7 @@ A L</variable> prefixed with C<$> that holds a single value.
 
 =item scope 
 
-How far away you can see a variable from, looking through one.  Perl has two visibility mechanisms: it does L</dynamic scoping> of L<local|perlfunc/local> L<variables|/variable>, meaning that the rest of the L</block>, and any L<subroutines|/subroutine> that are called by the rest of the block, can see the variables that are local to the block.  Perl does L</lexical scoping> of L<my|perlfunc/my> variables,  meaning that the rest of the block can see the variable, but other subroutines called by the block I<cannot> see the variable. 
+How far away you can see a variable from, looking through one.  Perl has two visibility mechanisms: it does L</dynamic scoping> of L<local|perlfunc/local> L<variables|/variable>, meaning that the rest of the L</block>, and any L<subroutines|/subroutine> that are called by the rest of the block, can see the variables that are local to the block.  Perl does L</lexical scoping> of L<my|perlfunc/my> variables, meaning that the rest of the block can see the variable, but other subroutines called by the block I<cannot> see the variable. 
 
 =item scratchpad 
 
@@ -1670,7 +1670,7 @@ The area in which a particular invocation of a particular file or subroutine kee
 
 =item script 
 
-A text L</file> that is a program intended to be L<executed|/execute> directly rather than L<compiled|/compiler> to another form of file before execution.  Also, in the context of L</Unicode>, a writing system for a particular language or group of languages, such as Greek,  Bengali, or Klingon. 
+A text L</file> that is a program intended to be L<executed|/execute> directly rather than L<compiled|/compiler> to another form of file before execution.  Also, in the context of L</Unicode>, a writing system for a particular language or group of languages, such as Greek, Bengali, or Klingon. 
 
 =item script kiddie 
 
@@ -1738,7 +1738,7 @@ The features you got from your mother, if she told you that you don't have a fat
 
 =item slice 
 
-A selection of any number of L<elements|/element> from a L</list>,  L</array>, or L</hash>. 
+A selection of any number of L<elements|/element> from a L</list>, L</array>, or L</hash>. 
 
 =item slurp 
 
@@ -1898,7 +1898,7 @@ The combination of multiple command-line switches (e.g., B<-a -b -c>) into one s
 
 =item switch statement 
 
-A program technique that lets you evaluate an L</expression> and then,  based on the value of the expression, do a multiway branch to the appropriate piece of code for that value.  Also called a "case structure", named after the similar Pascal construct.  See L<perlsyn/"Switch statements">. 
+A program technique that lets you evaluate an L</expression> and then, based on the value of the expression, do a multiway branch to the appropriate piece of code for that value.  Also called a "case structure", named after the similar Pascal construct.  See L<perlsyn/"Switch statements">. 
 
 =item symbol 
 
@@ -1906,7 +1906,7 @@ Generally, any L</token> or L</metasymbol>.  Often used more specifically to mea
 
 =item symbol table 
 
-Where a L</compiler> remembers symbols.  A program like Perl must somehow remember all the names of all the L<variables|/variable>,  L<filehandles|/filehandle>, and L<subroutines|/subroutine> you've used.  It does this by placing the names in a symbol table, which is implemented in Perl using a L</hash table>.  There is a separate symbol table for each L</package> to give each package its own L</namespace>. 
+Where a L</compiler> remembers symbols.  A program like Perl must somehow remember all the names of all the L<variables|/variable>, L<filehandles|/filehandle>, and L<subroutines|/subroutine> you've used.  It does this by placing the names in a symbol table, which is implemented in Perl using a L</hash table>.  There is a separate symbol table for each L</package> to give each package its own L</namespace>. 
 
 =item symbolic debugger 
 
@@ -2070,11 +2070,11 @@ An operator with only one L</operand>, like C<!> or L<chdir|perlfunc/chdir>.  Un
 
 =item Unicode 
 
-A character set comprising all the major character sets of the world,  more or less.  See L<perlunicode> and L<http://www.unicode.org>. 
+A character set comprising all the major character sets of the world, more or less.  See L<perlunicode> and L<http://www.unicode.org>. 
 
 =item Unix 
 
-A very large and constantly evolving language with several alternative and largely incompatible syntaxes, in which anyone can define anything any way they choose, and usually do.  Speakers of this language think it's easy to learn because it's so easily twisted to one's own ends,  but dialectical differences make tribal intercommunication nearly impossible, and travelers are often reduced to a pidgin-like subset of the language.  To be universally understood, a Unix shell programmer must spend years of study in the art.  Many have abandoned this discipline and now communicate via an Esperanto-like language called Perl. 
+A very large and constantly evolving language with several alternative and largely incompatible syntaxes, in which anyone can define anything any way they choose, and usually do.  Speakers of this language think it's easy to learn because it's so easily twisted to one's own ends, but dialectical differences make tribal intercommunication nearly impossible, and travelers are often reduced to a pidgin-like subset of the language.  To be universally understood, a Unix shell programmer must spend years of study in the art.  Many have abandoned this discipline and now communicate via an Esperanto-like language called Perl. 
 
 In ancient times, Unix was also used to refer to some code that a couple of people at Bell Labs wrote to make use of a PDP-7 computer that wasn't doing much of anything else at the time. 
 
@@ -2086,7 +2086,7 @@ In ancient times, Unix was also used to refer to some code that a couple of peop
 
 =item value 
 
-An actual piece of data, in contrast to all the variables, references,  keys, indexes, operators, and whatnot that you need to access the value. 
+An actual piece of data, in contrast to all the variables, references, keys, indexes, operators, and whatnot that you need to access the value. 
 
 =item variable 
 
@@ -2114,7 +2114,7 @@ A form of L</scalar context> in which an L</expression> is not expected to retur
 
 =item v-string 
 
-A "version" or "vector" L</string> specified with a C<v> followed by a series of decimal integers in dot notation, for instance,  C<v1.20.300.4000>.  Each number turns into a L</character> with the specified ordinal value.  (The C<v> is optional when there are at least three integers.) 
+A "version" or "vector" L</string> specified with a C<v> followed by a series of decimal integers in dot notation, for instance, C<v1.20.300.4000>.  Each number turns into a L</character> with the specified ordinal value.  (The C<v> is optional when there are at least three integers.) 
 
 =back 
 

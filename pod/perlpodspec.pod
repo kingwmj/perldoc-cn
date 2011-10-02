@@ -16,17 +16,17 @@ Notably, when I say "the parser should do Y", the parser may fail to do Y, if th
 
 Pod is embedded in files, typically Perl source files, although you can write a file that's nothing but Pod. 
 
-A B<line> in a file consists of zero or more non-newline characters,  terminated by either a newline or the end of the file. 
+A B<line> in a file consists of zero or more non-newline characters, terminated by either a newline or the end of the file. 
 
 A B<newline sequence> is usually a platform-dependent concept, but Pod parsers should understand it to mean any of CR (ASCII 13), LF (ASCII 10), or a CRLF (ASCII 13 followed immediately by ASCII 10), in addition to any other system-specific meaning.  The first CR/CRLF/LF sequence in the file may be used as the basis for identifying the newline sequence for parsing the rest of the file. 
 
 A B<blank line> is a line consisting entirely of zero or more spaces (ASCII 32) or tabs (ASCII 9), and terminated by a newline or end-of-file. A B<non-blank line> is a line containing one or more characters other than space or tab (and terminated by a newline or end-of-file). 
 
-(I<Note:> Many older Pod parsers did not accept a line consisting of spaces/tabs and then a newline as a blank line. The only lines they considered blank were lines consisting of I<no characters at all>,  terminated by a newline.) 
+(I<Note:> Many older Pod parsers did not accept a line consisting of spaces/tabs and then a newline as a blank line. The only lines they considered blank were lines consisting of I<no characters at all>, terminated by a newline.) 
 
-B<Whitespace> is used in this document as a blanket term for spaces,  tabs, and newline sequences.  (By itself, this term usually refers to literal whitespace.  That is, sequences of whitespace characters in Pod source, as opposed to "EE<lt>32>", which is a formatting code that I<denotes> a whitespace character.) 
+B<Whitespace> is used in this document as a blanket term for spaces, tabs, and newline sequences.  (By itself, this term usually refers to literal whitespace.  That is, sequences of whitespace characters in Pod source, as opposed to "EE<lt>32>", which is a formatting code that I<denotes> a whitespace character.) 
 
-A B<Pod parser> is a module meant for parsing Pod (regardless of whether this involves calling callbacks or building a parse tree or directly formatting it).  A B<Pod formatter> (or B<Pod translator>) is a module or program that converts Pod to some other format (HTML,  plaintext, TeX, PostScript, RTF).  A B<Pod processor> might be a formatter or translator, or might be a program that does something else with the Pod (like counting words, scanning for index points,  etc.). 
+A B<Pod parser> is a module meant for parsing Pod (regardless of whether this involves calling callbacks or building a parse tree or directly formatting it).  A B<Pod formatter> (or B<Pod translator>) is a module or program that converts Pod to some other format (HTML, plaintext, TeX, PostScript, RTF).  A B<Pod processor> might be a formatter or translator, or might be a program that does something else with the Pod (like counting words, scanning for index points, etc.). 
 
 Pod content is contained in B<Pod blocks>.  A Pod block starts with a line that matches <m/\A=[a-zA-Z]/>, and continues up to the next line that matches C<m/\A=cut/> or up to the end of the file if there is no C<m/\A=cut/> line. 
 
@@ -50,7 +50,7 @@ Pod content is contained in B<Pod blocks>.  A Pod block starts with a line that 
  I think that those paragraphs should just be removed; paragraph-based 
  parsing  seems to have been largely abandoned, because of the hassle 
  with non-empty blank lines messing up what people meant by "paragraph". 
- Even if the "it makes parsing easier" bit were especially true,  
+ Even if the "it makes parsing easier" bit were especially true, 
  it wouldn't be worth the confusion of having perl and pod2whatever 
  actually disagree on what can constitute a Pod block. 
 
@@ -96,11 +96,11 @@ Whitespace I<is> significant in verbatim paragraphs (although, in processing, ta
 
 =item * 
 
-An B<ordinary paragraph>.  A paragraph is an ordinary paragraph if its first line matches neither C<m/\A=[a-zA-Z]/> nor C<m/\A[ \t]/>, I<and> if it's not inside a "=begin I<identifier>",  ... "=end I<identifier>" sequence unless "I<identifier>" begins with a colon (":"). 
+An B<ordinary paragraph>.  A paragraph is an ordinary paragraph if its first line matches neither C<m/\A=[a-zA-Z]/> nor C<m/\A[ \t]/>, I<and> if it's not inside a "=begin I<identifier>", ... "=end I<identifier>" sequence unless "I<identifier>" begins with a colon (":"). 
 
 =item * 
 
-A B<data paragraph>.  This is a paragraph that I<is> inside a "=begin I<identifier>" ... "=end I<identifier>" sequence where "I<identifier>" does I<not> begin with a literal colon (":").  In some sense, a data paragraph is not part of Pod at all (i.e.,  effectively it's "out-of-band"), since it's not subject to most kinds of Pod parsing; but it is specified here, since Pod parsers need to be able to call an event for it, or store it in some form in a parse tree, or at least just parse I<around> it. 
+A B<data paragraph>.  This is a paragraph that I<is> inside a "=begin I<identifier>" ... "=end I<identifier>" sequence where "I<identifier>" does I<not> begin with a literal colon (":").  In some sense, a data paragraph is not part of Pod at all (i.e., effectively it's "out-of-band"), since it's not subject to most kinds of Pod parsing; but it is specified here, since Pod parsers need to be able to call an event for it, or store it in some form in a parse tree, or at least just parse I<around> it. 
 
 =back 
 
@@ -143,7 +143,7 @@ This command indicates that the text in the remainder of the paragraph is a head
 
 =item "=pod" 
 
-This command indicates that this paragraph begins a Pod block.  (If we are already in the middle of a Pod block, this command has no effect at all.)  If there is any text in this command paragraph after "=pod",  it must be ignored.  Examples: 
+This command indicates that this paragraph begins a Pod block.  (If we are already in the middle of a Pod block, this command has no effect at all.)  If there is any text in this command paragraph after "=pod", it must be ignored.  Examples: 
 
 
   =pod 
@@ -246,7 +246,7 @@ This is synonymous with:
 
      =end formatname 
 
-That is, it creates a region consisting of a single paragraph; that paragraph is to be treated as a normal paragraph if "formatname" begins with a ":"; if "formatname" I<doesn't> begin with a colon,  then "text..." will constitute a data paragraph.  There is no way to use "=for formatname text..." to express "text..." as a verbatim paragraph. 
+That is, it creates a region consisting of a single paragraph; that paragraph is to be treated as a normal paragraph if "formatname" begins with a ":"; if "formatname" I<doesn't> begin with a colon, then "text..." will constitute a data paragraph.  There is no way to use "=for formatname text..." to express "text..." as a verbatim paragraph. 
 
 =item "=encoding encodingname" 
 
@@ -256,7 +256,7 @@ A document having more than one "=encoding" line should be considered an error. 
 
 =back 
 
-If a Pod processor sees any command other than the ones listed above (like "=head", or "=haed1", or "=stuff", or "=cuttlefish",  or "=w123"), that processor must by default treat this as an error.  It must not process the paragraph beginning with that command, must by default warn of this as an error, and may abort the parse.  A Pod parser may allow a way for particular applications to add to the above list of known commands, and to stipulate, for each additional command, whether formatting codes should be processed. 
+If a Pod processor sees any command other than the ones listed above (like "=head", or "=haed1", or "=stuff", or "=cuttlefish", or "=w123"), that processor must by default treat this as an error.  It must not process the paragraph beginning with that command, must by default warn of this as an error, and may abort the parse.  A Pod parser may allow a way for particular applications to add to the above list of known commands, and to stipulate, for each additional command, whether formatting codes should be processed. 
 
 Future versions of this specification may add additional commands. 
 
@@ -266,7 +266,7 @@ Future versions of this specification may add additional commands.
 
 =head1 Pod Formatting Codes 
 
-(Note that in previous drafts of this document and of perlpod,  formatting codes were referred to as "interior sequences", and this term may still be found in the documentation for Pod parsers,  and in error messages from Pod processors.) 
+(Note that in previous drafts of this document and of perlpod, formatting codes were referred to as "interior sequences", and this term may still be found in the documentation for Pod parsers, and in error messages from Pod processors.) 
 
 There are two syntaxes for formatting codes: 
 
@@ -287,7 +287,7 @@ A formatting code starts with a capital letter (just US-ASCII [A-Z]) followed by
 
 =item * 
 
-A formatting code starts with a capital letter (just US-ASCII [A-Z]) followed by two or more "<"'s, one or more whitespace characters,  any number of characters, one or more whitespace characters,  and ending with the first matching sequence of two or more ">"'s, where the number of ">"'s equals the number of "<"'s in the opening of this formatting code.  Examples: 
+A formatting code starts with a capital letter (just US-ASCII [A-Z]) followed by two or more "<"'s, one or more whitespace characters, any number of characters, one or more whitespace characters, and ending with the first matching sequence of two or more ">"'s, where the number of ">"'s equals the number of "<"'s in the opening of this formatting code.  Examples: 
 
 
     That's what I<< you >> think! 
@@ -357,11 +357,11 @@ This code is unusual in that most formatters completely discard this code and it
 
 Discussed briefly in L<perlpod/"Formatting Codes">. 
 
-This code is unusual is that it should have no content.  That is,  a processor may complain if it sees C<ZE<lt>potatoesE<gt>>.  Whether or not it complains, the I<potatoes> text should ignored. 
+This code is unusual is that it should have no content.  That is, a processor may complain if it sees C<ZE<lt>potatoesE<gt>>.  Whether or not it complains, the I<potatoes> text should ignored. 
 
 =item C<LE<lt>nameE<gt>> -- a hyperlink 
 
-The complicated syntaxes of this code are discussed at length in L<perlpod/"Formatting Codes">, and implementation details are discussed below, in L</"About LE<lt>...E<gt> Codes">.  Parsing the contents of LE<lt>content> is tricky.  Notably, the content has to be checked for whether it looks like a URL, or whether it has to be split on literal "|" and/or "/" (in the right order!), and so on,  I<before> EE<lt>...> codes are resolved. 
+The complicated syntaxes of this code are discussed at length in L<perlpod/"Formatting Codes">, and implementation details are discussed below, in L</"About LE<lt>...E<gt> Codes">.  Parsing the contents of LE<lt>content> is tricky.  Notably, the content has to be checked for whether it looks like a URL, or whether it has to be split on literal "|" and/or "/" (in the right order!), and so on, I<before> EE<lt>...> codes are resolved. 
 
 =item C<EE<lt>escapeE<gt>> -- a character escape 
 
@@ -406,7 +406,7 @@ instead of as equivalent to a "C" formatting code containing only "$foo-", and t
 
 Compliant parsers must not treat "->" as special. 
 
-Formatting codes absolutely cannot span paragraphs.  If a code is opened in one paragraph, and no closing code is found by the end of that paragraph, the Pod parser must close that formatting code,  and should complain (as in "Unterminated I code in the paragraph starting at line 123: 'Time objects are not...'").  So these two paragraphs: 
+Formatting codes absolutely cannot span paragraphs.  If a code is opened in one paragraph, and no closing code is found by the end of that paragraph, the Pod parser must close that formatting code, and should complain (as in "Unterminated I code in the paragraph starting at line 123: 'Time objects are not...'").  So these two paragraphs: 
 
 
   I<I told you not to do this! 
@@ -414,7 +414,7 @@ Formatting codes absolutely cannot span paragraphs.  If a code is opened in one 
 
   Don't make me say it again!> 
 
-...must I<not> be parsed as two paragraphs in italics (with the I code starting in one paragraph and starting in another.)  Instead,  the first paragraph should generate a warning, but that aside, the above code must parse as if it were: 
+...must I<not> be parsed as two paragraphs in italics (with the I code starting in one paragraph and starting in another.)  Instead, the first paragraph should generate a warning, but that aside, the above code must parse as if it were: 
 
 
   I<I told you not to do this!> 
@@ -465,7 +465,7 @@ The well known Unicode Byte Order Marks are as follows:  if the file begins with
 
 =item * 
 
-A naive but sufficient heuristic for testing the first highbit byte-sequence in a BOM-less file (whether in code or in Pod!), to see whether that sequence is valid as UTF-8 (RFC 2279) is to check whether that the first byte in the sequence is in the range 0xC0 - 0xFD I<and> whether the next byte is in the range 0x80 - 0xBF.  If so, the parser may conclude that this file is in UTF-8, and all highbit sequences in the file should be assumed to be UTF-8.  Otherwise the parser should treat the file as being in Latin-1.  In the unlikely circumstance that the first highbit sequence in a truly non-UTF-8 file happens to appear to be UTF-8, one can cater to our heuristic (as well as any more intelligent heuristic) by prefacing that line with a comment line containing a highbit sequence that is clearly I<not> valid as UTF-8.  A line consisting of simply "#", an e-acute, and any non-highbit byte,  is sufficient to establish this file's encoding. 
+A naive but sufficient heuristic for testing the first highbit byte-sequence in a BOM-less file (whether in code or in Pod!), to see whether that sequence is valid as UTF-8 (RFC 2279) is to check whether that the first byte in the sequence is in the range 0xC0 - 0xFD I<and> whether the next byte is in the range 0x80 - 0xBF.  If so, the parser may conclude that this file is in UTF-8, and all highbit sequences in the file should be assumed to be UTF-8.  Otherwise the parser should treat the file as being in Latin-1.  In the unlikely circumstance that the first highbit sequence in a truly non-UTF-8 file happens to appear to be UTF-8, one can cater to our heuristic (as well as any more intelligent heuristic) by prefacing that line with a comment line containing a highbit sequence that is clearly I<not> valid as UTF-8.  A line consisting of simply "#", an e-acute, and any non-highbit byte, is sufficient to establish this file's encoding. 
 
 =for comment 
  If/WHEN some brave soul makes these heuristics into a generic 
@@ -482,7 +482,7 @@ A naive but sufficient heuristic for testing the first highbit byte-sequence in 
 
 =item * 
 
-This document's requirements and suggestions about encodings do not apply to Pod processors running on non-ASCII platforms,  notably EBCDIC platforms. 
+This document's requirements and suggestions about encodings do not apply to Pod processors running on non-ASCII platforms, notably EBCDIC platforms. 
 
 =item * 
 
@@ -506,7 +506,7 @@ When rendering Pod to a format that allows comments (i.e., to nearly any format 
 
 Formatters may also insert additional comments, including: the release date of the Pod formatter program, the contact address for the author(s) of the formatter, the current time, the name of input file, the formatting options in effect, version of Perl used, etc. 
 
-Formatters may also choose to note errors/warnings as comments,  besides or instead of emitting them otherwise (as in messages to STDERR, or C<die>ing). 
+Formatters may also choose to note errors/warnings as comments, besides or instead of emitting them otherwise (as in messages to STDERR, or C<die>ing). 
 
 =item * 
 
@@ -568,13 +568,13 @@ Pod parsers must treat a line with only spaces and/or tabs on it as a "blank lin
 
 =item * 
 
-Authors of Pod formatters/processors should make every effort to avoid writing their own Pod parser.  There are already several in CPAN, with a wide range of interface styles -- and one of them,  Pod::Parser, comes with modern versions of Perl. 
+Authors of Pod formatters/processors should make every effort to avoid writing their own Pod parser.  There are already several in CPAN, with a wide range of interface styles -- and one of them, Pod::Parser, comes with modern versions of Perl. 
 
 =item * 
 
 Characters in Pod documents may be conveyed either as literals, or by number in EE<lt>n> codes, or by an equivalent mnemonic, as in EE<lt>eacute> which is exactly equivalent to EE<lt>233>. 
 
-Characters in the range 32-126 refer to those well known US-ASCII characters (also defined there by Unicode, with the same meaning),  which all Pod formatters must render faithfully.  Characters in the ranges 0-31 and 127-159 should not be used (neither as literals, nor as EE<lt>number> codes), except for the literal byte-sequences for newline (13, 13 10, or 10), and tab (9). 
+Characters in the range 32-126 refer to those well known US-ASCII characters (also defined there by Unicode, with the same meaning), which all Pod formatters must render faithfully.  Characters in the ranges 0-31 and 127-159 should not be used (neither as literals, nor as EE<lt>number> codes), except for the literal byte-sequences for newline (13, 13 10, or 10), and tab (9). 
 
 Characters in the range 160-255 refer to Latin-1 characters (also defined there by Unicode, with the same meaning).  Characters above 255 should be understood to refer to Unicode characters. 
 
@@ -584,11 +584,11 @@ Be warned that some formatters cannot reliably render characters outside 32-126;
 
 =item * 
 
-Besides the well-known "EE<lt>lt>" and "EE<lt>gt>" codes for less-than and greater-than, Pod parsers must understand "EE<lt>sol>" for "/" (solidus, slash), and "EE<lt>verbar>" for "|" (vertical bar,  pipe).  Pod parsers should also understand "EE<lt>lchevron>" and "EE<lt>rchevron>" as legacy codes for characters 171 and 187, i.e.,  "left-pointing double angle quotation mark" = "left pointing guillemet" and "right-pointing double angle quotation mark" = "right pointing guillemet".  (These look like little "<<" and ">>", and they are now preferably expressed with the HTML/XHTML codes "EE<lt>laquo>" and "EE<lt>raquo>".) 
+Besides the well-known "EE<lt>lt>" and "EE<lt>gt>" codes for less-than and greater-than, Pod parsers must understand "EE<lt>sol>" for "/" (solidus, slash), and "EE<lt>verbar>" for "|" (vertical bar, pipe).  Pod parsers should also understand "EE<lt>lchevron>" and "EE<lt>rchevron>" as legacy codes for characters 171 and 187, i.e., "left-pointing double angle quotation mark" = "left pointing guillemet" and "right-pointing double angle quotation mark" = "right pointing guillemet".  (These look like little "<<" and ">>", and they are now preferably expressed with the HTML/XHTML codes "EE<lt>laquo>" and "EE<lt>raquo>".) 
 
 =item * 
 
-Pod parsers should understand all "EE<lt>html>" codes as defined in the entity declarations in the most recent XHTML specification at C<www.W3.org>.  Pod parsers must understand at least the entities that define characters in the range 160-255 (Latin-1).  Pod parsers,  when faced with some unknown "EE<lt>I<identifier>>" code,  shouldn't simply replace it with nullstring (by default, at least),  but may pass it through as a string consisting of the literal characters E, less-than, I<identifier>, greater-than.  Or Pod parsers may offer the alternative option of processing such unknown "EE<lt>I<identifier>>" codes by firing an event especially for such codes, or by adding a special node-type to the in-memory document tree.  Such "EE<lt>I<identifier>>" may have special meaning to some processors, or some processors may choose to add them to a special error report. 
+Pod parsers should understand all "EE<lt>html>" codes as defined in the entity declarations in the most recent XHTML specification at C<www.W3.org>.  Pod parsers must understand at least the entities that define characters in the range 160-255 (Latin-1).  Pod parsers, when faced with some unknown "EE<lt>I<identifier>>" code, shouldn't simply replace it with nullstring (by default, at least), but may pass it through as a string consisting of the literal characters E, less-than, I<identifier>, greater-than.  Or Pod parsers may offer the alternative option of processing such unknown "EE<lt>I<identifier>>" codes by firing an event especially for such codes, or by adding a special node-type to the in-memory document tree.  Such "EE<lt>I<identifier>>" may have special meaning to some processors, or some processors may choose to add them to a special error report. 
 
 =item * 
 
@@ -596,7 +596,7 @@ Pod parsers must also support the XHTML codes "EE<lt>quot>" for character 34 (do
 
 =item * 
 
-Note that in all cases of "EE<lt>whatever>", I<whatever> (whether an htmlname, or a number in any base) must consist only of alphanumeric characters -- that is, I<whatever> must watch C<m/\A\w+\z/>.  So "EE<lt> 0 1 2 3 >" is invalid, because it contains spaces, which aren't alphanumeric characters.  This presumably does not I<need> special treatment by a Pod processor; " 0 1 2 3 " doesn't look like a number in any base, so it would presumably be looked up in the table of HTML-like names.  Since there isn't (and cannot be) an HTML-like entity called " 0 1 2 3 ",  this will be treated as an error.  However, Pod processors may treat "EE<lt> 0 1 2 3 >" or "EE<lt>e-acute>" as I<syntactically> invalid, potentially earning a different error message than the error message (or warning, or event) generated by a merely unknown (but theoretically valid) htmlname, as in "EE<lt>qacute>" [sic].  However, Pod parsers are not required to make this distinction. 
+Note that in all cases of "EE<lt>whatever>", I<whatever> (whether an htmlname, or a number in any base) must consist only of alphanumeric characters -- that is, I<whatever> must watch C<m/\A\w+\z/>.  So "EE<lt> 0 1 2 3 >" is invalid, because it contains spaces, which aren't alphanumeric characters.  This presumably does not I<need> special treatment by a Pod processor; " 0 1 2 3 " doesn't look like a number in any base, so it would presumably be looked up in the table of HTML-like names.  Since there isn't (and cannot be) an HTML-like entity called " 0 1 2 3 ", this will be treated as an error.  However, Pod processors may treat "EE<lt> 0 1 2 3 >" or "EE<lt>e-acute>" as I<syntactically> invalid, potentially earning a different error message than the error message (or warning, or event) generated by a merely unknown (but theoretically valid) htmlname, as in "EE<lt>qacute>" [sic].  However, Pod parsers are not required to make this distinction. 
 
 =item * 
 
@@ -613,7 +613,7 @@ If, surprisingly, the implementor of a Pod formatter can't find a satisfactory p
   http://www.w3.org/TR/xhtml1/DTD/xhtml-special.ent 
   http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent 
 
-Then you can progress through any remaining notable Unicode characters in the range 0x2000-0x204D (consult the character tables at www.unicode.org), and whatever else strikes your fancy.  For example,  in F<xhtml-symbol.ent>, there is the entry: 
+Then you can progress through any remaining notable Unicode characters in the range 0x2000-0x204D (consult the character tables at www.unicode.org), and whatever else strikes your fancy.  For example, in F<xhtml-symbol.ent>, there is the entry: 
 
 
   <!ENTITY infin    "&#8734;"> <!-- infinity, U+221E ISOtech --> 
@@ -621,7 +621,7 @@ Then you can progress through any remaining notable Unicode characters in the ra
 While the mapping "infin" to the character "\x{221E}" will (hopefully) have been already handled by the Pod parser, the presence of the character in this file means that it's reasonably important enough to include in a formatter's table that maps from notable Unicode characters to the codes necessary for rendering them.  So for a Unicode-to-*roff mapping, for example, this would merit the entry: 
 
 
-  "\x{221E}" => '\(in',  
+  "\x{221E}" => '\(in', 
 
 It is eagerly hoped that in the future, increasing numbers of formats (and formatters) will support Unicode characters directly (as (X)HTML does with C<&infin;>, C<&#8734;>, or C<&#x221E;>), reducing the need for idiosyncratic mappings of Unicode-to-I<my_escapes>. 
 
@@ -640,7 +640,7 @@ A Pod formatter may also note, in a comment or warning, a list of what unrendera
 
 =item * 
 
-EE<lt>...> may freely appear in any formatting code (other than in another EE<lt>...> or in an ZE<lt>>).  That is, "XE<lt>The EE<lt>euro>1, 000, 000 Solution>" is valid, as is "LE<lt>The EE<lt>euro>1, 000, 000 Solution|Million::Euros>". 
+EE<lt>...> may freely appear in any formatting code (other than in another EE<lt>...> or in an ZE<lt>>).  That is, "XE<lt>The EE<lt>euro>1,000,000 Solution>" is valid, as is "LE<lt>The EE<lt>euro>1,000,000 Solution|Million::Euros>". 
 
 =item * 
 
@@ -665,11 +665,11 @@ However, a misapplied space-to-NBSP replacement could (wrongly) produce somethin
 
 ...which is almost definitely not going to work as a hyperlink (assuming this formatter outputs a format supporting hypertext). 
 
-Formatters may choose to just not support the S format code,  especially in cases where the output format simply has no NBSP character/code and no code for "don't break this stuff across lines". 
+Formatters may choose to just not support the S format code, especially in cases where the output format simply has no NBSP character/code and no code for "don't break this stuff across lines". 
 
 =item * 
 
-Besides the NBSP character discussed above, implementors are reminded of the existence of the other "special" character in Latin-1, the "soft hyphen" character, also known as "discretionary hyphen",  i.e. C<EE<lt>173E<gt>> = C<EE<lt>0xADE<gt>> = C<EE<lt>shyE<gt>>).  This character expresses an optional hyphenation point.  That is, it normally renders as nothing, but may render as a "-" if a formatter breaks the word at that point.  Pod formatters should, as appropriate, do one of the following:  1) render this with a code with the same meaning (e.g., "\-" in RTF), 2) pass it through in the expectation that the formatter understands this character as such, or 3) delete it. 
+Besides the NBSP character discussed above, implementors are reminded of the existence of the other "special" character in Latin-1, the "soft hyphen" character, also known as "discretionary hyphen", i.e. C<EE<lt>173E<gt>> = C<EE<lt>0xADE<gt>> = C<EE<lt>shyE<gt>>).  This character expresses an optional hyphenation point.  That is, it normally renders as nothing, but may render as a "-" if a formatter breaks the word at that point.  Pod formatters should, as appropriate, do one of the following:  1) render this with a code with the same meaning (e.g., "\-" in RTF), 2) pass it through in the expectation that the formatter understands this character as such, or 3) delete it. 
 
 For example: 
 
@@ -726,7 +726,7 @@ The name or URL, or undef if none.  (E.g., in "LE<lt>Perl Functions|perlfunc>", 
 
 =item Fourth: 
 
-The section (AKA "item" in older perlpods), or undef if none.  E.g.,  in "LE<lt>Getopt::Std/DESCRIPTIONE<gt>", "DESCRIPTION" is the section.  (Note that this is not the same as a manpage section like the "5" in "man 5 crontab".  "Section Foo" in the Pod sense means the part of the text that's introduced by the heading or item whose text is "Foo".) 
+The section (AKA "item" in older perlpods), or undef if none.  E.g., in "LE<lt>Getopt::Std/DESCRIPTIONE<gt>", "DESCRIPTION" is the section.  (Note that this is not the same as a manpage section like the "5" in "man 5 crontab".  "Section Foo" in the Pod sense means the part of the text that's introduced by the heading or item whose text is "Foo".) 
 
 =back 
 
@@ -750,72 +750,72 @@ For example:
 
 
   L<Foo::Bar> 
-    =>  undef, # link text 
-        "Foo::Bar", # possibly inferred link text 
-        "Foo::Bar", # name 
-        undef, # section 
-        'pod', # what sort of link 
+    =>  undef,                          # link text 
+        "Foo::Bar",                     # possibly inferred link text 
+        "Foo::Bar",                     # name 
+        undef,                          # section 
+        'pod',                          # what sort of link 
         "Foo::Bar"                      # original content 
 
 
   L<Perlport's section on NL's|perlport/Newlines> 
-    =>  "Perlport's section on NL's", # link text 
-        "Perlport's section on NL's", # possibly inferred link text 
-        "perlport", # name 
-        "Newlines", # section 
-        'pod', # what sort of link 
+    =>  "Perlport's section on NL's",   # link text 
+        "Perlport's section on NL's",   # possibly inferred link text 
+        "perlport",                     # name 
+        "Newlines",                     # section 
+        'pod',                          # what sort of link 
         "Perlport's section on NL's|perlport/Newlines" # orig. content 
 
 
   L<perlport/Newlines> 
-    =>  undef, # link text 
-        '"Newlines" in perlport', # possibly inferred link text 
-        "perlport", # name 
-        "Newlines", # section 
-        'pod', # what sort of link 
+    =>  undef,                          # link text 
+        '"Newlines" in perlport',       # possibly inferred link text 
+        "perlport",                     # name 
+        "Newlines",                     # section 
+        'pod',                          # what sort of link 
         "perlport/Newlines"             # original content 
 
 
   L<crontab(5)/"DESCRIPTION"> 
-    =>  undef, # link text 
-        '"DESCRIPTION" in crontab(5)', # possibly inferred link text 
-        "crontab(5)", # name 
-        "DESCRIPTION", # section 
-        'man', # what sort of link 
+    =>  undef,                          # link text 
+        '"DESCRIPTION" in crontab(5)',  # possibly inferred link text 
+        "crontab(5)",                   # name 
+        "DESCRIPTION",                  # section 
+        'man',                          # what sort of link 
         'crontab(5)/"DESCRIPTION"'      # original content 
 
 
   L</Object Attributes> 
-    =>  undef, # link text 
-        '"Object Attributes"', # possibly inferred link text 
-        undef, # name 
-        "Object Attributes", # section 
-        'pod', # what sort of link 
+    =>  undef,                          # link text 
+        '"Object Attributes"',          # possibly inferred link text 
+        undef,                          # name 
+        "Object Attributes",            # section 
+        'pod',                          # what sort of link 
         "/Object Attributes"            # original content 
 
 
   L<http://www.perl.org/> 
-    =>  undef, # link text 
-        "http://www.perl.org/", # possibly inferred link text 
-        "http://www.perl.org/", # name 
-        undef, # section 
-        'url', # what sort of link 
+    =>  undef,                          # link text 
+        "http://www.perl.org/",         # possibly inferred link text 
+        "http://www.perl.org/",         # name 
+        undef,                          # section 
+        'url',                          # what sort of link 
         "http://www.perl.org/"          # original content 
 
 
   L<Perl.org|http://www.perl.org/> 
-    =>  "Perl.org", # link text 
-        "http://www.perl.org/", # possibly inferred link text 
-        "http://www.perl.org/", # name 
-        undef, # section 
-        'url', # what sort of link 
+    =>  "Perl.org",                     # link text 
+        "http://www.perl.org/",         # possibly inferred link text 
+        "http://www.perl.org/",         # name 
+        undef,                          # section 
+        'url',                          # what sort of link 
         "Perl.org|http://www.perl.org/" # original content 
 
 Note that you can distinguish URL-links from anything else by the fact that they match C<m/\A\w+:[^:\s]\S*\z/>.  So C<LE<lt>http://www.perl.comE<gt>> is a URL, but C<LE<lt>HTTP::ResponseE<gt>> isn't. 
 
 =item * 
 
-In case of LE<lt>...> codes with no "text|" part in them,  older formatters have exhibited great variation in actually displaying the link or cross reference.  For example, LE<lt>crontab(5)> would render as "the C<crontab(5)> manpage", or "in the C<crontab(5)> manpage" or just "C<crontab(5)>". 
+In case of LE<lt>...> codes with no "text|" part in them, older formatters have exhibited great variation in actually displaying the link or cross reference.  For example, LE<lt>crontab(5)> would render as "the C<crontab(5)> manpage", or "in the C<crontab(5)> manpage" or just "C<crontab(5)>". 
 
 Pod processors must now treat "text|"-less links as follows: 
 
@@ -841,7 +841,7 @@ then a link to it would look like this:
 
   L<somedoc/About the C<-M> Operator> 
 
-Formatters may choose to ignore the markup for purposes of resolving the link and use only the renderable characters in the section name,  as in: 
+Formatters may choose to ignore the markup for purposes of resolving the link and use only the renderable characters in the section name, as in: 
 
 
   <h1><a name="About_the_-M_Operator">About the <code>-M</code> 
@@ -871,9 +871,9 @@ In a C<LE<lt>text|...E<gt>> code, text may contain formatting codes for formatti
 
   L<B<ummE<234>stuff>|...> 
 
-For C<LE<lt>...E<gt>> codes without a "name|" part, only C<EE<lt>...E<gt>> and C<ZE<lt>E<gt>> codes may occur.  That is,  authors should not use "C<LE<lt>BE<lt>Foo::BarE<gt>E<gt>>". 
+For C<LE<lt>...E<gt>> codes without a "name|" part, only C<EE<lt>...E<gt>> and C<ZE<lt>E<gt>> codes may occur.  That is, authors should not use "C<LE<lt>BE<lt>Foo::BarE<gt>E<gt>>". 
 
-Note, however, that formatting codes and ZE<lt>>'s can occur in any and all parts of an LE<lt>...> (i.e., in I<name>, I<section>, I<text>,  and I<url>). 
+Note, however, that formatting codes and ZE<lt>>'s can occur in any and all parts of an LE<lt>...> (i.e., in I<name>, I<section>, I<text>, and I<url>). 
 
 Authors must not nest LE<lt>...> codes.  For example, "LE<lt>The LE<lt>Foo::Bar> man page>" should be treated as an error. 
 
@@ -906,7 +906,7 @@ Previous versions of perlpod allowed for a C<LE<lt>sectionE<gt>> syntax (as in C
 
 =item * 
 
-The non-zero numeric I<indentlevel> in "=over I<indentlevel>" ... "=back" is used for giving the formatter a clue as to how many "spaces" (ems, or roughly equivalent units) it should tab over,  although many formatters will have to convert this to an absolute measurement that may not exactly match with the size of spaces (or M's) in the document's base font.  Other formatters may have to completely ignore the number.  The lack of any explicit I<indentlevel> parameter is equivalent to an I<indentlevel> value of 4.  Pod processors may complain if I<indentlevel> is present but is not a positive number matching C<m/\A(\d*\.)?\d+\z/>. 
+The non-zero numeric I<indentlevel> in "=over I<indentlevel>" ... "=back" is used for giving the formatter a clue as to how many "spaces" (ems, or roughly equivalent units) it should tab over, although many formatters will have to convert this to an absolute measurement that may not exactly match with the size of spaces (or M's) in the document's base font.  Other formatters may have to completely ignore the number.  The lack of any explicit I<indentlevel> parameter is equivalent to an I<indentlevel> value of 4.  Pod processors may complain if I<indentlevel> is present but is not a positive number matching C<m/\A(\d*\.)?\d+\z/>. 
 
 =item * 
 
@@ -920,9 +920,9 @@ Each "=over" ... "=back" region should be one of the following:
 
 =item * 
 
-An "=over" ... "=back" region containing only "=item *" commands,  each followed by some number of ordinary/verbatim paragraphs, other nested "=over" ... "=back" regions, "=for..." paragraphs, and "=begin"..."=end" regions. 
+An "=over" ... "=back" region containing only "=item *" commands, each followed by some number of ordinary/verbatim paragraphs, other nested "=over" ... "=back" regions, "=for..." paragraphs, and "=begin"..."=end" regions. 
 
-(Pod processors must tolerate a bare "=item" as if it were "=item *".)  Whether "*" is rendered as a literal asterisk, an "o", or as some kind of real bullet character, is left up to the Pod formatter,  and may depend on the level of nesting. 
+(Pod processors must tolerate a bare "=item" as if it were "=item *".)  Whether "*" is rendered as a literal asterisk, an "o", or as some kind of real bullet character, is left up to the Pod formatter, and may depend on the level of nesting. 
 
 =item * 
 
@@ -942,7 +942,7 @@ An "=over" ... "=back" region containing no "=item" paragraphs at all, and conta
 
 =back 
 
-Note that with all the above cases, you can determine which type of "=over" ... "=back" you have, by examining the first (non-"=cut",  non-"=pod") Pod paragraph after the "=over" command. 
+Note that with all the above cases, you can determine which type of "=over" ... "=back" you have, by examining the first (non-"=cut", non-"=pod") Pod paragraph after the "=over" command. 
 
 =item * 
 
@@ -1003,7 +1003,7 @@ Note that an "=over" ... "=back" region should have some content.  That is, auth
 
   =back 
 
-Pod processors seeing such a contentless "=over" ... "=back" region,  may ignore it, or may report it as an error. 
+Pod processors seeing such a contentless "=over" ... "=back" region, may ignore it, or may report it as an error. 
 
 =item * 
 
@@ -1142,7 +1142,7 @@ This would signal to the parser that paragraphs in this begin...end region are s
   Wirth, Niklaus.  1976.  I<Algorithms + Data Structures = 
   Programs.>  Prentice-Hall, Englewood Cliffs, NJ. 
 
-The ":" on these identifiers means simply "process this stuff normally, even though the result will be for some special target". I suggest that parser APIs report "biblio" as the target identifier,  but also report that it had a ":" prefix.  (And similarly, with the above "html", report "html" as the target identifier, and note the I<lack> of a ":" prefix.) 
+The ":" on these identifiers means simply "process this stuff normally, even though the result will be for some special target". I suggest that parser APIs report "biblio" as the target identifier, but also report that it had a ":" prefix.  (And similarly, with the above "html", report "html" as the target identifier, and note the I<lack> of a ":" prefix.) 
 
 Note that a "=begin I<identifier>"..."=end I<identifier>" region where I<identifier> begins with a colon, I<can> contain commands.  For example: 
 
@@ -1179,7 +1179,7 @@ Note that a "=begin I<identifier>"..."=end I<identifier>" region where I<identif
 
   =end :biblio 
 
-Note, however, a "=begin I<identifier>"..."=end I<identifier>" region where I<identifier> does I<not> begin with a colon, should not directly contain "=head1" ... "=head4" commands, nor "=over", nor "=back",  nor "=item".  For example, this may be considered invalid: 
+Note, however, a "=begin I<identifier>"..."=end I<identifier>" region where I<identifier> does I<not> begin with a colon, should not directly contain "=head1" ... "=head4" commands, nor "=over", nor "=back", nor "=item".  For example, this may be considered invalid: 
 
 
   =begin somedata 
@@ -1264,7 +1264,7 @@ And this too is valid:
 
   =end someformat 
 
-The contents of the above "=begin :yetanotherformat" ... "=end :yetanotherformat" region I<aren't> data paragraphs, because the immediately containing region's identifier (":yetanotherformat") begins with a colon.  In practice, most regions that contain data paragraphs will contain I<only> data paragraphs; however,  the above nesting is syntactically valid as Pod, even if it is rare.  However, the handlers for some formats, like "html",  will accept only data paragraphs, not nested regions; and they may complain if they see (targeted for them) nested regions, or commands,  other than "=end", "=pod", and "=cut". 
+The contents of the above "=begin :yetanotherformat" ... "=end :yetanotherformat" region I<aren't> data paragraphs, because the immediately containing region's identifier (":yetanotherformat") begins with a colon.  In practice, most regions that contain data paragraphs will contain I<only> data paragraphs; however, the above nesting is syntactically valid as Pod, even if it is rare.  However, the handlers for some formats, like "html", will accept only data paragraphs, not nested regions; and they may complain if they see (targeted for them) nested regions, or commands, other than "=end", "=pod", and "=cut". 
 
 Also consider this valid structure: 
 
@@ -1319,7 +1319,7 @@ There, the "=begin html"..."=end html" region is nested inside the larger "=begi
 
 Pod parsers, when processing a series of data paragraphs one after another (within a single region), should consider them to be one large data paragraph that happens to contain blank lines.  So the content of the above "=begin html"..."=end html" I<may> be stored as two data paragraphs (one consisting of "<img src='wirth_spokesmodeling_book.png'>\n" and another consisting of "<hr>\n"), but I<should> be stored as a single data paragraph (consisting of "<img src='wirth_spokesmodeling_book.png'>\n\n<hr>\n"). 
 
-Pod processors should tolerate empty "=begin I<something>"..."=end I<something>" regions,  empty "=begin :I<something>"..."=end :I<something>" regions, and contentless "=for I<something>" and "=for :I<something>" paragraphs.  I.e., these should be tolerated: 
+Pod processors should tolerate empty "=begin I<something>"..."=end I<something>" regions, empty "=begin :I<something>"..."=end :I<something>" regions, and contentless "=for I<something>" and "=for :I<something>" paragraphs.  I.e., these should be tolerated: 
 
 
   =for html 
@@ -1424,7 +1424,7 @@ This is invalid because every "=end" command must have a formatname parameter.
 
 =head1 SEE ALSO 
 
-L<perlpod>, L<perlsyn/"PODs: Embedded Documentation">,  L<podchecker> 
+L<perlpod>, L<perlsyn/"PODs: Embedded Documentation">, L<podchecker> 
 
 =head1 AUTHOR 
 

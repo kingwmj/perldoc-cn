@@ -4,7 +4,7 @@ perlfaq8 - System Interaction
 
 =head1 DESCRIPTION 
 
-This section of the Perl FAQ covers questions involving operating system interaction.  Topics include interprocess communication (IPC),  control over the user-interface (keyboard, screen and pointing devices), and most anything else not related to data manipulation. 
+This section of the Perl FAQ covers questions involving operating system interaction.  Topics include interprocess communication (IPC), control over the user-interface (keyboard, screen and pointing devices), and most anything else not related to data manipulation. 
 
 Read the FAQs and documentation specific to the port of perl to your operating system (eg, L<perlvms>, L<perlplan9>, ...).  These should contain more detailed information on the vagaries of your perl. 
 
@@ -216,7 +216,7 @@ If you have a command-line program that does the job, you can call it in backtic
 
 =head2 How do I get the screen size? 
 
-If you have C<Term::ReadKey> module installed from CPAN,  you can use it to fetch the width and height in characters and in pixels: 
+If you have C<Term::ReadKey> module installed from CPAN, you can use it to fetch the width and height in characters and in pixels: 
 
 
     use Term::ReadKey; 
@@ -232,8 +232,8 @@ This is more portable than the raw C<ioctl>, but not as illustrative:
         die sprintf "$0: ioctl TIOCGWINSZ (%08x: $!)\n", &TIOCGWINSZ; 
     } 
     ($row, $col, $xpixel, $ypixel) = unpack('S4', $winsize); 
-    print "(row, col) = ($row, $col)"; 
-    print "  (xpixel, ypixel) = ($xpixel, $ypixel)" if $xpixel || $ypixel; 
+    print "(row,col) = ($row,$col)"; 
+    print "  (xpixel,ypixel) = ($xpixel,$ypixel)" if $xpixel || $ypixel; 
     print "\n"; 
 
 =head2 How do I ask the user for a password? 
@@ -263,7 +263,7 @@ Your system may use lockfiles to control multiple access.  Make sure you follow 
 
 =item open mode 
 
-If you expect to use both read and write operations on the device,  you'll have to open it for update (see L<perlfunc/"open"> for details).  You may wish to open it without running the risk of blocking by using C<sysopen()> and C<O_RDWR|O_NDELAY|O_NOCTTY> from the C<Fcntl> module (part of the standard perl distribution).  See L<perlfunc/"sysopen"> for more on this approach. 
+If you expect to use both read and write operations on the device, you'll have to open it for update (see L<perlfunc/"open"> for details).  You may wish to open it without running the risk of blocking by using C<sysopen()> and C<O_RDWR|O_NDELAY|O_NOCTTY> from the C<Fcntl> module (part of the standard perl distribution).  See L<perlfunc/"sysopen"> for more on this approach. 
 
 =item end of line 
 
@@ -277,7 +277,7 @@ Even though with normal text files a "\n" will do the trick, there is still no u
 
 =item flushing output 
 
-If you expect characters to get to your device when you C<print()> them,  you'll want to autoflush that filehandle.  You can use C<select()> and the C<$|> variable to control autoflushing (see L<perlvar/$E<verbar>> and L<perlfunc/select>, or L<perlfaq5>, "How do I flush/unbuffer an output filehandle?  Why must I do this?"): 
+If you expect characters to get to your device when you C<print()> them, you'll want to autoflush that filehandle.  You can use C<select()> and the C<$|> variable to control autoflushing (see L<perlvar/$E<verbar>> and L<perlfunc/select>, or L<perlfaq5>, "How do I flush/unbuffer an output filehandle?  Why must I do this?"): 
 
 
     $oldh = select(DEV); 
@@ -303,7 +303,7 @@ If you are doing a blocking C<read()> or C<sysread()>, you'll have to arrange fo
 
 =back 
 
-While trying to read from his caller-id box, the notorious Jamie Zawinski C<< <jwz@netscape.com> >>, after much gnashing of teeth and fighting with C<sysread>, C<sysopen>, POSIX's C<tcgetattr> business,  and various other functions that go bump in the night, finally came up with this: 
+While trying to read from his caller-id box, the notorious Jamie Zawinski C<< <jwz@netscape.com> >>, after much gnashing of teeth and fighting with C<sysread>, C<sysopen>, POSIX's C<tcgetattr> business, and various other functions that go bump in the night, finally came up with this: 
 
 
     sub open_modem { 
@@ -332,9 +332,9 @@ If you're worried about users selecting bad passwords, you should proactively ch
 
 (contributed by brian d foy) 
 
-There's not a single way to run code in the background so you don't have to wait for it to finish before your program moves on to other tasks. Process management depends on your particular operating system,  and many of the techniques are in L<perlipc>. 
+There's not a single way to run code in the background so you don't have to wait for it to finish before your program moves on to other tasks. Process management depends on your particular operating system, and many of the techniques are in L<perlipc>. 
 
-Several CPAN modules may be able to help, including C<IPC::Open2> or C<IPC::Open3>, C<IPC::Run>, C<Parallel::Jobs>,  C<Parallel::ForkManager>, C<POE>, C<Proc::Background>, and C<Win32::Process>. There are many other modules you might use, so check those namespaces for other options too. 
+Several CPAN modules may be able to help, including C<IPC::Open2> or C<IPC::Open3>, C<IPC::Run>, C<Parallel::Jobs>, C<Parallel::ForkManager>, C<POE>, C<Proc::Background>, and C<Win32::Process>. There are many other modules you might use, so check those namespaces for other options too. 
 
 If you are on a Unix-like system, you might be able to get away with a system call where you put an C<&> on the end of the command: 
 
@@ -441,7 +441,7 @@ For example, you can use this to make sure your filter program managed to finish
         close(STDOUT) || die "stdout close failed: $!"; 
     } 
 
-The C<END> block isn't called when untrapped signals kill the program,  though, so if you use C<END> blocks you should also use 
+The C<END> block isn't called when untrapped signals kill the program, though, so if you use C<END> blocks you should also use 
 
 
     use sigtrap qw(die normal-signals); 
@@ -466,7 +466,7 @@ Remember to check the modules that came with your distribution, and CPAN as well
 
 =head2 Where do I get the include files to do ioctl() or syscall()? 
 
-Historically, these would be generated by the C<h2ph> tool, part of the standard perl distribution.  This program converts C<cpp(1)> directives in C header files to files containing subroutine definitions, like C<&SYS_getitimer>, which you can use as arguments to your functions. It doesn't work perfectly, but it usually gets most of the job done. Simple files like F<errno.h>, F<syscall.h>, and F<socket.h> were fine,  but the hard ones like F<ioctl.h> nearly always need to be hand-edited. Here's how to install the *.ph files: 
+Historically, these would be generated by the C<h2ph> tool, part of the standard perl distribution.  This program converts C<cpp(1)> directives in C header files to files containing subroutine definitions, like C<&SYS_getitimer>, which you can use as arguments to your functions. It doesn't work perfectly, but it usually gets most of the job done. Simple files like F<errno.h>, F<syscall.h>, and F<socket.h> were fine, but the hard ones like F<ioctl.h> nearly always need to be hand-edited. Here's how to install the *.ph files: 
 
 
     1.  become super-user 
@@ -729,7 +729,7 @@ If that doesn't work, give up on your stdio package and use sysread.
 
 =head2 How can I convert my shell script to perl? 
 
-Learn Perl and rewrite it.  Seriously, there's no simple converter. Things that are awkward to do in the shell are easy to do in Perl, and this very awkwardness is what would make a shell->perl converter nigh-on impossible to write.  By rewriting it, you'll think about what you're really trying to do, and hopefully will escape the shell's pipeline datastream paradigm, which while convenient for some matters,  causes many inefficiencies. 
+Learn Perl and rewrite it.  Seriously, there's no simple converter. Things that are awkward to do in the shell are easy to do in Perl, and this very awkwardness is what would make a shell->perl converter nigh-on impossible to write.  By rewriting it, you'll think about what you're really trying to do, and hopefully will escape the shell's pipeline datastream paradigm, which while convenient for some matters, causes many inefficiencies. 
 
 =head2 Can I use perl to run a telnet or ftp session? 
 
@@ -853,9 +853,9 @@ Use the C<BSD::Resource> module from CPAN. As an example:
 
 
     use BSD::Resource; 
-    setrlimit(RLIMIT_CPU, 10, 20) or die $!; 
+    setrlimit(RLIMIT_CPU,10,20) or die $!; 
 
-This sets the soft and hard limits to 10 and 20 seconds, respectively. After 10 seconds of time spent running on the CPU (not "wall" time),  the process will be sent a signal (XCPU on some systems) which, if not trapped, will cause the process to terminate.  If that signal is trapped, then after 10 more seconds (20 seconds in total) the process will be killed with a non-trappable signal. 
+This sets the soft and hard limits to 10 and 20 seconds, respectively. After 10 seconds of time spent running on the CPU (not "wall" time), the process will be sent a signal (XCPU on some systems) which, if not trapped, will cause the process to terminate.  If that signal is trapped, then after 10 more seconds (20 seconds in total) the process will be killed with a non-trappable signal. 
 
 See the C<BSD::Resource> and your systems documentation for the gory details. 
 
@@ -865,9 +865,9 @@ Use the reaper code from L<perlipc/"Signals"> to call C<wait()> when a SIGCHLD i
 
 =head2 How do I use an SQL database? 
 
-The C<DBI> module provides an abstract interface to most database servers and types, including Oracle, DB2, Sybase, mysql, Postgresql,  ODBC, and flat files.  The DBI module accesses each database type through a database driver, or DBD.  You can see a complete list of available drivers on CPAN: http://www.cpan.org/modules/by-module/DBD/ . You can read more about DBI on http://dbi.perl.org . 
+The C<DBI> module provides an abstract interface to most database servers and types, including Oracle, DB2, Sybase, mysql, Postgresql, ODBC, and flat files.  The DBI module accesses each database type through a database driver, or DBD.  You can see a complete list of available drivers on CPAN: http://www.cpan.org/modules/by-module/DBD/ . You can read more about DBI on http://dbi.perl.org . 
 
-Other modules provide more specific access: C<Win32::ODBC>, C<Alzabo>,  C<iodbc>, and others found on CPAN Search: http://search.cpan.org . 
+Other modules provide more specific access: C<Win32::ODBC>, C<Alzabo>, C<iodbc>, and others found on CPAN Search: http://search.cpan.org . 
 
 =head2 How do I make a system() exit on control-C? 
 
@@ -890,7 +890,7 @@ If you're lucky enough to be using a system that supports non-blocking reads (mo
 
 (answer contributed by brian d foy) 
 
-When you run a Perl script, something else is running the script for you,  and that something else may output error messages.  The script might emit its own warnings and error messages.  Most of the time you cannot tell who said what. 
+When you run a Perl script, something else is running the script for you, and that something else may output error messages.  The script might emit its own warnings and error messages.  Most of the time you cannot tell who said what. 
 
 You probably cannot fix the thing that runs perl, but you can change how perl outputs its warnings by defining a custom warning and die functions. 
 
@@ -902,7 +902,7 @@ Consider this script, which has an error you may not notice immediately.
 
     print "Hello World\n"; 
 
-I get an error when I run this from my shell (which happens to be bash).  That may look like perl forgot it has a C<print()> function,  but my shebang line is not the path to perl, so the shell runs the script, and I get the error. 
+I get an error when I run this from my shell (which happens to be bash).  That may look like perl forgot it has a C<print()> function, but my shebang line is not the path to perl, so the shell runs the script, and I get the error. 
 
 
     $ ./test 
@@ -988,7 +988,7 @@ Some distributions may need to link to libraries or other third-party code and t
 
 (contributed by brian d foy) 
 
-Perl runs C<require> statement at run-time. Once Perl loads, compiles,  and runs the file, it doesn't do anything else. The C<use> statement is the same as a C<require> run at compile-time, but Perl also calls the C<import> method for the loaded package. These two are the same: 
+Perl runs C<require> statement at run-time. Once Perl loads, compiles, and runs the file, it doesn't do anything else. The C<use> statement is the same as a C<require> run at compile-time, but Perl also calls the C<import> method for the loaded package. These two are the same: 
 
 
     use MODULE qw(import list); 
@@ -1141,7 +1141,7 @@ The last is particularly useful because it knows about machine-dependent archite
 
 =head2 What is socket.ph and where do I get it? 
 
-It's a Perl 4 style file defining values for system networking constants.  Sometimes it is built using C<h2ph> when Perl is installed,  but other times it is not.  Modern programs C<use Socket;> instead. 
+It's a Perl 4 style file defining values for system networking constants.  Sometimes it is built using C<h2ph> when Perl is installed, but other times it is not.  Modern programs C<use Socket;> instead. 
 
 =head1 AUTHOR AND COPYRIGHT 
 

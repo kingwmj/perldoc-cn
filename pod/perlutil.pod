@@ -4,7 +4,7 @@ perlutil - utilities packaged with the Perl distribution
 
 =head1 DESCRIPTION 
 
-Along with the Perl interpreter itself, the Perl distribution installs a range of utilities on your system. There are also several utilities which are used by the Perl distribution itself as part of the install process. This document exists to list all of these utilities, explain what they are for and provide pointers to each module's documentation,  if appropriate. 
+Along with the Perl interpreter itself, the Perl distribution installs a range of utilities on your system. There are also several utilities which are used by the Perl distribution itself as part of the install process. This document exists to list all of these utilities, explain what they are for and provide pointers to each module's documentation, if appropriate. 
 
 =head1 LIST OF UTILITIES 
 
@@ -26,7 +26,7 @@ As well as these two, there are two other converters: F<pod2html> will produce H
 
 =item L<pod2usage|pod2usage> 
 
-If you just want to know how to use the utilities described here,  F<pod2usage> will just extract the "USAGE" section; some of the utilities will automatically call F<pod2usage> on themselves when you call them with C<-help>. 
+If you just want to know how to use the utilities described here, F<pod2usage> will just extract the "USAGE" section; some of the utilities will automatically call F<pod2usage> on themselves when you call them with C<-help>. 
 
 =item L<podselect|podselect> 
 
@@ -58,7 +58,7 @@ F<a2p> converts F<awk> scripts to Perl programs; for example, C<a2p -F:> on the 
 
 
     while (<>) { 
-        ($Fld1, $Fld2) = split(/[:\n]/, $_, -1); 
+        ($Fld1,$Fld2) = split(/[:\n]/, $_, -1); 
         print $Fld2; 
     } 
 
@@ -77,12 +77,12 @@ When invoked as F<psed>, it behaves as a F<sed> implementation, written in Perl.
 
 =item L<find2perl|find2perl> 
 
-Finally, F<find2perl> translates C<find> commands to Perl equivalents which use the L<File::Find|File::Find> module. As an example,  C<find2perl . -user root -perm 4000 -print> produces the following callback subroutine for C<File::Find>: 
+Finally, F<find2perl> translates C<find> commands to Perl equivalents which use the L<File::Find|File::Find> module. As an example, C<find2perl . -user root -perm 4000 -print> produces the following callback subroutine for C<File::Find>: 
 
 
     sub wanted { 
-        my ($dev, $ino, $mode, $nlink, $uid, $gid); 
-        (($dev, $ino, $mode, $nlink, $uid, $gid) = lstat($_)) && 
+        my ($dev,$ino,$mode,$nlink,$uid,$gid); 
+        (($dev,$ino,$mode,$nlink,$uid,$gid) = lstat($_)) && 
         $uid == $uid{'root'}) && 
         (($mode & 0777) == 04000); 
         print("$name\n"); 
@@ -112,7 +112,7 @@ The F<perlivp> program is set up at Perl source code build time to test the Perl
 
 =head2 Development 
 
-There are a set of utilities which help you in developing Perl programs,  and in particular, extending Perl with C. 
+There are a set of utilities which help you in developing Perl programs, and in particular, extending Perl with C. 
 
 =over 3 
 
@@ -126,7 +126,7 @@ This program provides an easy way to send a thank-you message back to the author
 
 =item L<h2ph|h2ph> 
 
-Back before Perl had the XS system for connecting with C libraries,  programmers used to get library constants by reading through the C header files. You may still see C<require 'syscall.ph'> or similar around - the F<.ph> file should be created by running F<h2ph> on the corresponding F<.h> file. See the F<h2ph> documentation for more on how to convert a whole bunch of header files at once. 
+Back before Perl had the XS system for connecting with C libraries, programmers used to get library constants by reading through the C header files. You may still see C<require 'syscall.ph'> or similar around - the F<.ph> file should be created by running F<h2ph> on the corresponding F<.h> file. See the F<h2ph> documentation for more on how to convert a whole bunch of header files at once. 
 
 =item L<c2ph|c2ph> and L<pstruct|pstruct> 
 
@@ -196,7 +196,7 @@ These utilities help manage extra Perl modules that don't come with the perl dis
 
 =item L<cpan> 
 
-F<cpan> is a command-line interface to CPAN.pm.  It allows you to install modules or distributions from CPAN, or just get information about them, and a lot more.  It is similar to the command line mode of the L<CPAN> module,  
+F<cpan> is a command-line interface to CPAN.pm.  It allows you to install modules or distributions from CPAN, or just get information about them, and a lot more.  It is similar to the command line mode of the L<CPAN> module, 
 
 
     perl -MCPAN -e shell 
@@ -211,11 +211,11 @@ F<cpan2dist> is a tool to create distributions (or packages) from CPAN modules, 
 
 =item L<instmodsh> 
 
-A little interface to ExtUtils::Installed to examine installed modules,  validate your packlists and even create a tarball from an installed module. 
+A little interface to ExtUtils::Installed to examine installed modules, validate your packlists and even create a tarball from an installed module. 
 
 =back 
 
 =head1 SEE ALSO 
 
-L<perldoc|perldoc>, L<pod2man|pod2man>, L<perlpod>,  L<pod2html|pod2html>, L<pod2usage|pod2usage>, L<podselect|podselect>,  L<podchecker|podchecker>, L<splain|splain>, L<perldiag>,  L<roffitall|roffitall>, L<a2p|a2p>, L<s2p|s2p>, L<find2perl|find2perl>,  L<File::Find|File::Find>, L<pl2pm|pl2pm>, L<perlbug|perlbug>,  L<h2ph|h2ph>, L<c2ph|c2ph>, L<h2xs|h2xs>, L<dprofpp|dprofpp>,  L<Devel::DProf>, L<enc2xs>, L<xsubpp>, L<cpan>, L<cpanp>, L<cpan2dist>,  L<instmodsh>, L<piconv>, L<prove>, L<corelist>, L<ptar>, L<ptardiff>,  L<shasum> 
+L<perldoc|perldoc>, L<pod2man|pod2man>, L<perlpod>, L<pod2html|pod2html>, L<pod2usage|pod2usage>, L<podselect|podselect>, L<podchecker|podchecker>, L<splain|splain>, L<perldiag>, L<roffitall|roffitall>, L<a2p|a2p>, L<s2p|s2p>, L<find2perl|find2perl>, L<File::Find|File::Find>, L<pl2pm|pl2pm>, L<perlbug|perlbug>, L<h2ph|h2ph>, L<c2ph|c2ph>, L<h2xs|h2xs>, L<dprofpp|dprofpp>, L<Devel::DProf>, L<enc2xs>, L<xsubpp>, L<cpan>, L<cpanp>, L<cpan2dist>, L<instmodsh>, L<piconv>, L<prove>, L<corelist>, L<ptar>, L<ptardiff>, L<shasum> 
 
