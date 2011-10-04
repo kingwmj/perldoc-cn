@@ -1,0 +1,1012 @@
+=EN Object Destruction In the previous two chapters, we looked at basic object creation and manipulation.
+
+=CN Object Destruction In The Previous Two chapters, We looked At 基本的 Object 创造 And 操纵.
+
+=EN In this chapter, we'll look at an equally important topic: what happens when objects go away.
+
+=CN In This 章, We'我 Look At An 相等地 Important 课题: What Happens When Objects Go Away.
+
+=EN As we showed in Chapter 4, when the last reference to a Perl data structure goes away, Perl automatically reclaims the memory of that data structure, including destroying any links to other data.
+
+=CN As We showed In Chapter 4, When The Last Reference To a Perl Data Structure 去 Away, Perl Automatically reclaims The Memory Of That Data Structure, Including 破坏 Any 链接 To Other Data.
+
+=EN Of course, that in turn may cause Perl to destroy other ("contained") structures as well.
+
+=CN Of Course, That In 转向 May 原因 Perl To 破坏 Other ("包含") Structures As Well.
+
+=EN By default, objects work in this manner because objects use the same reference structure to make more complex objects.
+
+=CN By Default, Objects Work In This Manner Because Objects Use The Same Reference Structure To Make More 综合的 Objects.
+
+=EN An object built of a hash reference is destroyed when the last reference to that hash goes away.
+
+=CN An Object Built Of a Hash Reference Is destroyed When The Last Reference To That Hash 去 Away.
+
+=EN If the values of the hash elements are also references, they're similarly removed, possibly causing further destruction.
+
+=CN If The Values Of The Hash Elements Are Also References, They'Re 同样 Removed, Possibly causing Further 破坏.
+
+=EN Cleaning Up After Yourself Suppose our object uses a temporary file to hold data that won't fit entirely in memory.
+
+=CN Cleaning Up After Yourself Suppose Our Object Uses a temporary File To Hold Data That Won't 适合的 完全地 In Memory.
+
+=EN The object can include the filehandle for this temporary file in its instance data.
+
+=CN The Object Can Include The Filehandle For This temporary File In Its 例子 Data.
+
+=EN While the normal object destruction sequence will properly close the handle, we still have the temporary file on disk unless we take further action.
+
+=CN While The Normal Object 破坏 一连串 Will Properly Close The Handle, We Still Have The temporary File On disk Unless We Take Further 行为.
+
+=EN To perform the proper cleanup operations when an object is destroyed, we need to know when that happens.
+
+=CN To 执行 The 合适的 清理 操作 When An Object Is destroyed, We Need To Know When That Happens.
+
+=EN Thankfully, Perl provides such notification upon request.
+
+=CN Thankfully, Perl Provides Such 通知书 Upon 请求.
+
+=EN We can request this notification by giving the object a DESTROY method.
+
+=CN We Can 请求 This 通知书 By Giving The Object a DESTROY Method.
+
+=EN When the last reference to an objectsay, $bessiedisappears, Perl invokes that object's DESTROY method automatically, as if we had called it ourselves.
+
+=CN When The Last Reference To An objectsay, $bessiedisappears, Perl invokes That Object's DESTROY Method Automatically, As If We Had Called It 我们自己.
+
+=EN This method call is like most other method calls: Perl starts at the class of the object and works its way up the inheritance hierarchy until it finds a suitable method.
+
+=CN This Method Call Is Like Most Other Method Calls: Perl Starts At The Class Of The Object And Works Its Way Up The Inheritance 层次 Until It 发现 a Suitable Method.
+
+=EN However, unlike other method calls, there's no error if Perl doesn't find a suitable method.[*]
+
+=CN However, 不同的 Other Method Calls, There's No Error If Perl Doesn't 寻找 a Suitable Method.[*]
+
+=EN [*] Normally, our own method calls will cause an error if Perl doesn't find them.
+
+=CN [*] Normally, Our Own Method Calls Will 原因 An Error If Perl Doesn't 寻找 Them.
+
+=EN If we want to prevent that, we just put a do-nothing method into the base class.
+
+=CN If We Want To 防止 That, We Just Put a Do-Nothing Method Into The Base Class.
+
+=EN For example, going back to the Animal class defined in Chapter 11, we can add a DESTROY method to know when objects go away, purely for debugging purposes:
+
+=CN For Example, Going Back To The Animal Class Defined In Chapter 11, We Can 增添 a DESTROY Method To Know When Objects Go Away, 全然 For Debugging purposes:
+
+=EN ## in Animal sub DESTROY {
+
+=CN ## In Animal Sub DESTROY {
+
+=EN Now when we create any Animals in the program, we get notification as they leave.
+
+=CN Now When We Create Any Animals In The Program, We Get 通知书 As They 出发.
+
+=EN For example:
+
+=CN For Example:
+
+=EN ## include animal classes from previous chapter...
+
+=CN ## Include 动物 类 From Previous 章...
+
+=EN sub feed_a_cow_named {
+
+=CN Sub feed_a_cow_named {
+
+=EN # $cow is destroyed here } print "Start of program.\n"; my $outer_cow = Cow->named('Bessie'); print "Now have a cow named ", $outer_cow->name, ".\n"; feed_a_cow_named('Gwen'); print "Returned from subroutine.\n";
+
+=CN # $母牛 Is destroyed Here } Print "Start Of Program.\n"; My $outer_cow = Cow->Named('Bessie'); Print "Now Have a 母牛 Named ", $outer_cow->Name, ".\n"; feed_a_cow_named('Gwen'); Print "Returned From Subroutine.\n";
+
+=EN This prints:
+
+=CN This Prints:
+
+=EN Start of program.
+
+=CN Start Of Program.
+
+=EN Now have a cow named Bessie.
+
+=CN Now Have a 母牛 Named Bessie.
+
+=EN Gwen eats grass.
+
+=CN Gwen Eats 草.
+
+=EN Returning from the subroutine.
+
+=CN Returning From The Subroutine.
+
+=EN [Gwen has died.]
+
+=CN [Gwen Has died.]
+
+=EN Returned from subroutine.
+
+=CN Returned From Subroutine.
+
+=EN [Bessie has died.]
+
+=CN [Bessie Has died.]
+
+=EN Note that Gwen is active inside the subroutine.
+
+=CN Note That Gwen Is 活跃的 里面 The Subroutine.
+
+=EN However, as the subroutine exits, Perl notices there are no references to Gwen; it automatically invokes Gwen's DESTROY method, printing the Gwen has died message.
+
+=CN However, As The Subroutine Exits, Perl notices There Are No References To Gwen; It Automatically invokes Gwen's DESTROY Method, 印刷 The Gwen Has died 音讯.
+
+=EN What happens at the end of the program?
+
+=CN What Happens At The End Of The Program?
+
+=EN Since objects don't live beyond the end of the program, Perl makes one final pass over all remaining data and destroys it.
+
+=CN Since Objects Don't 居住生存 Beyond The End Of The Program, Perl 使 One 最终的 Pass 在 All Remaining Data And destroys It.
+
+=EN This is true whether the data is held in lexical variables or package global variables.
+
+=CN This Is True Whether The Data Is Held In Lexical Variables Or Package Global Variables.
+
+=EN Because Bessie is still alive at the end of the program, she needs to be recycled, and so we get the message for Bessie after all other steps in the program are complete.[*]
+
+=CN Because Bessie Is Still 活着的 At The End Of The Program, 她 Needs To Be Recycled, And So We Get The 音讯 For Bessie After All Other 步骤 In The Program Are Complete.[*]
+
+=EN [*] This is just after the END blocks are executed and follows the same rules as END blocks: there must be a nice exit of the program rather than an abrupt end.
+
+=CN [*] This Is Just After The END Blocks Are Executed And Follows The Same 规则 As END Blocks: There Must Be a Nice Exit Of The Program Rather Than An 突然的 End.
+
+=EN If Perl runs out of memory, all bets are off.
+
+=CN If Perl 跑 Out Of Memory, All bets Are Off.
+
+=EN Nested Object Destruction If an object holds another object (say, as an element of an array or the value of a hash element), Perl DESTROYs the containing object before any of the contained objects begin their discarding process.
+
+=CN Nested Object Destruction If An Object holds 另一个 Object (Say, As An Element Of An Array Or The Value Of a Hash Element), Perl DESTROYs The Containing Object Before Any Of The 包含 Objects 开始 Their discarding 程序.
+
+=EN This is reasonable because the containing object may need to reference its contents in order to disappear gracefully.
+
+=CN This Is 有理的 Because The Containing Object May Need To Reference Its Contents In Order To 失踪 gracefully.
+
+=EN To illustrate this, let's build a "barn" and tear it down.
+
+=CN To 图解 This, Let's Build a "谷仓" And 眼泪 It 向下.
+
+=EN And, just to be interesting, we'll make the barn a blessed array reference, not a hash reference.
+
+=CN And, Just To Be Interesting, We'我 Make The 谷仓 a 有福的 Array Reference, Not a Hash Reference.
+
+=EN { package Barn;
+
+=CN { Package Barn;
+
+=EN Here, we're really being minimalistic in the object definition.
+
+=CN Here, We'Re Really Being minimalistic In The Object Definition.
+
+=EN To create a new barn, we simply bless an empty array reference into the class name passed as the first parameter.
+
+=CN To Create a New 谷仓, We Simply 保佑 An Empty Array Reference Into The Class Name Passed As The First Parameter.
+
+=EN Adding an animal just pushes it to the back of the barn.
+
+=CN Adding An 动物 Just pushes It To The Back Of The 谷仓.
+
+=EN Asking for the barn's contents merely dereferences the object array reference to return the contents.[] The fun part is the destructor.
+
+=CN Asking For The 谷仓's Contents 仅仅 dereferences The Object Array Reference To Return The Contents.[] The 娱乐 Part Is The destructor.
+
+=EN Let's take the reference to ourselves, display a debugging message about the particular barn being destroyed, and then ask for the name of each inhabitant in turn.
+
+=CN Let's Take The Reference To 我们自己, 陈列 a Debugging 音讯 About The Particular 谷仓 Being destroyed, And Then 问 For The Name Of Each 居民 In 转向.
+
+=EN In action, this would be:
+
+=CN In 行为, This Would Be:
+
+=EN [] Did you wonder why there's a plus sign (+) before shift in two of those subroutines?
+
+=CN [] Did You 想知道诧异 Why There's a Plus Sign (+) Before Shift In Two Of Those Subroutines?
+
+=EN That's due to one of the quirks in Perl's syntax.
+
+=CN That's Due To One Of The quirks In Perl's Syntax.
+
+=EN If the code were simply @{shift}, because the curly braces contain nothing but a bareword, it would be interpreted as a soft reference: @{"shift"}.
+
+=CN If The Code Were Simply @{Shift}, Because The 卷曲的 牙套 Contain Nothing But a Bareword, It Would Be 解释 As a 柔软的 Reference: @{"Shift"}.
+
+=EN In Perl, the unary plus (a plus sign at the beginning of a term) is defined to do nothing (not even turning what follows into a number), just so it can distinguish cases such as this.
+
+=CN In Perl, The 一元 Plus (a Plus Sign At The 开端 Of a 期限) Is Defined To Do Nothing (Not Even Turning What Follows Into a Number), Just So It Can 辨别 Cases Such As This.
+
+=EN my $barn = Barn->new; $barn->add(Cow->named('Bessie')); $barn->add(Cow->named('Gwen')); print "Burn the barn:\n"; $barn = undef; print "End of program.\n";
+
+=CN My $谷仓 = Barn->New; $谷仓->增添(Cow->Named('Bessie')); $谷仓->增添(Cow->Named('Gwen')); Print "Burn The 谷仓:\n"; $谷仓 = Undef; Print "End Of Program.\n";
+
+=EN Burn the barn: Barn=ARRAY(0x541c) is being destroyed...
+
+=CN Burn The 谷仓: Barn=ARRAY(0x541c) Is Being destroyed...
+
+=EN Note that Perl first destroys the barn, letting us get the name of the inhabitants cleanly.
+
+=CN Note That Perl First destroys The 谷仓, 让 Us Get The Name Of The inhabitants Cleanly.
+
+=EN However, once the barn is gone, the inhabitants have no additional references, so they also go away, and thus Perl invokes their destructors too.
+
+=CN However, Once The 谷仓 Is 不见了, The inhabitants Have No Additional References, So They Also Go Away, And 如此 Perl invokes Their destructors Too.
+
+=EN Compare that with the cows having a life outside the barn:
+
+=CN Compare That With The cows Having a 生活 Outside The 谷仓:
+
+=EN my $barn = Barn->new; my @cows = (Cow->named('Bessie'), Cow->named('Gwen')); $barn->add($_) for @cows; print "Burn the barn:\n"; $barn = undef; print "Lose the cows:\n"; @cows = ( ); print "End of program.\n";
+
+=CN My $谷仓 = Barn->New; My @cows = (Cow->Named('Bessie'), Cow->Named('Gwen')); $谷仓->增添($_) For @cows; Print "Burn The 谷仓:\n"; $谷仓 = Undef; Print "Lose The cows:\n"; @cows = ( ); Print "End Of Program.\n";
+
+=EN This produces:
+
+=CN This Produces:
+
+=EN The cows will now continue to live until the only other reference to the cows (from the @cows array) goes away.
+
+=CN The cows Will Now Continue To 居住生存 Until The Only Other Reference To The cows (From The @cows Array) 去 Away.
+
+=EN The references to the cows disappear only when the barn destructor is completely finished.
+
+=CN The References To The cows 失踪 Only When The 谷仓 destructor Is 完全地 制成的.
+
+=EN In some cases, we may wish instead to shoo the cows out of the barn as we notice them.
+
+=CN In Some Cases, We May Wish Instead To shoo The cows Out Of The 谷仓 As We Notice Them.
+
+=EN In this case, it's as simple as destructively altering the barn array, rather than iterating over it.[*] Let's alter the Barn to Barn2 to illustrate this:
+
+=CN In This Case, It's As Simple As destructively altering The 谷仓 Array, Rather Than iterating 在 It.[*] Let's 改变 The Barn To Barn2 To 图解 This:
+
+=EN [*] If we're using a hash instead, we can use delete on the elements we wish to process immediately.
+
+=CN [*] If We'Re Using a Hash Instead, We Can Use Delete On The Elements We Wish To 程序 立即.
+
+=EN { package Barn2;
+
+=CN { Package Barn2;
+
+=EN Now use it in the previous scenarios:
+
+=CN Now Use It In The Previous scenarios:
+
+=EN my $barn = Barn2->new; $barn->add(Cow->named('Bessie')); $barn->add(Cow->named('Gwen')); print "Burn the barn:\n"; $barn = undef; print "End of program.\n";
+
+=CN My $谷仓 = Barn2->New; $谷仓->增添(Cow->Named('Bessie')); $谷仓->增添(Cow->Named('Gwen')); Print "Burn The 谷仓:\n"; $谷仓 = Undef; Print "End Of Program.\n";
+
+=EN Burn the barn: Barn2=ARRAY(0x541c) is being destroyed...
+
+=CN Burn The 谷仓: Barn2=ARRAY(0x541c) Is Being destroyed...
+
+=EN As we can see, Bessie had no home by being booted out of the barn immediately, so she also died.
+
+=CN As We Can See, Bessie Had No 家 By Being booted Out Of The 谷仓 立即, So 她 Also died.
+
+=EN (Poor Gwen suffers the same fate.)
+
+=CN (Poor Gwen suffers The Same 命运.)
+
+=EN There were no references to her at that moment, even before the destructor for the barn was complete.
+
+=CN There Were No References To Her At That Moment, Even Before The destructor For The 谷仓 Was Complete.
+
+=EN Thus, back to the temporary file problem.
+
+=CN Thus, Back To The temporary File Problem.
+
+=EN We modify our Animal class to use a temporary file by using the File::Temp module, which is part of the standard distribution.
+
+=CN We Modify Our Animal Class To Use a temporary File By Using The File::Temp Module, Which Is Part Of The Standard 分配.
+
+=EN Its tempfile routine knows how to make temporary files, including where to put them and so on, so we don't have to.
+
+=CN Its tempfile Routine 知道 How To Make temporary Files, Including Where To Put Them And So On, So We Don't Have To.
+
+=EN The tempfile function returns a filehandle and a filename, and we store both of those because we need both of them in the destructor.
+
+=CN The tempfile Function Returns a Filehandle And a 文件名, And We 商店 Both Of Those Because We Need Both Of Them In The destructor.
+
+=EN ## in Animal use File::Temp qw(tempfile);
+
+=CN ## In Animal Use File::Temp qw(tempfile);
+
+=EN sub named {
+
+=CN Sub Named {
+
+=EN ## new code here...
+
+=CN ## New Code Here...
+
+=EN ## .. to here
+
+=CN ## .. To Here
+
+=EN We now have a filehandle and its filename stored as instance variables of the Animal class (or any class derived from Animal).
+
+=CN We Now Have a Filehandle And Its 文件名 Stored As 例子 Variables Of The Animal Class (Or Any Class 派生 From Animal).
+
+=EN In the destructor, we close it down and delete the file:[*]
+
+=CN In The destructor, We Close It 向下 And Delete The File:[*]
+
+=EN [*] As it turns out, we can tell File::Temp to do this automatically, but then we wouldn't be able to illustrate doing it manually.
+
+=CN [*] As It Turns Out, We Can Tell File::Temp To Do This Automatically, But Then We Wouldn't Be Able To 图解 Doing It manually.
+
+=EN Doing it manually allows us to do extra processing, such as storing a summary of the information from the temporary file into a database.
+
+=CN Doing It manually Allows Us To Do Extra 加工（的）, Such As storing a 概要 Of The Information From The temporary File Into a database.
+
+=EN sub DESTROY {
+
+=CN Sub DESTROY {
+
+=EN When Perl destroys the last reference to the Animal-ish object (even if it's at the end of the program), it also automatically removes the temporary file to avoid a mess.
+
+=CN When Perl destroys The Last Reference To The Animal-芬兰 Object (Even If It's At The End Of The Program), It Also Automatically Removes The temporary File To Avoid a 肮脏.
+
+=EN Beating a Dead Horse Because the destructor method is inherited, we can also override and extend superclass methods.
+
+=CN Beating a Dead Horse Because The destructor Method Is 继承, We Can Also Override And 延伸 基类 Methods.
+
+=EN For example, we'll decide the dead horses need a further use.
+
+=CN For Example, We'我 Decide The 死的 horses Need a Further Use.
+
+=EN In our Horse class, we override the DESTROY method we inherited from Animal so we can do extra processing.
+
+=CN In Our Horse Class, We Override The DESTROY Method We 继承 From Animal So We Can Do Extra 加工（的）.
+
+=EN However, since the Animal class might be doing things we aren't supposed to know about, we call its version of DESTROY using the SUPER:: pseudo-class we saw in Chapter 11.
+
+=CN However, Since The Animal Class Might Be Doing Things We 还't 应该 To Know About, We Call Its Version Of DESTROY Using The SUPER:: 伪-Class We 锯 In Chapter 11.
+
+=EN ## in Horse sub DESTROY {
+
+=CN ## In Horse Sub DESTROY {
+
+=EN my @tv_horses = map Horse->named($_), ('Trigger', 'Mr. Ed'); $_->eat('an apple') for @tv_horses; # their last meal print "End of program.\n";
+
+=CN My @tv_horses = Map Horse->Named($_), ('Trigger', 'Mr. Ed'); $_->吃('An 苹果') For @tv_horses; # Their Last 膳食 Print "End Of Program.\n";
+
+=EN Trigger eats an apple.
+
+=CN Trigger Eats An 苹果.
+
+=EN Mr. Ed eats an apple.
+
+=CN Mr. Ed Eats An 苹果.
+
+=EN End of program.
+
+=CN End Of Program.
+
+=EN [Mr. Ed has died.]
+
+=CN [Mr. Ed Has died.]
+
+=EN [Mr. Ed has gone off to the glue factory.]
+
+=CN [Mr. Ed Has 不见了 Off To The 胶水n 工厂.]
+
+=EN [Trigger has died.]
+
+=CN [Trigger Has died.]
+
+=EN [Trigger has gone off to the glue factory.]
+
+=CN [Trigger Has 不见了 Off To The 胶水n 工厂.]
+
+=EN We'll feed each horse a last meal; at the end of the program, each horse's destructor is called.
+
+=CN We'我 喂养 Each 马 a Last 膳食; At The End Of The Program, Each 马's destructor Is Called.
+
+=EN The first step of this destructor is to call the parent destructor.
+
+=CN The First 脚步 Of This destructor Is To Call The 父或母亲 destructor.
+
+=EN Why is this important?
+
+=CN Why Is This Important?
+
+=EN Without calling the parent destructor, the steps taken by superclasses of this class will not properly execute.
+
+=CN Without Calling The 父或母亲 destructor, The 步骤 Taken By 策略 Of This Class Will Not Properly Execute.
+
+=EN That's not much if it's simply a debugging statement, as we've shown, but if it was the "delete the temporary file" cleanup method, you wouldn't have deleted that file!
+
+=CN That's Not Much If It's Simply a Debugging Statement, As We'Ve shown, But If It Was The "Delete The temporary File" 清理 Method, You Wouldn't Have Deleted That File!
+
+=EN So, the rule is:
+
+=CN So, The Rule Is:
+
+=EN Always include a call to $self->SUPER::DESTROY in our destructors (even if we don't yet have any base/parent classes).
+
+=CN Always Include a Call To $自己->SUPER::DESTROY In Our destructors (Even If We Don't 仍然 Have Any Base/父或母亲 类).
+
+=EN Whether we call it at the beginning or the end of our own destructor is a matter of hotly contested debate.
+
+=CN Whether We Call It At The 开端 Or The End Of Our Own destructor Is a Matter Of hotly contested 辩论.
+
+=EN If our derived class needs some superclass instance variables, we should probably call the superclass destructor after we complete our operations, because the superclass destructor will likely alter them in annoying ways.
+
+=CN If Our 派生 Class Needs Some 基类 例子 Variables, We Should Probably Call The 基类 destructor After We Complete Our 操作, Because The 基类 destructor Will Likely 改变 Them In annoying Ways.
+
+=EN On the other hand, in the example, we called the superclass destructor before the added behavior, because we wanted the superclass behavior first.
+
+=CN On The Other Hand, In The Example, We Called The 基类 destructor Before The added Behavior, Because We 想要 The 基类 Behavior First.
+
+=EN Indirect Object Notation The arrow syntax used to invoke a method is sometimes called the direct object syntax because there's also the indirect object syntax, also known as the "only works sometimes" syntax, for reasons we explain in a moment.
+
+=CN Indirect Object Notation The 箭 Syntax Used To 调用 a Method Is Sometimes Called The Direct Object Syntax Because There's Also The Indirect Object Syntax, Also Known As The "Only Works Sometimes" Syntax, For Reasons We Explain In a Moment.
+
+=EN We can generally replace what we'd write with the arrow notation:
+
+=CN We Can Generally 归还原处 What We'd Write With The 箭 符号:
+
+=EN Class->class_method(@args); $instance->instance_method(@other);
+
+=CN Class->class_method(@Args); $例子->instance_method(@Other);
+
+=EN with the method name preceding the class name and the arguments at the end.
+
+=CN With The Method Name 前面的 The Class Name And The Arguments At The End.
+
+=EN classmethod Class @args; instancemethod $instance @other;
+
+=CN classmethod Class @Args; instancemethod $例子 @Other;
+
+=EN This idiom was much more prevalent in the earlier days of Perl 5, and we're still trying to eradicate it from the world.
+
+=CN This 习语 Was Much More 流行的 In The Earlier 天 Of Perl 5, And We'Re Still 尝试 To 根除 It From The World.
+
+=EN We wish that we didn't have to cover it here (if you don't know about it, you can't use it), but it sticks around in otherwise good code, so you need to know what is going on.
+
+=CN We Wish That We Didn't Have To 盖 It Here (If You Don't Know About It, You Can't Use It), But It sticks Around In Otherwise Good Code, So You Need To Know What Is Going On.
+
+=EN You'll typically see this with the new method where module authors replace the arrow syntax:
+
+=CN You'我 典型的 See This With The New Method Where Module 作者 归还原处 The 箭 Syntax:
+
+=EN my $obj = Some::Class->new(@constructor_params);
+
+=CN My $obj = Some::Class->New(@constructor_params);
+
+=EN with something that reads more like English:
+
+=CN With Something That Reads More Like English:
+
+=EN my $obj = new Some::Class @constructor_params;
+
+=CN My $obj = New Some::Class @constructor_params;
+
+=EN which makes the C++ people feel right at home.
+
+=CN Which 使 The C++ People 感到 Right At 家.
+
+=EN Of course, in Perl, there's nothing special about the name new, but at least the syntax is hauntingly familiar.
+
+=CN Of Course, In Perl, There's Nothing Special About The Name New, But At Least The Syntax Is hauntingly 熟悉的.
+
+=EN Why the "generally" caveat on when you can replace the arrow syntax with indirect object syntax?
+
+=CN Why The "Generally" caveat On When You Can 归还原处 The 箭 Syntax With Indirect Object Syntax?
+
+=EN Well, if the instance is something more complicated than a simple scalar variable:
+
+=CN Well, If The 例子 Is Something More 错综复杂的 Than a Simple Scalar Variable:
+
+=EN $somehash->{$somekey}->[42]->instance_method(@parms);
+
+=CN $somehash->{$somekey}->[42]->instance_method(@Parms);
+
+=EN then we can't just swap it around to the indirect notation:
+
+=CN Then We Can't Just 交换 It Around To The Indirect 符号:
+
+=EN instance_method $somehash->{$somekey}->[42] @parms;
+
+=CN instance_method $somehash->{$somekey}->[42] @Parms;
+
+=EN The only things acceptable to indirect object syntax are a bareword (e.g., a class name), a simple scalar variable, or braces denoting a block returning either a blessed reference or a classname.[*] This means we have to write it like so:
+
+=CN The Only Things Acceptable To Indirect Object Syntax Are a Bareword (e.g., a Class Name), a Simple Scalar Variable, Or 牙套 denoting a Block Returning Either a 有福的 Reference Or a 名字.[*] This Means We Have To Write It Like So:
+
+=EN [*] Astute readers will note that these are the same rules as for an indirect filehandle syntax, which indirect object syntax directly mirrors, as well as the rules for specifying a reference to be dereferenced.
+
+=CN [*] Astute 读者 Will Note That These Are The Same 规则 As For An Indirect Filehandle Syntax, Which Indirect Object Syntax 直接地 mirrors, As Well As The 规则 For Specifying a Reference To Be dereferenced.
+
+=EN instance_method { $somehash->{$somekey}->[42] } @parms;
+
+=CN instance_method { $somehash->{$somekey}->[42] } @Parms;
+
+=EN And that goes from simple to ugly in one step.
+
+=CN And That 去 From Simple To 丑恶的 In One 脚步.
+
+=EN There's another downside: ambiguous parsing.
+
+=CN There's 另一个 downside: 模棱两可的 解析.
+
+=EN When we developed the classroom materials concerning indirect object references, we wrote:
+
+=CN When We 发达 The 教室 materials 关于 Indirect Object References, We 写:
+
+=EN my $cow = Cow->named('Bessie'); print name $cow, " eats.\n";
+
+=CN My $母牛 = Cow->Named('Bessie'); Print Name $母牛, " Eats.\n";
+
+=EN because we were thinking about the indirect object equivalents for:
+
+=CN Because We Were 思想 About The Indirect Object Equivalents For:
+
+=EN my $cow = Cow->named('Bessie'); print $cow->name, " eats.\n";
+
+=CN My $母牛 = Cow->Named('Bessie'); Print $母牛->Name, " Eats.\n";
+
+=EN However, the latter works; the former doesn't.
+
+=CN However, The 后面的 Works; The Former Doesn't.
+
+=EN We were getting no output.
+
+=CN We Were 得到 No 出产.
+
+=EN Finally, we enabled warnings (via -w on the command line)[] and got this interesting series of messages:
+
+=CN Finally, We Enabled 警告 (Via -w On The 命令 Line)[] And Got This Interesting 系列 Of Messages:
+
+=EN [] Using -w should be the first step when Perl does something we don't understand.
+
+=CN [] Using -w Should Be The First 脚步 When Perl Does Something We Don't Understand.
+
+=EN Or maybe it should be the zeroth, because we should normally have -w in effect whenever we're developing code.
+
+=CN Or 或许 It Should Be The zeroth, Because We Should Normally Have -w In Effect 无论何时 We'Re 发展中的 Code.
+
+=EN Unquoted string "name" may clash with future reserved word at ./foo line 92.
+
+=CN Unquoted String "Name" May 碰撞 With Future Reserved 字 At ./Foo Line 92.
+
+=EN Name "main::name" used only once: possible typo at ./foo line 92. print( ) on unopened filehandle name at ./foo line 92.
+
+=CN Name "Main::Name" Used Only Once: Possible typo At ./Foo Line 92. Print( ) On unopened Filehandle Name At ./Foo Line 92.
+
+=EN Ahh, so that line was being parsed as:
+
+=CN Ahh, So That Line Was Being Parsed As:
+
+=EN print name ($cow, " eats.\n");
+
+=CN Print Name ($母牛, " Eats.\n");
+
+=EN In other words, print the list of items to the filehandle named name.
+
+=CN In Other Words, Print The List Of 物品 To The Filehandle Named Name.
+
+=EN That's clearly not what we wanted, so we had to add additional syntax to disambiguate the call.[]
+
+=CN That's 清晰地 Not What We 想要, So We Had To 增添 Additional Syntax To disambiguate The Call.[]
+
+=EN [] The ambiguity shows up because print( ) itself is a method called on the filehandle.
+
+=CN [] The 歧义性 Shows Up Because Print( ) Itself Is a Method Called On The Filehandle.
+
+=EN You're probably used to thinking of it as a function, but remember that missing comma after the filehandle.
+
+=CN You'Re Probably Used To 思想 Of It As a Function, But 记得 That Missing 逗号 After The Filehandle.
+
+=EN It looks just like our indirect object calling syntax, because it is.
+
+=CN It Looks Just Like Our Indirect Object Calling Syntax, Because It Is.
+
+=EN This leads us to our next strong suggestion: Use direct object syntax at all times.
+
+=CN This 领导 Us To Our 下一次 强壮的 建议: Use Direct Object Syntax At All Times.
+
+=EN We realize, though, that people write new Class ... rather than Class->new(...) and that most of us are fine with that.
+
+=CN We 认识到, Though, That People Write New Class ... Rather Than Class->New(...) And That Most Of Us Are Fine With That.
+
+=EN Older modules preferred that notation in their examples, and once you write it that way, you tend to keep doing it that way.
+
+=CN Older Modules 优先 That 符号 In Their Examples, And Once You Write It That Way, You 趋向 To 保持 Doing It That Way.
+
+=EN However, there are circumstances in which even that can lead to ambiguity (e.g., when a subroutine named new has been seen, and the class name itself has not been seen as a package).
+
+=CN However, There Are 情况下 In Which Even That Can 铅 To 歧义性 (e.g., When a Subroutine Named New Has Been Seen, And The Class Name Itself Has Not Been Seen As a Package).
+
+=EN When in doubt, ignore indirect object syntax.
+
+=CN When In 怀疑, 忽视 Indirect Object Syntax.
+
+=EN Your maintenance programmer will thank you.
+
+=CN Your 保养 Programmer Will 谢谢 You.
+
+=EN Additional Instance Variables in Subclasses One of the nice things about using a hash for a data structure is that derived classes can add additional instance variables without the superclass needing to know of their addition.
+
+=CN Additional Instance Variables In Subclasses One Of The Nice Things About Using a Hash For a Data Structure Is That 派生 类 Can 增添 Additional 例子 Variables Without The 基类 needing To Know Of Their 增加.
+
+=EN For example, let's derive a RaceHorse class that is everything a Horse is but also tracks its win/place/show/lose standings.
+
+=CN For Example, Let's 从 a RaceHorse Class That Is Everything a Horse Is But Also 轨迹 Its 赢得/Place/Show/失去 standings.
+
+=EN The first part of this is trivial:
+
+=CN The First Part Of This Is 琐碎的:
+
+=EN { package RaceHorse;
+
+=CN { Package RaceHorse;
+
+=EN We'll also want to initialize "no wins of no races" when we create the RaceHorse.
+
+=CN We'我 Also Want To Initialize "No 赢得 Of No races" When We Create The RaceHorse.
+
+=EN We do this by extending the named subroutine and adding four additional fields (wins, places, shows, losses, for first-, second-, and third-place finishes, and none of the above):
+
+=CN We Do This By Extending The Named Subroutine And Adding 四 Additional 领域 (赢得, Places, Shows, losses, For First-, Second-, And 第三-Place finishes, And 没人 Of The Above):
+
+=EN ## extend parent constructor:
+
+=CN ## 延伸 父或母亲 构造函数:
+
+=EN Here, we pass all parameters to the superclass, which should return a fully formed Horse.
+
+=CN Here, We Pass All Parameters To The 基类, Which Should Return a Fully formed Horse.
+
+=EN However, because we pass RaceHorse as the class, it is blessed into the RaceHorse class.[*] Next, we add the four instance variables that go beyond those defined in the superclass, setting their initial values to 0.
+
+=CN However, Because We Pass RaceHorse As The Class, It Is 有福的 Into The RaceHorse Class.[*] Next, We 增添 The 四 例子 Variables That Go Beyond Those Defined In The 基类, Setting Their Initial Values To 0.
+
+=EN Finally, return the modified RaceHorse to the caller.
+
+=CN Finally, Return The Modified RaceHorse To The Caller.
+
+=EN [*] Similar to the way the Animal constructor creates a Horse, not an Animal, when passed Horse as the class.
+
+=CN [*] Similar To The Way The Animal 构造函数 Creates a Horse, Not An Animal, When Passed Horse As The Class.
+
+=EN It's important to note here that we've actually "opened the box" a bit while writing this derived class.
+
+=CN It's Important To Note Here That We'Ve Actually "Opened The 箱" a Bit While 写作 This 派生 Class.
+
+=EN We know that the superclass uses a hash reference and that the superclass hierarchy doesn't use the four names chosen for a derived class.
+
+=CN We Know That The 基类 Uses a Hash Reference And That The 基类 层次 Doesn't Use The 四 Names 选择 For a 派生 Class.
+
+=EN This is because RaceHorse will be a "friend" class (in C++ or Java terminology), accessing the instance variables directly.
+
+=CN This Is Because RaceHorse Will Be a "朋友" Class (In C++ Or Java 术语（总称）), 访问 The 例子 Variables 直接地.
+
+=EN If the maintainer of Horse or Animal ever changes representation or names of variables, there could be a collision, which might go undetected until that important day when we're showing off our code to the investors.
+
+=CN If The maintainer Of Horse Or Animal 曾经 Changes 表示 Or Names Of Variables, There Could Be a 猛烈碰拉, Which Might Go undetected Until That Important 一天 When We'Re showing Off Our Code To The investors.
+
+=EN Things get even more interesting if the hashref is changed to an arrayref as well.
+
+=CN Things Get Even More Interesting If The Hashref Is 改变 To An Arrayref As Well.
+
+=EN One way to decouple this dependency is to use composition rather than inheritance as a way to create a derived class.
+
+=CN One Way To decouple This 依赖 Is To Use 作文 Rather Than Inheritance As a Way To Create a 派生 Class.
+
+=EN In this example, we need to make a Horse object an instance variable of a RaceHorse and put the rest of the data in separate instance variables.
+
+=CN In This Example, We Need To Make a Horse Object An 例子 Variable Of a RaceHorse And Put The 休息 Of The Data In Separate 例子 Variables.
+
+=EN You also need to pass any inherited method calls on the RaceHorse down to the Horse instance, through delegation.
+
+=CN You Also Need To Pass Any 继承 Method Calls On The RaceHorse 向下 To The Horse 例子, 通过 代表团.
+
+=EN However, even though Perl can certainly support the needed operations, that approach is usually slower and more cumbersome.
+
+=CN However, Even Though Perl Can Certainly Support The Needed 操作, That 接近 Is Usually slower And More cumbersome.
+
+=EN Enough on that for this discussion, however.
+
+=CN Enough On That For This 讨论, However.
+
+=EN Next, let's provide some access methods:
+
+=CN Next, Let's Provide Some Access Methods:
+
+=EN my $racer = RaceHorse->named('Billy Boy'); # record the outcomes: 3 wins, 1 show, 1 loss $racer->won; $racer->won; $racer->won; $racer->showed; $racer->lost; print $racer->name, ' has standings of: ', $racer->standings, ".\n";
+
+=CN My $racer = RaceHorse->Named('Billy Boy'); # Record The outcomes: 3 赢得, 1 Show, 1 丧失 $racer->Won; $racer->Won; $racer->Won; $racer->showed; $racer->Lost; Print $racer->Name, ' Has standings Of: ', $racer->standings, ".\n";
+
+=EN Billy Boy has standings of: 3 wins, 0 places, 1 shows, 1 losses.
+
+=CN Billy Boy Has standings Of: 3 赢得, 0 Places, 1 Shows, 1 losses.
+
+=EN [Billy Boy has died.]
+
+=CN [Billy Boy Has died.]
+
+=EN [Billy Boy has gone off to the glue factory.]
+
+=CN [Billy Boy Has 不见了 Off To The 胶水n 工厂.]
+
+=EN Note that we're still getting the Animal and Horse destructor.
+
+=CN Note That We'Re Still 得到 The Animal And Horse destructor.
+
+=EN The superclasses are unaware that we've added four additional elements to the hash, so they still function as they always have.
+
+=CN The 策略 Are unaware That We'Ve added 四 Additional Elements To The Hash, So They Still Function As They Always Have.
+
+=EN Using Class Variables What if we want to iterate over all the animals we've made so far?
+
+=CN Using Class Variables What If We Want To iterate 在 All The animals We'Ve Made So Far?
+
+=EN Animals may exist all over the program namespace but are lost once they're handed back from the named constructor method.[*]
+
+=CN Animals May Exist All 在 The Program Namespace But Are Lost Once They'Re handed Back From The Named 构造函数 Method.[*]
+
+=EN [*] Well, not really lost.
+
+=CN [*] Well, Not Really Lost.
+
+=EN Perl knows where they are, but we don't.
+
+=CN Perl 知道 Where They Are, But We Don't.
+
+=EN However, we can record the created animal in a hash and iterate over that hash.
+
+=CN However, We Can Record The Created 动物 In a Hash And iterate 在 That Hash.
+
+=EN The key to the hash can be the stringified form of the animal reference, [] while the value can be the actual reference, allowing us to access its name or class.
+
+=CN The Key To The Hash Can Be The stringified Form Of The 动物 Reference, [] While The Value Can Be The Actual Reference, 允许 Us To Access Its Name Or Class.
+
+=EN [] Or any other convenient and unique string.
+
+=CN [] Or Any Other 便利的 And 唯一的 String.
+
+=EN For example, let's extend named as follows:
+
+=CN For Example, Let's 延伸 Named As Follows:
+
+=EN ## in Animal our %REGISTRY; sub named {
+
+=CN ## In Animal Our %REGISTRY; Sub Named {
+
+=EN # also returns $self }
+
+=CN # Also Returns $自己 }
+
+=EN The uppercase name for %REGISTRY is a reminder that this variable is more global than most variables.
+
+=CN The 大写的 Name For %REGISTRY Is a reminder That This Variable Is More Global Than Most Variables.
+
+=EN In this case, it's a meta-variable that contains information about many instances.
+
+=CN In This Case, It's a 梅塔-Variable That 包含 Information About Many 实例.
+
+=EN When we use $self as a key, Perl stringifies it, which means it turns into a string unique to the object.
+
+=CN When We Use $自己 As a Key, Perl stringifies It, Which Means It Turns Into a String 唯一的 To The Object.
+
+=EN We also need to add a new method:
+
+=CN We Also Need To 增添 a New Method:
+
+=EN sub registered {
+
+=CN Sub 登记的 {
+
+=EN Now we can see all the animals we've made:
+
+=CN Now We Can See All The animals We'Ve Made:
+
+=EN my @cows = map Cow->named($_), qw(Bessie Gwen); my @horses = map Horse->named($_), ('Trigger', 'Mr. Ed'); my @racehorses = RaceHorse->named('Billy Boy'); print "We've seen:\n", map(" $_\n", Animal->registered); print "End of program.\n";
+
+=CN My @cows = Map Cow->Named($_), Qw(Bessie Gwen); My @horses = Map Horse->Named($_), ('Trigger', 'Mr. Ed'); My @racehorses = RaceHorse->Named('Billy Boy'); Print "We'Ve Seen:\n", Map(" $_\n", Animal->登记的); Print "End Of Program.\n";
+
+=EN We've seen:
+
+=CN We'Ve Seen:
+
+=EN Note that the animals die at their proper time because the variables holding the animals are all being destroyed at the final step.
+
+=CN Note That The animals Die At Their 合适的 Time Because The Variables 支持 The animals Are All Being destroyed At The 最终的 脚步.
+
+=EN Or are they?
+
+=CN Or Are They?
+
+=EN Weakening the Argument The %REGISTRY variable also holds a reference to each animal.
+
+=CN Weakening The Argument The %REGISTRY Variable Also holds a Reference To Each 动物.
+
+=EN So even if we toss away the containing variables, for instance by letting them go out of scope:
+
+=CN So Even If We 向上扔 Away The Containing Variables, For 例子 By 让 Them Go Out Of Scope:
+
+=EN we'll still see the same result.
+
+=CN We'我 Still See The Same Result.
+
+=EN The animals aren't destroyed, even though none of the code is holding the animals.
+
+=CN The animals 还't destroyed, Even Though 没人 Of The Code Is 支持 The animals.
+
+=EN At first glance, it looks like we can fix this by altering the destructor:
+
+=CN At First 看一眼, It Looks Like We Can 固定 This By altering The destructor:
+
+=EN ## this code is bad (see text)
+
+=CN ## This Code Is 坏的 (See 正文)
+
+=EN But this still results in the same output.
+
+=CN But This Still Results In The Same 出产.
+
+=EN Because the destructor isn't called until the last reference is gone, but the last reference won't be destroyed until the destructor is called.[*]
+
+=CN Because The destructor Isn't Called Until The Last Reference Is 不见了, But The Last Reference Won't Be destroyed Until The destructor Is Called.[*]
+
+=EN [*] We'd make a reference to chickens and eggs, but that would introduce yet another derived class to Animal.
+
+=CN [*] We'd Make a Reference To chickens And eggs, But That Would 介绍 仍然 另一个 派生 Class To Animal.
+
+=EN One solution for fairly recent Perl versions[] is to use weak references .
+
+=CN One 解决 For 公平地 近来的 Perl Versions[] Is To Use 弱的 References .
+
+=EN A weak reference doesn't count as far as the reference counting, um, counts.
+
+=CN A 弱的 Reference Doesn't 计算 As Far As The Reference counting, 嗯, 计数.
+
+=EN It's best illustrated by example.
+
+=CN It's Best illustrated By Example.
+
+=EN [] 5.6 and later.
+
+=CN [] 5.6 And 更晚.
+
+=EN The weak reference mechanism is built into the core of Perl version 5.8.
+
+=CN The 弱的 Reference Mechanism Is Built Into The Core Of Perl Version 5.8.
+
+=EN We need an external interface for the weaken routine, though, which can be imported from the Scalar::Util module.
+
+=CN We Need An External Interface For The 削弱 Routine, Though, Which Can Be Imported From The Scalar::Util Module.
+
+=EN In Perl 5.6, we can emulate the same function using the WeakRef CPAN module.
+
+=CN In Perl 5.6, We Can 模仿 The Same Function Using The WeakRef Perl综合典藏网 Module.
+
+=EN After installing this module (if needed), [*] we can update the constructor as follows:
+
+=CN After installing This Module (If Needed), [*] We Can Update The 构造函数 As Follows:
+
+=EN [*] See Chapter 3 for information on installing modules.
+
+=CN [*] See Chapter 3 For Information On installing Modules.
+
+=EN ## in Animal use Scalar::Util qw(weaken); # in 5.8 and later use WeakRef qw(weaken); # in 5.6 after CPAN installation
+
+=CN ## In Animal Use Scalar::Util qw(weaken); # In 5.8 And 更晚 Use WeakRef qw(weaken); # In 5.6 After Perl综合典藏网 安装
+
+=EN When Perl counts the number of active references to a thingy, [] it won't count any that have been converted to weak references by weaken.
+
+=CN When Perl 计数 The Number Of 活跃的 References To a thingy, [] It Won't 计算 Any That Have Been converted To 弱的 References By 削弱.
+
+=EN If all ordinary references are gone, Perl deletes the thingy and turns any weak references to undef.
+
+=CN If All Ordinary References Are 不见了, Perl deletes The thingy And Turns Any 弱的 References To Undef.
+
+=EN [] A thingy, as defined in Perl's own documentation, is anything a reference points to, such as an object.
+
+=CN [] A thingy, As Defined In Perl's Own 提供文件, Is Anything a Reference 分 To, Such As An Object.
+
+=EN If you are an especially boring person, you could call it a referent instead.
+
+=CN If You Are An Especially 讨厌的 人, You Could Call It a 被谈到的事 Instead.
+
+=EN Now we'll get the right behavior for:
+
+=CN Now We'我 Get The Right Behavior For:
+
+=EN my @horses = map Horse->named($_), ('Trigger', 'Mr. Ed'); print "alive before block:\n", map(" $_\n", Animal->registered); {
+
+=CN My @horses = Map Horse->Named($_), ('Trigger', 'Mr. Ed'); Print "活着的 Before Block:\n", Map(" $_\n", Animal->登记的); {
+
+=EN alive before block:
+
+=CN 活着的 Before Block:
+
+=EN Notice that the racehorses and cows die at the end of the block, but the ordinary horses die at the end of the program.
+
+=CN Notice That The racehorses And cows Die At The End Of The Block, But The Ordinary horses Die At The End Of The Program.
+
+=EN Weak references can also solve some memory leak issues.
+
+=CN Weak References Can Also 解答 Some Memory 漏 Issues.
+
+=EN For example, suppose an animal wanted to record its pedigree.
+
+=CN For Example, 猜想 An 动物 想要 To Record Its pedigree.
+
+=EN The parents might want to hold references to all their children, while each child might want to hold references to each parent.
+
+=CN The 父母 Might Want To Hold References To All Their children, While Each 孩子 Might Want To Hold References To Each 父或母亲.
+
+=EN We can weaken one or the other (or even both) of these links.
+
+=CN We Can 削弱 One Or The Other (Or Even Both) Of These 链接.
+
+=EN If we weaken the link to the child, Perl can destroy the child when all other references are lost, and the parent's link simply becomes undef (or we can set a destructor to completely remove it).
+
+=CN If We 削弱 The 联系 To The 孩子, Perl Can 破坏 The 孩子 When All Other References Are Lost, And The 父或母亲's 联系 Simply Becomes Undef (Or We Can Set a destructor To 完全地 移开 It).
+
+=EN However, a parent won't disappear as long as it still has offspring.
+
+=CN However, a 父或母亲 Won't 失踪 As Long As It Still Has 子女.
+
+=EN Similarly, if the link to the parent is weakened, we'll simply get it as undef when the parent is no longer referenced by other data structures.
+
+=CN Similarly, If The 联系 To The 父或母亲 Is weakened, We'我 Simply Get It As Undef When The 父或母亲 Is No 长 参考 By Other Data Structures.
+
+=EN It's really quite flexible.[*]
+
+=CN It's Really Quite 柔韧的.[*]
+
+=EN [*] When using weak references, always ensure you don't dereference a weakened reference that has turned to undef.
+
+=CN [*] When Using 弱的 References, Always Ensure You Don't 废弃 a weakened Reference That Has 转 To Undef.
+
+=EN Without weakening, as soon as we create any parent-child relationship, both the parent and the child remain in memory until the final global destruction phase, regardless of the destruction of the other structures holding either the parent or the child.
+
+=CN Without weakening, As 不久 As We Create Any 父或母亲-孩子 关系, Both The 父或母亲 And The 孩子 依旧的 In Memory Until The 最终的 Global 破坏 阶段, 不顾的（地） Of The 破坏 Of The Other Structures 支持 Either The 父或母亲 Or The 孩子.
+
+=EN Be aware though: use weak references carefully and don't just throw them at a problem of circular references.
+
+=CN Be 知道的 Though: Use 弱的 References 仔细 And Don't Just 投 Them At a Problem Of 圆圈的 References.
+
+=EN If you destroy data that is held by a weak reference before its time, you may have some very confusing programming problems to solve and debug.
+
+=CN If You 破坏 Data That Is Held By a 弱的 Reference Before Its Time, You May Have Some Very 混淆 Programming 问题 To 解答 And debug.
+
+=EN Exercise You can find the answer to this exercise in "Answer for Chapter 13" in the Appendix.
+
+=CN Exercise You Can 寻找 The Answer To This 锻炼 In "Answer For Chapter 13" In The Appendix.
+
+=EN Exercise [45 min] Modify the RaceHorse class to get the previous standings from a DBM hash (keyed by the horse's name) when the horse is created, and update the standings when the horse is destroyed.
+
+=CN Exercise [45 min] Modify The RaceHorse Class To Get The Previous standings From a DBM Hash (keyed By The 马's Name) When The 马 Is Created, And Update The standings When The 马 Is destroyed.
+
+=EN For example, running this program four times:
+
+=CN For Example, 连续的 This Program 四 Times:
+
+=EN my $runner = RaceHorse->named('Billy Boy'); $runner->won; print $runner->name, ' has standings ', $runner->standings, ".\n";
+
+=CN My $奔跑者 = RaceHorse->Named('Billy Boy'); $奔跑者->Won; Print $奔跑者->Name, ' Has standings ', $奔跑者->standings, ".\n";
+
+=EN should show four additional wins.
+
+=CN Should Show 四 Additional 赢得.
+
+=EN Make sure that a RaceHorse still does everything a normal Horse does otherwise.
+
+=CN Make Sure That a RaceHorse Still Does Everything a Normal Horse Does Otherwise.
+
+=EN For simplicity, use four space-separated integers for the value in the DBM hash.
+
+=CN For 简单, Use 四 Space-Separated 整数 For The Value In The DBM Hash.
+

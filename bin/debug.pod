@@ -1,901 +1,878 @@
-NAME
-
-
-F<perl.pod> - The Perl 5 language interpreter
-
-
-SYNOPSIS
-
-
-B<perl> S<[ B<-sTtuUWX> ]>
-
-
-S<[ B<-hv> ] [ B<-V>[:I<configvar>] ]>
-
-
-S<[ B<-cw> ] [ B<-d>[B<t>][:I<debugger>] ] [ B<-D>[I<number/list>] ]>
-
-
-S<[ B<-pna> ] [ B<-F>I<pattern> ] [ B<-l>[I<octal>] ] [ B<-0>[I<octal/hexadecimal>] ]>
-
-
-S<[ B<-I>I<dir> ] [ B<-m>[B<->]I<module> ] [ B<-M>[B<->]I<'module...'> ] [ B<-f> ]>
-
-
-S<[ B<-C [I<number/list>] >]>
-
-
-S<[ B<-S> ]>
-
-
-S<[ B<-x>[I<dir>] ]>
-
-
-S<[ B<-i>[I<extension>] ]>
-
-
-S<[ [B<-e>|B<-E>] I<'command'> ] [ B<--> ] [ I<programfile> ] [ I<argument> ]...>
-
-
-GETTING HELP
-
-
-The F<perldoc> program gives you access to all the documentation that comes with Perl.
-
-
-You can get more documentation, tutorials and community support online at L<http://www.perl.org/>.
-
-
-If you're new to Perl, you should start by running C<perldoc perlintro>, which is a general intro for beginners and provides some background to help you navigate the rest of Perl's extensive documentation.
-
-
-Run C<perldoc perldoc> to learn more things you can do with F<perldoc>.
-
-
-For ease of access, the Perl manual has been split up into several sections.
-
-
-Overview
-
-
-F<perl.pod> - Perl overview (this section)
-
-
-F<perlintro.pod> - Perl introduction for beginners
-
-
-F<perltoc.pod> - Perl documentation table of contents
-
-
-Tutorials
-
-
-F<perlreftut.pod> - Perl references short introduction
-
-
-F<perldsc.pod> - Perl data structures intro
-
-
-F<perllol.pod> - Perl data structures: arrays of arrays
-
-
-F<perlrequick.pod> - Perl regular expressions quick start
-
-
-F<perlretut.pod> - Perl regular expressions tutorial
-
-
-F<perlboot.pod> - Perl OO tutorial for beginners
-
-
-F<perltoot.pod> - Perl OO tutorial, part 1
-
-
-F<perltooc.pod> - Perl OO tutorial, part 2
-
-
-F<perlbot.pod> - Perl OO tricks and examples
-
-
-F<perlperf.pod> - Perl Performance and Optimization Techniques
-
-
-F<perlstyle.pod> - Perl style guide
-
-
-F<perlcheat.pod> - Perl cheat sheet
-
-
-F<perltrap.pod> - Perl traps for the unwary
-
-
-F<perldebtut.pod> - Perl debugging tutorial
-
-
-F<perlfaq.pod> - Perl frequently asked questions
-
-
-F<perlfaq1.pod> - General Questions About Perl
-
-
-F<perlfaq2.pod> - Obtaining and Learning about Perl
-
-
-F<perlfaq3.pod> - Programming Tools
-
-
-F<perlfaq4.pod> - Data Manipulation
-
-
-F<perlfaq5.pod> - Files and Formats
-
-
-F<perlfaq6.pod> - Regexes
-
-
-F<perlfaq7.pod> - Perl Language Issues
-
-
-F<perlfaq8.pod> - System Interaction
-
-
-F<perlfaq9.pod> - Networking
-
-
-Reference Manual
-
-
-F<perlsyn.pod> - Perl syntax
-
-
-F<perldata.pod> - Perl data structures
-
-
-F<perlop.pod> - Perl operators and precedence
-
-
-F<perlsub.pod> - Perl subroutines
-
-
-F<perlfunc.pod> - Perl built-in functions
-
-
-F<perlopentut.pod> - Perl open() tutorial
-
-
-F<perlpacktut.pod> - Perl pack() and unpack() tutorial
-
-
-F<perlpod.pod> - Perl plain old documentation
-
-
-F<perlpodspec.pod> - Perl plain old documentation format specification
-
-
-F<perlpodstyle.pod> - Perl pod: style guide
-
-
-F<perlrun.pod> - Perl execution and options
-
-
-F<perldiag.pod> - Perl diagnostic messages
-
-
-F<perllexwarn.pod> - Perl warnings and their control
-
-
-F<perldebug.pod> - Perl debugging
-
-
-F<perlvar.pod> - Perl predefined variables
-
-
-F<perlre.pod> - Perl regular expressions, the rest of the story
-
-
-F<perlrebackslash.pod> - Perl regular expression backslash sequences
-
-
-F<perlrecharclass.pod> - Perl regular expression character classes
-
-
-F<perlreref.pod> - Perl regular expressions quick reference
-
-
-F<perlref.pod> - Perl references, the rest of the story
-
-
-F<perlform.pod> - Perl formats
-
-
-F<perlobj.pod> - Perl objects
-
-
-F<perltie.pod> - Perl objects hidden behind simple variables
-
-
-F<perldbmfilter.pod> - Perl DBM filters
-
-
-F<perlipc.pod> - Perl interprocess communication
-
-
-F<perlfork.pod> - Perl fork() information
-
-
-F<perlnumber.pod> - Perl number semantics
-
-
-F<perlthrtut.pod> - Perl threads tutorial
-
-
-F<perlport.pod> - Perl portability guide
-
-
-F<perllocale.pod> - Perl locale support
-
-
-F<perluniintro.pod> - Perl Unicode introduction
-
-
-F<perlunicode.pod> - Perl Unicode support
-
-
-F<perlunifaq.pod> - Perl Unicode FAQ
-
-
-F<perluniprops.pod> - Index of Unicode Version 6.0.0 properties in Perl
-
-
-F<perlunitut.pod> - Perl Unicode tutorial
-
-
-F<perlebcdic.pod> - Considerations for running Perl on EBCDIC platforms
-
-
-F<perlsec.pod> - Perl security
-
-
-F<perlmod.pod> - Perl modules: how they work
-
-
-F<perlmodlib.pod> - Perl modules: how to write and use
-
-
-F<perlmodstyle.pod> - Perl modules: how to write modules with style
-
-
-F<perlmodinstall.pod> - Perl modules: how to install from CPAN
-
-
-F<perlnewmod.pod> - Perl modules: preparing a new module for distribution
-
-
-F<perlpragma.pod> - Perl modules: writing a user pragma
-
-
-F<perlutil.pod> - utilities packaged with the Perl distribution
-
-
-F<perlcompile.pod> - Perl compiler suite intro
-
-
-F<perlfilter.pod> - Perl source filters
-
-
-F<perlglossary.pod> - Perl Glossary
-
-
-Internals and C Language Interface
-
-
-F<perlembed.pod> - Perl ways to embed perl in your C or C++ application
-
-
-F<perldebguts.pod> - Perl debugging guts and tips
-
-
-F<perlxstut.pod> - Perl XS tutorial
-
-
-F<perlxs.pod> - Perl XS application programming interface
-
-
-F<perlclib.pod> - Internal replacements for standard C library functions
-
-
-F<perlguts.pod> - Perl internal functions for those doing extensions
-
-
-F<perlcall.pod> - Perl calling conventions from C
-
-
-F<perlmroapi.pod> - Perl method resolution plugin interface
-
-
-F<perlreapi.pod> - Perl regular expression plugin interface
-
-
-F<perlreguts.pod> - Perl regular expression engine internals
-
-
-F<perlapi.pod> - Perl API listing (autogenerated)
-
-
-F<perlintern.pod> - Perl internal functions (autogenerated)
-
-
-F<perliol.pod> - C API for Perl's implementation of IO in Layers
-
-
-F<perlapio.pod> - Perl internal IO abstraction interface
-
-
-F<perlhack.pod> - Perl hackers guide
-
-
-F<perlsource.pod> - Guide to the Perl source tree
-
-
-F<perlinterp.pod> - Overview of the Perl intepreter source and how it works
-
-
-F<perlhacktut.pod> - Walk through the creation of a simple C code patch
-
-
-F<perlhacktips.pod> - Tips for Perl core C code hacking
-
-
-F<perlpolicy.pod> - Perl development policies
-
-
-F<perlgit.pod> - Using git with the Perl repository
-
-
-Miscellaneous
-
-
-F<perlbook.pod> - Perl book information
-
-
-F<perlcommunity.pod> - Perl community information
-
-
-F<perltodo.pod> - Perl things to do
-
-
-F<perldoc.pod> - Look up Perl documentation in pod: format
-
-
-F<perlhist.pod> - Perl history records
-
-
-F<perldelta.pod> - Perl changes since previous version
-
-
-F<perl51311delta.pod> - Perl changes in version 5.13.11
-
-
-F<perl51310delta.pod> - Perl changes in version 5.13.10
-
-
-F<perl5139delta.pod> - Perl changes in version 5.13.9
-
-
-F<perl5138delta.pod> - Perl changes in version 5.13.8
-
-
-F<perl5137delta.pod> - Perl changes in version 5.13.7
-
-
-F<perl5136delta.pod> - Perl changes in version 5.13.6
-
-
-F<perl5135delta.pod> - Perl changes in version 5.13.5
-
-
-F<perl5134delta.pod> - Perl changes in version 5.13.4
-
-
-F<perl5133delta.pod> - Perl changes in version 5.13.3
-
-
-F<perl5132delta.pod> - Perl changes in version 5.13.2
-
-
-F<perl5131delta.pod> - Perl changes in version 5.13.1
-
-
-F<perl5130delta.pod> - Perl changes in version 5.13.0
-
-
-F<perl5123delta.pod> - Perl changes in version 5.12.3
-
-
-F<perl5122delta.pod> - Perl changes in version 5.12.2
-
-
-F<perl5121delta.pod> - Perl changes in version 5.12.1
-
-
-F<perl5120delta.pod> - Perl changes in version 5.12.0
-
-
-F<perl5115delta.pod> - Perl changes in version 5.11.5
-
-
-F<perl5114delta.pod> - Perl changes in version 5.11.4
-
-
-F<perl5113delta.pod> - Perl changes in version 5.11.3
-
-
-F<perl5112delta.pod> - Perl changes in version 5.11.2
-
-
-F<perl5111delta.pod> - Perl changes in version 5.11.1
-
-
-F<perl5110delta.pod> - Perl changes in version 5.11.0
-
-
-F<perl5101delta.pod> - Perl changes in version 5.10.1
-
-
-F<perl5100delta.pod> - Perl changes in version 5.10.0
-
-
-F<perl595delta.pod> - Perl changes in version 5.9.5
-
-
-F<perl594delta.pod> - Perl changes in version 5.9.4
-
-
-F<perl593delta.pod> - Perl changes in version 5.9.3
-
-
-F<perl592delta.pod> - Perl changes in version 5.9.2
-
-
-F<perl591delta.pod> - Perl changes in version 5.9.1
-
-
-F<perl590delta.pod> - Perl changes in version 5.9.0
-
-
-F<perl589delta.pod> - Perl changes in version 5.8.9
-
-
-F<perl588delta.pod> - Perl changes in version 5.8.8
-
-
-F<perl587delta.pod> - Perl changes in version 5.8.7
-
-
-F<perl586delta.pod> - Perl changes in version 5.8.6
-
-
-F<perl585delta.pod> - Perl changes in version 5.8.5
-
-
-F<perl584delta.pod> - Perl changes in version 5.8.4
-
-
-F<perl583delta.pod> - Perl changes in version 5.8.3
-
-
-F<perl582delta.pod> - Perl changes in version 5.8.2
-
-
-F<perl581delta.pod> - Perl changes in version 5.8.1
-
-
-F<perl58delta.pod> - Perl changes in version 5.8.0
-
-
-F<perl573delta.pod> - Perl changes in version 5.7.3
-
-
-F<perl572delta.pod> - Perl changes in version 5.7.2
-
-
-F<perl571delta.pod> - Perl changes in version 5.7.1
-
-
-F<perl570delta.pod> - Perl changes in version 5.7.0
-
-
-F<perl561delta.pod> - Perl changes in version 5.6.1
-
-
-F<perl56delta.pod> - Perl changes in version 5.6
-
-
-F<perl5005delta.pod> - Perl changes in version 5.005
-
-
-F<perl5004delta.pod> - Perl changes in version 5.004
-
-
-F<perlartistic.pod> - Perl Artistic License
-
-
-F<perlgpl.pod> - GNU General Public License
-
-
-Language-Specific
-
-
-F<perlcn.pod> - Perl for Simplified Chinese (in EUC-CN)
-
-
-F<perljp.pod> - Perl for Japanese (in EUC-JP)
-
-
-F<perlko.pod> - Perl for Korean (in EUC-KR)
-
-
-F<perltw.pod> - Perl for Traditional Chinese (in Big5)
-
-
-Platform-Specific
-
-
-F<perlaix.pod> - Perl notes for AIX
-
-
-F<perlamiga.pod> - Perl notes for AmigaOS
-
-
-F<perlbeos.pod> - Perl notes for BeOS
-
-
-F<perlbs2000.pod> - Perl notes for POSIX-BC BS2000
-
-
-F<perlce.pod> - Perl notes for WinCE
-
-
-F<perlcygwin.pod> - Perl notes for Cygwin
-
-
-F<perldgux.pod> - Perl notes for DG/UX
-
-
-F<perldos.pod> - Perl notes for DOS
-
-
-F<perlepoc.pod> - Perl notes for EPOC
-
-
-F<perlfreebsd.pod> - Perl notes for FreeBSD
-
-
-F<perlhaiku.pod> - Perl notes for Haiku
-
-
-F<perlhpux.pod> - Perl notes for HP-UX
-
-
-F<perlhurd.pod> - Perl notes for Hurd
-
-
-F<perlirix.pod> - Perl notes for Irix
-
-
-F<perllinux.pod> - Perl notes for Linux
-
-
-F<perlmacos.pod> - Perl notes for Mac OS (Classic)
-
-
-F<perlmacosx.pod> - Perl notes for Mac OS X
-
-
-F<perlmpeix.pod> - Perl notes for MPE/iX
-
-
-F<perlnetware.pod> - Perl notes for NetWare
-
-
-F<perlopenbsd.pod> - Perl notes for OpenBSD
-
-
-F<perlos2.pod> - Perl notes for OS/2
-
-
-F<perlos390.pod> - Perl notes for OS/390
-
-
-F<perlos400.pod> - Perl notes for OS/400
-
-
-F<perlplan9.pod> - Perl notes for Plan 9
-
-
-F<perlqnx.pod> - Perl notes for QNX
-
-
-F<perlriscos.pod> - Perl notes for RISC OS
-
-
-F<perlsolaris.pod> - Perl notes for Solaris
-
-
-F<perlsymbian.pod> - Perl notes for Symbian
-
-
-F<perltru64.pod> - Perl notes for Tru64
-
-
-F<perluts.pod> - Perl notes for UTS
-
-
-F<perlvmesa.pod> - Perl notes for VM/ESA
-
-
-F<perlvms.pod> - Perl notes for VMS
-
-
-F<perlvos.pod> - Perl notes for Stratus VOS
-
-
-F<perlwin32.pod> - Perl notes for Windows
-
-
-On a Unix-like system, these documentation files will usually also be available as manpages for use with the F<man> program.
-
-
-In general, if something strange has gone wrong with your program and you're not sure where you should look for help, try the B<-w> switch first.
-
-
-It will often point out exactly where the trouble is.
-
-
-DESCRIPTION
-
-
-Perl officially stands for Practical Extraction and Report Language, except when it doesn't.
-
-
-Perl was originally a language optimized for scanning arbitrary text files, extracting information from those text files, and printing reports based on that information.
-
-
-It quickly became a good language for many system management tasks.
-
-
-Over the years, Perl has grown into a general-purpose programming language.
-
-
-It's widely used for everything from quick "one-liners" to full-scale application development.
-
-
-The language is intended to be practical (easy to use, efficient, complete) rather than beautiful (tiny, elegant, minimal).
-
-
-Perl combines (in the author's opinion, anyway) some of the best features of C, B<sed>, B<awk>, and B<sh>, so people familiar with those languages should have little difficulty with it.
-
-
-(Language historians will also note some vestiges of B<csh>, Pascal, and even BASIC-PLUS.)
-
-
-Expression syntax corresponds closely to C expression syntax.
-
-
-Unlike most Unix utilities, Perl does not arbitrarily limit the size of your data--if you've got the memory, Perl can slurp in your whole file as a single string.
-
-
-Recursion is of unlimited depth.
-
-
-And the tables used by hashes (sometimes called "associative arrays") grow as necessary to prevent degraded performance.
-
-
-Perl can use sophisticated pattern matching techniques to scan large amounts of data quickly.
-
-
-Although optimized for scanning text, Perl also has many excellent tools for slicing and dicing binary data.
-
-
-But wait, there's more...
-
-
-Begun in 1993 (see L<perlhist>), Perl version 5 is nearly a complete rewrite that provides the following additional benefits:
-
-
-
-
-
-
-
-
-modularity and reusability using innumerable modules
-
-
-Described in L<perlmod>, L<perlmodlib>, and L<perlmodinstall>.
-
-
-embeddable and extensible
-
-
-Described in L<perlembed>, L<perlxstut>, L<perlxs>, L<perlcall>, L<perlguts>, and L<xsubpp>.
-
-
-roll-your-own magic variables (including multiple simultaneous DBM implementations)
-
-
-Described in L<perltie> and L<AnyDBM_File>.
-
-
-subroutines can now be overridden, autoloaded, and prototyped
-
-
-Described in L<perlsub>.
-
-
-arbitrarily nested data structures and anonymous functions
-
-
-Described in L<perlreftut>, L<perlref>, L<perldsc>, and L<perllol>.
-
-
-object-oriented programming
-
-
-Described in L<perlobj>, L<perlboot>, L<perltoot>, L<perltooc>, and L<perlbot>.
-
-
-support for light-weight processes (threads)
-
-
-Described in L<perlthrtut> and L<threads>.
-
-
-support for Unicode, internationalization, and localization
-
-
-Described in L<perluniintro>, L<perllocale> and L<Locale::Maketext>.
-
-
-lexical scoping
-
-
-regular expression enhancements
-
-
-Described in L<perlre>, with additional examples in L<perlop>.
-
-
-enhanced debugger and interactive Perl environment, with integrated editor support
-
-
-Described in L<perldebtut>, L<perldebug> and L<perldebguts>.
-
-
-POSIX 1003.1 compliant library
-
-
-Described in L<POSIX>.
-
-
-Okay, that's I<definitely> enough hype.
-
-
-AVAILABILITY
-
-
-Perl is available for most operating systems, including virtually all Unix-like platforms.
-
-
-See L<perlport/"Supported Platforms"> for a listing.
-
-
-ENVIRONMENT
-
-
-See L<perlrun>.
-
-
-AUTHOR
-
-
-Larry Wall <larry@wall.org>, with the help of oodles of other folks.
-
-
-If your Perl success stories and testimonials may be of help to others who wish to advocate the use of Perl in their applications, or if you wish to simply express your gratitude to Larry and the Perl developers, please write to perl-thanks@perl.org .
-
-
-FILES
-
-
-@INC locations of perl libraries
-
-
-SEE ALSO
-
-
-http://www.perl.org/ the Perl homepage
-
-
-http://www.perl.com/ Perl articles (O'Reilly)
-
-
-http://www.cpan.org/ the Comprehensive Perl Archive
-
-
-http://www.pm.org/ the Perl Mongers
-
-
-DIAGNOSTICS
-
-
-The C<use warnings> pragma (and the B<-w> switch) produces some lovely diagnostics.
-
-
-See L<perldiag> for explanations of all Perl's diagnostics.
-
-
-The C<use diagnostics> pragma automatically turns Perl's normally terse warnings and errors into these longer forms.
-
-
-Compilation errors will tell you the line number of the error, with an indication of the next token or token type that was to be examined.
-
-
-(In a script passed to Perl via B<-e> switches, each B<-e> is counted as one line.)
-
-
-Setuid scripts have additional constraints that can produce error messages such as "Insecure dependency".
-
-
-See L<perlsec>.
-
-
-Did we mention that you should definitely consider using the B<-w> switch?
-
-
-BUGS
-
-
-The B<-w> switch is not mandatory.
-
-
-Perl is at the mercy of your machine's definitions of various operations such as type casting, atof(), and floating-point output with sprintf().
-
-
-If your stdio requires a seek or eof between reads and writes on a particular stream, so does Perl.
-
-
-(This doesn't apply to sysread() and syswrite().)
-
-
-While none of the built-in data types have any arbitrary size limits (apart from memory size), there are still a few arbitrary limits: a given variable name may not be longer than 251 characters.
-
-
-Line numbers displayed by diagnostics are internally stored as short integers, so they are limited to a maximum of 65535 (higher numbers usually being affected by wraparound).
-
-
-You may mail your bug reports (be sure to include full configuration information as output by the myconfig program in the perl source tree, or by C<perl -V>) to perlbug@perl.org .
-
-
-If you've succeeded in compiling perl, the L<perlbug> script in the F<utils/> subdirectory can be used to help mail in a bug report.
-
-
-Perl actually stands for Pathologically Eclectic Rubbish Lister, but don't tell anyone I said that.
-
-
-NOTES
-
-
-The Perl motto is "There's more than one way to do it."
-
-
-Divining how many more is left as an exercise to the reader.
-
-
-The three principal virtues of a programmer are Laziness, Impatience, and Hubris.
-
-
-See the Camel Book for why.
-
-
-
+=EN F<perlmodstyle.pod> - Perl modules: how to write modules with style
+=CN-CORE F<perlmodstyle.pod> - Perl 模块： 如何有风格的写模块
+=CN-PROJ 
+
+=EN F<perldata.pod> - Perl data structures
+=CN-CORE F<perldata.pod> - Perl 数据结构
+=CN-PROJ 
+
+=EN F<perlrun.pod> - Perl execution and options
+=CN-CORE F<perlrun.pod> - Perl 执行和选项
+=CN-PROJ 
+
+=EN Over the years, Perl has grown into a general-purpose programming language.
+=CN-CORE 经过多年以后，Perl已经成长为一种多用途的语言。
+=CN-PROJ 
+
+=EN F<perlfaq9.pod> - Networking
+=CN-CORE F<perlfaq9.pod> - 利用网络通信
+=CN-PROJ 
+
+=EN F<perlboot.pod> - Perl OO tutorial for beginners
+=CN-CORE F<perlboot.pod> - Perl 为初学者准备的面向对象编程介绍
+=CN-PROJ 
+
+=EN F<perldebtut.pod> - Perl debugging tutorial
+=CN-CORE F<perldebtut.pod> - Perl 调试指南
+=CN-PROJ 
+
+=EN F<perlreftut.pod> - Perl references short introduction
+=CN-CORE F<perlreftut.pod> - Perl 引用的简短介绍
+=CN-PROJ 
+
+=EN F<perlpodspec.pod> - Perl plain old documentation format specification
+=CN-CORE F<perlpodspec.pod> - Perl POD 格式定义
+=CN-PROJ 
+
+=EN F<perlfaq1.pod> - General Questions About Perl
+=CN-CORE F<perlfaq1.pod> - 关于 Perl 通常的问题
+=CN-PROJ 
+
+=EN It quickly became a good language for many system management tasks.
+=CN-CORE 她很快变成一门许多系统管理员完成任务的利器。
+=CN-PROJ 
+
+=EN F<perlmodlib.pod> - Perl modules: how to write and use
+=CN-CORE F<perlmodlib.pod> - Perl 模块： 如何写和使用
+=CN-PROJ 
+
+=EN F<perlfaq8.pod> - System Interaction
+=CN-CORE F<perlfaq8.pod> - 系统交互
+=CN-PROJ 
+
+=EN F<perlperf.pod> - Perl Performance and Optimization Techniques
+=CN-CORE F<perlperf.pod> - Perl 性能和优化技术
+=CN-PROJ 
+
+=EN Perl officially stands for Practical Extraction and Report Language, except when it doesn't.
+=CN-CORE Perl语言官方提供的意思是，实用摘录和报表语言的缩写，但其领域远不止如此。
+=CN-PROJ 
+
+=EN F<perlfaq5.pod> - Files and Formats
+=CN-CORE F<perlfaq5.pod> - 文件和格式
+=CN-PROJ 
+
+=EN F<perlbot.pod> - Perl OO tricks and examples
+=CN-CORE F<perlbot.pod> - Perl 面向对象的一些技巧和实例
+=CN-PROJ 
+
+=EN F<perldiag.pod> - Perl diagnostic messages
+=CN-CORE F<perldiag.pod> - Perl 诊断信息
+=CN-PROJ 
+
+=EN The F<perldoc> program gives you access to all the documentation that comes with Perl.
+=CN-CORE F<perldoc>程序为您提供了访问所有Perl文档的入口.
+=CN-PROJ 
+
+=EN F<perlsub.pod> - Perl subroutines
+=CN-CORE F<perlsub.pod> - Perl 子程序
+=CN-PROJ 
+
+=EN FILES
+=CN-CORE 文件
+=CN-PROJ 
+
+=EN F<perltrap.pod> - Perl traps for the unwary
+=CN-CORE F<perltrap.pod> - Perl 对于粗心者的陷阱
+=CN-PROJ 
+
+=EN F<perl.pod> - Perl overview (this section)
+=CN-CORE F<perl.pod> - Perl 预览（你在看的就是）
+=CN-PROJ 
+
+=EN F<perldsc.pod> - Perl data structures intro
+=CN-CORE F<perldsc.pod> - Perl 数据结构介绍
+=CN-PROJ 
+
+=EN AVAILABILITY
+=CN-CORE 有效性
+=CN-PROJ 
+
+=EN F<perlunitut.pod> - Perl Unicode tutorial
+=CN-CORE F<perlunitut.pod> - Perl Unicode 教程
+=CN-PROJ 
+
+=EN F<perlrequick.pod> - Perl regular expressions quick start
+=CN-CORE F<perlrequick.pod> - Perl 正则表达式预览
+=CN-PROJ 
+
+=EN You can get more documentation, tutorials and community support online at L<http://www.perl.org/>.
+=CN-CORE 如果您想获得更多的文档支持，教程指南和社区在线支持，请访问L<http：//www.perl.org/>.
+=CN-PROJ 
+
+=EN F<perltoc.pod> - Perl documentation table of contents
+=CN-CORE F<perltoc.pod> - Perl 文档的索引目录
+=CN-PROJ 
+
+=EN F<perllol.pod> - Perl data structures: arrays of arrays
+=CN-CORE F<perllol.pod> - Perl 数据结构： 数组的数组
+=CN-PROJ 
+
+=EN F<perluniintro.pod> - Perl Unicode introduction
+=CN-CORE F<perluniintro.pod> - Perl Unicode 介绍
+=CN-PROJ 
+
+=EN F<perldebug.pod> - Perl debugging
+=CN-CORE F<perldebug.pod> - Perl 调试
+=CN-PROJ 
+
+=EN AUTHOR
+=CN-CORE 作者
+=CN-PROJ 
+
+=EN F<perlfork.pod> - Perl fork() information
+=CN-CORE F<perlfork.pod> - Perl fork（） 信息
+=CN-PROJ 
+
+=EN F<perlsec.pod> - Perl security
+=CN-CORE F<perlsec.pod> - Perl 安全
+=CN-PROJ 
+
+=EN DESCRIPTION
+=CN-CORE 描述
+=CN-PROJ 
+
+=EN F<perlfaq.pod> - Perl frequently asked questions
+=CN-CORE F<perlfaq.pod> - Perl 经常问的问题
+=CN-PROJ 
+
+=EN Perl was originally a language optimized for scanning arbitrary text files, extracting information from those text files, and printing reports based on that information.
+=CN-CORE Perl起初用来扫描文本文档，从这些文件中扫描信息，然后基于这些信息输出报告。
+=CN-PROJ 
+
+=EN BUGS
+=CN-CORE 待改进
+=CN-PROJ 
+
+=EN F<perl.pod> - The Perl 5 language interpreter
+=CN-CORE F<perl.pod> - Perl 5 语言简介
+=CN-PROJ 
+
+=EN F<perlsyn.pod> - Perl syntax
+=CN-CORE F<perlsyn.pod> - Perl 语法
+=CN-PROJ 
+
+=EN F<perllexwarn.pod> - Perl warnings and their control
+=CN-CORE F<perllexwarn.pod> - Perl 警告和控制原理l
+=CN-PROJ 
+
+=EN F<perlvar.pod> - Perl predefined variables
+=CN-CORE F<perlvar.pod> - Perl 预定义变量
+=CN-PROJ 
+
+=EN F<perltooc.pod> - Perl OO tutorial, part 2
+=CN-CORE F<perltooc.pod> - Perl 面向对象编程介绍，第二部分
+=CN-PROJ 
+
+=EN F<perlopentut.pod> - Perl open() tutorial
+=CN-CORE F<perlopentut.pod> - Perl open（） 简介
+=CN-PROJ 
+
+=EN F<perlop.pod> - Perl operators and precedence
+=CN-CORE F<perlop.pod> - Perl 操作符和优先级
+=CN-PROJ 
+
+=EN DIAGNOSTICS
+=CN-CORE 诊断
+=CN-PROJ 
+
+=EN F<perlfaq6.pod> - Regexes
+=CN-CORE F<perlfaq6.pod> - 正则表达式
+=CN-PROJ 
+
+=EN F<perlmod.pod> - Perl modules: how they work
+=CN-CORE F<perlmod.pod> - Perl 模块： 他们如何工作
+=CN-PROJ 
+
+=EN F<perltoot.pod> - Perl OO tutorial, part 1
+=CN-CORE F<perltoot.pod> - Perl 面向对象编程介绍，第一部分
+=CN-PROJ 
+
+=EN Run C<perldoc perldoc> to learn more things you can do with F<perldoc>.
+=CN-CORE 尽可能使用 C<perldoc> 来学习所有你想学的东西吧。
+=CN-PROJ 
+
+=EN F<perlfaq4.pod> - Data Manipulation
+=CN-CORE F<perlfaq4.pod> - 数据操作
+=CN-PROJ 
+
+=EN F<perlref.pod> - Perl references, the rest of the story
+=CN-CORE F<perlref.pod> - Perl 参考， 剩下的故事
+=CN-PROJ 
+
+=EN F<perlfaq2.pod> - Obtaining and Learning about Perl
+=CN-CORE F<perlfaq2.pod> - 如何获得并学习 Perl
+=CN-PROJ 
+
+=EN F<perllocale.pod> - Perl locale support
+=CN-CORE F<perllocale.pod> - Perl 区域支持
+=CN-PROJ 
+
+=EN F<perlreref.pod> - Perl regular expressions quick reference
+=CN-CORE F<perlreref.pod> - Perl 正则表达式快速参考
+=CN-PROJ 
+
+=EN F<perlpacktut.pod> - Perl pack() and unpack() tutorial
+=CN-CORE F<perlpacktut.pod> - Perl pack（） 和 unpack（） 简介
+=CN-PROJ 
+
+=EN F<perlmodinstall.pod> - Perl modules: how to install from CPAN
+=CN-CORE F<perlmodinstall.pod> - Perl 模块： 如何通过 CPAN 安装模块
+=CN-PROJ 
+
+=EN F<perlpod.pod> - Perl plain old documentation
+=CN-CORE F<perlpod.pod> - Perl 简易老式文档 POD
+=CN-PROJ 
+
+=EN F<perlebcdic.pod> - Considerations for running Perl on EBCDIC platforms
+=CN-CORE F<perlebcdic.pod> - 考虑将 Perl 运行在 EBCDIC 编码的平台上
+=CN-PROJ 
+
+=EN F<perlfaq7.pod> - Perl Language Issues
+=CN-CORE F<perlfaq7.pod> - Perl 语言问题
+=CN-PROJ 
+
+=EN F<perlport.pod> - Perl portability guide
+=CN-CORE F<perlport.pod> - Perl 移植向导
+=CN-PROJ 
+
+=EN It's widely used for everything from quick "one-liners" to full-scale application development.
+=CN-CORE 从单行命令到全面开发应用领域，Perl被广泛使用。
+=CN-PROJ 
+
+=EN F<perlform.pod> - Perl formats
+=CN-CORE F<perlform.pod> - Perl 格式
+=CN-PROJ 
+
+=EN F<perlcheat.pod> - Perl cheat sheet
+=CN-CORE F<perlcheat.pod> - Perl 备忘录
+=CN-PROJ 
+
+=EN F<perlnumber.pod> - Perl number semantics
+=CN-CORE F<perlnumber.pod> - Perl 数字符号
+=CN-PROJ 
+
+=EN If you're new to Perl, you should start by running C<perldoc perlintro>, which is a general intro for beginners and provides some background to help you navigate the rest of Perl's extensive documentation.
+=CN-CORE 如果您第一次了解 Perl， 应当从运行C<perldoc perlintro>开始， 那是一个为初学者专门准备的简单介绍，为你讲解一些 Perl 的基础知识， 并且帮助你浏览其他的大量 Perl 文档。
+=CN-PROJ 
+
+=EN ENVIRONMENT
+=CN-CORE 环境
+=CN-PROJ 
+
+=EN F<perlipc.pod> - Perl interprocess communication
+=CN-CORE F<perlipc.pod> - Perl 进程间通信
+=CN-PROJ 
+
+=EN F<perldbmfilter.pod> - Perl DBM filters
+=CN-CORE F<perldbmfilter.pod> - Perl DBM 过滤器
+=CN-PROJ 
+
+=EN F<perlstyle.pod> - Perl style guide
+=CN-CORE F<perlstyle.pod> - Perl 风格向导
+=CN-PROJ 
+
+=EN F<perlobj.pod> - Perl objects
+=CN-CORE F<perlobj.pod> - Perl 对象
+=CN-PROJ 
+
+=EN F<perlpodstyle.pod> - Perl pod: style guide
+=CN-CORE F<perlpodstyle.pod> - Perl POD： 风格向导
+=CN-PROJ 
+
+=EN F<perlre.pod> - Perl regular expressions, the rest of the story
+=CN-CORE F<perlre.pod> - Perl 正则表达式，剩下的故事
+=CN-PROJ 
+
+=EN F<perlintro.pod> - Perl introduction for beginners
+=CN-CORE F<perlintro.pod> - Perl 为初学者准备的简介
+=CN-PROJ 
+
+=EN F<perlunicode.pod> - Perl Unicode support
+=CN-CORE F<perlunicode.pod> - Perl Unicode 支持
+=CN-PROJ 
+
+=EN F<perlretut.pod> - Perl regular expressions tutorial
+=CN-CORE F<perlretut.pod> - Perl 正则表达式详细介绍
+=CN-PROJ 
+
+=EN For ease of access, the Perl manual has been split up into several sections.
+=CN-CORE 为了更容易开始，Perl 的帮助文档被分成几个部分.
+=CN-PROJ 
+
+=EN F<perlnewmod.pod> - Perl modules: preparing a new module for distribution
+=CN-CORE F<perlnewmod.pod> - Perl 模块： 准备发布自己的模块
+=CN-PROJ 
+
+=EN F<perlfunc.pod> - Perl built-in functions
+=CN-CORE F<perlfunc.pod> - Perl 内置函数
+=CN-PROJ 
+
+=EN F<perlrecharclass.pod> - Perl regular expression character classes
+=CN-CORE F<perlrecharclass.pod> - Perl 正则字符集
+=CN-PROJ 
+
+=EN F<perlpragma.pod> - Perl modules: writing a user pragma
+=CN-CORE F<perlpragma.pod> - Perl 模块： 编写用户使用接口
+=CN-PROJ 
+
+=EN F<perlthrtut.pod> - Perl threads tutorial
+=CN-CORE F<perlthrtut.pod> - Perl 线程教程
+=CN-PROJ 
+
+=EN F<perlrebackslash.pod> - Perl regular expression backslash sequences
+=CN-CORE F<perlrebackslash.pod> - Perl 正则表达式转义优先级
+=CN-PROJ 
+
+&&01ba=>F<perlplan9.pod>
+&&01a7=>F<perlce.pod>
+&&00b5=>perlcn.pod
+&&01e1=>L<perlthrtut>
+&&00e4=>B<-V>
+&&0035=>perlpod.pod
+&&01dd=>L<perlboot>
+&&00cd=>perlos2.pod
+&&00aa=>perl571delta.pod
+&&00dd=>perl.org
+&&0118=>F<perldebtut.pod>
+&&00b1=>perl5004delta.pod
+&&001e=>perlbot.pod
+&&0154=>F<perlxstut.pod>
+&&000f=>sprintf()
+&&0112=>F<perltooc.pod>
+&&00a4=>perl582delta.pod
+&&01b3=>F<perlmacosx.pod>
+&&0132=>F<perlre.pod>
+&&001a=>perlretut.pod
+&&01f9=>S<[ B<-pna> ] [ B<-F>I<pattern> ] [ B<-l>[I<octal>] ] [ B<-0>[I<octal/hexadecimal>] ]>
+&&013a=>F<perldbmfilter.pod>
+&&011f=>F<perlfaq6.pod>
+&&00f1=>B<-0>
+&&0030=>perlop.pod
+&&0015=>perltoc.pod
+&&01e7=>L<perlop>
+&&0153=>F<perldebguts.pod>
+&&0116=>F<perlcheat.pod>
+&&0200=>S<[ B<-C [I<number/list>] >]>
+&&003e=>perlrebackslash.pod
+&&019e=>F<perlgpl.pod>
+&&0183=>F<perl5101delta.pod>
+&&0047=>perlfork.pod
+&&01da=>L<perldsc>
+&&00e8=>B<t>
+&&00c6=>perlirix.pod
+&&017b=>F<perl5121delta.pod>
+&&000b=>pack()
+&&0121=>F<perlfaq8.pod>
+&&01b2=>F<perlmacos.pod>
+&&0027=>perlfaq3.pod
+&&00e2=>B<-sTtuUWX>
+&&0166=>F<perlgit.pod>
+&&016e=>F<perl51310delta.pod>
+&&00e3=>B<-hv>
+&&00c2=>perlfreebsd.pod
+&&016c=>F<perldelta.pod>
+&&0088=>perl5122delta.pod
+&&0191=>F<perl583delta.pod>
+&&01b1=>F<perllinux.pod>
+&&0074=>perlcommunity.pod
+&&0051=>perlunitut.pod
+&&00b0=>5.005
+&&00ed=>B<-F>
+&&00db=>1003.1
+&&00d0=>perlplan9.pod
+&&0040=>perlreref.pod
+&&012c=>F<perlpodstyle.pod>
+&&005e=>perlembed.pod
+&&008d=>perl5114delta.pod
+&&00a1=>perl585delta.pod
+&&003b=>perldebug.pod
+&&0003=>larry@wall.org
+&&01f3=>C<perl -V>
+&&0199=>F<perl561delta.pod>
+&&0187=>F<perl593delta.pod>
+&&014d=>F<perlpragma.pod>
+&&01d3=>L<perlguts>
+&&010a=>F<perltoc.pod>
+&&01bd=>F<perlsolaris.pod>
+&&0173=>F<perl5135delta.pod>
+&&009e=>perl588delta.pod
+&&00f3=>B<-I>
+&&0099=>perl592delta.pod
+&&00cf=>perlos400.pod
+&&017f=>F<perl5113delta.pod>
+&&01df=>L<perltooc>
+&&00e6=>B<-cw>
+&&01ed=>L<perlport/"Supported Platforms">
+&&01db=>L<perllol>
+&&009d=>5.8
+&&005d=>perlglossary.pod
+&&005a=>perlutil.pod
+&&017a=>F<perl5122delta.pod>
+&&01a2=>F<perltw.pod>
+&&0123=>F<perlsyn.pod>
+&&01b5=>F<perlnetware.pod>
+&&018a=>F<perl590delta.pod>
+&&004f=>perluniprops.pod
+&&00d2=>perlriscos.pod
+&&006a=>perliol.pod
+&&010d=>F<perllol.pod>
+&&00c9=>perlmacosx.pod
+&&01aa=>F<perldos.pod>
+&&01fd=>S<[ B<-x>[I<dir>] ]>
+&&016b=>F<perlhist.pod>
+&&00f5=>B<-m>
+&&0176=>F<perl5132delta.pod>
+&&01ee=>L<perlrun>
+&&0054=>perlmod.pod
+&&001f=>perlperf.pod
+&&0114=>F<perlperf.pod>
+&&01cd=>L<perlmodlib>
+&&0098=>perl593delta.pod
+&&0050=>6.0
+&&00c4=>perlhpux.pod
+&&01dc=>L<perlobj>
+&&0105=>F<perldoc>
+&&015e=>F<perliol.pod>
+&&0007=>http://www.perl.com/
+&&0180=>F<perl5112delta.pod>
+&&00a3=>perl583delta.pod
+&&010b=>F<perlreftut.pod>
+&&01a8=>F<perlcygwin.pod>
+&&012d=>F<perlrun.pod>
+&&01f0=>L<perldiag>
+&&0111=>F<perltoot.pod>
+&&01f8=>S<[ B<-cw> ] [ B<-d>[B<t>][:I<debugger>] ] [ B<-D>[I<number/list>] ]>
+&&0130=>F<perldebug.pod>
+&&0089=>perl5121delta.pod
+&&01eb=>L<POSIX>
+&&00c3=>perlhaiku.pod
+&&0085=>perl5130delta.pod
+&&013f=>F<perlport.pod>
+&&0026=>perlfaq2.pod
+&&00cb=>perlnetware.pod
+&&0144=>F<perluniprops.pod>
+&&00bf=>perldgux.pod
+&&0045=>perldbmfilter.pod
+&&0006=>http://www.perl.org/
+&&006d=>perlsource.pod
+&&00e1=>B<perl>
+&&01f4=>L<perlbug>
+&&01fa=>S<[ B<-I>I<dir> ] [ B<-m>[B<->]I<module> ] [ B<-M>[B<->]I<'module...'> ] [ B<-f> ]>
+&&018d=>F<perl587delta.pod>
+&&01b6=>F<perlopenbsd.pod>
+&&003a=>perllexwarn.pod
+&&0043=>perlobj.pod
+&&013e=>F<perlthrtut.pod>
+&&01c2=>F<perlvms.pod>
+&&0125=>F<perlop.pod>
+&&01c8=>B<awk>
+&&01ca=>B<csh>
+&&0124=>F<perldata.pod>
+&&0165=>F<perlpolicy.pod>
+&&01f1=>C<use diagnostics>
+&&0087=>5.12
+&&0094=>perl5100delta.pod
+&&0148=>F<perlmod.pod>
+&&009b=>perl590delta.pod
+&&01f7=>S<[ B<-hv> ] [ B<-V>[:I<configvar>] ]>
+&&01a5=>F<perlbeos.pod>
+&&018e=>F<perl586delta.pod>
+&&0073=>perlbook.pod
+&&0106=>L<http://www.perl.org/>
+&&0069=>perlintern.pod
+&&0019=>perlrequick.pod
+&&0012=>perl.pod
+&&0182=>F<perl5110delta.pod>
+&&01e8=>L<perldebtut>
+&&00ae=>perl56delta.pod
+&&00b9=>perlaix.pod
+&&001b=>perlboot.pod
+&&01c0=>F<perluts.pod>
+&&0048=>perlnumber.pod
+&&0190=>F<perl584delta.pod>
+&&00ba=>perlamiga.pod
+&&0038=>perlrun.pod
+&&00bc=>perlbs2000.pod
+&&0174=>F<perl5134delta.pod>
+&&0024=>perlfaq.pod
+&&012f=>F<perllexwarn.pod>
+&&01c7=>B<sed>
+&&0127=>F<perlfunc.pod>
+&&019f=>F<perlcn.pod>
+&&01ac=>F<perlfreebsd.pod>
+&&0158=>F<perlcall.pod>
+&&0145=>F<perlunitut.pod>
+&&00ce=>perlos390.pod
+&&0161=>F<perlsource.pod>
+&&0077=>perlhist.pod
+&&013b=>F<perlipc.pod>
+&&002f=>perldata.pod
+&&0071=>perlpolicy.pod
+&&00d7=>perlvmesa.pod
+&&01ab=>F<perlepoc.pod>
+&&0149=>F<perlmodlib.pod>
+&&01bf=>F<perltru64.pod>
+&&0155=>F<perlxs.pod>
+&&0171=>F<perl5137delta.pod>
+&&0001=>@wall
+&&01a9=>F<perldgux.pod>
+&&01ce=>L<perlmodinstall>
+&&0036=>perlpodspec.pod
+&&005c=>perlfilter.pod
+&&0138=>F<perlobj.pod>
+&&010e=>F<perlrequick.pod>
+&&01a0=>F<perljp.pod>
+&&009a=>perl591delta.pod
+&&0053=>perlsec.pod
+&&000d=>fork()
+&&0119=>F<perlfaq.pod>
+&&004c=>perluniintro.pod
+&&01e9=>L<perldebug>
+&&015a=>F<perlreapi.pod>
+&&005f=>perldebguts.pod
+&&01af=>F<perlhurd.pod>
+&&01d2=>L<perlcall>
+&&0079=>perl51311delta.pod
+&&0076=>perldoc.pod
+&&00be=>perlcygwin.pod
+&&01f5=>F<utils/>
+&&0016=>perlreftut.pod
+&&01e5=>L<Locale::Maketext>
+&&0086=>perl5123delta.pod
+&&001c=>perltoot.pod
+&&01cc=>L<perlmod>
+&&0131=>F<perlvar.pod>
+&&00a9=>perl572delta.pod
+&&0014=>perlintro.pod
+&&0018=>perllol.pod
+&&019d=>F<perlartistic.pod>
+&&019c=>F<perl5004delta.pod>
+&&0168=>F<perlcommunity.pod>
+&&011b=>F<perlfaq2.pod>
+&&0178=>F<perl5130delta.pod>
+&&00cc=>perlopenbsd.pod
+&&0068=>perlapi.pod
+&&0032=>perlfunc.pod
+&&007d=>perl5138delta.pod
+&&0151=>F<perlglossary.pod>
+&&01ae=>F<perlhpux.pod>
+&&00ee=>I<pattern>
+&&009c=>perl589delta.pod
+&&0164=>F<perlhacktips.pod>
+&&00a5=>perl581delta.pod
+&&004b=>perllocale.pod
+&&010f=>F<perlretut.pod>
+&&0196=>F<perl572delta.pod>
+&&01e4=>L<perllocale>
+&&0037=>perlpodstyle.pod
+&&01ef=>C<use warnings>
+&&013c=>F<perlfork.pod>
+&&00df=>www.pm
+&&0065=>perlmroapi.pod
+&&0146=>F<perlebcdic.pod>
+&&011a=>F<perlfaq1.pod>
+&&01d1=>L<perlxs>
+&&00d8=>perlvms.pod
+&&0175=>F<perl5133delta.pod>
+&&0177=>F<perl5131delta.pod>
+&&0128=>F<perlopentut.pod>
+&&01a6=>F<perlbs2000.pod>
+&&00b8=>perltw.pod
+&&01ad=>F<perlhaiku.pod>
+&&0170=>F<perl5138delta.pod>
+&&00d5=>perltru64.pod
+&&0172=>F<perl5136delta.pod>
+&&00ca=>perlmpeix.pod
+&&018c=>F<perl588delta.pod>
+&&0039=>perldiag.pod
+&&004d=>perlunicode.pod
+&&01c3=>F<perlvos.pod>
+&&00dc=>wall.org
+&&000e=>atof()
+&&008c=>5.11
+&&01e2=>L<threads>
+&&0055=>perlmodlib.pod
+&&0061=>perlxs.pod
+&&00a7=>perl573delta.pod
+&&002b=>perlfaq7.pod
+&&011c=>F<perlfaq3.pod>
+&&0109=>F<perlintro.pod>
+&&00a8=>5.7
+&&00e0=>F<perl.pod>
+&&0186=>F<perl594delta.pod>
+&&0129=>F<perlpacktut.pod>
+&&006e=>perlinterp.pod
+&&009f=>perl587delta.pod
+&&00ab=>perl570delta.pod
+&&0031=>perlsub.pod
+&&00b3=>perlartistic.pod
+&&0189=>F<perl591delta.pod>
+&&006b=>perlapio.pod
+&&00ea=>B<-D>
+&&016f=>F<perl5139delta.pod>
+&&0167=>F<perlbook.pod>
+&&01de=>L<perltoot>
+&&0104=>I<argument>
+&&002c=>perlfaq8.pod
+&&00c8=>perlmacos.pod
+&&0194=>F<perl58delta.pod>
+&&0062=>perlclib.pod
+&&0157=>F<perlguts.pod>
+&&01e6=>L<perlre>
+&&003c=>perlvar.pod
+&&000c=>unpack()
+&&012b=>F<perlpodspec.pod>
+&&0139=>F<perltie.pod>
+&&017d=>F<perl5115delta.pod>
+&&0147=>F<perlsec.pod>
+&&012e=>F<perldiag.pod>
+&&01e0=>L<perlbot>
+&&00fd=>B<-i>
+&&00b4=>perlgpl.pod
+&&0110=>F<perlboot.pod>
+&&003f=>perlrecharclass.pod
+&&00f9=>I<'module...'>
+&&0156=>F<perlclib.pod>
+&&014b=>F<perlmodinstall.pod>
+&&01a3=>F<perlaix.pod>
+&&00c0=>perldos.pod
+&&018b=>F<perl589delta.pod>
+&&0103=>I<programfile>
+&&01c9=>B<sh>
+&&0059=>perlpragma.pod
+&&00fc=>B<-x>
+&&01cf=>L<perlembed>
+&&0060=>perlxstut.pod
+&&0188=>F<perl592delta.pod>
+&&015b=>F<perlreguts.pod>
+&&000a=>open()
+&&0169=>F<perltodo.pod>
+&&0136=>F<perlref.pod>
+&&01f2=>L<perlsec>
+&&0009=>http://www.pm.org/
+&&0122=>F<perlfaq9.pod>
+&&01d7=>L<perlsub>
+&&0002=>@perl
+&&0049=>perlthrtut.pod
+&&01d6=>L<AnyDBM_File>
+&&002d=>perlfaq9.pod
+&&01ec=>I<definitely>
+&&01be=>F<perlsymbian.pod>
+&&01d5=>L<perltie>
+&&01cb=>L<perlhist>
+&&0023=>perldebtut.pod
+&&0120=>F<perlfaq7.pod>
+&&0115=>F<perlstyle.pod>
+&&0152=>F<perlembed.pod>
+&&01fb=>B<-C [I<number/list>] >
+&&01a4=>F<perlamiga.pod>
+&&001d=>perltooc.pod
+&&0021=>perlcheat.pod
+&&0133=>F<perlrebackslash.pod>
+&&00da=>perlwin32.pod
+&&01fe=>S<[ B<-i>[I<extension>] ]>
+&&01b7=>F<perlos2.pod>
+&&011d=>F<perlfaq4.pod>
+&&0117=>F<perltrap.pod>
+&&019b=>F<perl5005delta.pod>
+&&0091=>perl5110delta.pod
+&&01c6=>B<-w>
+&&01bc=>F<perlriscos.pod>
+&&0143=>F<perlunifaq.pod>
+&&0162=>F<perlinterp.pod>
+&&00bd=>perlce.pod
+&&0057=>perlmodinstall.pod
+&&01a1=>F<perlko.pod>
+&&0029=>perlfaq5.pod
+&&00eb=>I<number/list>
+&&015f=>F<perlapio.pod>
+&&008e=>perl5113delta.pod
+&&0070=>perlhacktips.pod
+&&019a=>F<perl56delta.pod>
+&&018f=>F<perl585delta.pod>
+&&00d3=>perlsolaris.pod
+&&014e=>F<perlutil.pod>
+&&014a=>F<perlmodstyle.pod>
+&&0198=>F<perl570delta.pod>
+&&007f=>perl5136delta.pod
+&&0134=>F<perlrecharclass.pod>
+&&0108=>C<perldoc perldoc>
+&&00a6=>perl58delta.pod
+&&0160=>F<perlhack.pod>
+&&0056=>perlmodstyle.pod
+&&01b0=>F<perlirix.pod>
+&&0046=>perlipc.pod
+&&012a=>F<perlpod.pod>
+&&0025=>perlfaq1.pod
+&&0005=>perlbug@perl.org
+&&00fb=>B<-S>
+&&0142=>F<perlunicode.pod>
+&&00ef=>B<-l>
+&&00ff=>B<-e>
+&&00f4=>I<dir>
+&&0097=>perl594delta.pod
+&&0004=>thanks@perl.org
+&&0102=>B<-->
+&&0034=>perlpacktut.pod
+&&00de=>www.cpan
+&&0041=>perlref.pod
+&&0067=>perlreguts.pod
+&&01b9=>F<perlos400.pod>
+&&0028=>perlfaq4.pod
+&&0082=>perl5133delta.pod
+&&00c5=>perlhurd.pod
+&&01ff=>S<[ [B<-e>|B<-E>] I<'command'> ] [ B<--> ] [ I<programfile> ] [ I<argument> ]...>
+&&004a=>perlport.pod
+&&00d1=>perlqnx.pod
+&&0081=>perl5134delta.pod
+&&00ac=>perl561delta.pod
+&&00b6=>perljp.pod
+&&01d9=>L<perlref>
+&&007c=>perl5139delta.pod
+&&008a=>perl5120delta.pod
+&&016a=>F<perldoc.pod>
+&&015d=>F<perlintern.pod>
+&&0100=>B<-E>
+&&0042=>perlform.pod
+&&008b=>perl5115delta.pod
+&&00a0=>perl586delta.pod
+&&008f=>perl5112delta.pod
+&&00fe=>I<extension>
+&&006f=>perlhacktut.pod
+&&00c7=>perllinux.pod
+&&00ec=>B<-pna>
+&&0010=>sysread()
+&&00f0=>I<octal>
+&&01d0=>L<perlxstut>
+&&0017=>perldsc.pod
+&&0192=>F<perl582delta.pod>
+&&016d=>F<perl51311delta.pod>
+&&00e7=>B<-d>
+&&0008=>http://www.cpan.org/
+&&0083=>perl5132delta.pod
+&&0179=>F<perl5123delta.pod>
+&&0058=>perlnewmod.pod
+&&0197=>F<perl571delta.pod>
+&&003d=>perlre.pod
+&&00b7=>perlko.pod
+&&0185=>F<perl595delta.pod>
+&&00b2=>5.004
+&&00f2=>I<octal/hexadecimal>
+&&01e3=>L<perluniintro>
+&&00d9=>perlvos.pod
+&&01ea=>L<perldebguts>
+&&00f8=>B<-M>
+&&0163=>F<perlhacktut.pod>
+&&00fa=>B<-f>
+&&00a2=>perl584delta.pod
+&&0193=>F<perl581delta.pod>
+&&00f7=>I<module>
+&&00d6=>perluts.pod
+&&006c=>perlhack.pod
+&&007b=>perl51310delta.pod
+&&0020=>perlstyle.pod
+&&01fc=>S<[ B<-S> ]>
+&&00af=>perl5005delta.pod
+&&0078=>perldelta.pod
+&&0011=>syswrite()
+&&0126=>F<perlsub.pod>
+&&0084=>perl5131delta.pod
+&&00e9=>I<debugger>
+&&0063=>perlguts.pod
+&&0140=>F<perllocale.pod>
+&&002a=>perlfaq6.pod
+&&01b8=>F<perlos390.pod>
+&&01d8=>L<perlreftut>
+&&0075=>perltodo.pod
+&&0141=>F<perluniintro.pod>
+&&00ad=>5.6
+&&017e=>F<perl5114delta.pod>
+&&0101=>I<'command'>
+&&00d4=>perlsymbian.pod
+&&0080=>perl5135delta.pod
+&&0013=>www.perl
+&&0135=>F<perlreref.pod>
+&&0022=>perltrap.pod
+&&01c5=>F<man>
+&&01c1=>F<perlvmesa.pod>
+&&014f=>F<perlcompile.pod>
+&&00e5=>I<configvar>
+&&0137=>F<perlform.pod>
+&&01c4=>F<perlwin32.pod>
+&&0066=>perlreapi.pod
+&&0093=>5.10
+&&0184=>F<perl5100delta.pod>
+&&01b4=>F<perlmpeix.pod>
+&&0107=>C<perldoc perlintro>
+&&013d=>F<perlnumber.pod>
+&&011e=>F<perlfaq5.pod>
+&&0072=>perlgit.pod
+&&00f6=>B<->
+&&00c1=>perlepoc.pod
+&&007e=>perl5137delta.pod
+&&0044=>perltie.pod
+&&01f6=>S<[ B<-sTtuUWX> ]>
+&&01d4=>L<xsubpp>
+&&015c=>F<perlapi.pod>
+&&01bb=>F<perlqnx.pod>
+&&0090=>perl5111delta.pod
+&&002e=>perlsyn.pod
+&&0033=>perlopentut.pod
+&&00bb=>perlbeos.pod
+&&0195=>F<perl573delta.pod>
+&&0092=>perl5101delta.pod
+&&017c=>F<perl5120delta.pod>
+&&014c=>F<perlnewmod.pod>
+&&0181=>F<perl5111delta.pod>
+&&005b=>perlcompile.pod
+&&007a=>5.13
+&&0064=>perlcall.pod
+&&0095=>perl595delta.pod
+&&0159=>F<perlmroapi.pod>
+&&004e=>perlunifaq.pod
+&&0096=>5.9
+&&0150=>F<perlfilter.pod>
+&&010c=>F<perldsc.pod>
+&&0052=>perlebcdic.pod
+&&0113=>F<perlbot.pod>
+&&000a=>4.6
+&&0018=>C<%^H>
+&&001d=>C<pack>
+&&0003=>import()
+&&0019=>C<caller()>
+&&0006=>in_effect()
+&&0010=>C<use myint;>
+&&0004=>unimport()
+&&0015=>C<import>
+&&000f=>I<i.e.>
+&&001e=>C<exists>
+&&000d=>C<warnings>
+&&0005=>caller()
+&&000e=>C<use integer;>
+&&0013=>C<myint>
+&&000b=>i.e
+&&001c=>C<undef>
+&&0002=>in_effect(1)
+&&000c=>C<strict>
+&&0012=>C<MyMaths>
+&&0011=>C<no myint;>
+&&0017=>B<compile time>
+&&0016=>C<unimport>
+&&001b=>C<$^H{myint}>
+&&0014=>C<()>
+&&0009=>3.4
+&&001a=>C<in_effect()>
+&&0007=>5.10
+&&0008=>1.2
+&&0001=>myint()

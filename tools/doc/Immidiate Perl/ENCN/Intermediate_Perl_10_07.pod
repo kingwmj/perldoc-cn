@@ -1,0 +1,89 @@
+10.7. Packages as Namespace Separators
+10.7. 包名字作为名字空间分隔符
+If the name prefix of the last example didn’t have to be spelled out on every use, things would work much better. We can improve the situation by using a package:
+package Navigation;
+sub turn_toward_heading {
+  .. code here ..
+}
+sub turn_toward_port {
+  .. code here ..
+}
+1;
+如果上例中的名字前缀不必在每个使用的地方都打印，那工作该多好。 我们可以用程序包来增强可读性。
+package Navigation;
+sub turn_toward_heading {
+  .. code here ..
+}
+sub turn_toward_port {
+  .. code here ..
+}
+1;
+The package declaration at the beginning of this file tells Perl to virtually insert Navigation:: in front of most names within the file. Thus, the code above practically says:
+sub Navigation::turn_toward_heading {
+  .. code here ..
+}
+sub Navigation::turn_toward_port {
+  .. code here ..
+}
+1;
+在文件的开始的程序包声明，显式地告诉Perl将Navigation::插入到文件中大多数名字的前面。 这样， 上面的代码实际上在说：
+sub Navigation::turn_toward_heading {
+  .. code here ..
+}
+sub Navigation::turn_toward_port {
+  .. code here ..
+}
+1;
+Now when Gilligan uses this file, he simply adds Navigation:: to the subroutines defined in the library and leaves the Navigation:: prefix off for subroutines he defines on his own:
+#!/usr/bin/perl
+require ‘navigation.pm’;
+sub turn_toward_port {
+  Navigation::turn_toward_heading(compute_heading_to_island(  ));
+}
+sub compute_heading_to_island {
+  .. code here ..
+}
+.. more program here ..
+现在Gilligan导入这个文件，　他只要简单的把在库里引用的子例程前加上Navigation::前缀即可，而在他自己的同名程序前面不加前缀。
+#!/usr/bin/perl
+require ‘navigation.pm’;
+sub turn_toward_port {
+  Navigation::turn_toward_heading(compute_heading_to_island(  ));
+}
+sub compute_heading_to_island {
+  .. code here ..
+}
+.. more program here ..
+Package names are like variable names: they consist of alphanumerics and underscores but can’t begin with a digit. Also, for reasons explained in the perlmodlib documentation, a package name should begin with a capital letter and not overlap an existing CPAN or core module name. Package names can also have multiple names separated by double colons, such as Minnow::Navigation and Minnow::Food::Storage.
+程序包名字与变量名字相同：他们包括字母和数字及下划线，　但是不能以数字开头。　同样，　因为在Perl的perlmodlib文档中说明的理由，　一个程序包名应该以大写开头，并且不与现存的CPAN或核心的模块名重名。包名可以以双冒号分隔定义多个名字，如：Minnow::Navigation及Minnow::Food::Storage。
+Nearly every scalar, array, hash, subroutine, and filehandle name[*] is actually prefixed by the current package, unless the name already contains one or more double-colon markers.
+几乎所有的标量、数组、散列、子程序及文件句柄名字实际上已经加上了当前的程序包的名字，除非原来的名字已经包括一个或多个双冒号标记。
+    [*] Except lexicals, as we’ll show in a moment.
+    [*] 除了词法变量，　我们会在后面说到。
+So, in navigation.pm, we can use variables such as:[+]
+    [+] Trivia note: 21.283 degrees north, 157.842 degrees west is the location of the real-life marina where the opening shot of a famous television series was filmed. Check it out on Google Maps if you don’t believe us.
+package Navigation;
+@homeport = (21.283, -157.842);
+sub turn_toward_port {
+  .. code ..
+}
+所以，　在navigation.pm中，　我们可以用下面的变量名：[+]
+  [+] 小注：21.283度以北， 157.842度以西是现实生活中一个地点，上过一个著名的电视节目。 如果你不信，可以查查Google Maps。
+We can refer to the @homeport variable in the main code with its full package specification:
+@destination = @Navigation::homeport;
+我们可以在主程序中用全名引用@homeport变量：
+@destination = @Navigation::homeport;
+If every name has a package name inserted in front of it, what about names in the main program? Yes, they are also in a package, called main. It’s as if package main; were at the beginning of each file. Thus, to keep Gilligan from having to say Navigation::turn_toward_heading, the navigation.pm file can say:
+sub main::turn_toward_heading {
+  .. code here ..
+}
+如果每个名字前面都有包名字， 那么主程序的名字会是什么？是的， 他们同样有包名字， 称作main。 就好象在main这个程序包里面；在每个文件开始的地方。 所以， 要Gilligan避免说Navigation::turn_toward_heading， navigation.pm文件中可以用：
+sub main::turn_toward_heading {
+  .. code here ..
+}
+Now the subroutine is defined in the main package, not the Navigation package. This isn’t an optimal solution (we’ll show better solutions in Chapter 15 when we talk about Exporter), but at least there’s nothing sacred or terribly unique about main compared to any other package.
+现在，子程序被定义在main程序包中， 不在navigation包中。 这不是一个好的解决方法（我们会在第15章，讨论Exporter的时候来说更好的做法），但是，至少目前也没有其它利害的独特方案可以匹分main与其它包。
+This is what the modules in Chapter 3 were doing when they imported symbols into our scripts, but we didn’t tell you the whole story then. Those modules imported the subroutines and variables into the current package (again, that’s main in our scripts, usually). That is, those symbols are only available in that package unless we use the full package specification. We’ll get more into how this works later.
+这就是在第三章中的那些模块在导入符号到脚本时要做的事情， 但是当时我们没有告诉你整个故事的细节。 这些模块把子例程和变量导入到当前的包（通常，这是你这个脚本的main包）。 换句话说， 这些符号仅存在于那些包中，除非你全名引用。 我们会在后面来详述这套机制是如何工作的。
+
+

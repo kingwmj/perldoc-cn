@@ -1,0 +1,741 @@
+Chapter 18.
+
+
+Advanced Testing The Test::More module provides some simple and general functions, but other Test::* modules provide more specific tests for particular problem domains so that we don't have to write much code to do what we need.
+
+
+If we use it once, we'll probably use it again, anyway.
+
+
+In this chapter, we give you a taste of some of the more popular test modules.
+
+
+Unless we say otherwise, these modules are not part of the Perl standard distribution (unlike Test::More) and you'll need to install them yourself.
+
+
+You might feel a bit cheated by this chapter since we're going to say "See the module documentation" quite a bit, but we're gently nudging you out into the Perl world.
+
+
+For much more detail, you can also check out Perl Testing: A Developer's Notebook, which covers the subject further.
+
+
+18.1.
+
+
+Testing Large Strings We showed in Chapter 17 that when a test fails, Test::More can show us what we expected and what we actually got.
+
+
+#!/usr/bin/perl use Test::More 'no_plan'; is( "Hello Perl", "Hello perl" );
+
+
+When I run this program, Test::More shows me what went wrong.
+
+
+$ perl test.pl not ok 1 # Failed test (test.pl at line 5) # got: 'Hello Perl' # expected: 'Hello perl' 1..1 # Looks like you failed 1 test of 1.
+
+
+What if that string is really long?
+
+
+We don't want to see the whole string, which might be hundreds or thousands of characters long.
+
+
+We just want to see where they start to be different.
+
+
+#!/usr/bin/perl
+
+
+use Test::More 'no_plan'; use Test::LongString;
+
+
+is_string(
+
+
+        "The quick brown fox jumped over the lazy dog\n" x 10,
+
+
+        "The quick brown fox jumped over the lazy dog\n" x 9 .
+        "The quick brown fox jumped over the lazy camel",
+        );
+The error output doesn't have to show us the whole string to tell us where things went wrong.
+It shows us the relevant parts along with the string lengths.
+
+
+Although our example is a bit contrived, imagine doing this with a web page, configuration file, or some other huge chunk of data that we don't want cluttering our testing output.
+
+
+not ok 1 # Failed test in long_string.pl at line 6. # got: ..." the lazy dog\x{0a}"... # length: 450 # expected: ..." the lazy camel"... # length: 451 # strings begin to differ at char 447 1..1 # Looks like you failed 1 test of 1.
+
+
+18.2.
+
+
+Testing Files The code to test things like file existence and file size is simple, but the more code we write, and the more parts each code statement has, the more likely we are not only to mess up, but to miscommunicate our intent to the maintenance programmer.
+
+
+We could test for file existence very easily.
+
+
+We use the -e file test operator in the ok( ) function from Test::More.
+
+
+That works just fine.
+
+
+use Test::More 'no_plan';
+
+
+ok( -e 'minnow.db' );
+
+
+Well, it works just fine if that's what we meant to test, but nothing in that code tells anyone what we meant to do.
+
+
+What if we wanted to ensure the file did not exist before we started testing?
+
+
+The code for that is a difference of one character.
+
+
+ok( ! -e 'minnow.db' );
+
+
+We could add a code comment, but as you probably already know, most code comments seem to assume that you already know what's supposed to happen.
+
+
+Does this comment let you know which of the two situations we want?
+
+
+Should we pass the test if the file is there?
+
+
+# test if the file is there ok( ! -e 'minnow.db' );
+
+
+The Test::File module, written by brian, encapsulates intent in the name of the function.
+
+
+If we want the test to pass when the file is there, we use file_exists_ok.
+
+
+use Test::More 'no_plan'; use Test::File;
+
+
+file_exists_ok( 'minnow.db' );
+
+
+If we want the test to pass when the file is not there, we use file_not_exists_ok.
+
+
+file_not_exists_ok( 'minnow.db' );
+
+
+That's a simple example, but the module has many other functions that follow the same naming scheme: the first part of the name tells you what the function checks (file_exists) and the last part tells you what happens if that's true (_ok).
+
+
+It's a lot harder to miscommunicate the intent when we have to type it out.
+
+
+my $file = 'minnow.db';
+
+
+file_exists_ok( $file ); file_not_empty_ok( $file ); file_readable_ok( $file ); file_min_size_ok( $file, 500 ); file_mode_is( $file, 0775 );
+
+
+So, not only do the explicit function names communicate intent, but they also contribute to parallel structure in the code.
+
+
+18.3.
+
+
+Testing STDOUT or STDERR One advantage to using the ok( ) functions (and friends) is that they don't write to STDOUT directly, but to a filehandle secretly duplicated from STDOUT when our test script begins.
+
+
+If we don't change STDOUT in our program, of course, this is a moot point.
+
+
+But let's say we wanted to test a routine that writes something to STDOUT, such as making sure a horse eats properly:
+
+
+use Test::More 'no_plan'; use_ok 'Horse'; isa_ok(my $trigger = Horse->named('Trigger'), 'Horse');
+
+
+open STDOUT, ">test.out" or die "Could not redirect STDOUT! $!"; $trigger->eat("hay"); close STDOUT;
+
+
+open T, "test.out" or die "Could not read from test.out! $!"; my @contents = <T>; close T; is(join("", @contents), "Trigger eats hay.\n", "Trigger ate properly");
+
+
+END { unlink "test.out" } # clean up after the horses
+
+
+Note that just before we start testing the eat method, we (re)open STDOUT to our temporary output file.
+
+
+The output from this method ends up in the test.out file.
+
+
+We bring the contents of that file in and give it to the is( ) function.
+
+
+Even though we've closed STDOUT, the is( ) function can still access the original STDOUT, and thus the test harness sees the proper ok or not ok messages.
+
+
+If you create temporary files like this, please note that your current directory is the same as the test script (even if you're running make test from the parent directory).
+
+
+Also, pick fairly safe cross-platform names if you want people to be able to use and test your module portably.
+
+
+There is a better way to do this, though.
+
+
+The Test::Output module can handle this for us.
+
+
+This module gives us several functions that automatically take care of all of the details.
+
+
+#!/usr/bin/perl use strict;
+
+
+use Test::More "noplan"; use Test::Output;
+
+
+sub print_hello { print STDOUT "Welcome Aboard!\n" } sub print_error { print STDERR "There's a hole in the ship!\n" }
+
+
+stdout_is( \&print_hello, "Welcome Aboard\n" );
+
+
+stderr_like( \&print_error, qr/ship/ );
+
+
+All of the functions take a code reference as their first argument, but that's not a problem because we told you all about those in Chapter 7.
+
+
+If we don't have a subroutine to test, we wrap the code we want to test in a subroutine and use that.
+
+
+sub test_this { ...
+
+
+        }
+
+
+stdout_is( \&test_this, ... );
+If our code is short enough, we might want to skip the step where we define a named subroutine and use an anonymous one.
+
+
+stdout_is( sub { print "Welcome Aboard" }, "Welcome Aboard" );
+
+
+We can even use an inline block of code, like we did with grep and map.
+
+
+As with those two list operators, notice that we don't have a comma after the inline code block.
+
+
+stdout_is { print "Welcome Aboard" } "Welcome Aboard";
+
+
+Besides Test::Output, we can do something similar with Test::Warn, which specifically tests warning output.
+
+
+Its interface uses the inline block form exclusively.
+
+
+use Test::More "noplan"; use Test::Warn;
+
+
+sub add_letters { "Skipper" + "Gilligan" }
+
+
+warning_like { add_letters( ) }, qr/non-numeric/;
+
+
+We all strive to make our code warning-free, and we can test for that too.
+
+
+Perl warnings can change from version to version, and we want to know when the new warnings pop up, or if Perl will emit warnings on one of our customer's computers.
+
+
+The Test::NoWarnings module is a bit different from the ones we've already shown.
+
+
+It automatically adds a test just by loading the module, and we just have to ensure we add the hidden test to the count we give to Test::More.
+
+
+#!/usr/bin/perl use warnings;
+
+
+use Test::More tests => 1; use Test::NoWarnings;
+
+
+my( $n, $m ); # let's use an uninitialized value my $sum = $n + $m;
+
+
+When we try to compute the sum, we use two variables to which we haven't given values.
+
+
+That triggers the annoying "use of uninitialized value" warning (ensure you have warnings turned on!).
+
+
+We don't want those sorts of things filling up our logfiles, now, do we?
+
+
+Test::NoWarnings tells us when that happens so we can fix it.
+
+
+1..1 not ok 1 - no warnings # Failed test 'no warnings' # in /usr/local/lib/perl5/5.8.7/Test/NoWarnings.pm at line 45. # There were 2 warning(s) # Previous test 0 '' # Use of uninitialized value in addition (+) at nowarnings.pl line 6. # # ---------- # Previous test 0 '' # Use of uninitialized value in addition (+) at nowarnings.pl line 6. # # Looks like you failed 1 test of 1 run.
+
+
+18.4.
+
+
+Using Mock Objects Sometimes we don't want to ramp up the entire system to test only parts of it.
+
+
+We can be fairly certain, or at least assume, that other parts of the system work.
+
+
+We don't need to open expensive database connections or instantiate objects with large memory footprints to test every part of the code.
+
+
+The Test::MockObject module creates "pretend" objects.
+
+
+We give it information about the part of the object's interface we want to use, and it pretends to be that part of the interface.
+
+
+Basically, the pretend method has to return the right thing when we call it, and it doesn't have to do any processing.
+
+
+Instead of creating a real Minnow object, which would mean turning on all sorts of things on the boat, we can create a mock object for it.
+
+
+Once we create the mock object and store it in $Minnow, we tell it how to respond to the methods we need to call.
+
+
+In this case, we tell the mock object to return true for engines_on and to return false for moored_to_dock.
+
+
+We're not really testing the object for the ship, but we want to test our quartermaster object, which takes a ship as an argument.
+
+
+Rather than test the quartermaster with a real ship, we use our mock one.
+
+
+use Test::More 'no_plan'; use Test::MockObject;
+
+
+# my $Minnow = Real::Object::Class->new( ... ); my $Minnow = Test::MockObject->new( );
+
+
+$Minnow->set_true( 'engines_on' ); $Minnow->set_true( 'has_maps' ); $Minnow->set_false( 'moored_to_dock' );
+
+
+ok( $Minnow->engines_on, "Engines are on" ); ok( ! $Minnow->moored_to_dock, "Not moored to the dock" );
+
+
+my $Quartermaster = Island::Plotting->new(
+
+
+        ship => $Minnow,
+
+
+        # ...
+        )
+ok( $Quartermaster->has_maps, "We can find the maps" );
+We can create more complex methods that do anything we like.
+
+
+Suppose, instead of methods that return true or false, we need one that returns a list.
+
+
+Perhaps we need to pretend to connect to a database and retrieve some records.
+
+
+As we're developing, we might try this several times and we'd rather not connect and disconnect from the real database every time we try to track down a bug.
+
+
+In this example, we mock the database method list_names, which we know will return us three names.
+
+
+Since we already know this, and we're actually testing something else (which we don't show you in this contrived example), it doesn't bother us to create the mock method that stands in place of the real database.
+
+
+my $db = Test::MockObject->new( );
+
+
+# $db = DBI->connect( ... ); $db->mock(
+
+
+        list_names => sub { qw( Gilligan Skipper Professor ) }
+
+
+my @names = $db->list_names;
+is( scalar @names, 3, 'Got the right number of results' ); is( $names[0], 'Gilligan', 'The first result is Gilligan' );
+
+
+print "The names are @names\n";
+
+
+18.5.
+
+
+Testing POD We can even test things that aren't code.
+
+
+文档 is just as important as code, since other people can't use our perfect, lovely code unless they know what to do with it.
+
+
+As we mentioned in Chapter 16, the Perl way to document code is by embedding POD formatted text in the code.
+
+
+Tools such as perldoc can extract the POD and display it in a variety of formats.
+
+
+What if we mess up the POD format so that formatters can't parse it as we intended?
+
+
+To solve this problem, brian wrote Test::Pod to go through his modules looking for POD errors.[*] For most things, we can take the entire test code from the Test::Pod documentation.
+
+
+[*] It's now maintained by Andy Lester and is so popular that it's become part of Module::Starter and the Perl综合典藏网 Testers Service's (Perl综合典藏网TS) Kwalitee rating.
+
+
+use Test::More; eval "use Test::Pod 1.00"; plan skip_all => "Test::Pod 1.00 required for testing
+
+
+ POD" if $@; all_pod_files_ok(  );
+
+
+We don't want to require everyone to install the module though, so the suggested test code first checks if we can load the module by using the string form of eval that we told you about in Chapter 2.
+If that fails, eval sets the error variable $@, and once that is set, we tell Test::More to skip the rest of the tests.
+
+
+If we've installed the module, however, we'll get past the skip_all check and run all_pod_files_ok.
+
+
+The module takes care of finding all the POD files, which it then checks for format.
+
+
+If we want to change which files it checks, we can do that too.
+
+
+Without arguments, all_pod_files_ok TRies to find files in the usual places.
+
+
+With arguments, it only tests the files we tell it to test.
+
+
+use Test::More; eval "use Test::Pod 1.00"; plan skip_all => "Test::Pod 1.00 required for testing POD" if $@; all_pod_files_ok( 'lib/Maps.pm' );
+
+
+Testing the POD format isn't all we can do, though.
+
+
+What if we want to ensure that we documented all of our methods?
+
+
+It's Test::Pod::Coverage to the rescue.
+
+
+It goes through our embedded documentation and tells us which subroutine names don't have corresponding entries in the documentation.
+
+
+The example use looks almost the same as that for Test::Pod.[*]
+
+
+[*] That's because Andy Lester wrote both examples.
+
+
+use Test::More; eval "use Test::Pod::Coverage"; plan skip_all =>
+
+
+        "Test::Pod::Coverage required for testing pod coverage" if $@; plan tests => 1; pod_coverage_ok( "Island::Plotting::Maps");
+
+
+Both of these modules can do more than what we've shown you, so check their documentation to get the full story.
+If you use Module::Starter that we talked about in Chapter 16, you'll probably already have these tests in your distribution.
+
+
+18.6.
+
+
+Coverage Testing We can also test our testing.
+
+
+In a perfect world, we'd test our program with every possible input and environment so that our program follows every particular path.
+
+
+That's certainly what the Professor would do.
+
+
+In reality, we tend to be more like Gilligan, though.
+
+
+We won't go too deeply into the theory and practice of coverage tests, but there are many things that we can test.
+
+
+Statement coverage tells us how many of the statements in our code we execute during a run.
+
+
+Branch coverage tells us how many of the decision paths we actually follow.
+
+
+Path coverage, expression coverage, and other sorts of coverage exist too.
+
+
+The best starting point is the Devel::Coverage::Tutorial documentation.
+
+
+The module comes with a program named cover, which handles most of the things that we need to do.
+
+
+For any particular program we want to measure, we simply load the Devel::Cover module when we run it.
+
+
+$ perl -MDevel::Cover yourprog args $ cover
+
+
+After we finish running the program, Devel::Cover leaves behind a file with all of the information it collected.
+
+
+Running the cover command turns that information into a set of HTML pages.
+
+
+When we look at the coverage.html page, we see a summary of our project along with its coverage statistics.
+
+
+The links on that page drill down into the individual files to see their coverage statistics too.
+
+
+If we want to test a distribution, we just do this at the same time that we run our test suite.
+
+
+First, we get rid of any previous coverage results by passing cover the -delete option.
+
+
+After that, we have to run our make test and get Devel::Cover to do its magic at the same time.
+
+
+We can set the testing harness switches with the HARNESS_PERL_SWITCHES environment variable, in which we put the -MDevel::Cover we used on the command line previously.
+
+
+Now every time the test harness wants to invoke Perl (which is for every test file), it also loads Devel::Cover.
+
+
+As that script runs, it adds to the coverage database (which is why we deleted the database before we started).
+
+
+Finally, once we've finished going through the tests, we call cover again to turn the results into something we can read.
+
+
+$ cover -delete $ HARNESS_PERL_SWITCHES=-MDevel::Cover make test $ cover
+
+
+Everything shows up in a directory named cover_db in the current working directory.
+
+
+The coverage database shows up in cover_db, and the top-level page shows up in cover_db/coverage.html.
+
+
+18.7.
+
+
+Writing Your Own Test::* Modules You don't have to wait for other people to write cool test modules.
+
+
+If you have a particular testing situation that you'd like to wrap up in a test function, you can write your own Test::* module using the Test::Builder module, which handles all of the tricky integration with Test::Harness and Test::More.
+
+
+If you look behind the scenes of many of the Test::* modules, you'll find Test::Builder.
+
+
+Again, the advantage to test functions is that they wrap reusable code in a function name.
+
+
+To test something, you use the function name rather than typing out a bunch of separate statements.
+
+
+It's easy for people to understand what you meant to test based on a single function name, but that gets harder as you write out several statements to do the same thing.
+
+
+In Chapter 4, we wrote some code to check that the castaways had all of their required items.
+
+
+Let's turn that into a Test::* module.
+
+
+Here's the check_required_items subroutine as we left it:
+
+
+sub check_required_items {
+
+
+  my $who   = shift;
+
+
+  my $items = shift;
+  my @required = qw(preserver sunscreen water_bottle jacket);
+  my @missing = (  );
+  for my $item (@required) {
+    unless (grep $item eq $_, @$items) { # not found in list?
+      print "$who is missing $item.\n";
+      push @missing, $item;
+    }
+  }
+  if (@missing) {
+    print "Adding @missing to @$items for $who.\n";
+    push @$items, @missing;
+  } }
+We need to turn this into a Test::* module that simply checks the items (so it doesn't add the missing ones) and then outputs the right thing.
+The basics for any new testing module are the same.
+
+
+We call our new module Test::Minnow::RequiredItems and start with this stub:
+
+
+package Test::Minnow::RequiredItems; use strict;
+
+
+use base qw(Exporter); use vars qw(@EXPORT $VERSION);
+
+
+use Test::Builder;
+
+
+my $Test = Test::Builder->new( );
+
+
+$VERSION = '0.10'; @EXPORT = qw(check_required_items_ok);
+
+
+sub check_required_items_ok {
+
+
+        # ....
+
+
+1;
+We start by declaring the package, then turning on strictures because we want to be good programmers (even if this three-hour tour is ultimately doomed, it won't be from one of our software errors).
+
+
+We pull in the Exporter module and add required_items_ok to @EXPORT, since we want that function to show in the calling namespace, just as we discussed in Chapter 15.
+
+
+We set $VERSION just like we discussed in Chapter 16.
+
+
+The only stuff we haven't shown you is Test::Builder.
+
+
+At the beginning of our test module, we create a new Test::Builder object that we assign to the lexical variable $Test, which is scoped to the entire file.[*]
+
+
+[*] It's almost like a global variable, except it doesn't live in a package and can't be seen outside its file.
+
+
+The $Test object is going to handle all of the testing details for us.
+
+
+We remove all of the output parts from check_required_items, and we take out the parts to modify the input list.
+
+
+Once we go through the other logic, the only thing we need to do at the end is tell the test harness if the test is ok or not_ok.
+
+
+  ...
+
+
+  else {
+Now we have to add the parts to turn our function into a testing one.
+We call methods on $Test to tell the test harness what happened.
+
+
+In each case, the last evaluated expression should be a call to $Test->ok( ), so that becomes the return value of the entire function.[*] If we discovered missing items, we want the test to fail, so we pass a false value to $Test->ok( ), but before we do that we use $Test->diag( ) with a message to tell us what went wrong.
+
+
+[*] We often don't use the return value since most people call most test functions in a void context, but we might as well return something that makes sense.
+
+
+    $Test->diag( "$who needs @missing.\n" );
+
+
+    $Test->ok(0);
+    $Test->ok(1);
+    } }
+That's it.
+Although there are more things that we can do, there isn't more that we have to do.
+
+
+Once we save our Test::Minnow::RequiredItems, we can use it immediately in a test script.
+
+
+We still use Test::More to set the plan.[*]
+
+
+[*] We could do that from our module, but most likely the test script will use other modules too.
+
+
+Only one of them can set the plan, so we let Test::More handle that.
+
+
+use Test::More 'no_plan'; use Test::Minnow::RequiredItems;
+
+
+my @gilligan = (
+
+
+        Gilligan => [ qw(red_shirt hat lucky_socks water_bottle) ]
+
+
+check_required_items_ok( @gilligan );
+Since Gilligan doesn't have all of his required items, the test fails.
+
+
+It prints the not_ok along with the diagnostic message.
+
+
+not ok 1 1..1 # Gilligan needs preserver sunscreen jacket. # Failed test (/Users/Ginger/Desktop/package_test.pl at line 49) # Looks like you failed 1 test of 1.
+
+
+And, now that we've created the Test::Minnow::RequiredItems module, how we do we test the test?
+
+
+We can use the Test::Builder::Tester module.
+
+
+You'll have to investigate that one yourself, though.
+
+
+18.8.
+
+
+Exercises You can find the answers to these exercises in "Answers for Chapter 18" in the Appendix.
+
+
+18.8.1.
+
+
+Exercise 1 [20 min] Document the My::List::Util module you created in the exercise for Chapter 17.
+
+
+Add a test for the POD documentation using Test::Pod.
+
+
+18.8.2.
+
+
+Exercise 2 [20 min] Write your own test module, Test::My::List::Util, that has a single test function, sum_ok, which takes two arguments: the actual sum and the expected sum.
+
+
+Print a diagnostic message if the two do not match.
+
+
+my $sum = sum( 2, 2 ); sum_ok( $sum, 4 );
+
+

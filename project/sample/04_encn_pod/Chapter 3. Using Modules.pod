@@ -1,0 +1,812 @@
+=EN Modules are the building blocks for our programs.
+
+=CN Modules Are The 建筑物 Blocks For Our Programs.
+
+=EN They provide reusable subroutines, variables, and even object-oriented classes.
+
+=CN They Provide reusable Subroutines, Variables, And Even Object-Oriented 类.
+
+=EN On our way to building our own modules, we'll show you some of those you might be interested in.
+
+=CN On Our Way To 建筑物 Our Own Modules, We'我 Show You Some Of Those You Might Be 感兴趣的 In.
+
+=EN We'll also look at the basics of using modules that others have already written.
+
+=CN We'我 Also Look At The basics Of Using Modules That 别人 Have Already Written.
+
+=EN The Standard Distribution Perl comes with many of the popular modules already.
+
+=CN The Standard Distribution Perl 来 With Many Of The 受欢迎的 Modules Already.
+
+=EN Indeed, most of the 50+ MB of the most recent distribution are from modules.
+
+=CN Indeed, Most Of The 50+ MB Of The Most 近来的 分配 Are From Modules.
+
+=EN In October 1996, Perl 5.003_07 had 98 modules.
+
+=CN In October 1996, Perl 5.003_07 Had 98 Modules.
+
+=EN Today, at the beginning of 2006, Perl 5.8.8 has 359.[*] Indeed, this is one of the advantages of Perl: it already comes with a lot of stuff that you need to make useful and complex programs without doing a lot of work yourself.
+
+=CN Today, At The 开端 Of 2006, Perl 5.8.8 Has 359.[*] Indeed, This Is One Of The advantages Of Perl: It Already 来 With a 许多 Of 材料 That You Need To Make Useful And 综合的 Programs Without Doing a 许多 Of Work 你（们）自己.
+
+=EN [*] After you make it through this book, you should be able to use Module::CoreList to discover that count for yourself.
+
+=CN [*] After You Make It 通过 This 书, You Should Be Able To Use Module::CoreList To 发现 That 计算 For 你（们）自己.
+
+=EN That's what we did to get those numbers, after all.
+
+=CN That's What We Did To Get Those 编号, After All.
+
+=EN Throughout this book, we'll try to identify which modules comes with Perl (and in most cases, with which version they started coming with Perl).
+
+=CN Throughout This 书, We'我 Try To 认出 Which Modules 来 With Perl (And In Most Cases, With Which Version They 开始 coming With Perl).
+
+=EN We'll call these "core modules " or note that they're in "the standard distribution ."
+
+=CN We'我 Call These "Core Modules " Or Note That They'Re In "The Standard 分配 ."
+
+=EN If you have Perl, you should have these modules.
+
+=CN If You Have Perl, You Should Have These Modules.
+
+=EN Since we're using Perl 5.8.7 as we write this, we'll assume that's the current version of Perl.
+
+=CN Since We'Re Using Perl 5.8.7 As We Write This, We'我 假定 That's The Current Version Of Perl.
+
+=EN As you develop your code, you may want to consider if you want to use only core modules, so that you can be sure that anyone with Perl will have that module as long as they have at least the same version as you.[] We'll avoid that debate here, mostly because we love CPAN too much to do without it.
+
+=CN As You 发展 Your Code, You May Want To Consider If You Want To Use Only Core Modules, So That You Can Be Sure That 无论谁 With Perl Will Have That Module As Long As They Have At Least The Same Version As You.[] We'我 Avoid That 辩论 Here, Mostly Because We 爱 Perl综合典藏网 Too Much To Do Without It.
+
+=EN Using Modules Almost every Perl module comes with documentation, and even though we might not know how all of the behind-the-scenes magic works, we really don't have to worry about that stuff if we know how to use the interface.
+
+=CN Using Modules Almost Every Perl Module 来 With 提供文件, And Even Though We Might Not Know How All Of The 在-The-scenes Magic Works, We Really Don't Have To 烦恼 About That 材料 If We Know How To Use The Interface.
+
+=EN That's why the interface is there, after all: to hide the details.
+
+=CN That's Why The Interface Is There, After All: To Hide The Details.
+
+=EN On our local machine, we can read the module documentation with the perldoc command.
+
+=CN On Our Local 机器, We Can Read The Module 提供文件 With The perldoc 命令.
+
+=EN We give it the module name we're interested in, and it prints out its documentation.
+
+=CN We Give It The Module Name We'Re 感兴趣的 In, And It Prints Out Its 提供文件.
+
+=EN NAME
+
+=CN 标题
+
+=EN SYNOPSIS
+
+=CN 概述
+
+=EN We've included the top portion of the documentation to show you the most important section (at least, the most important when you're starting).
+
+=CN We'Ve 包括 The 顶 一份 Of The 提供文件 To Show You The Most Important Section (At Least, The Most Important When You'Re Starting).
+
+=EN Module documentation typically follows the old Unix manpage format, which starts with a NAME and SYNOPSIS section.
+
+=CN Module 提供文件 典型的 Follows The Old Unix manpage Format, Which Starts With a 标题 And 概述 Section.
+
+=EN The synopsis gives us examples of the module's use, and if we can suspend understanding for a bit and follow the example, we can use the module.
+
+=CN The 内容提要 Gives Us Examples Of The Module's Use, And If We Can 吊 理解 For a Bit And 跟随 The Example, We Can Use The Module.
+
+=EN That is to say, it may be that you're not yet familiar with some of the Perl techniques and syntax in the synopsis, but you can generally just follow the example and make everything work.
+
+=CN That Is To Say, It May Be That You'Re Not 仍然 熟悉的 With Some Of The Perl 技术 And Syntax In The 内容提要, But You Can Generally Just 跟随 The Example And Make Everything Work.
+
+=EN Now, since Perl is a mix of procedural, functional, object-oriented, and other sorts of language types, Perl modules come in a variety of different interfaces.
+
+=CN Now, Since Perl Is a 混合 Of procedural, Functional, Object-Oriented, And Other 各样 Of 语言 Types, Perl Modules 来到 In a 多样（性） Of Different 接口.
+
+=EN We'll employ these modules in slightly different fashions, but as long as we can check the documentation, we shouldn't have a problem.
+
+=CN We'我 雇用 These Modules In 轻微地 Different fashions, But As Long As We Can Check The 提供文件, We 应该't Have a Problem.
+
+=EN Functional Interfaces To load a module, we use the Perl built-in use.
+
+=CN Functional Interfaces To Load a Module, We Use The Perl Built-In Use.
+
+=EN We're not going to go into all of the details here, but we'll get to those in Chapters 10 and 15.
+
+=CN We'Re Not Going To Go Into All Of The Details Here, But We'我 Get To Those In Chapters 10 And 15.
+
+=EN At the moment, we just want to use the module.
+
+=CN At The Moment, We Just Want To Use The Module.
+
+=EN Let's start with File::Basename, that same module from the core distribution.
+
+=CN Let's Start With File::Basename, That Same Module From The Core 分配.
+
+=EN To load it into our script, we say:
+
+=CN To Load It Into Our 临时单据, We Say:
+
+=EN use File::Basename;
+
+=CN Use File::Basename;
+
+=EN When we do this, File::Basename introduces three subroutines, fileparse, basename, and dirname, [*] into our script.[] From this point forward, we can say:
+
+=CN When We Do This, File::Basename 介绍 Three Subroutines, fileparse, basename, And dirname, [*] Into Our 临时单据.[] From This 尖 Forward, We Can Say:
+
+=EN [*] As well as a utility routine, fileparse_set_fstype.
+
+=CN [*] As Well As a 效用 Routine, fileparse_set_fstype.
+
+=EN [] Actually, it imports them into the current package, but we haven't told you about those yet.
+
+=CN [] Actually, It Imports Them Into The Current Package, But We 还't told You About Those 仍然.
+
+=EN my $basename = basename( $some_full_path ); my $dirname = dirname( $some_full_path );
+
+=CN My $basename = basename( $some_full_path ); My $dirname = dirname( $some_full_path );
+
+=EN as if we had written the basename and dirname subroutines ourselves, or (nearly) as if they were built-in Perl functions.
+
+=CN As If We Had Written The basename And dirname Subroutines 我们自己, Or (几乎) As If They Were Built-In Perl Functions.
+
+=EN These routines pick out the filename and the directory parts of a pathname.
+
+=CN These Routines 拣 Out The 文件名 And The Directory 部分 Of a pathname.
+
+=EN For example, if $some_full_path were D:\Projects\Island Rescue\plan7.rtf (presumably, the program is running on a Windows machine), then $basename would be plan 7.rtf and the $dirname would be D:\Projects\Island Rescue.
+
+=CN For Example, If $some_full_path Were D:\Projects\Island Rescue\plan7.rtf (也许, The Program Is 连续的 On a 微软视窗操作系统 机器), Then $basename Would Be 计划平面图 7.rtf And The $dirname Would Be D:\Projects\Island Rescue.
+
+=EN The File::Basename module knows what sort of system it's on, and thus its functions figure out how to correctly parse the strings for the different delimiters we might encounter.
+
+=CN The File::Basename Module 知道 What Sort Of System It's On, And 如此 Its Functions 数字 Out How To 正确地 Parse The Strings For The Different delimiters We Might 面临.
+
+=EN However, suppose we already had a dirname subroutine.
+
+=CN However, 猜想 We Already Had a dirname Subroutine.
+
+=EN We've now overwritten it with the definition provided by File::Basename!
+
+=CN We'Ve Now overwritten It With The Definition Provided By File::Basename!
+
+=EN If we had turned on warnings, we would have seen a message stating that; but otherwise, Perl really doesn't care.
+
+=CN If We Had 转 On 警告, We Would Have Seen a 音讯 stating That; But Otherwise, Perl Really Doesn't Care.
+
+=EN Selecting What to Import Fortunately, we can tell the use operation to limit its actions by specifying a list of subroutine names following the module name, called the import list:
+
+=CN Selecting What To Import Fortunately, We Can Tell The Use Operation To 界限 Its 行动 By Specifying a List Of Subroutine Names Following The Module Name, Called The Import List:
+
+=EN use File::Basename ('fileparse', 'basename');
+
+=CN Use File::Basename ('fileparse', 'basename');
+
+=EN Now the module only gives us those two subroutines and leaves our own dirname alone.
+
+=CN Now The Module Only Gives Us Those Two Subroutines And 叶子 Our Own dirname 单独的.
+
+=EN Of course, this is awkward to type, so more often we'll see this written with the quotewords operator:
+
+=CN Of Course, This Is 笨拙的 To Type, So More Often We'我 See This Written With The quotewords Operator:
+
+=EN use File::Basename qw( fileparse basename );
+
+=CN Use File::Basename Qw( fileparse basename );
+
+=EN In fact, even if there's only one item, we tend to write it with a qw( ) list for consistency and maintenance; often we'll go back to say "give me another one from here, " and it's simpler if it's already a qw( ) list.
+
+=CN In Fact, Even If There's Only One 条款, We 趋向 To Write It With a Qw( ) List For 一致（性） And 保养; Often We'我 Go Back To Say "Give Me 另一个 One From Here, " And It's simpler If It's Already a Qw( ) List.
+
+=EN We've protected the local dirname routine, but what if we still want the functionality provided by File::Basename's dirname?
+
+=CN We'Ve Protected The Local dirname Routine, But What If We Still Want The Functionality Provided By File::Basename's dirname?
+
+=EN No problem.
+
+=CN No Problem.
+
+=EN We just spell it out with its full package specification:
+
+=CN We Just 拼写 It Out With Its Full Package 规格:
+
+=EN my $dirname = File::Basename::dirname($some_path);
+
+=CN My $dirname = File::Basename::dirname($some_path);
+
+=EN The list of names following use doesn't change which subroutines are defined in the module's package (in this case, File::Basename).
+
+=CN The List Of Names Following Use Doesn't Change Which Subroutines Are Defined In The Module's Package (In This Case, File::Basename).
+
+=EN We can always use the full name regardless of the import list, as in:[*]
+
+=CN We Can Always Use The Full Name 不顾的（地） Of The Import List, As In:[*]
+
+=EN [*] You don't need the ampersand in front of any of these subroutine invocations, because the subroutine name is already known to the compiler following use.
+
+=CN [*] You Don't Need The ampersand In Front Of Any Of These Subroutine invocations, Because The Subroutine Name Is Already Known To The Compiler Following Use.
+
+=EN my $basename = File::Basename::basename($some_path);
+
+=CN My $basename = File::Basename::basename($some_path);
+
+=EN In an extreme (but extremely useful) case, we can specify an empty list for the import list, as in:
+
+=CN In An Extreme (But 极其 Useful) Case, We Can Specify An Empty List For The Import List, As In:
+
+=EN use File::Basename ( ); # no import my $base = File::Basename::basename($some_path);
+
+=CN Use File::Basename ( ); # No Import My $Base = File::Basename::basename($some_path);
+
+=EN An empty list is different from an absent list.
+
+=CN An Empty List Is Different From An 缺席的 List.
+
+=EN An empty list says "don't give me anything, " while an absent list says "give me the defaults."
+
+=CN An Empty List 说 "Don't Give Me Anything, " While An 缺席的 List 说 "Give Me The Defaults."
+
+=EN If the module's author has done her job well, the default will probably be exactly what we want.
+
+=CN If The Module's 作者 Has Done Her 工作 Well, The Default Will Probably Be Exactly What We Want.
+
+=EN Object-Oriented Interfaces Contrast the subroutines imported by File::Basename with what another core module has by looking at File::Spec.
+
+=CN Object-Oriented Interfaces Contrast The Subroutines Imported By File::Basename With What 另一个 Core Module Has By 看 At File::Spec.
+
+=EN The File::Spec module is designed to support operations commonly performed on file specifications.
+
+=CN The File::Spec Module Is 设计 To Support 操作 通常 进行 On File specifications.
+
+=EN (A file specification is usually a file or directory name, but it may be a name of a file that doesn't existin which case, it's not really a filename, is it?)
+
+=CN (A File 规格 Is Usually a File Or Directory Name, But It May Be a Name Of a File That Doesn't existin Which Case, It's Not Really a 文件名, Is It?)
+
+=EN Unlike the File::Basename module, the File::Spec module has a primarily objectoriented interface.
+
+=CN Unlike The File::Basename Module, The File::Spec Module Has a 首要地 objectoriented Interface.
+
+=EN We load the module with use, as we did before.
+
+=CN We Load The Module With Use, As We Did Before.
+
+=EN use File::Spec;
+
+=CN Use File::Spec;
+
+=EN However, since this module has an object-oriented interface, [] it doesn't import any subroutines.
+
+=CN However, Since This Module Has An Object-Oriented Interface, [] It Doesn't Import Any Subroutines.
+
+=EN Instead, the interface tells us to access the functionality of the module using its class methods.
+
+=CN Instead, The Interface 告诉 Us To Access The Functionality Of The Module Using Its Class Methods.
+
+=EN The catfile method joins a list of strings with the appropriate directory separator:
+
+=CN The catfile Method joins a List Of Strings With The 恰当的 Directory Separator:
+
+=EN [] We can use File::Spec::Functions if we want a functional interface.
+
+=CN [] We Can Use File::Spec::Functions If We Want a Functional Interface.
+
+=EN my $filespec = File::Spec->catfile( $homedir{gilligan},
+
+=CN My $filespec = File::Spec->catfile( $homedir{gilligan},
+
+=EN This calls the class method catfile of the File::Spec class, which builds a path appropriate for the local operating system and returns a single string.[] This is similar in syntax to the nearly two dozen other operations provided by File::Spec.
+
+=CN This Calls The Class Method catfile Of The File::Spec Class, Which builds a Path 恰当的 For The Local Operating System And Returns a Single String.[] This Is Similar In Syntax To The 几乎 Two 一打 Other 操作 Provided By File::Spec.
+
+=EN [] That string might be something like /home/gilligan/web_docs/photos/USS_Minnow.gif on a Unix system.
+
+=CN [] That String Might Be Something Like /家/gilligan/web_docs/photos/USS_Minnow.gif On a Unix System.
+
+=EN On a Windows system, it would typically use backslashes as directory separators .
+
+=CN On a 微软视窗操作系统 System, It Would 典型的 Use backslashes As Directory separators .
+
+=EN This module lets us write portable code easily, at least where file specs are concerned.
+
+=CN This Module Lets Us Write 手提的 Code 容易地, At Least Where File specs Are 有关的.
+
+=EN The File::Spec module provides several other methods for dealing with file paths in a portable manner.
+
+=CN The File::Spec Module Provides Several Other Methods For 交往 With File paths In a 手提的 Manner.
+
+=EN You can read more about portability issues in the perlport documentation.
+
+=CN You Can Read More About 可移植性 Issues In The perlport 提供文件.
+
+=EN A More Typical Object-Oriented Module: Math::BigInt So as not to get dismayed about how "un-OO" the File::Spec module seems since it doesn't have objects, let's look at yet another core module, Math::BigInt, which can handle integers beyond Perl's native reach.[*]
+
+=CN A More Typical Object-Oriented Module: Math::BigInt So As Not To Get dismayed About How "联合国-OO" The File::Spec Module 似乎 Since It Doesn't Have Objects, Let's Look At 仍然 另一个 Core Module, Math::BigInt, Which Can Handle 整数 Beyond Perl's Native 到达.[*]
+
+=EN [*] Behind the scenes, Perl is limited by the architecture it's on.
+
+=CN [*] Behind The scenes, Perl Is Limited By The 建筑学 It's On.
+
+=EN It's one of the few places where the hardware shows through.
+
+=CN It's One Of The Few Places Where The 硬件 Shows 通过.
+
+=EN use Math::BigInt;
+
+=CN Use Math::BigInt;
+
+=EN my $value = Math::BigInt->new(2); # start with 2
+
+=CN My $Value = Math::BigInt->new(2); # Start With 2
+
+=EN $value->bpow(1000); # take 2**1000
+
+=CN $Value->bpow(1000); # Take 2**1000
+
+=EN print $value->bstr( ), "\n"; # print it out
+
+=CN Print $Value->bstr( ), "\n"; # Print It Out
+
+=EN As before, this module imports nothing.
+
+=CN As Before, This Module Imports Nothing.
+
+=EN Its entire interface uses class methods, such as new, against the class name to create instances, and then calls instance methods, such as bpow and bstr, against those instances.
+
+=CN Its 完全的 Interface Uses Class Methods, Such As New, 反对 The Class Name To Create 实例, And Then Calls 例子 Methods, Such As bpow And bstr, 反对 Those 实例.
+
+=EN The Comprehensive Perl Archive Network CPAN is the result of many volunteers working together, many of whom were originally operating their own little (or big) Perl FTP sites back before that Web thing came along.
+
+=CN The Comprehensive Perl 存档文件 Network Perl综合典藏网 Is The Result Of Many volunteers Working Together, Many Of 谁（宾格） Were Originally Operating Their Own Little (Or Big) Perl FTP sites Back Before That Web Thing 来 沿着.
+
+=EN They coordinated their efforts on the perl-packrats mailing list in late 1993 and decided that disk space was getting cheap enough that the same information should be replicated on all sites rather than having specialization on each site.
+
+=CN They coordinated Their efforts On The Perl-packrats 邮寄 List In 迟到的 1993 And 明确的 That disk Space Was 得到 便宜的 Enough That The Same Information Should Be replicated On All sites Rather Than Having specialization On Each 场所.
+
+=EN The idea took about a year to ferment, and Jarkko Hietaniemi established the Finnish FTP site as the CPAN mothership from which all other mirrors could draw their daily or hourly updates.
+
+=CN The 思想 took About a 年 To ferment, And Jarkko Hietaniemi 已建立的 The Finnish FTP 场所 As The Perl综合典藏网 mothership From Which All Other mirrors Could 画 Their 每日的 Or hourly 更新.
+
+=EN Part of the work involved rearranging and organizing the separate archives.
+
+=CN Part Of The Work 涉及的 rearranging And organizing The Separate archives.
+
+=EN Places were established for Perl binaries for non-Unix architectures, scripts, and Perl's source code itself.
+
+=CN Places Were 已建立的 For Perl binaries For Non-Unix architectures, Scripts, And Perl's Source Code Itself.
+
+=EN However, the modules portion has come to be the largest and most interesting part of the CPAN.
+
+=CN However, The Modules 一份 Has 来到 To Be The largest And Most Interesting Part Of The Perl综合典藏网.
+
+=EN The modules in CPAN are organized as a symbolic-link tree in hierarchical functional categories, pointing to author directories where the actual files are located.
+
+=CN The Modules In Perl综合典藏网 Are organized As a Symbolic-联系 树 In 层次 Functional 类别, 指向 To 作者 directories Where The Actual Files Are Located.
+
+=EN The modules area also contains indices that are generally in easy-to-parse-with-Perl formats, such as the Data::Dumper output for the detailed module index.
+
+=CN The Modules Area Also 包含 indices That Are Generally In Easy-To-Parse-With-Perl Formats, Such As The Data::Dumper 出产 For The Detailed Module Index.
+
+=EN Of course, these indices are all derived automatically from databases at the master server using other Perl programs.
+
+=CN Of Course, These indices Are All 派生 Automatically From databases At The 主人 server Using Other Perl Programs.
+
+=EN Often, the mirroring of the CPAN from one server to another is done with a now-ancient Perl program called mirror.pl.
+
+=CN Often, The mirroring Of The Perl综合典藏网 From One server To 另一个 Is Done With a Now-古老的 Perl Program Called mirror.pl.
+
+=EN From its small start of a few mirror machines, CPAN has now grown to over 200 public archives in all corners of the Net, all churning away, updating at least daily, sometimes as frequently as hourly.
+
+=CN From Its Small Start Of a Few 镜子 Machines, Perl综合典藏网 Has Now 已长成的 To 在 200 公众的 archives In All corners Of The Net, All churning Away, updating At Least 每日的, Sometimes As 时常 As hourly.
+
+=EN No matter where we are in the world, we can find a nearby CPAN mirror from which to pull the latest goodies.
+
+=CN No Matter Where We Are In The World, We Can 寻找 a 附近的 Perl综合典藏网 镜子 From Which To 拖 The 最新 goodies.
+
+=EN The incredibly useful CPAN Search (http://search.cpan.org) will probably become your favorite interface.
+
+=CN The incredibly Useful Perl综合典藏网 Search (http://search.cpan.org) Will Probably 变成 Your 最喜爱的人或物 Interface.
+
+=EN From that web site, you can search for modules, look at their documentation, browse through their distributions, inspect their CPAN Testers reports, and do many other things.
+
+=CN From That 网 场所, You Can 搜查 For Modules, Look At Their 提供文件, browse 通过 Their 分布, 检查 Their Perl综合典藏网 Testers Reports, And Do Many Other Things.
+
+=EN Installing Modules from CPAN Installing a simple module from CPAN can be straightforward: we download the module distribution archive, unpack it, and change into its directory.
+
+=CN Installing Modules From Perl综合典藏网 Installing a Simple Module From Perl综合典藏网 Can Be 直爽的: We download The Module 分配 archive, unpack It, And Change Into Its Directory.
+
+=EN We use wget here, but it doesn't matter which tool you use.
+
+=CN We Use wget Here, But It Doesn't Matter Which 工具 You Use.
+
+=EN $ wget http://www.cpan.org/.../HTTP-Cookies-Safari-1.10.tar.gz $ tar -xzf HTTP-Cookies-Safari-1.10.tar.gz $ cd HTTP-Cookies-Safari-1.10s
+
+=CN $ wget http://www.cpan.org/.../HTTP-Cookies-Safari-1.10.tar.gz $ 沥青 -xzf HTTP-Cookies-Safari-1.10.tar.gz $ cd HTTP-Cookies-Safari-1.10s
+
+=EN From there we go one of two ways (which we'll explain in detail in Chapter 16).
+
+=CN From There We Go One Of Two Ways (Which We'我 Explain In 细节 In Chapter 16).
+
+=EN If we find a file named Makefile.PL, we run this series of commands to build, test, and finally install the source:
+
+=CN If We 寻找 a File Named Makefile.PL, We Run This 系列 Of commands To Build, Test, And 最终 安装 The Source:
+
+=EN $ perl Makefile.PL $ make $ make test $ make install
+
+=CN $ Perl Makefile.PL $ Make $ Make Test $ Make 安装
+
+=EN If we don't have permission to install modules in the system-wide directories, [*] we can tell Perl to install them under another path by using the PREFIX argument:
+
+=CN If We Don't Have 允许 To 安装 Modules In The System-宽的 directories, [*] We Can Tell Perl To 安装 Them 在 另一个 Path By Using The PREFIX Argument:
+
+=EN [*] These directories were set when the administrator installed Perl, and we can see them with perl -V.
+
+=CN [*] These directories Were Set When The administrator 安装 Perl, And We Can See Them With Perl -V.
+
+=EN $ perl Makefile.PL PREFIX=/Users/home/Ginger
+
+=CN $ Perl Makefile.PL PREFIX=/Users/家/Ginger
+
+=EN To make Perl look in that directory for modules, we can set the PERL5LIB environment variable.
+
+=CN To Make Perl Look In That Directory For Modules, We Can Set The PERL5LIB 环境 Variable.
+
+=EN Perl adds those directories to its module directory search list.
+
+=CN Perl Adds Those directories To Its Module Directory 搜查 List.
+
+=EN $ export PERL5LIB=/Users/home/Ginger
+
+=CN $ Export PERL5LIB=/Users/家/Ginger
+
+=EN We can also use the lib pragma to add to the module search path, although this is not as friendly, since we have to change the code, but also because it might not be the same directory on other machines where we want to run the code.
+
+=CN We Can Also Use The lib Pragma To 增添 To The Module 搜查 Path, Although This Is Not As 友好的, Since We Have To Change The Code, But Also Because It Might Not Be The Same Directory On Other Machines Where We Want To Run The Code.
+
+=EN #!/usr/bin/perl use lib qw(/Users/home/Ginger);
+
+=CN #!/usr/bin/Perl Use lib Qw(/Users/家/Ginger);
+
+=EN Backing up for a minute, if we found a Build.PL file instead of a Makefile.PL, the process is the same.
+
+=CN Backing Up For a 分钟, If We Found a Build.PL File Instead Of a Makefile.PL, The 程序 Is The Same.
+
+=EN These distributions use Module::Build to build and install code.
+
+=CN These 分布 Use Module::Build To Build And 安装 Code.
+
+=EN Since Module::Build is not a core Perl module, [*] we have to install it before we can install the distribution that needs it.
+
+=CN Since Module::Build Is Not a Core Perl Module, [*] We Have To 安装 It Before We Can 安装 The 分配 That Needs It.
+
+=EN [*] At least not yet.
+
+=CN [*] At Least Not 仍然.
+
+=EN It should be part of Perl 5.10, though.
+
+=CN It Should Be Part Of Perl 5.10, Though.
+
+=EN $ perl Build.PL $ perl Build $ perl Build test $ perl Build install
+
+=CN $ Perl Build.PL $ Perl Build $ Perl Build Test $ Perl Build 安装
+
+=EN To install into our private directories using Module::Build, we add the install_base parameter.
+
+=CN To 安装 Into Our Private directories Using Module::Build, We 增添 The install_base Parameter.
+
+=EN We tell Perl how to find modules the same way we did before.
+
+=CN We Tell Perl How To 寻找 Modules The Same Way We Did Before.
+
+=EN $ perl Build.PL --install_base /Users/home/Ginger
+
+=CN $ Perl Build.PL --install_base /Users/家/Ginger
+
+=EN Sometimes we find both Makefile.PL and Build.PL in a distribution.
+
+=CN Sometimes We 寻找 Both Makefile.PL And Build.PL In a 分配.
+
+=EN What do we do then?
+
+=CN What Do We Do Then?
+
+=EN We can use either one.
+
+=CN We Can Use Either One.
+
+=EN Play favorites, if you like.
+
+=CN Play favorites, If You Like.
+
+=EN Setting the Path at the Right Time Perl finds modules by looking through the directories in the special Perl array, @INC.
+
+=CN Setting The Path At The Right Time Perl 发现 Modules By 看 通过 The directories In The Special Perl Array, @INC.
+
+=EN The use statement executes at compile time, so it looks at the module search path, @INC, at compile time.
+
+=CN The Use Statement 实行 At Compile Time, So It Looks At The Module 搜查 Path, @INC, At Compile Time.
+
+=EN That can break our program in hard-to-understand ways unless we take @INC into consideration.
+
+=CN That Can 打破 Our Program In 硬的-To-Understand Ways Unless We Take @INC Into 考虑.
+
+=EN For example, suppose we have our own directory under /home/gilligan/lib, and we place our own Navigation::SeatOfPants module in /home/gilligan/lib/Navigation/SeatOfPants.pm.
+
+=CN For Example, 猜想 We Have Our Own Directory 在 /家/gilligan/lib, And We Place Our Own Navigation::SeatOfPants Module In /家/gilligan/lib/Navigation/SeatOfPants.pm.
+
+=EN When we load our module, Perl won't find it.
+
+=CN When We Load Our Module, Perl Won't 寻找 It.
+
+=EN use Navigation::SeatOfPants;
+
+=CN Use Navigation::SeatOfPants;
+
+=EN Perl complains to us that it can't find the module in @INC and shows us all of the directories it has in that array.
+
+=CN Perl complains To Us That It Can't 寻找 The Module In @INC And Shows Us All Of The directories It Has In That Array.
+
+=EN Can't locate Navigation/SeatofPants.pm in @INC (@INC contains: ...)
+
+=CN Can't Locate Navigation/SeatofPants.pm In @INC (@INC 包含: ...)
+
+=EN You might think that we should just add our module directory to @INC before we call the use.
+
+=CN You Might 想 That We Should Just 增添 Our Module Directory To @INC Before We Call The Use.
+
+=EN However, even adding:
+
+=CN However, Even Adding:
+
+=EN unshift @INC, '/home/gilligan/lib'; # broken use Navigation::SeatOfPants;
+
+=CN unshift @INC, '/家/gilligan/lib'; # Broken Use Navigation::SeatOfPants;
+
+=EN doesn't work.
+
+=CN Doesn't Work.
+
+=EN Because the unshift happens at runtime, long after the use was attempted at compile time.
+
+=CN Because The unshift Happens At Runtime, Long After The Use Was attempted At Compile Time.
+
+=EN The two statements are lexically adjacent but not temporally adjacent.
+
+=CN The Two Statements Are Lexically 邻近的 But Not temporally 邻近的.
+
+=EN Just because we wrote them next to each other doesn't mean they execute in that order.
+
+=CN Just Because We 写 Them 下一次 To Each Other Doesn't Mean They Execute In That Order.
+
+=EN We want to change @INC before the use executes.
+
+=CN We Want To Change @INC Before The Use 实行.
+
+=EN One way to fix this is to add a BEGIN block around the push:
+
+=CN One Way To 固定 This Is To 增添 a BEGIN Block Around The Push:
+
+=EN BEGIN { unshift @INC, '/home/gilligan/lib'; } use Navigation::SeatOfPants;
+
+=CN BEGIN { unshift @INC, '/家/gilligan/lib'; } Use Navigation::SeatOfPants;
+
+=EN Now the BEGIN block compiles and executes at compile time, setting up the proper path for the following use.
+
+=CN Now The BEGIN Block compiles And 实行 At Compile Time, Setting Up The 合适的 Path For The Following Use.
+
+=EN However, this is noisy and prone to require far more explanation than you might be comfortable with, especially for the maintenance programmer who has to edit your code later.
+
+=CN However, This Is 吵闹的 And 俯伏的 To Require Far More 说明 Than You Might Be 舒适的 With, Especially For The 保养 Programmer Who Has To 校订 Your Code 更晚.
+
+=EN Let's replace all that clutter with that simple pragma we used before:
+
+=CN Let's 归还原处 All That clutter With That Simple Pragma We Used Before:
+
+=EN use lib '/home/gilligan/lib'; use Navigation::SeatOfPants;
+
+=CN Use lib '/家/gilligan/lib'; Use Navigation::SeatOfPants;
+
+=EN Here, the lib pragma takes one or more arguments and adds them at the beginning of the @INC array, just like unshift did before.[*] It works because it executes at compile time, not runtime.
+
+=CN Here, The lib Pragma Takes One Or More Arguments And Adds Them At The 开端 Of The @INC Array, Just Like unshift Did Before.[*] It Works Because It 实行 At Compile Time, Not Runtime.
+
+=EN Hence, it's ready in time for the use immediately following.
+
+=CN Hence, It's 准备好的 In Time For The Use 立即 Following.
+
+=EN [*] use lib also unshifts an architecture-dependent library below the requested library, making it more valuable than the explicit counterpart presented earlier.
+
+=CN [*] Use lib Also unshifts An 建筑学-依靠的 Library Below The Requested Library, 制作 It More 宝贵的 Than The 清楚的 同类的人或物 提出 Earlier.
+
+=EN Because a use lib pragma will pretty much always have a site-dependent pathname, it is traditional and we encourage you to put it near the top of the file.
+
+=CN Because a Use lib Pragma Will 精致的 Much Always Have a 场所-依靠的 pathname, It Is 传统的 And We Encourage You To Put It 近 The 顶 Of The File.
+
+=EN This makes it easier to find and update when we need to move the file to a new system or when the lib directory's name changes.
+
+=CN This 使 It Easier To 寻找 And Update When We Need To Move The File To a New System Or When The lib Directory's Name Changes.
+
+=EN (Of course, we can eliminate use lib entirely if we can install our modules in standard @INC locations, but that's not always practical.)
+
+=CN (Of Course, We Can 消灭 Use lib 完全地 If We Can 安装 Our Modules In Standard @INC 位置, But That's Not Always 实用的.)
+
+=EN Think of use lib as not "use this library" but rather "use this path to find my libraries (and modules)."
+
+=CN Think Of Use lib As Not "Use This Library" But Rather "Use This Path To 寻找 My 库 (And Modules)."
+
+=EN Too often, we see code written like:
+
+=CN Too Often, We See Code Written Like:
+
+=EN use lib '/home/gilligan/lib/Navigation/SeatOfPants.pm'; # WRONG
+
+=CN Use lib '/家/gilligan/lib/Navigation/SeatOfPants.pm'; # WRONG
+
+=EN and then the programmer wonders why it didn't pull in the definitions.
+
+=CN And Then The Programmer wonders Why It Didn't 拖 In The 定义.
+
+=EN Be aware that use lib indeed runs at compile time, so this also doesn't work:
+
+=CN Be 知道的 That Use lib 的确 跑 At Compile Time, So This Also Doesn't Work:
+
+=EN my $LIB_DIR = '/home/gilligan/lib'; ... use lib $LIB_DIR; # BROKEN use Navigation::SeatOfPants;
+
+=CN My $LIB_DIR = '/家/gilligan/lib'; ... Use lib $LIB_DIR; # BROKEN Use Navigation::SeatOfPants;
+
+=EN Certainly, Perl establishes the declaration of the $LIB_DIR variable at compile time (so we won't get an error with use strict, although the actual use lib should complain), but the actual assignment of the /home/gilligan/lib/ value doesn't happen until runtime.
+
+=CN Certainly, Perl establishes The Declaration Of The $LIB_DIR Variable At Compile Time (So We Won't Get An Error With Use Strict, Although The Actual Use lib Should 抱怨), But The Actual Assignment Of The /家/gilligan/lib/ Value Doesn't 发生 Until Runtime.
+
+=EN Oops, too late again!
+
+=CN Oops, Too 迟到的 Again!
+
+=EN At this point, we need to put something inside a BEGIN block or perhaps rely on yet another compile-time operation: setting a constant with use constant:
+
+=CN At This 尖, We Need To Put Something 里面 a BEGIN Block Or 也许 依靠 On 仍然 另一个 Compile-Time Operation: Setting a Constant With Use Constant:
+
+=EN use constant LIB_DIR => '/home/gilligan/lib'; ... use lib LIB_DIR; use Navigation::SeatOfPants;
+
+=CN Use Constant LIB_DIR => '/家/gilligan/lib'; ... Use lib LIB_DIR; Use Navigation::SeatOfPants;
+
+=EN Fixed again.
+
+=CN Fixed Again.
+
+=EN That is, until we need the library to depend on the result of a calculation.
+
+=CN That Is, Until We Need The Library To 依靠 On The Result Of a 计算（结果）.
+
+=EN (Where will it all end?
+
+=CN (Where Will It All End?
+
+=EN Somebody stop the madness!)
+
+=CN Somebody Stop The 疯狂!)
+
+=EN This should handle about 99 percent of our needs.
+
+=CN This Should Handle About 99 每百 Of Our Needs.
+
+=EN Handling Module Dependencies We just saw that if we try to install a module that uses Module::Build, we have to install Module::Build first.
+
+=CN Handling Module Dependencies We Just 锯 That If We Try To 安装 a Module That Uses Module::Build, We Have To 安装 Module::Build First.
+
+=EN That's a mild case of the general dependency headache, and all the coconuts on our castaways' island aren't going to fix it.
+
+=CN That's a 温和的 Case Of The General 依赖 头疼, And All The coconuts On Our castaways' 岛屿 还't Going To 固定 It.
+
+=EN We might have to install several other modules too, each of which, in turn, depends on even more modules.
+
+=CN We Might Have To 安装 Several Other Modules Too, Each Of Which, In 转向, Depends On Even More Modules.
+
+=EN Fortunately, we have tools to help us.
+
+=CN Fortunately, We Have Tools To Help Us.
+
+=EN The CPAN.pm module has been part of the core distribution since Perl 5.004.
+
+=CN The Perl综合典藏网.Pm Module Has Been Part Of The Core 分配 Since Perl 5.004.
+
+=EN It gives us an interactive module installation shell.
+
+=CN It Gives Us An 互动 Module 安装 壳.
+
+=EN $ perl -MCPAN -e shell cpan shell -- CPAN exploration and modules installation (v1.7601) ReadLine support available (try 'install Bundle::CPAN')
+
+=CN $ Perl -MPerl综合典藏网 -g 壳 Cpan 壳 -- Perl综合典藏网 勘探 And Modules 安装 (v1.7601) ReadLine Support Available (Try '安装 Bundle::Perl综合典藏网')
+
+=EN cpan>
+
+=CN Cpan>
+
+=EN To install a module along with its dependencies, we issue the install command with the name of the module.
+
+=CN To 安装 a Module 沿着 With Its dependencies, We 发行发布 The 安装 命令 With The Name Of The Module.
+
+=EN Now, CPAN.pm handles all the work of downloading, unpacking, building, testing, and installing the module, and it does so recursively for all its dependencies.
+
+=CN Now, Perl综合典藏网.Pm 处理 All The Work Of downloading, unpacking, 建筑物, testing, And installing The Module, And It Does So Recursively For All Its dependencies.
+
+=EN cpan> install CGI::Prototype
+
+=CN Cpan> 安装 (（CGI）通用网关界面)通用网关界面::Prototype
+
+=EN That's a bit too much work, though, so brian created the cpan script, which also comes with Perl.
+
+=CN That's a Bit Too Much Work, Though, So brian Created The Cpan 临时单据, Which Also 来 With Perl.
+
+=EN We simply list the modules we want to install, and it handles it for us.
+
+=CN We Simply List The Modules We Want To 安装, And It 处理 It For Us.
+
+=EN $ cpan CGI::Prototype HTTP::Cookies::Safari Test::Pod
+
+=CN $ Cpan (（CGI）通用网关界面)通用网关界面::Prototype HTTP::Cookies::Safari Test::Pod
+
+=EN Another tool, CPANPLUS, is a complete rewrite of CPAN.pm, but it isn't part of the core distribution as we write this.
+
+=CN Another 工具, Perl综合典藏网PLUS, Is a Complete 重写 Of Perl综合典藏网.Pm, But It Isn't Part Of The Core 分配 As We Write This.
+
+=EN $ perl -MCPANPLUS -e shell CPANPLUS::Shell::Default -- CPAN exploration and modules installation (v0.03) *** Please report bugs to <cpanplus-bugs@lists.sourceforge.net>. *** Using CPANPLUS::Backend v0.049. *** ReadLine support available (try 'i Term::ReadLine::Perl').
+
+=CN $ Perl -MPerl综合典藏网PLUS -g 壳 Perl综合典藏网PLUS::Shell::Default -- Perl综合典藏网 勘探 And Modules 安装 (v0.03) *** Please 报告 bugs To <cpanplus-bugs@lists.sourceforge.net>. *** Using Perl综合典藏网PLUS::Backend v0.049. *** ReadLine Support Available (Try '我 Term::ReadLine::Perl').
+
+=EN CPAN Terminal>
+
+=CN Perl综合典藏网 Terminal>
+
+=EN To install a module, we use the i command.
+
+=CN To 安装 a Module, We Use The 我 命令.
+
+=EN CPAN Terminal> i CGI::Prototype
+
+=CN Perl综合典藏网 Terminal> 我 (（CGI）通用网关界面)通用网关界面::Prototype
+
+=EN The CPANPLUS module also comes with a convenience script, called cpanp.
+
+=CN The Perl综合典藏网PLUS Module Also 来 With a 方便 临时单据, Called cpanp.
+
+=EN If we give it the i switch and a list of modules, it installs them just like before.
+
+=CN If We Give It The 我 Switch And a List Of Modules, It 安装 Them Just Like Before.
+
+=EN $ cpanp i CGI::Prototype HTTP::Cookies::Safari Test::Pod
+
+=CN $ cpanp 我 (（CGI）通用网关界面)通用网关界面::Prototype HTTP::Cookies::Safari Test::Pod
+
+=EN Exercises You can find the answers to these exercises in "Answers for Chapter 3" in the Appendix.
+
+=CN Exercises You Can 寻找 The answers To These exercises In "Answers For Chapter 3" In The Appendix.
+
+=EN Exercise 1 [25 min] Read the list of files in the current directory and convert the names to their full path specification.
+
+=CN Exercise 1 [25 min] Read The List Of Files In The Current Directory And Convert The Names To Their Full Path 规格.
+
+=EN Don't use the shell or an external program to get the current directory.
+
+=CN Don't Use The 壳 Or An External Program To Get The Current Directory.
+
+=EN The File::Spec and Cwd modules, both of which come with Perl, should help.
+
+=CN The File::Spec And Cwd Modules, Both Of Which 来到 With Perl, Should Help.
+
+=EN Print each path with four spaces before it and a newline after it, just like you did for Exercise 1 of Chapter 2.
+
+=CN Print Each Path With 四 spaces Before It And a 换行符 After It, Just Like You Did For Exercise 1 Of Chapter 2.
+
+=EN Can you reuse part of that answer for this problem?
+
+=CN Can You Reuse Part Of That Answer For This Problem?
+
+=EN Exercise 2 [35 min] Parse the International Standard Book Number from the back of this book (0596102062).
+
+=CN Exercise 2 [35 min] Parse The International Standard Book Number From The Back Of This 书 (0596102062).
+
+=EN Install the Business::ISBN module from CPAN and use it to extract the country code and the publisher code from the number.
+
+=CN Install The Business::ISBN Module From Perl综合典藏网 And Use It To 取出 The 国家 Code And The 出版商 Code From The Number.
+

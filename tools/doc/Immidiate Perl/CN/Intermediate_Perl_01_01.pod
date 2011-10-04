@@ -1,0 +1,21 @@
+1.1. What Should You Know Already?
+1.1. 你应该已经知晓哪些概念？
+We’ll presume that you’ve already read Learning Perl, or at least pretend you have, and that you’ve played enough with Perl to already have those basics down. For example, you won’t see an explanation in this book that shows how to access the elements of an array or return a value from a subroutine.
+我们会假定你已经读过《Learning Perl》，或假装你已经读过，或者你已经玩过Perl一段时间，已经把基础知识拿下。比如，这本书里我们不会再解释如何访问一个数组里一个元素或者从一个子程序里返回一个值。
+Make sure you know the following things:
+下面这些知识你应该事先掌握：
+    * How to run a Perl program on your system
+    * 在你的平台如何运行Perl
+    * The three basic Perl variable types: scalars, arrays, and hashes
+    * Perl的三种变量类型：标量、数据和散列
+    * Control structures such as while, if, for, and foreach
+    * 控制结构的语法如：while,if,for和foreach
+    * Subroutines
+    * 子程序
+    * Perl operators such as grep, map, sort, and print
+    * Perl的操作符：grep,map,sort和print
+    * File manipulation such as open, file reading, and -X (file tests)
+    * 文件操作的语法：打开、文件操作和-X （文件检测操作）
+You might pick up deeper insight into these topics in this book, but we’re going to presume you know the basics.
+我们可能在本书对这些话题进行深入探讨，不过我们假定你已经掌握这些概念的基础知识。
+

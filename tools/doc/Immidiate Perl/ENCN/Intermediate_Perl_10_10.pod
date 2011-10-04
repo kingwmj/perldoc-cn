@@ -1,0 +1,19 @@
+10.10. Exercises
+10.10. 练习
+You can find the answers to these exercises in "Answers for Chapter 10" in the Appendix.
+答案见附录。
+10.10.1. Exercise 1 [25 min]
+10.10.1. 练习1 [25分钟]
+The Oogaboogoo natives on the island have unusual names for the days and months. Here is some simple but not very well-written code from Gilligan. Fix it up, add a conversion function for the month names, and make the whole thing into a library. For extra credit, add suitable error checking and consider what should be in the documentation.
+@day = qw(ark dip wap sen pop sep kir);
+sub number_to_day_name { my $num = shift @_; $day[$num]; }
+@month = qw(diz pod bod rod sip wax lin sen kun fiz nap dep);
+岛上的土著Oogaboogoo对于日期和月份着不同寻常的名字。 这里有个从Gilligan来的简单但写得不是很好的代码。 修改一下， 给月份名加一个对话函数， 并把这些放到一个库里。 为了更好的可靠性， 添加一个错误检查程序以及文档。
+10.10.2. Exercise 2 [15 min]
+10.10.2. 练习2 [15分钟]
+Make a program that uses your library and the following code to print out a message, such as Today is dip, sen 15, 2011, meaning that today is a Monday in August. (Hint: the year and month numbers returned by localtime may not be what you’d expect, so you need to check the documentation.)
+my($sec, $min, $hour, $mday, $mon, $year, $wday) = localtime;
+写个程序使用你的库并用如下代码打印一些信息， 如今天是dip,sen 15,2011, 表示今天是八月的周一。（暗示：localtime返回的年月数字可能并不一定是你想要的， 所以你要查一下文档。）
+my($sec, $min, $hour, $mday, $mon, $year, $wday) = localtime;
+
+

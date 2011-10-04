@@ -1,0 +1,6 @@
+Chapter 6. Manipulating Complex Data Structures
+第六章 处理复杂数据结构
+Now that you’ve seen the basics of references, let’s look at additional ways to manipulate complex data. We’ll start by using the debugger to examine complex data structures and then use Data::Dumper to show the data under programmatic control. Next, you’ll learn to store and retrieve complex data easily and quickly using Storable, and finally we’ll wrap up with a review of grep and map and see how they apply to complex data.
+既然你已经知道了引用的基础知识， 那就让我们管理复杂数据结构的其它的方法。 首先，我们会用测试工具来查看复杂数据结构的内容，之后我们会介绍Data::Dumper模块，这样我们就可以在程序中展示数据结构了。  下一步， 我们将会学到用Storable模块把复杂数据结构方便快捷地进行存取。 最后， 我们会回顾一下grep和map，看他们如何在处理复杂数据结构上来发挥作用。
+
+

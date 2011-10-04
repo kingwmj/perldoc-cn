@@ -1,0 +1,49 @@
+=EN 4.2. Taking a Reference to an Array
+=CN 4.2. 建立一个对数组的引用
+
+=EN Among its many other meanings, the backslash (\) character is also the "take a reference to" operator. When we use it in front of an array name, e.g., \@skipper, the result is a reference to that array. A reference to the array is like a pointer: it points at the array, but it is not the array itself.
+=CN 相对于其它方法，反斜杠(\)符号被用来当作“取址”操作符。比如，哪我们把它放在一个数组前面时：\@skipper,其结果就是取这个数组的地址。引用这个数组就是一个指针：指向这个数组，但并不是这个数组本身。
+
+=EN A reference fits wherever a scalar fits. It can go into an element of an array or a hash, or into a plain scalar variable, like this:
+=CN 标量合适的操作对于引用都一样合适。 它可以是数组或散列中的一个元素，或简单就是一个标量变量，像下面所示：
+
+my $reference_to_skipper = \@skipper;
+
+=EN The reference can be copied:
+=CN 引用可以被复制：
+
+my $second_reference_to_skipper = $reference_to_skipper;
+
+=EN or even:
+=CN 甚至于：
+
+my $third_reference_to_skipper = \@skipper;
+
+=EN We can interchange all three references. We can even say they’re identical, because, in fact, they are the same thing.
+=CN 我们可以互换这三个引用。 我们甚至说他们是相同的，因为，实际上他们指的是同一地址。
+
+if ($reference_to_skipper =  = $second_reference_to_skipper) {
+    print "They are identical references.\n";
+}
+
+=EN This equality compares the numeric forms of the two references. The numeric form of the reference is the unique memory address of the @skipper internal data structure, unchanging during the life of the variable. If we look at the string form instead, with eq or print, we get a debugging string:
+=CN 这个等式是以数值形式来比较两个引用的。 引用的数值形式就是@skipper这个内部数据结构在内存中的惟一地址，且在这个变量的生命周期之内是不变的。如果我们以字串形式来看的话，我们会得到如下调试形式的字串：
+
+ARRAY(0x1a2b3c)
+
+=EN which again is unique for this array because it includes the hexadecimal (base 16) representation of the array’s unique memory address. The debugging string also notes that this is an array reference. Of course, if we ever see something like this in our output, it almost certainly means we have a bug; users of our program have little interest in hex dumps of storage addresses!
+=CN 其内容同样是以十六进制表示的（base16）的这个数组惟一内存地址.调试字串还标明了这个引用指向的是个数组。当然，如果我们什么时候看到这样的输出的话，这多半意味着我们的程序出了bug;我们程序的用户可对十六进制的存储地址可一点兴趣都没有！
+=EN Because we can copy a reference, and passing an argument to a subroutine is really just copying, we can use this code to pass a reference to the array into the subroutine:
+=CN 因为我们可以拷贝一个引用，并且作为参数传给一个子例程，我们可以用如下代码把对数组的引用传给子例程：
+
+my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+check_required_items("The Skipper", \@skipper);
+sub check_required_items {
+  my $who = shift;
+  my $items = shift;
+  my @required = qw(preserver sunscreen water_bottle jacket);
+  …
+}
+
+=EN Now $items in the subroutine is a reference to the array of @skipper. But how do we get from a reference back into the original array? We dereference the reference, of course.
+=CN 现在子例程中的$items变量保存的是指向数组@skipper的引用。但我们如何时把一个引用变回一个原始数组呢？当然，我们可以还原一个引用。

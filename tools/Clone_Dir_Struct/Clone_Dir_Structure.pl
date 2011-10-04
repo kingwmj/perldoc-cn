@@ -35,4 +35,9 @@ foreach my $dir (sort bylength keys %hash_dir) {
 		print "make Dir $dir\n";
 	}
 }
-
+# 递归的搜索目录，获得文件
+# 首先递归的清理目标文件夹中的所有文档
+# 递归的在目标文件夹中创建文件夹结构
+# 然后拷贝文件
+# 尤其在处理模块文档的时候，尤其有用
+# 提取POD，然后进行翻译。

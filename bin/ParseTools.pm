@@ -4,8 +4,9 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw<>;
-our @EXPORT_OK=qw<dict2hash hash2dict array2hash array2file
-                  split2sentence filter_format_str filter_ignore_str>;
+our @EXPORT_OK=qw<dict2hash hash2dict array2hash array2file findlist
+                  split2sentence filter_format_str filter_ignore_str
+                  clean_dir>;
 our @VERSION = 1.00;
 
 use strict;
@@ -16,6 +17,48 @@ use File::Slurp qw<read_file write_file>;
 use List::MoreUtils qw<mesh uniq>;
 use Lingua::Sentence;
 use Regexp::Common qw/URI/;
+use File::Find qw<find>;
+use Carp qw(carp croak);
+use File::Path qw<make_path remove_tree>;
+
+
+# 清理指定目录，删除所有文件和子目录
+sub clean_dir {
+    my $dir = shift;
+    remove_tree($dir, 1);
+    make_path($dir);
+    return 1;
+}
+
+# 获取指定目录的所有子目录的文件目录
+# findlist($dir,qr/\.pod$/);
+sub find_by_regex
+	{
+	require File::Spec::Functions;
+	require Carp;
+	require UNIVERSAL;
+	
+	my $regex = shift;
+	
+	unless( UNIVERSAL::isa( $regex, ref qr// ) )
+		{
+		croak "Argument must be a regular expression";
+		}
+		
+	my @files = ();
+	
+	sub { push @files, 
+		File::Spec::Functions::canonpath( $File::Find::name ) if m/$regex/ },
+	sub { wantarray ? @files : [ @files ] }
+}
+
+sub findlist {
+    my ($dir, $regex) = @_;
+    my ($wanted, $reporter) = find_by_regex($regex);
+    find($wanted, $dir);
+    my @filelist = $reporter->();
+    return ( wantarray ? @filelist : [@filelist]);
+}
 
 # 字典转换成散列 my $ref_dict_hash = dict2hash($file1, $file2);
 sub dict2hash {
@@ -32,7 +75,7 @@ sub dict2hash {
             }
         }
     }
-    return \%dict_hash;
+    return (wantarray ? %dict_hash : \%dict_hash);
 }
 
 # 将字符串数组转换成映射字符散列
@@ -43,7 +86,7 @@ sub array2hash {
     my @conceal = map { sprintf("&&%0.4x", $_) } (1 .. $number);
     # 合并两个数据类型相同的数组
     my %array2hash = mesh @array, @conceal;
-    return \%array2hash;
+    return (wantarray ? %array2hash : {%array2hash});
 }
 
 # 将一个数组拆分成按照句子的数组
@@ -51,7 +94,7 @@ sub split2sentence {
     my @array = @_;
     my $splitter = Lingua::Sentence->new("en");
     my @split = map { $splitter->split_array($_) } @array;
-    return @split;
+    return (wantarray ? @split : [@split]);
 }
 
 # 将散列保存为字典文件 hash2dict(\%hash, $dict_name);
@@ -96,11 +139,12 @@ sub filter_format_str {
     my @code = grep { chomp; /^\s{1,}/ } @lines;
     # 替换掉注释
     foreach my $element (@code) {
-        $element =~ s/#.*//;
+        # 前面必须有空格
+        $element =~ s/\s#.*//;
     }
 
    my @return_array = (@head, @code);
-   return \@return_array;
+   return (wantarray ? @return_array : [@return_array]);
 }
 
 # 将Pod文档中的 format email func http ftp file fomat 提取成数组
@@ -144,7 +188,7 @@ sub filter_ignore_str {
        s/\n/ /g;
    }
    my @return_array = (@var, @email, @http, @ftp, @func, @file, @format);
-   return \@return_array;
+   return (wantarray ? @return_array : [@return_array]);
 }
 
 1;

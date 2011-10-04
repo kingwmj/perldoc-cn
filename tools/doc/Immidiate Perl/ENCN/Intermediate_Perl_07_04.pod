@@ -1,0 +1,43 @@
+7.4. Closures
+7.4. 闭包
+We could also use File::Find to find out some other things about files, such as their size. For the callback’s convenience, the current working directory is the item’s containing directory, and the item’s name within that directory is found in $_.
+我们还可以用File::Find来查其它一些文件属性， 比如它们的文件大小。 为了回调方便，当前目录被设为文件所在的目录， 目录中的文件名也放在缺省变量$_中。：
+Maybe you have noticed that, in the previous code, we used $File::Find::name for the item’s name. So which name is real, $_ or $File::Find::name? $File::Find::name gives the name relative to the starting directory, but during the callback, the working directory is the one that holds the item just found. For example, suppose that we want find to look for files in the current working directory, so we give it (".") as the list of directories to search. If we call find when the current working directory is /usr, find looks below that directory. When find locates /usr/bin/perl, the current working directory (during the callback) is /usr/bin. $_ holds perl, and $File::Find::name holds ./bin/perl, which is the name relative to the directory in which you started the search.
+刚才你可能已经注意到了， 在前面的代码中， 我们用$File::Find::name来返回文件的名字。 所以现在哪个名字是真实的呢？$_或者$File::Find::name？ $File::Find::name是给出文件自起始搜索目录的相对路径名， 而在回调程序中，工作目录就是项目所在目录。 比如， 假定我们要在当前目录找些文件， 所以我们给出它（“.”）作为要搜索的目录。 如果我们当前目录是/usr，则程序会往下找这个目录。 然后程序找到/usr/bin/perl，此时当前目录（在回调程序中）是/usr/bin。 变量$_保存了perl，而$File::Find::name保存./bin/perl，就是相对起始搜索目录的相对路径。
+All of this means that the file tests, such as -s, automatically report on the just-found item. Although this is convenient, the current directory inside the callback is different from the search’s starting directory.
+这一切说明对文件的查验，如-s，是自动应用在即时找到的那个文件上的。 尽管这很方便， 回调程序里的当前目录还是与搜索目录不同。
+What if we want to use File::Find to accumulate the total size of all files seen? The callback subroutine cannot take arguments, and the caller discards its result. But that doesn’t matter. When dereferenced, a subroutine reference can see all visible lexical variables when the reference to the subroutine is taken. For example:
+use File::Find;
+my $total_size = 0;
+find(sub { $total_size += -s if -f }, ‘.’);
+print $total_size, "\n";
+如果我们要用File::Find来累加所找到的所有文件的大小的话，应该如何做呢？回调子程序不能有参数，而调用者也忽略回调子程序返回的结果。 但这没有关系。 在还原后，一个子程序引用可以看到所有指向子程序的引用的可见词法变量。例如：
+use File::Find;
+my $total_size = 0;
+find(sub { $total_size += -s if -f }, ‘.’);
+print $total_size, "\n";
+As before, we call the find routine with two parameters: a reference to an anonymous subroutine and the starting directory. When it finds names within that directory (and its subdirectories), it calls the anonymous subroutine.
+同以前一样，我们调用find子程序时传给它两个参数：一个指向匿名子程序的引用和一个起始搜索目录。 在它找到文件在目录中时（或其子目录中时），它会调用匿名子程序。
+Note that the subroutine accesses the $total_size variable. We declare this variable outside the scope of the subroutine but still visible to the subroutine. Thus, even though find invokes the callback subroutine (and would not have direct access to $total_size), the callback subroutine accesses and updates the variable.
+注意，匿名子程序会访问$total_size变量。 我们定义这个变量是在匿名子程序范围之外的，但是对于匿名子程序来说还是可见的。 所以， 尽管find调用那个回调的匿名子程序（并且不会直接访问$total_size）, 回调的匿名子程序会访问并且更新变量。
+The kind of subroutine that can access all lexical variables that existed at the time we declared it is called a closure (a term borrowed from the world of mathematics). In Perl terms, a closure is just a subroutine that references a lexical variable that has gone out of scope.
+那种能访问所有我们声明的在运行时存在的词法变量的子程序，我们叫它闭包（一个从数字世界借过一的词）。 在Perl术语中， 一个闭包就是指一种能引用在程序范围之外的词法变量的子程序。
+Furthermore, the access to the variable from within the closure ensures that the variable remains alive as long as the subroutine reference is alive. For example, let’s number the output files:[*]
+    [*] This code seems to have an extra semicolon at the end of the line that assigns to $callback, doesn’t it? But remember, the construct sub { … } is an expression. Its value (a coderef) is assigned to $callback, and there’s a semicolon at the end of that statement. It’s easy to forget to put the proper punctuation after the closing curly brace of an anonymous subroutine declaration.
+use File::Find;
+my $callback;
+{
+  my $count = 0;
+  $callback = sub { print ++$count, ": $File::Find::name\n" };
+}
+find($callback, ‘.’);
+更有甚者， 在闭包内部访问变量能保证只要匿名子程序引用存在，变量的值就能保留。比如， 让我们对输出文件计数：[*]
+  [*] 这里的代码好像在行尾给$callback赋值时多出一个分号，不是吗？ 但是注意， sub { … }创建的是个表达式。 值（一段代码引用）赋给变量$callback, 所以语句后面有分号。 在花括号定义的匿名子程序后面加上适当的标点符号是很容易被遗忘的。
+Here, we declare a variable to hold the callback. We cannot declare this variable within the naked block (the block following that is not part of a larger Perl syntax construct), or Perl will recycle it at the end of that block. Next, the lexical $count variable is initialized to 0. We then declare an anonymous subroutine and place its reference into $callback. This subroutine is a closure because it refers to the lexical $count variable.
+这儿， 我们定义了一个保存有回调子程序引用的变量。 我们不能在裸块中定义这个变量（其后的块并非Perl语法构建的一部份）， 或者Perl在块结束时会回收它。之后，词法变量$count变量会初始化为0.  我们声明一个匿名子程序并把其引用给$callback。 这个子程序就是个闭包，因它指向词法变量$count。
+At the end of the naked block, the $count variable goes out of scope. However, because it is still referenced by subroutine in $callback, it stays alive as an anonymous scalar variable.[*] When the callback is invoked from find, the value of the variable formerly known as $count is incremented from 1 to 2 to 3, and so on.
+在裸块的结尾， 变量$count跑出程序范围。　然而，因为这个变量仍旧被$callback所指向的匿名子程序引用，所以此变量作为一个匿名的标量变量仍旧活着。[*]　当find子程序调用回调匿名子程序的时候，先前被称为$count的这个变量的值继续从１到２到３地增加。
+    [*] To be more accurate, the closure declaration increases the reference count of the referent, as if another reference had been taken explicitly. Just before the end of the naked block, the reference count of $count is two, but after the block has exited, the value still has a reference count of one. Although no other code may access $count, it will still be kept in memory as long as the reference to the sub is available in $callback or elsewhere.
+    [*] 更准确地说，　闭包的声明增加了引用变量的引用计数，　就像显式地取得了另外一个引用一样。　就在裸块结束之前，　对$count的引用计数为２，但从块退出之后，　其值的引用仍有一个。尽管已经没有其它的代码可以访问$count变量了，　但只要$callback中对这个匿名子程序的引用存在（或其它地方有对$count变量的引用），其值就一直会被保留。
+
+

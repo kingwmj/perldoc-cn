@@ -1,0 +1,1032 @@
+=EN So far, you have seen references to three main Perl data types: scalars, arrays, and hashes.
+
+=CN So Far, You Have Seen References To Three Main Perl Data Types: Scalars, Arrays, And Hashes.
+
+=EN We can also take a reference to a subroutine (sometimes called a coderef).
+
+=CN We Can Also Take a Reference To a Subroutine (Sometimes Called a coderef).
+
+=EN Why would we want to do that?
+
+=CN Why Would We Want To Do That?
+
+=EN Well, in the same way that taking a reference to an array lets you have the same code work on different arrays at different times, taking a reference to a subroutine allows the same code to call different subroutines at different times.
+
+=CN Well, In The Same Way That Taking a Reference To An Array Lets You Have The Same Code Work On Different Arrays At Different Times, Taking a Reference To a Subroutine Allows The Same Code To Call Different Subroutines At Different Times.
+
+=EN Also, references permit complex data structures.
+
+=CN Also, References 允许 综合的 Data Structures.
+
+=EN A reference to a subroutine allows a subroutine to effectively become part of that complex data structure.
+
+=CN A Reference To a Subroutine Allows a Subroutine To Effectively 变成 Part Of That 综合的 Data Structure.
+
+=EN Put another way, a variable or a complex data structure is a repository of values throughout the program.
+
+=CN Put 另一个 Way, a Variable Or a 综合的 Data Structure Is a 仓库 Of Values Throughout The Program.
+
+=EN A reference to a subroutine can be thought of as a repository of behavior in a program.
+
+=CN A Reference To a Subroutine Can Be Thought Of As a 仓库 Of Behavior In a Program.
+
+=EN The examples in this section show how this works.
+
+=CN The Examples In This Section Show How This Works.
+
+=EN Referencing a Named Subroutine The Skipper and Gilligan are having a conversation:
+
+=CN Referencing a Named Subroutine The Skipper And Gilligan Are Having a 会话:
+
+=EN sub skipper_greets {
+
+=CN Sub skipper_greets {
+
+=EN sub gilligan_greets {
+
+=CN Sub gilligan_greets {
+
+=EN This results in:
+
+=CN This Results In:
+
+=EN Skipper: Hey there, Gilligan!
+
+=CN Skipper: Hey There, Gilligan!
+
+=EN Gilligan: Sir, yes, sir, Skipper!
+
+=CN Gilligan: Sir, Yes, 先生, Skipper!
+
+=EN So far, nothing unusual has happened.
+
+=CN So Far, Nothing 不寻常的 Has Happened.
+
+=EN Note, however, that Gilligan has two different behaviors, depending on whether he is addressing the Skipper or someone else.
+
+=CN Note, However, That Gilligan Has Two Different Behaviors, Depending On Whether 他 Is addressing The Skipper Or Someone Else.
+
+=EN Now, have the Professor walk into the hut.
+
+=CN Now, Have The Professor 步行 Into The 小屋.
+
+=EN Both of the Minnow crew greet the newest participant:
+
+=CN Both Of The Minnow （飞机等的）全体人员 打招呼 The newest 参加者:
+
+=EN which results in:
+
+=CN Which Results In:
+
+=EN Skipper: Hey there, Professor!
+
+=CN Skipper: Hey There, Professor!
+
+=EN Now the Professor feels obligated to respond:
+
+=CN Now The Professor Feels obligated To 答复:
+
+=EN sub professor_greets {
+
+=CN Sub professor_greets {
+
+=EN resulting in:
+
+=CN 造成 In:
+
+=EN Professor: By my calculations, you must be Gilligan!
+
+=CN Professor: By My calculations, You Must Be Gilligan!
+
+=EN Professor: By my calculations, you must be Skipper!
+
+=CN Professor: By My calculations, You Must Be Skipper!
+
+=EN That's lot of typing and not very general.
+
+=CN That's 许多 Of 打字 And Not Very General.
+
+=EN If each person's behavior is in a separate named subroutine, and a new person walks in the door, we have to figure out what other subroutines to call.
+
+=CN If Each 人's Behavior Is In a Separate Named Subroutine, And a New 人 walks In The 门, We Have To 数字 Out What Other Subroutines To Call.
+
+=EN We could certainly do it with enough hard-to-maintain code, but we can simplify the process by adding a bit of indirection, just as we did with arrays and hashes.
+
+=CN We Could Certainly Do It With Enough 硬的-To-Maintain Code, But We Can 简单化 The 程序 By Adding a Bit Of indirection, Just As We Did With Arrays And Hashes.
+
+=EN First, let's use the "take a reference to" operator.
+
+=CN First, Let's Use The "Take a Reference To" Operator.
+
+=EN It actually needs no introduction because it's that very same backslash as before:
+
+=CN It Actually Needs No 介绍 Because It's That Very Same 反斜杠 As Before:
+
+=EN my $ref_to_greeter = \&skipper_greets;
+
+=CN My $ref_to_greeter = \&skipper_greets;
+
+=EN We're taking a reference to the subroutine skipper_greets( ).
+
+=CN We'Re Taking a Reference To The Subroutine skipper_greets( ).
+
+=EN Note that the preceding ampersand is mandatory here, and the lack of trailing parentheses is also intentional.
+
+=CN Note That The 前面的 ampersand Is 强制性 Here, And The 缺少 Of 落后 Parentheses Is Also 有意的.
+
+=EN Perl stores the reference to the subroutine (a coderef) within $ref_to_greeter, and, like all other references, it fits nearly anywhere a scalar fits.
+
+=CN Perl stores The Reference To The Subroutine (a coderef) Within $ref_to_greeter, And, Like All Other References, It fits 几乎 Anywhere a Scalar fits.
+
+=EN There's only one reason to get back to the original subroutine by dereferencing the coderef: to invoke it.
+
+=CN There's Only One Reason To Get Back To The Original Subroutine By dereferencing The coderef: To 调用 It.
+
+=EN Dereferencing a code reference is similar to dereferencing other references.
+
+=CN Dereferencing a Code Reference Is Similar To dereferencing Other References.
+
+=EN First, start with the way we would have written it before we heard of references (including the optional ampersand prefix):
+
+=CN First, Start With The Way We Would Have Written It Before We heard Of References (Including The Optional ampersand 前缀):
+
+=EN Next, we replace the name of the subroutine with curly braces around the thing holding the reference:
+
+=CN Next, We 归还原处 The Name Of The Subroutine With 卷曲的 牙套 Around The Thing 支持 The Reference:
+
+=EN There we have it.
+
+=CN There We Have It.
+
+=EN This construct invokes the subroutine currently referenced by $ref_to_greeter, passing it the single Gilligan parameter.
+
+=CN This Construct invokes The Subroutine Currently 参考 By $ref_to_greeter, Passing It The Single Gilligan Parameter.
+
+=EN But boy-oh-boy, is that ugly or what?
+
+=CN But 男孩-哦-男孩, Is That 丑恶的 Or What?
+
+=EN Luckily, the same reference simplification rules apply.
+
+=CN Luckily, The Same Reference simplification 规则 应用.
+
+=EN If the value inside the curly braces is a simple scalar variable, we can drop the braces:
+
+=CN If The Value 里面 The 卷曲的 牙套 Is a Simple Scalar Variable, We Can 落下 The 牙套:
+
+=EN We can also flip it around a bit with the arrow notation:
+
+=CN We Can Also flip It Around a Bit With The 箭 符号:
+
+=EN That last form is particularly handy when the coderef is in a larger data structure, as you will see in a moment.
+
+=CN That Last Form Is 特别地 方便的 When The coderef Is In a larger Data Structure, As You Will See In a Moment.
+
+=EN To have both Gilligan and the Skipper greet the Professor, we merely need to iterate over all the subroutines:
+
+=CN To Have Both Gilligan And The Skipper 打招呼 The Professor, We 仅仅 Need To iterate 在 All The Subroutines:
+
+=EN for my $greet (\&skipper_greets, \&gilligan_greets) {
+
+=CN For My $打招呼 (\&skipper_greets, \&gilligan_greets) {
+
+=EN First, inside the parentheses, we create a list of two items, each of which is a coderef.
+
+=CN First, 里面 The Parentheses, We Create a List Of Two 物品, Each Of Which Is a coderef.
+
+=EN The coderefs are then individually dereferenced, invoking the corresponding subroutine and passing it the Professor string.
+
+=CN The coderefs Are Then individually dereferenced, 调用 The 相应的 Subroutine And Passing It The Professor String.
+
+=EN We have seen the coderefs in a scalar variable and as an element of a list.
+
+=CN We Have Seen The coderefs In a Scalar Variable And As An Element Of a List.
+
+=EN Can we put these coderefs into a larger data structure?
+
+=CN Can We Put These coderefs Into a larger Data Structure?
+
+=EN Create a table that maps people to the behavior they exhibit to greet others, and then rewrite that previous example using the table:
+
+=CN Create a Table That 地图 People To The Behavior They 展出 To 打招呼 别人, And Then 重写 That Previous Example Using The Table:
+
+=EN my %greets = (
+
+=CN My %greets = (
+
+=EN for my $person (qw(Skipper Gilligan)) {
+
+=CN For My $人 (Qw(Skipper Gilligan)) {
+
+=EN Note that $person is a name, which we look up in the hash to get to a coderef.
+
+=CN Note That $人 Is a Name, Which We Look Up In The Hash To Get To a coderef.
+
+=EN Then we dereference that coderef, passing it the name of the person being greeted, and we get the correct behavior, resulting in:
+
+=CN Then We 废弃 That coderef, Passing It The Name Of The 人 Being greeted, And We Get The 正确的 Behavior, 造成 In:
+
+=EN Now have everyone greet everyone, in a very friendly room:
+
+=CN Now Have Everyone 打招呼 Everyone, In a Very 友好的 房间:
+
+=EN my @everyone = sort keys %greets; for my $greeter (@everyone) {
+
+=CN My @Everyone = Sort Keys %greets; For My $greeter (@Everyone) {
+
+=EN # no talking to yourself
+
+=CN # No 说话 To 你（们）自己
+
+=EN Gilligan: Sir, yes, sir, Skipper!
+
+=CN Gilligan: Sir, Yes, 先生, Skipper!
+
+=EN Professor: By my calculations, you must be Gilligan!
+
+=CN Professor: By My calculations, You Must Be Gilligan!
+
+=EN Professor: By my calculations, you must be Skipper!
+
+=CN Professor: By My calculations, You Must Be Skipper!
+
+=EN Skipper: Hey there, Gilligan!
+
+=CN Skipper: Hey There, Gilligan!
+
+=EN Skipper: Hey there, Professor!
+
+=CN Skipper: Hey There, Professor!
+
+=EN That's a bit complex.
+
+=CN That's a Bit 综合的.
+
+=EN Let's let them walk into the room one at a time:
+
+=CN Let's Let Them 步行 Into The 房间 One At a Time:
+
+=EN my @room; # initially empty for my $person (qw(Gilligan Skipper Professor)) {
+
+=CN My @房间; # 最初 Empty For My $人 (Qw(Gilligan Skipper Professor)) {
+
+=EN # gets reply
+
+=CN # Gets 回答
+
+=EN # come in, get comfy }
+
+=CN # 来到 In, Get 舒服的 }
+
+=EN The result is a typical day on that tropical island:
+
+=CN The Result Is a 典型的 一天 On That 热带的 岛屿:
+
+=EN Gilligan walks into the room.
+
+=CN Gilligan walks Into The 房间.
+
+=EN Skipper walks into the room.
+
+=CN Skipper walks Into The 房间.
+
+=EN Skipper: Hey there, Gilligan!
+
+=CN Skipper: Hey There, Gilligan!
+
+=EN Gilligan: Sir, yes, sir, Skipper!
+
+=CN Gilligan: Sir, Yes, 先生, Skipper!
+
+=EN Professor walks into the room.
+
+=CN Professor walks Into The 房间.
+
+=EN Professor: By my calculations, you must be Gilligan!
+
+=CN Professor: By My calculations, You Must Be Gilligan!
+
+=EN Professor: By my calculations, you must be Skipper!
+
+=CN Professor: By My calculations, You Must Be Skipper!
+
+=EN Skipper: Hey there, Professor!
+
+=CN Skipper: Hey There, Professor!
+
+=EN Anonymous Subroutines In that last example, we never explicitly called subroutines such as professor_greets( ), we only called them indirectly through the coderef.
+
+=CN Anonymous Subroutines In That Last Example, We Never 清晰地 Called Subroutines Such As professor_greets( ), We Only Called Them 间接地 通过 The coderef.
+
+=EN Thus, we wasted some brain cells to come up with a name for the subroutine used only in one other place, to initialize the data structure.
+
+=CN Thus, We 浪费 Some 脑子 cells To 来到 Up With a Name For The Subroutine Used Only In One Other Place, To Initialize The Data Structure.
+
+=EN But, just as we can create anonymous hashes and arrays, we can create anonymous subroutines !
+
+=CN But, Just As We Can Create Anonymous Hashes And Arrays, We Can Create Anonymous Subroutines !
+
+=EN Let us add another island inhabitant: Ginger.
+
+=CN Let Us 增添 另一个 岛屿 居民: Ginger.
+
+=EN But rather than define her greeting behavior as a named subroutine, we create an anonymous subroutine:
+
+=CN But Rather Than Define Her 问候 Behavior As a Named Subroutine, We Create An Anonymous Subroutine:
+
+=EN my $ginger = sub {
+
+=CN My $姜 = Sub {
+
+=EN An anonymous subroutine looks like an ordinary sub declaration, but there's no name (or prototype) between sub and the block that follows.
+
+=CN An Anonymous Subroutine Looks Like An Ordinary Sub Declaration, But There's No Name (Or 原型) Between Sub And The Block That Follows.
+
+=EN It's also part of a statement, so we need a trailing semicolon or other expression separator after it in most cases.
+
+=CN It's Also Part Of a Statement, So We Need a 落后 semicolon Or Other Expression Separator After It In Most Cases.
+
+=EN sub { ... body of subroutine ... };
+
+=CN Sub { ... 身体 Of Subroutine ... };
+
+=EN The value in $ginger is a coderef, just as if we had defined the following block as a subroutine and then taken a reference to it.
+
+=CN The Value In $姜 Is a coderef, Just As If We Had Defined The Following Block As a Subroutine And Then Taken a Reference To It.
+
+=EN When we reach the last statement, we see:
+
+=CN When We 到达 The Last Statement, We See:
+
+=EN Ginger: (in a sultry voice) Well hello, Skipper!
+
+=CN Ginger: (In a 闷热的 声音) Well 你好, Skipper!
+
+=EN Although we kept the value in a scalar variable, we could have put that sub { ... } construct directly into the initialization of the greetings hash:
+
+=CN Although We Kept The Value In a Scalar Variable, We Could Have Put That Sub { ... } Construct 直接地 Into The Initialization Of The greetings Hash:
+
+=EN my @room; # initially empty for my $person (qw(Gilligan Skipper Professor Ginger)) {
+
+=CN My @房间; # 最初 Empty For My $人 (Qw(Gilligan Skipper Professor Ginger)) {
+
+=EN Notice how much it simplifies the code.
+
+=CN Notice How Much It simplifies The Code.
+
+=EN The subroutine definitions are right within the only data structure that references them directly.
+
+=CN The Subroutine 定义 Are Right Within The Only Data Structure That References Them 直接地.
+
+=EN The result is straightforward:
+
+=CN The Result Is 直爽的:
+
+=EN Ginger walks into the room.
+
+=CN Ginger walks Into The 房间.
+
+=EN Ginger: (in a sultry voice) Well hello, Gilligan!
+
+=CN Ginger: (In a 闷热的 声音) Well 你好, Gilligan!
+
+=EN Ginger: (in a sultry voice) Well hello, Skipper!
+
+=CN Ginger: (In a 闷热的 声音) Well 你好, Skipper!
+
+=EN Skipper: Hey there, Ginger!
+
+=CN Skipper: Hey There, Ginger!
+
+=EN Ginger: (in a sultry voice) Well hello, Professor!
+
+=CN Ginger: (In a 闷热的 声音) Well 你好, Professor!
+
+=EN Professor: By my calculations, you must be Ginger!
+
+=CN Professor: By My calculations, You Must Be Ginger!
+
+=EN Adding a few more castaways is as simple as putting the entry for the greeting behavior into the hash and adding them into the list of people entering the room.
+
+=CN Adding a Few More castaways Is As Simple As Putting The Entry For The 问候 Behavior Into The Hash And Adding Them Into The List Of People entering The 房间.
+
+=EN We get this scaling of effort because we have preserved the behavior as data over which you can iterate and look up, thanks to your friendly subroutine references.
+
+=CN We Get This scaling Of 努力 Because We Have preserved The Behavior As Data 在 Which You Can iterate And Look Up, 感谢int To Your 友好的 Subroutine References.
+
+=EN Callbacks A subroutine reference is often used for a callback.
+
+=CN Callbacks A Subroutine Reference Is Often Used For a callback.
+
+=EN A callback defines what to do when a subroutine reaches a particular place in an algorithm.
+
+=CN A callback 定义 What To Do When a Subroutine reaches a Particular Place In An 算法.
+
+=EN For example, the File::Find module exports a find subroutine that can efficiently walk through a given filesystem hierarchy in a fairly portable way.
+
+=CN For Example, The File::Find Module exports a 寻找 Subroutine That Can efficiently 步行 通过 a Given filesystem 层次 In a 公平地 手提的 Way.
+
+=EN In its simplest form, we give the find subroutine two parameters: a starting directory and "what to do" for each file or directory name found recursively below that starting directory.
+
+=CN In Its simplest Form, We Give The 寻找 Subroutine Two Parameters: a Starting Directory And "What To Do" For Each File Or Directory Name Found Recursively Below That Starting Directory.
+
+=EN The "what to do" is specified as a subroutine reference:
+
+=CN The "What To Do" Is 指定 As a Subroutine Reference:
+
+=EN use File::Find; sub what_to_do {
+
+=CN Use File::Find; Sub what_to_do {
+
+=EN find(\&what_to_do, @starting_directories);
+
+=CN 寻找(\&what_to_do, @starting_directories);
+
+=EN find starts at the current directory (.) and locates each file or directory.
+
+=CN 寻找 Starts At The Current Directory (.) And 位于 Each File Or Directory.
+
+=EN For each item, we call the subroutine what_to_do( ), passing it a few documented values through global variables.
+
+=CN For Each 条款, We Call The Subroutine what_to_do( ), Passing It a Few Documented Values 通过 Global Variables.
+
+=EN In particular, the value of $File::Find::name is the item's full pathname (beginning with the starting directory).
+
+=CN In Particular, The Value Of $File::Find::Name Is The 条款's Full pathname (开端 With The Starting Directory).
+
+=EN In this case, we are passing both data (the list of starting directories) and behavior as parameters to the find routine.
+
+=CN In This Case, We Are Passing Both Data (The List Of Starting directories) And Behavior As Parameters To The 寻找 Routine.
+
+=EN It's a bit silly to invent a subroutine name to use the name only once, so we can write the previous code using an anonymous subroutine, such as:
+
+=CN It's a Bit 糊涂的 To 发明 a Subroutine Name To Use The Name Only Once, So We Can Write The Previous Code Using An Anonymous Subroutine, Such As:
+
+=EN use File::Find; my @starting_directories = qw(.);
+
+=CN Use File::Find; My @starting_directories = Qw(.);
+
+=EN find(
+
+=CN 寻找(
+
+=EN Closures We could also use File::Find to find out some other things about files, such as their size.
+
+=CN Closures We Could Also Use File::Find To 寻找 Out Some Other Things About Files, Such As Their Size.
+
+=EN For the callback's convenience, the current working directory is the item's containing directory, and the item's name within that directory is found in $_.
+
+=CN For The callback's 方便, The Current Working Directory Is The 条款's Containing Directory, And The 条款's Name Within That Directory Is Found In $_.
+
+=EN Maybe you have noticed that, in the previous code, we used $File::Find::name for the item's name.
+
+=CN Maybe You Have Noticed That, In The Previous Code, We Used $File::Find::Name For The 条款's Name.
+
+=EN So which name is real, $_ or $File::Find::name? $File::Find::name gives the name relative to the starting directory, but during the callback, the working directory is the one that holds the item just found.
+
+=CN So Which Name Is Real, $_ Or $File::Find::Name? $File::Find::Name Gives The Name 亲戚 To The Starting Directory, But 在 The callback, The Working Directory Is The One That holds The 条款 Just Found.
+
+=EN For example, suppose that we want find to look for files in the current working directory, so we give it (".") as the list of directories to search.
+
+=CN For Example, 猜想 That We Want 寻找 To Look For Files In The Current Working Directory, So We Give It (".") As The List Of directories To 搜查.
+
+=EN If we call find when the current working directory is /usr, find looks below that directory.
+
+=CN If We Call 寻找 When The Current Working Directory Is /usr, 寻找 Looks Below That Directory.
+
+=EN When find locates /usr/bin/perl, the current working directory (during the callback) is /usr/bin. $_ holds perl, and $File::Find::name holds ./bin/perl, which is the name relative to the directory in which you started the search.
+
+=CN When 寻找 位于 /usr/bin/Perl, The Current Working Directory (在 The callback) Is /usr/bin. $_ holds Perl, And $File::Find::Name holds ./bin/Perl, Which Is The Name 亲戚 To The Directory In Which You 开始 The 搜查.
+
+=EN All of this means that the file tests, such as -s, automatically report on the just-found item.
+
+=CN All Of This Means That The File 测试, Such As -s, Automatically 报告 On The Just-Found 条款.
+
+=EN Although this is convenient, the current directory inside the callback is different from the search's starting directory.
+
+=CN Although This Is 便利的, The Current Directory 里面 The callback Is Different From The 搜查's Starting Directory.
+
+=EN What if we want to use File::Find to accumulate the total size of all files seen?
+
+=CN What If We Want To Use File::Find To 积累 The 总 Size Of All Files Seen?
+
+=EN The callback subroutine cannot take arguments, and the caller discards its result.
+
+=CN The callback Subroutine Cannot Take Arguments, And The Caller discards Its Result.
+
+=EN But that doesn't matter.
+
+=CN But That Doesn't Matter.
+
+=EN When dereferenced, a subroutine reference can see all visible lexical variables when the reference to the subroutine is taken.
+
+=CN When dereferenced, a Subroutine Reference Can See All Visible Lexical Variables When The Reference To The Subroutine Is Taken.
+
+=EN For example:
+
+=CN For Example:
+
+=EN use File::Find;
+
+=CN Use File::Find;
+
+=EN my $total_size = 0; find(sub { $total_size += -s if -f }, '.'); print $total_size, "\n";
+
+=CN My $total_size = 0; 寻找(Sub { $total_size += -s If -f }, '.'); Print $total_size, "\n";
+
+=EN As before, we call the find routine with two parameters: a reference to an anonymous subroutine and the starting directory.
+
+=CN As Before, We Call The 寻找 Routine With Two Parameters: a Reference To An Anonymous Subroutine And The Starting Directory.
+
+=EN When it finds names within that directory (and its subdirectories), it calls the anonymous subroutine.
+
+=CN When It 发现 Names Within That Directory (And Its subdirectories), It Calls The Anonymous Subroutine.
+
+=EN Note that the subroutine accesses the $total_size variable.
+
+=CN Note That The Subroutine Accesses The $total_size Variable.
+
+=EN We declare this variable outside the scope of the subroutine but still visible to the subroutine.
+
+=CN We Declare This Variable Outside The Scope Of The Subroutine But Still Visible To The Subroutine.
+
+=EN Thus, even though find invokes the callback subroutine (and would not have direct access to $total_size), the callback subroutine accesses and updates the variable.
+
+=CN Thus, Even Though 寻找 invokes The callback Subroutine (And Would Not Have Direct Access To $total_size), The callback Subroutine Accesses And 更新 The Variable.
+
+=EN The kind of subroutine that can access all lexical variables that existed at the time we declared it is called a closure (a term borrowed from the world of mathematics).
+
+=CN The Kind Of Subroutine That Can Access All Lexical Variables That existed At The Time We Declared It Is Called a Closure (a 期限 borrowed From The World Of 数学).
+
+=EN In Perl terms, a closure is just a subroutine that references a lexical variable that has gone out of scope.
+
+=CN In Perl Terms, a Closure Is Just a Subroutine That References a Lexical Variable That Has 不见了 Out Of Scope.
+
+=EN Furthermore, the access to the variable from within the closure ensures that the variable remains alive as long as the subroutine reference is alive.
+
+=CN Furthermore, The Access To The Variable From Within The Closure ensures That The Variable 剩余 活着的 As Long As The Subroutine Reference Is 活着的.
+
+=EN For example, let's number the output files:[*]
+
+=CN For Example, Let's Number The 出产 Files:[*]
+
+=EN [*] This code seems to have an extra semicolon at the end of the line that assigns to $callback, doesn't it?
+
+=CN [*] This Code 似乎 To Have An Extra semicolon At The End Of The Line That Assigns To $callback, Doesn't It?
+
+=EN But remember, the construct sub { ... } is an expression.
+
+=CN But 记得, The Construct Sub { ... } Is An Expression.
+
+=EN Its value (a coderef) is assigned to $callback, and there's a semicolon at the end of that statement.
+
+=CN Its Value (a coderef) Is Assigned To $callback, And There's a semicolon At The End Of That Statement.
+
+=EN It's easy to forget to put the proper punctuation after the closing curly brace of an anonymous subroutine declaration.
+
+=CN It's Easy To 忘记 To Put The 合适的 准时 After The closing 卷曲的 支撑 Of An Anonymous Subroutine Declaration.
+
+=EN my $callback; {
+
+=CN My $callback; {
+
+=EN Here, we declare a variable to hold the callback.
+
+=CN Here, We Declare a Variable To Hold The callback.
+
+=EN We cannot declare this variable within the naked block (the block following that is not part of a larger Perl syntax construct), or Perl will recycle it at the end of that block.
+
+=CN We Cannot Declare This Variable Within The 裸体的 Block (The Block Following That Is Not Part Of a larger Perl Syntax Construct), Or Perl Will recycle It At The End Of That Block.
+
+=EN Next, the lexical $count variable is initialized to 0.
+
+=CN Next, The Lexical $计算 Variable Is 初始化 To 0.
+
+=EN We then declare an anonymous subroutine and place its reference into $callback.
+
+=CN We Then Declare An Anonymous Subroutine And Place Its Reference Into $callback.
+
+=EN This subroutine is a closure because it refers to the lexical $count variable.
+
+=CN This Subroutine Is a Closure Because It Refers To The Lexical $计算 Variable.
+
+=EN At the end of the naked block, the $count variable goes out of scope.
+
+=CN At The End Of The 裸体的 Block, The $计算 Variable 去 Out Of Scope.
+
+=EN However, because it is still referenced by subroutine in $callback, it stays alive as an anonymous scalar variable.[*] When the callback is invoked from find, the value of the variable formerly known as $count is incremented from 1 to 2 to 3, and so on.
+
+=CN However, Because It Is Still 参考 By Subroutine In $callback, It 停留 活着的 As An Anonymous Scalar Variable.[*] When The callback Is invoked From 寻找, The Value Of The Variable 从前 Known As $计算 Is incremented From 1 To 2 To 3, And So On.
+
+=EN Returning a Subroutine from a Subroutine Although a naked block worked nicely to define the callback, having a subroutine return that subroutine reference instead might be more useful:
+
+=CN Returning a Subroutine From a Subroutine Although a 裸体的 Block 工作 好 To Define The callback, Having a Subroutine Return That Subroutine Reference Instead Might Be More Useful:
+
+=EN sub create_find_callback_that_counts {
+
+=CN Sub create_find_callback_that_counts {
+
+=EN my $callback = create_find_callback_that_counts( ); find($callback, '.');
+
+=CN My $callback = create_find_callback_that_counts( ); 寻找($callback, '.');
+
+=EN It's the same process here, just written a bit differently.
+
+=CN It's The Same 程序 Here, Just Written a Bit 不同地.
+
+=EN When we invoke create_find_callback_that_counts( ), we initialize the lexical variable $count to 0.
+
+=CN When We 调用 create_find_callback_that_counts( ), We Initialize The Lexical Variable $计算 To 0.
+
+=EN The return value from that subroutine is a reference to an anonymous subroutine that is also a closure because it accesses the $count variable.
+
+=CN The Return Value From That Subroutine Is a Reference To An Anonymous Subroutine That Is Also a Closure Because It Accesses The $计算 Variable.
+
+=EN Even though $count goes out of scope at the end of the create_find_callback_that_counts( ) subroutine, there's still a binding between it and the returned subroutine reference, so the variable stays alive until the subroutine reference is finally discarded.
+
+=CN Even Though $计算 去 Out Of Scope At The End Of The create_find_callback_that_counts( ) Subroutine, There's Still a 装订 Between It And The Returned Subroutine Reference, So The Variable 停留 活着的 Until The Subroutine Reference Is 最终 丢弃.
+
+=EN If we reuse the callback, the same variable still has its most recently used value.
+
+=CN If We Reuse The callback, The Same Variable Still Has Its Most 近来 Used Value.
+
+=EN The initialization occurred in the original subroutine (create_find_callback_that_counts), not the callback (unnamed) subroutine:
+
+=CN The Initialization Occurred In The Original Subroutine (create_find_callback_that_counts), Not The callback (unnamed) Subroutine:
+
+=EN my $callback = create_find_callback_that_counts( ); print "my bin:\n"; find($callback, 'bin'); print "my lib:\n"; find($callback, 'lib');
+
+=CN My $callback = create_find_callback_that_counts( ); Print "My bin:\n"; 寻找($callback, 'bin'); Print "My lib:\n"; 寻找($callback, 'lib');
+
+=EN This example prints consecutive numbers starting at 1 for the entries below bin, but then continues the numbering when we start entries in lib.
+
+=CN This Example Prints 连续的 编号 Starting At 1 For The Entries Below bin, But Then 继续 The numbering When We Start Entries In lib.
+
+=EN The same $count variable is used in both cases.
+
+=CN The Same $计算 Variable Is Used In Both Cases.
+
+=EN However, if we invoke the create_find_callback_that_counts( ) twice, we get two different $count variables:
+
+=CN However, If We 调用 The create_find_callback_that_counts( ) 两次, We Get Two Different $计算 Variables:
+
+=EN my $callback1 = create_find_callback_that_counts( ); my $callback2 = create_find_callback_that_counts( ); print "my bin:\n"; find($callback1, 'bin'); print "my lib:\n"; find($callback2, 'lib');
+
+=CN My $callback1 = create_find_callback_that_counts( ); My $callback2 = create_find_callback_that_counts( ); Print "My bin:\n"; 寻找($callback1, 'bin'); Print "My lib:\n"; 寻找($callback2, 'lib');
+
+=EN In this case, we have two separate $count variables, each accessed from within their own callback subroutine.
+
+=CN In This Case, We Have Two Separate $计算 Variables, Each accessed From Within Their Own callback Subroutine.
+
+=EN How would we get the total size of all found files from the callback?
+
+=CN How Would We Get The 总 Size Of All Found Files From The callback?
+
+=EN Earlier, we were able to do this by making $total_size visible.
+
+=CN Earlier, We Were Able To Do This By 制作 $total_size Visible.
+
+=EN If we stick the definition of $total_size into the subroutine that returns the callback reference, we won't have access to the variable.
+
+=CN If We Stick The Definition Of $total_size Into The Subroutine That Returns The callback Reference, We Won't Have Access To The Variable.
+
+=EN But we can cheat a bit.
+
+=CN But We Can Cheat a Bit.
+
+=EN For one thing, we can determine that we'll never call the callback subroutine with any parameters, so, if the subroutine receives a parameter, we make it return the total size:
+
+=CN For One Thing, We Can 决心 That We'我 Never Call The callback Subroutine With Any Parameters, So, If The Subroutine receives a Parameter, We Make It Return The 总 Size:
+
+=EN sub create_find_callback_that_sums_the_size {
+
+=CN Sub create_find_callback_that_sums_the_size {
+
+=EN # it's our dummy invocation
+
+=CN # It's Our 傀儡 调用
+
+=EN # it's a callback from File::Find:
+
+=CN # It's a callback From File::Find:
+
+=EN my $callback = create_find_callback_that_sums_the_size( ); find($callback, 'bin'); my $total_size = $callback->('dummy'); # dummy parameter to get size print "total size of bin is $total_size\n";
+
+=CN My $callback = create_find_callback_that_sums_the_size( ); 寻找($callback, 'bin'); My $total_size = $callback->('傀儡'); # 傀儡 Parameter To Get Size Print "总 Size Of bin Is $total_size\n";
+
+=EN Distinguishing actions by the presence or absence of parameters is not a universal solution.
+
+=CN Distinguishing 行动 By The 出席 Or 缺席 Of Parameters Is Not a 宇宙的 解决.
+
+=EN Fortunately, we can create more than one subroutine reference in create_find_callback_that_counts( ):
+
+=CN Fortunately, We Can Create More Than One Subroutine Reference In create_find_callback_that_counts( ):
+
+=EN sub create_find_callbacks_that_sum_the_size {
+
+=CN Sub create_find_callbacks_that_sum_the_size {
+
+=EN my ($count_em, $get_results) = create_find_callbacks_that_sum_the_size( ); find($count_em, 'bin'); my $total_size = &$get_results( ); print "total size of bin is $total_size\n";
+
+=CN My ($count_em, $get_results) = create_find_callbacks_that_sum_the_size( ); 寻找($count_em, 'bin'); My $total_size = &$get_results( ); Print "总 Size Of bin Is $total_size\n";
+
+=EN Because we created both subroutine references from the same scope, they both have access to the same $total_size variable.
+
+=CN Because We Created Both Subroutine References From The Same Scope, They Both Have Access To The Same $total_size Variable.
+
+=EN Even though the variable has gone out of scope before we call either subroutine, they still share the same heritage and can use the variable to communicate the result of the calculation.
+
+=CN Even Though The Variable Has 不见了 Out Of Scope Before We Call Either Subroutine, They Still 份 The Same heritage And Can Use The Variable To 传播 The Result Of The 计算（结果）.
+
+=EN Returning the two subroutine references from the creating subroutine does not invoke them.
+
+=CN Returning The Two Subroutine References From The Creating Subroutine Does Not 调用 Them.
+
+=EN The references are just data at that point.
+
+=CN The References Are Just Data At That 尖.
+
+=EN It is not until we invoke them as a callback or an explicit subroutine dereferencing that they actually do their duty.
+
+=CN It Is Not Until We 调用 Them As a callback Or An 清楚的 Subroutine dereferencing That They Actually Do Their 责任.
+
+=EN What if we invoke this new subroutine more than once?
+
+=CN What If We 调用 This New Subroutine More Than Once?
+
+=EN ## set up the subroutines my %subs; foreach my $dir (qw(bin lib man)) {
+
+=CN ## Set Up The Subroutines My %Subs; Foreach My $dir (Qw(bin lib 人)) {
+
+=EN ## gather the data for (keys %subs) {
+
+=CN ## 聚集 The Data For (Keys %Subs) {
+
+=EN ## show the data for (sort keys %subs) {
+
+=CN ## Show The Data For (Sort Keys %Subs) {
+
+=EN In the section to set up the subroutines, we create three instances of callback-and-getter pairs.
+
+=CN In The Section To Set Up The Subroutines, We Create Three 实例 Of callback-And-getter 双.
+
+=EN Each callback has a corresponding subroutine to get the results.
+
+=CN Each callback Has a 相应的 Subroutine To Get The Results.
+
+=EN Next, in the section to gather the data, we call find three times with each corresponding callback subroutine reference.
+
+=CN Next, In The Section To 聚集 The Data, We Call 寻找 Three Times With Each 相应的 callback Subroutine Reference.
+
+=EN This updates the individual $total_size variables associated with each callback.
+
+=CN This 更新 The Individual $total_size Variables Associated With Each callback.
+
+=EN Finally, in the section to show the data, we call the getter routines to fetch the results.
+
+=CN Finally, In The Section To Show The Data, We Call The getter Routines To 去取来 The Results.
+
+=EN The six subroutines (and the three $total_size variables they share) are reference counted.
+
+=CN The six Subroutines (And The Three $total_size Variables They 份) Are Reference 数.
+
+=EN When we modify %subs or it goes out of scope, the values have their reference counts reduced, recycling the contained data.
+
+=CN When We Modify %Subs Or It 去 Out Of Scope, The Values Have Their Reference 计数 减少, recycling The 包含 Data.
+
+=EN (If that data also references further data, those reference counts are reduced appropriately.) 7.6.
+
+=CN (If That Data Also References Further Data, Those Reference 计数 Are 减少 适当.) 7.6.
+
+=EN Closure Variables as Inputs While the previous examples showed closure variables being modified, closure variables are also useful to provide initial or lasting input to the subroutine.
+
+=CN Closure Variables As Inputs While The Previous Examples showed Closure Variables Being Modified, Closure Variables Are Also Useful To Provide Initial Or 持久的 Input To The Subroutine.
+
+=EN For example, let us write a subroutine to create a File::Find callback that prints files exceeding a certain size:
+
+=CN For Example, Let Us Write a Subroutine To Create a File::Find callback That Prints Files exceeding a 确信的 Size:
+
+=EN sub print_bigger_than {
+
+=CN Sub print_bigger_than {
+
+=EN my $bigger_than_1024 = print_bigger_than(1024); find($bigger_than_1024, 'bin');
+
+=CN My $bigger_than_1024 = print_bigger_than(1024); 寻找($bigger_than_1024, 'bin');
+
+=EN We pass the 1024 parameter into the print_bigger_than, which then gets shifted into the $minimum_size lexical variable.
+
+=CN We Pass The 1024 Parameter Into The print_bigger_than, Which Then Gets shifted Into The $minimum_size Lexical Variable.
+
+=EN Because we access this variable within the subroutine referenced by the return value of the print_bigger_than variable, it becomes a closure variable, with a value that persists for the duration of that subroutine reference.
+
+=CN Because We Access This Variable Within The Subroutine 参考 By The Return Value Of The print_bigger_than Variable, It Becomes a Closure Variable, With a Value That persists For The 期间 Of That Subroutine Reference.
+
+=EN Again, invoking this subroutine multiple times creates distinct "locked-in" values for $minimum_size, each bound to its corresponding subroutine reference.
+
+=CN Again, 调用 This Subroutine Multiple Times Creates 不同的 "locked-In" Values For $minimum_size, Each 缚 To Its 相应的 Subroutine Reference.
+
+=EN Closures are "closed" only on lexical variables, since lexical variables eventually go out of scope.
+
+=CN Closures Are "关闭的" Only On Lexical Variables, Since Lexical Variables 最终 Go Out Of Scope.
+
+=EN Because a package variable (which is a global) never goes out of scope, a closure never closes on a package variable.
+
+=CN Because a Package Variable (Which Is a Global) Never 去 Out Of Scope, a Closure Never closes On a Package Variable.
+
+=EN All subroutines refer to the same single instance of the global variable.
+
+=CN All Subroutines Refer To The Same Single 例子 Of The Global Variable.
+
+=EN Closure Variables as Static Local Variables A subroutine does not have to be an anonymous subroutine to be a closure.
+
+=CN Closure Variables As Static Local Variables A Subroutine Does Not Have To Be An Anonymous Subroutine To Be a Closure.
+
+=EN If a named subroutine accesses lexical variables, and those variables go out of scope, the named subroutine retains a reference to the lexicals, just as you saw with anonymous subroutines.
+
+=CN If a Named Subroutine Accesses Lexical Variables, And Those Variables Go Out Of Scope, The Named Subroutine retains a Reference To The Lexicals, Just As You 锯 With Anonymous Subroutines.
+
+=EN For example, consider two routines that count coconuts for Gilligan:
+
+=CN For Example, Consider Two Routines That 计算 coconuts For Gilligan:
+
+=EN If we place this code at the beginning of the program, we declare the variable $count inside the naked block scope, and the two subroutines that reference the variable become closures.
+
+=CN If We Place This Code At The 开端 Of The Program, We Declare The Variable $计算 里面 The 裸体的 Block Scope, And The Two Subroutines That Reference The Variable 变成 Closures.
+
+=EN However, because they have a name, they will persist beyond the end of the scope (as do all named subroutines).
+
+=CN However, Because They Have a Name, They Will 坚持 Beyond The End Of The Scope (As Do All Named Subroutines).
+
+=EN Since the subroutines persist beyond the scope and access variables declared within that scope, they become closures and thus can continue to access $count throughout the lifetime of the program.
+
+=CN Since The Subroutines 坚持 Beyond The Scope And Access Variables Declared Within That Scope, They 变成 Closures And 如此 Can Continue To Access $计算 Throughout The Lifetime Of The Program.
+
+=EN So, with a few calls, we can see an incremented count:
+
+=CN So, With a Few Calls, We Can See An incremented 计算:
+
+=EN count_one( ); count_one( ); count_one( ); print 'we have seen ', count_so_far( ), " coconuts!\n";
+
+=CN count_one( ); count_one( ); count_one( ); Print 'We Have Seen ', count_so_far( ), " coconuts!\n";
+
+=EN $count retains its value between calls to count_one( ) or count_so_far( ), but no other section of code can access this $count at all.
+
+=CN $计算 retains Its Value Between Calls To count_one( ) Or count_so_far( ), But No Other Section Of Code Can Access This $计算 At All.
+
+=EN In C, this is known as a static local variable: a variable that is visible to only a subset of the program's subroutines but persists throughout the life of the program, even between calls to those subroutines.
+
+=CN In C, This Is Known As a Static Local Variable: a Variable That Is Visible To Only a 子集 Of The Program's Subroutines But persists Throughout The 生活 Of The Program, Even Between Calls To Those Subroutines.
+
+=EN What if we wanted to count down?
+
+=CN What If We 想要 To 计算 向下?
+
+=EN Something like this will do':
+
+=CN Something Like This Will Do':
+
+=EN count_down( ); count_down( ); count_down( ); print 'we're down to ', count_remaining( ), " coconuts!\n";
+
+=CN count_down( ); count_down( ); count_down( ); Print 'We'Re 向下 To ', count_remaining( ), " coconuts!\n";
+
+=EN That is, it'll do as long as we put it near the beginning of the program, before any invocations of count_down( ) or count_remaining( ).
+
+=CN That Is, It'我 Do As Long As We Put It 近 The 开端 Of The Program, Before Any invocations Of count_down( ) Or count_remaining( ).
+
+=EN This block does not work when you put it after those invocations because there are two functional parts to the first line:
+
+=CN This Block Does Not Work When You Put It After Those invocations Because There Are Two Functional 部分 To The First Line:
+
+=EN my $countdown = 10;
+
+=CN My $countdown = 10;
+
+=EN One part is the declaration of $countdown as a lexical variable.
+
+=CN One Part Is The Declaration Of $countdown As a Lexical Variable.
+
+=EN That part is noticed and processed as the program is parsed during the compile phase.
+
+=CN That Part Is Noticed And processed As The Program Is Parsed 在 The Compile 阶段.
+
+=EN The second part is the assignment of 10 to the allocated storage.
+
+=CN The Second Part Is The Assignment Of 10 To The Allocated 贮藏.
+
+=EN This is handled as Perl executes the code during the run phase.
+
+=CN This Is 处理 As Perl 实行 The Code 在 The Run 阶段.
+
+=EN Unless Perl executes the run phase for this code, the variable has its initial undef value.
+
+=CN Unless Perl 实行 The Run 阶段 For This Code, The Variable Has Its Initial Undef Value.
+
+=EN One practical solution to this problem is to change the block in which the static local appears into a BEGIN block:
+
+=CN One 实用的 解决 To This Problem Is To Change The Block In Which The Static Local Appears Into a BEGIN Block:
+
+=EN The BEGIN keyword tells the Perl compiler that as soon as this block has been parsed successfully (during the compile phase), jump for a moment to run phase and run the block as well.
+
+=CN The BEGIN Keyword 告诉 The Perl Compiler That As 不久 As This Block Has Been Parsed 成功地 (在 The Compile 阶段), 跳跃 For a Moment To Run 阶段 And Run The Block As Well.
+
+=EN Presuming the block doesn't cause a fatal error, compilation then continues with the text following the block.
+
+=CN Presuming The Block Doesn't 原因 a Fatal Error, 编译 Then 继续 With The 正文 Following The Block.
+
+=EN The block itself is also discarded, ensuring that the code within is executed precisely once in a program, even if it had appeared syntactically within a loop or subroutine.
+
+=CN The Block Itself Is Also 丢弃, ensuring That The Code Within Is Executed 精确地 Once In a Program, Even If It Had 出现 管 Within a Loop Or Subroutine.
+
+=EN Exercise You can find the answer to this exercise in "Answer for Chapter 7" in the Appendix.
+
+=CN Exercise You Can 寻找 The Answer To This 锻炼 In "Answer For Chapter 7" In The Appendix.
+
+=EN Exercise [50 min] The Professor modified some files on Monday afternoon, and now he's forgotten which ones they were.
+
+=CN Exercise [50 min] The Professor Modified Some Files On Monday 下午, And Now 他's 遗忘 Which Ones They Were.
+
+=EN This happens all the time.
+
+=CN This Happens All The Time.
+
+=EN He wants you to make a subroutine called gather_mtime_between, which, given a starting and ending timestamp, returns a pair of coderefs.
+
+=CN He 要 You To Make a Subroutine Called gather_mtime_between, Which, Given a Starting And 结局 timestamp, Returns a 对 Of coderefs.
+
+=EN The first one will be used with File::Find to gather the names of only the items that were modified between those two times; the second one should return the list of items found.
+
+=CN The First One Will Be Used With File::Find To 聚集 The Names Of Only The 物品 That Were Modified Between Those Two Times; The Second One Should Return The List Of 物品 Found.
+
+=EN Here's some code to try; it should list only items that were last modified on the most recent Monday, although you could easily change it to work with a different day.
+
+=CN Here's Some Code To Try; It Should List Only 物品 That Were Last Modified On The Most 近来的 Monday, Although You Could 容易地 Change It To Work With a Different 一天.
+
+=EN (You don't have to type all of this code.
+
+=CN (You Don't Have To Type All Of This Code.
+
+=EN This program should be available as the file named ex6-1.plx in the downloadable files, available on the O'Reilly web site.)
+
+=CN This Program Should Be Available As The File Named ex6-1.plx In The downloadable Files, Available On The O'Reilly 网 场所.)
+
+=EN Hint: you can find a file's timestamp (mtime) with code such as:
+
+=CN Hint: You Can 寻找 a File's timestamp (mtime) With Code Such As:
+
+=EN my $timestamp = (stat $file_name)[9];
+
+=CN My $timestamp = (stat $file_name)[9];
+
+=EN Because it is a slice, remember that those parentheses are mandatory.
+
+=CN Because It Is a 薄片, 记得 That Those Parentheses Are 强制性.
+
+=EN Don't forget that the working directory inside the callback isn't necessarily the starting directory in which find was called.
+
+=CN Don't 忘记 That The Working Directory 里面 The callback Isn't Necessarily The Starting Directory In Which 寻找 Was Called.
+
+=EN use File::Find; use Time::Local;
+
+=CN Use File::Find; Use Time::Local;
+
+=EN my $target_dow = 1; # Sunday is 0, Monday is 1, ... my @starting_directories = (".");
+
+=CN My $target_dow = 1; # Sunday Is 0, Monday Is 1, ... My @starting_directories = (".");
+
+=EN my $seconds_per_day = 24 * 60 * 60; my($sec, $min, $hour, $day, $mon, $yr, $dow) = localtime; my $start = timelocal(0, 0, 0, $day, $mon, $yr); # midnight today while ($dow != $target_dow) {
+
+=CN My $seconds_per_day = 24 * 60 * 60; My($sec, $min, $小时, $一天, $mon, $yr, $dow) = localtime; My $Start = timelocal(0, 0, 0, $一天, $mon, $yr); # 午夜 今天现在 While ($dow != $target_dow) {
+
+=EN  # Back up one day
+
+=CN  # Back Up One 一天
+
+=EN # hope no DST! :-)
+
+=CN # 希望 No DST! :-)
+
+=EN my($gather, $yield) = gather_mtime_between($start, $stop); find($gather, @starting_directories); my @files = $yield->( );
+
+=CN My($聚集, $生产) = gather_mtime_between($Start, $Stop); 寻找($聚集, @starting_directories); My @Files = $生产->( );
+
+=EN for my $file (@files) {
+
+=CN For My $File (@Files) {
+
+=EN # mtime via slice
+
+=CN # mtime Via 薄片
+
+=EN Note the comment about DST.
+
+=CN Note The Comment About DST.
+
+=EN In many parts of the world, on the days when daylight savings time or summer time kicks in and out, the day is no longer 86, 400 seconds long.
+
+=CN In Many 部分 Of The World, On The 天 When 日光 存款 Time Or 夏季 Time kicks In And Out, The 一天 Is No 长 86, 400 seconds Long.
+
+=EN The program glosses over this issue, but a more pedantic coder might take it into consideration appropriately.
+
+=CN The Program glosses 在 This 发行发布, But a More pedantic coder Might Take It Into 考虑 适当.
+

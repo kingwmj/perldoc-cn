@@ -1,0 +1,104 @@
+=EN NAME
+
+=CN 标题
+
+=EN perlpragma - how to write a user pragma
+
+=CN perlpragma - How To Write a User Pragma
+
+=EN DESCRIPTION
+
+=CN 描述
+
+=EN A pragma is a module which influences some aspect of the compile time or run time behaviour of Perl, such as C<strict> or C<warnings>.
+
+=CN A Pragma Is a Module Which influences Some 容貌 Of The Compile Time Or Run Time Behaviour Of Perl, Such As C<strict> Or C<warnings>.
+
+=EN With Perl 5.10 you are no longer limited to the built in pragmata; you can now create user pragmata that modify the behaviour of user functions within a lexical scope.
+
+=CN With Perl 5.10 You Are No 长 Limited To The Built In pragmata; You Can Now Create User pragmata That Modify The Behaviour Of User Functions Within a Lexical Scope.
+
+=EN A basic example
+
+=CN A 基本的 Example
+
+=EN For example, say you need to create a class implementing overloaded mathematical operators, and would like to provide your own pragma that functions much like C<use integer;> You'd like this code
+
+=CN For Example, Say You Need To Create a Class 实施 超载 数学的 Operators, And Would Like To Provide Your Own Pragma That Functions Much Like C<use integer;> You'd Like This Code
+
+=EN to give the output
+
+=CN To Give The 出产
+
+=EN I<i.e.>, where C<use myint;> is in effect, addition operations are forced to integer, whereas by default they are not, with the default behaviour being restored via C<no myint;>
+
+=CN I<i.e.>, Where C<use myint;> Is In Effect, 增加 操作 Are 迫使 To 整数, 而 By Default They Are Not, With The Default Behaviour Being Restored Via C<no myint;>
+
+=EN The minimal implementation of the package C<MyMaths> would be something like this:
+
+=CN The 最小 实行 Of The Package C<MyMaths> Would Be Something Like This:
+
+=EN  # Pass 1 to check up one call level from here
+
+=CN  # Pass 1 To Check Up One Call Level From Here
+
+=EN Note how we load the user pragma C<myint> with an empty list C<()> to prevent its C<import> being called.
+
+=CN Note How We Load The User Pragma C<myint> With An Empty List C<()> To 防止 Its C<import> Being Called.
+
+=EN The interaction with the Perl compilation happens inside package C<myint>:
+
+=CN The 相互作用 With The Perl 编译 Happens 里面 Package C<myint>:
+
+=EN As pragmata are implemented as modules, like any other module, C<use myint;> becomes
+
+=CN As pragmata Are 实施 As Modules, Like Any Other Module, C<use myint;> Becomes
+
+=EN and C<no myint;> is
+
+=CN And C<no myint;> Is
+
+=EN Hence the C<import> and C<unimport> routines are called at B<compile time> for the user's code.
+
+=CN Hence The C<import> And C<unimport> Routines Are Called At B<compile time> For The User's Code.
+
+=EN User pragmata store their state by writing to the magical hash C<%^H>, hence these two routines manipulate it.
+
+=CN User pragmata 商店 Their State By 写作 To The Magical Hash C<%^H>, 因此 These Two Routines 操纵 It.
+
+=EN The state information in C<%^H> is stored in the optree, and can be retrieved read-only at runtime with C<caller()>, at index 10 of the list of returned results.
+
+=CN The State Information In C<%^H> Is Stored In The optree, And Can Be retrieved Read-Only At Runtime With C<caller()>, At Index 10 Of The List Of Returned Results.
+
+=EN In the example pragma, retrieval is encapsulated into the routine C<in_effect()>, which takes as parameter the number of call frames to go up to find the value of the pragma in the user's script.
+
+=CN In The Example Pragma, retrieval Is 封装 Into The Routine C<in_effect()>, Which Takes As Parameter The Number Of Call frames To Go Up To 寻找 The Value Of The Pragma In The User's 临时单据.
+
+=EN This uses C<caller()> to determine the value of C<$^H{myint}> when each line of the user's script was called, and therefore provide the correct semantics in the subroutine implementing the overloaded addition.
+
+=CN This Uses C<caller()> To 决心 The Value Of C<$^H{myint}> When Each Line Of The User's 临时单据 Was Called, And therefore Provide The 正确的 语义 In The Subroutine 实施 The 超载 增加.
+
+=EN Implementation details
+
+=CN Implementation Details
+
+=EN The optree is shared between threads.
+
+=CN The optree Is Shared Between 线程s.
+
+=EN This means there is a possibility that the optree will outlive the particular thread (and therefore the interpreter instance) that created it, so true Perl scalars cannot be stored in the optree.
+
+=CN This Means There Is a 可能性 That The optree Will outlive The Particular 线程 (And therefore The 译员 例子) That Created It, So True Perl Scalars Cannot Be Stored In The optree.
+
+=EN Instead a compact form is used, which can only store values that are integers (signed and unsigned), strings or C<undef> - references and floating point values are stringified.
+
+=CN Instead a 严密的 Form Is Used, Which Can Only 商店 Values That Are 整数 (signed And unsigned), Strings Or C<undef> - References And Floating 尖 Values Are stringified.
+
+=EN If you need to store multiple values or complex structures, you should serialise them, for example with C<pack>.
+
+=CN If You Need To 商店 Multiple Values Or 综合的 Structures, You Should serialise Them, For Example With C<pack>.
+
+=EN The deletion of a hash key from C<%^H> is recorded, and as ever can be distinguished from the existence of a key with value C<undef> with C<exists>.
+
+=CN The Deletion Of a Hash Key From C<%^H> Is Recorded, And As 曾经 Can Be 尊贵的 From The 存在 Of a Key With Value C<undef> With C<exists>.
+

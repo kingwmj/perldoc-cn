@@ -1,0 +1,876 @@
+=EN Introduction to References References are the basis for complex data structures, object-oriented programming (OOP), and fancy subroutine magic.
+
+=CN Introduction To References References Are The 基础 For 综合的 Data Structures, Object-Oriented Programming (OOP), And 幻想 Subroutine Magic.
+
+=EN They're the magic that was added between Perl version 4 and version 5 to make it all possible.
+
+=CN They'Re The Magic That Was added Between Perl Version 4 And Version 5 To Make It All Possible.
+
+=EN A Perl scalar variable holds a single value.
+
+=CN A Perl Scalar Variable holds a Single Value.
+
+=EN An array holds an ordered list of one or more scalars.
+
+=CN An Array holds An ordered List Of One Or More Scalars.
+
+=EN A hash holds a collection of scalars as values, keyed by other scalars.
+
+=CN A Hash holds a Collection Of Scalars As Values, keyed By Other Scalars.
+
+=EN Although a scalar can be an arbitrary string, which allows complex data to be encoded into an array or hash, none of the three data types are well suited to complex data interrelationships.
+
+=CN Although a Scalar Can Be An 专横的 String, Which Allows 综合的 Data To Be encoded Into An Array Or Hash, 没人 Of The Three Data Types Are Well suited To 综合的 Data 相互关系的.
+
+=EN This is a job for the reference.
+
+=CN This Is a 工作 For The Reference.
+
+=EN Let's look at the importance of references by starting with an example.
+
+=CN Let's Look At The 重要性 Of References By Starting With An Example.
+
+=EN Performing the Same Task on Many Arrays Before the Minnow can leave on an excursion (for example, a three-hour tour), we should check every passenger and crew member to ensure they have all the required trip items in their possession.
+
+=CN Performing The Same Task On Many 数组 Before The Minnow Can 出发 On An 短途游览 (For Example, a Three-小时 旅行), We Should Check Every 旅客 And （飞机等的）全体人员 Member To Ensure They Have All The 要求 旅行 物品 In Their 所有.
+
+=EN Let's say that, for maritime safety, every person on-board the Minnow needs to have a life preserver, some sunscreen, a water bottle, and a rain jacket.
+
+=CN Let's Say That, For maritime 安全, Every 人 On-木板 The Minnow Needs To Have a 生活 preserver, Some sunscreen, a 水 瓶子, And a 雨 短外套.
+
+=EN We can write a bit of code to check for the Skipper's supplies:
+
+=CN We Can Write a Bit Of Code To Check For The Skipper's Supplies:
+
+=EN my @required = qw(preserver sunscreen water_bottle jacket); my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+
+=CN My @要求 = Qw(preserver sunscreen water_bottle 短外套); My @skipper = Qw(blue_shirt 帽子 短外套 preserver sunscreen);
+
+=EN for my $item (@required) {
+
+=CN For My $条款 (@要求) {
+
+=EN  # not found in list?
+
+=CN  # Not Found In List?
+
+=EN The grep in a scalar context returns the number of times the expression $item eq $_ returns true, which is 1 if the item is in the list and 0 if not.[*] If the value is 0, it's false, and we print the message.
+
+=CN The Grep In a Scalar Context Returns The Number Of Times The Expression $条款 Eq $_ Returns True, Which Is 1 If The 条款 Is In The List And 0 If Not.[*] If The Value Is 0, It's False, And We Print The 音讯.
+
+=EN [*] There are more efficient ways to check list membership for large lists, but for a few items, this is probably the easiest way to do so with just a few lines of code.
+
+=CN [*] There Are More Efficient Ways To Check List 会员资格 For Large Lists, But For a Few 物品, This Is Probably The easiest Way To Do So With Just a Few Lines Of Code.
+
+=EN Of course, if we want to check on Gilligan and the Professor, we might write the following code:
+
+=CN Of Course, If We Want To Check On Gilligan And The Professor, We Might Write The Following Code:
+
+=EN my @gilligan = qw(red_shirt hat lucky_socks water_bottle); for my $item (@required) {
+
+=CN My @gilligan = Qw(red_shirt 帽子 lucky_socks water_bottle); For My $条款 (@要求) {
+
+=EN  # not found in list?
+
+=CN  # Not Found In List?
+
+=EN my @professor = qw(sunscreen water_bottle slide_rule batteries radio); for my $item (@required) {
+
+=CN My @教授 = Qw(sunscreen water_bottle slide_rule batteries 无线电); For My $条款 (@要求) {
+
+=EN  # not found in list?
+
+=CN  # Not Found In List?
+
+=EN You may start to notice a lot of repeated code here and think that we should refactor that into a common subroutine that we can reuse (and you'd be right):
+
+=CN You May Start To Notice a 许多 Of 重复 Code Here And 想 That We Should 重构 That Into a Common Subroutine That We Can Reuse (And You'd Be Right):
+
+=EN sub check_required_items {
+
+=CN Sub check_required_items {
+
+=EN  # not found in list?
+
+=CN  # Not Found In List?
+
+=EN my @gilligan = qw(red_shirt hat lucky_socks water_bottle); check_required_items('gilligan', @gilligan);
+
+=CN My @gilligan = Qw(red_shirt 帽子 lucky_socks water_bottle); check_required_items('gilligan', @gilligan);
+
+=EN Perl gives the subroutine five items in its @_ array initially: the name gilligan and the four items belonging to Gilligan.
+
+=CN Perl Gives The Subroutine five 物品 In Its @_ Array 最初: The Name gilligan And The 四 物品 Belonging To Gilligan.
+
+=EN After the shift, @_ only has the items.
+
+=CN After The Shift, @_ Only Has The 物品.
+
+=EN Thus, the grep checks each required item against the list.
+
+=CN Thus, The Grep 检查 Each 要求 条款 反对 The List.
+
+=EN So far, so good.
+
+=CN So Far, So Good.
+
+=EN We can check the Skipper and the Professor with just a bit more code:
+
+=CN We Can Check The Skipper And The Professor With Just a Bit More Code:
+
+=EN my @skipper = qw(blue_shirt hat jacket preserver sunscreen); my @professor = qw(sunscreen water_bottle slide_rule batteries radio); check_required_items('skipper', @skipper); check_required_items('professor', @professor);
+
+=CN My @skipper = Qw(blue_shirt 帽子 短外套 preserver sunscreen); My @教授 = Qw(sunscreen water_bottle slide_rule batteries 无线电); check_required_items('skipper', @skipper); check_required_items('教授', @教授);
+
+=EN And for the other passengers, we repeat as needed.
+
+=CN And For The Other passengers, We 重复 As Needed.
+
+=EN Although this code meets the initial requirements, we've got two problems to deal with:
+
+=CN Although This Code meets The Initial 要求, We'Ve Got Two 问题 To 处理 With:
+
+=EN To create @_, Perl copies the entire contents of the array to be scanned.
+
+=CN To Create @_, Perl Copies The 完全的 Contents Of The Array To Be scanned.
+
+=EN This is fine for a few items, but if the array is large, it seems a bit wasteful to copy the data just to pass it into a subroutine.
+
+=CN This Is Fine For a Few 物品, But If The Array Is Large, It 似乎 a Bit 浪费的 To Copy The Data Just To Pass It Into a Subroutine.
+
+=EN Suppose we want to modify the original array to force the provisions list to include the mandatory items.
+
+=CN Suppose We Want To Modify The Original Array To Force The provisions List To Include The 强制性 物品.
+
+=EN Because we have a copy in the subroutine ("pass by value"), any changes we make to @_ aren't reflected automatically in the corresponding provisions array.[*]
+
+=CN Because We Have a Copy In The Subroutine ("Pass By Value"), Any Changes We Make To @_ 还't reflected Automatically In The 相应的 provisions Array.[*]
+
+=EN [*] Actually, assigning new scalars to elements of @_ after the shift modifies the corresponding variable being passed, but that still wouldn't let us extend the array with additional mandatory provisions.
+
+=CN [*] Actually, assigning New Scalars To Elements Of @_ After The Shift Modifies The 相应的 Variable Being Passed, But That Still Wouldn't Let Us 延伸 The Array With Additional 强制性 provisions.
+
+=EN To solve either or both of these problems, we need pass by reference rather than pass by value.
+
+=CN To 解答 Either Or Both Of These 问题, We Need Pass By Reference Rather Than Pass By Value.
+
+=EN And that's just what the doctor (or Professor) ordered.
+
+=CN And That's Just What The 医生 (Or Professor) ordered.
+
+=EN Taking a Reference to an Array Among its many other meanings, the backslash (\) character is also the "take a reference to" operator.
+
+=CN Taking a Reference To An Array Among Its Many Other Meanings, The 反斜杠 (\) Character Is Also The "Take a Reference To" Operator.
+
+=EN When we use it in front of an array name, e.g., \@skipper, the result is a reference to that array.
+
+=CN When We Use It In Front Of An Array Name, e.g., \@skipper, The Result Is a Reference To That Array.
+
+=EN A reference to the array is like a pointer: it points at the array, but it is not the array itself.
+
+=CN A Reference To The Array Is Like a Pointer: It 分 At The Array, But It Is Not The Array Itself.
+
+=EN A reference fits wherever a scalar fits.
+
+=CN A Reference fits 无论哪里 a Scalar fits.
+
+=EN It can go into an element of an array or a hash, or into a plain scalar variable, like this:
+
+=CN It Can Go Into An Element Of An Array Or a Hash, Or Into a 明白的 Scalar Variable, Like This:
+
+=EN my $reference_to_skipper = \@skipper;
+
+=CN My $reference_to_skipper = \@skipper;
+
+=EN The reference can be copied:
+
+=CN The Reference Can Be 复制:
+
+=EN my $second_reference_to_skipper = $reference_to_skipper;
+
+=CN My $second_reference_to_skipper = $reference_to_skipper;
+
+=EN or even:
+
+=CN Or Even:
+
+=EN my $third_reference_to_skipper = \@skipper;
+
+=CN My $third_reference_to_skipper = \@skipper;
+
+=EN We can interchange all three references.
+
+=CN We Can interchange All Three References.
+
+=EN We can even say they're identical, because, in fact, they are the same thing.
+
+=CN We Can Even Say They'Re 同一的, Because, In Fact, They Are The Same Thing.
+
+=EN if ($reference_to_skipper = = $second_reference_to_skipper) {
+
+=CN If ($reference_to_skipper = = $second_reference_to_skipper) {
+
+=EN This equality compares the numeric forms of the two references.
+
+=CN This 平等 compares The 数值 形式 Of The Two References.
+
+=EN The numeric form of the reference is the unique memory address of the @skipper internal data structure, unchanging during the life of the variable.
+
+=CN The 数值 Form Of The Reference Is The 唯一的 Memory 地址 Of The @skipper Internal Data Structure, unchanging 在 The 生活 Of The Variable.
+
+=EN If we look at the string form instead, with eq or print, we get a debugging string:
+
+=CN If We Look At The String Form Instead, With Eq Or Print, We Get a Debugging String:
+
+=EN which again is unique for this array because it includes the hexadecimal (base 16) representation of the array's unique memory address.
+
+=CN Which Again Is 唯一的 For This Array Because It 包括 The hexadecimal (Base 16) 表示 Of The Array's 唯一的 Memory 地址.
+
+=EN The debugging string also notes that this is an array reference.
+
+=CN The Debugging String Also 备忘 That This Is An Array Reference.
+
+=EN Of course, if we ever see something like this in our output, it almost certainly means we have a bug; users of our program have little interest in hex dumps of storage addresses!
+
+=CN Of Course, If We 曾经 See Something Like This In Our 出产, It Almost Certainly Means We Have a 臭虫; Users Of Our Program Have Little 兴趣 In hex dumps Of 贮藏 地址!
+
+=EN Because we can copy a reference, and passing an argument to a subroutine is really just copying, we can use this code to pass a reference to the array into the subroutine:
+
+=CN Because We Can Copy a Reference, And Passing An Argument To a Subroutine Is Really Just 复制, We Can Use This Code To Pass a Reference To The Array Into The Subroutine:
+
+=EN my @skipper = qw(blue_shirt hat jacket preserver sunscreen); check_required_items("The Skipper", \@skipper);
+
+=CN My @skipper = Qw(blue_shirt 帽子 短外套 preserver sunscreen); check_required_items("The Skipper", \@skipper);
+
+=EN Now $items in the subroutine is a reference to the array of @skipper.
+
+=CN Now $物品 In The Subroutine Is a Reference To The Array Of @skipper.
+
+=EN But how do we get from a reference back into the original array?
+
+=CN But How Do We Get From a Reference Back Into The Original Array?
+
+=EN We dereference the reference, of course.
+
+=CN We 废弃 The Reference, Of Course.
+
+=EN Dereferencing the Array Reference If you look at @skipper, you'll see that it consists of two parts: the @ symbol and the name of the array.
+
+=CN Dereferencing The Array Reference If You Look At @skipper, You'我 See That It consists Of Two 部分: The @ Symbol And The Name Of The Array.
+
+=EN Similarly, the syntax $skipper[1] consists of the name of the array in the middle and some syntax around the outside to get at the second element of the array (index value 1 is the second element because index values start at 0).
+
+=CN Similarly, The Syntax $skipper[1] consists Of The Name Of The Array In The 当中 And Some Syntax Around The Outside To Get At The Second Element Of The Array (Index Value 1 Is The Second Element Because Index Values Start At 0).
+
+=EN Here's the trick: we can place any reference to an array in curly braces in place of the name of an array, ending up with a method to access the original array.
+
+=CN Here's The 诡计: We Can Place Any Reference To An Array In 卷曲的 牙套 In Place Of The Name Of An Array, 结局 Up With a Method To Access The Original Array.
+
+=EN That is, wherever we write skipper to name the array, we use the reference inside curly braces: { $items }.
+
+=CN That Is, 无论哪里 We Write skipper To Name The Array, We Use The Reference 里面 卷曲的 牙套: { $物品 }.
+
+=EN For example, both of these lines refer to the entire array:
+
+=CN For Example, Both Of These Lines Refer To The 完全的 Array:
+
+=EN @ skipper @{ $items }
+
+=CN @ skipper @{ $物品 }
+
+=EN whereas both of these refer to the second item of the array:[*]
+
+=CN 而 Both Of These Refer To The Second 条款 Of The Array:[*]
+
+=EN [*] Note that we added whitespace in these two displays to make the similar parts line up.
+
+=CN [*] Note That We added Whitespace In These Two displays To Make The Similar 部分 Line Up.
+
+=EN This whitespace is legal in a program, even though most programs won't use it.
+
+=CN This Whitespace Is 合法的 In a Program, Even Though Most Programs Won't Use It.
+
+=EN $ skipper [1] ${ $items }[1]
+
+=CN $ skipper [1] ${ $物品 }[1]
+
+=EN By using the reference form, we've decoupled the code and the method of array access from the actual array.
+
+=CN By Using The Reference Form, We'Ve decoupled The Code And The Method Of Array Access From The Actual Array.
+
+=EN Let's see how that changes the rest of this subroutine:
+
+=CN Let's See How That Changes The 休息 Of This Subroutine:
+
+=EN  # not found in list?
+
+=CN  # Not Found In List?
+
+=EN All we did was replace @_ (the copy of the provisions list) with @{$items}, a dereferencing of the reference to the original provisions array.
+
+=CN All We Did Was 归还原处 @_ (The Copy Of The provisions List) With @{$物品}, a dereferencing Of The Reference To The Original provisions Array.
+
+=EN Now we can call the subroutine a few times, as before:
+
+=CN Now We Can Call The Subroutine a Few Times, As Before:
+
+=EN my @skipper = qw(blue_shirt hat jacket preserver sunscreen); check_required_items('The Skipper', \@skipper);
+
+=CN My @skipper = Qw(blue_shirt 帽子 短外套 preserver sunscreen); check_required_items('The Skipper', \@skipper);
+
+=EN my @professor = qw(sunscreen water_bottle slide_rule batteries radio); check_required_items('Professor', \@professor);
+
+=CN My @教授 = Qw(sunscreen water_bottle slide_rule batteries 无线电); check_required_items('Professor', \@教授);
+
+=EN my @gilligan = qw(red_shirt hat lucky_socks water_bottle); check_required_items('Gilligan', \@gilligan);
+
+=CN My @gilligan = Qw(red_shirt 帽子 lucky_socks water_bottle); check_required_items('Gilligan', \@gilligan);
+
+=EN In each case, $items points to a different array, so the same code applies to different arrays each time we invoke it.
+
+=CN In Each Case, $物品 分 To a Different Array, So The Same Code 适用 To Different Arrays Each Time We 调用 It.
+
+=EN This is one of the most important uses of references: decoupling the code from the data structure on which it operates so we can reuse the code more readily.
+
+=CN This Is One Of The Most Important Uses Of References: decoupling The Code From The Data Structure On Which It operates So We Can Reuse The Code More 容易地.
+
+=EN Passing the array by reference fixes the first of the two problems we mentioned earlier.
+
+=CN Passing The Array By Reference fixes The First Of The Two 问题 We Mentioned Earlier.
+
+=EN Now, instead of copying the entire provision list into the @_ array, we get a single element of a reference to that provisions array.
+
+=CN Now, Instead Of 复制 The 完全的 准备 List Into The @_ Array, We Get a Single Element Of a Reference To That provisions Array.
+
+=EN Could we have eliminated the two shifts at the beginning of the subroutine?
+
+=CN Could We Have eliminated The Two shifts At The 开端 Of The Subroutine?
+
+=EN Sure, but we sacrifice clarity:
+
+=CN Sure, But We 牺牲（品） 清晰:
+
+=EN  # not found in list?
+
+=CN  # Not Found In List?
+
+=EN We still have two elements in @_.
+
+=CN We Still Have Two Elements In @_.
+
+=EN The first element is the passenger or crew member name, which we use in the error message.
+
+=CN The First Element Is The 旅客 Or （飞机等的）全体人员 Member Name, Which We Use In The Error 音讯.
+
+=EN The second element is a reference to the correct provisions array, which we use in the grep expression.
+
+=CN The Second Element Is a Reference To The 正确的 provisions Array, Which We Use In The Grep Expression.
+
+=EN Getting Our Braces Off Most of the time, the array reference we want to dereference is a simple scalar variable, such as @{$items} or ${$items}[1].
+
+=CN Getting Our Braces Off Most Of The Time, The Array Reference We Want To 废弃 Is a Simple Scalar Variable, Such As @{$物品} Or ${$物品}[1].
+
+=EN In those cases, we can drop the curly braces, unambiguously forming @$items or $$items[1].
+
+=CN In Those Cases, We Can 落下 The 卷曲的 牙套, 明确 forming @$物品 Or $$物品[1].
+
+=EN However, we cannot drop the braces if the value within the braces is not a simple scalar variable.
+
+=CN However, We Cannot 落下 The 牙套 If The Value Within The 牙套 Is Not a Simple Scalar Variable.
+
+=EN For example, for @{$_[1]} from that last subroutine rewrite, we can't remove the braces.
+
+=CN For Example, For @{$_[1]} From That Last Subroutine 重写, We Can't 移开 The 牙套.
+
+=EN That's a single element access to an array, not a scalar variable.
+
+=CN That's a Single Element Access To An Array, Not a Scalar Variable.
+
+=EN This rule also means that it's easy to see where the "missing" braces need to go.
+
+=CN This Rule Also Means That It's Easy To See Where The "Missing" 牙套 Need To Go.
+
+=EN When we see $$items[1], a pretty noisy piece of syntax, we can tell that the curly braces must belong around the simple scalar variable, $items.
+
+=CN When We See $$物品[1], a 精致的 吵闹的 件 Of Syntax, We Can Tell That The 卷曲的 牙套 Must 属于 Around The Simple Scalar Variable, $物品.
+
+=EN Therefore, $items must be a reference to an array.
+
+=CN Therefore, $物品 Must Be a Reference To An Array.
+
+=EN Thus, an easier-on-the-eyes version of that subroutine might be:
+
+=CN Thus, An Easier-On-The-eyes Version Of That Subroutine Might Be:
+
+=EN  # not found in list?
+
+=CN  # Not Found In List?
+
+=EN The only difference here is that we removed the braces around @$items.
+
+=CN The Only Difference Here Is That We Removed The 牙套 Around @$物品.
+
+=EN Modifying the Array You've seen how to solve the excessive copying problem with an array reference.
+
+=CN Modifying The Array You'Ve Seen How To 解答 The 过分的 复制 Problem With An Array Reference.
+
+=EN Now let's look at modifying the original array.
+
+=CN Now Let's Look At modifying The Original Array.
+
+=EN For every missing provision, we push that provision onto an array, forcing the passenger to consider the item:
+
+=CN For Every Missing 准备, We Push That 准备 到 An Array, 迫使 The 旅客 To Consider The 条款:
+
+=EN Note the addition of the @missing array.
+
+=CN Note The 增加 Of The @Missing Array.
+
+=EN If we find any items missing during the scan, we push them into @missing.
+
+=CN If We 寻找 Any 物品 Missing 在 The 浏览, We Push Them Into @Missing.
+
+=EN If there's anything there at the end of the scan, we add it to the original provision list.
+
+=CN If There's Anything There At The End Of The 浏览, We 增添 It To The Original 准备 List.
+
+=EN The key is in the last line of that subroutine.
+
+=CN The Key Is In The Last Line Of That Subroutine.
+
+=EN We're dereferencing the $items array reference, accessing the original array, and adding the elements from @missing.
+
+=CN We'Re dereferencing The $物品 Array Reference, 访问 The Original Array, And Adding The Elements From @Missing.
+
+=EN Without passing by reference, we'd modify only a local copy of the data, which has no effect on the original array.
+
+=CN Without Passing By Reference, We'd Modify Only a Local Copy Of The Data, Which Has No Effect On The Original Array.
+
+=EN Also, @$items (and its more generic form, @{$items}) works within a double-quoted string.
+
+=CN Also, @$物品 (And Its More 通用 Form, @{$物品}) Works Within a 两倍的-引用 String.
+
+=EN We can't include any whitespace between the @ and the immediately following character, although we can include nearly arbitrary whitespace within the curly braces as if it were normal Perl code.
+
+=CN We Can't Include Any Whitespace Between The @ And The 立即 Following Character, Although We Can Include 几乎 专横的 Whitespace Within The 卷曲的 牙套 As If It Were Normal Perl Code.
+
+=EN Nested Data Structures In this example, the array @_ contains two elements, one of which is also an array.
+
+=CN Nested Data Structures In This Example, The Array @_ 包含 Two Elements, One Of Which Is Also An Array.
+
+=EN What if we take a reference to an array that also contains a reference to an array?
+
+=CN What If We Take a Reference To An Array That Also 包含 a Reference To An Array?
+
+=EN We end up with a complex data structure, which can be quite useful.
+
+=CN We End Up With a 综合的 Data Structure, Which Can Be Quite Useful.
+
+=EN For example, we can iterate over the data for the Skipper, Gilligan, and the Professor by first building a larger data structure holding the entire list of provision lists:
+
+=CN For Example, We Can iterate 在 The Data For The Skipper, Gilligan, And The Professor By First 建筑物 a larger Data Structure 支持 The 完全的 List Of 准备 Lists:
+
+=EN my @skipper = qw(blue_shirt hat jacket preserver sunscreen); my @skipper_with_name = ('Skipper', \@skipper); my @professor = qw(sunscreen water_bottle slide_rule batteries radio); my @professor_with_name = ('Professor', \@professor); my @gilligan = qw(red_shirt hat lucky_socks water_bottle); my @gilligan_with_name = ('Gilligan', \@gilligan);
+
+=CN My @skipper = Qw(blue_shirt 帽子 短外套 preserver sunscreen); My @skipper_with_name = ('Skipper', \@skipper); My @教授 = Qw(sunscreen water_bottle slide_rule batteries 无线电); My @professor_with_name = ('Professor', \@教授); My @gilligan = Qw(red_shirt 帽子 lucky_socks water_bottle); My @gilligan_with_name = ('Gilligan', \@gilligan);
+
+=EN At this point, @skipper_with_name has two elements, the second of which is an array reference similar to what we passed to the subroutine.
+
+=CN At This 尖, @skipper_with_name Has Two Elements, The Second Of Which Is An Array Reference Similar To What We Passed To The Subroutine.
+
+=EN Now we group them all:
+
+=CN Now We Group Them All:
+
+=EN my @all_with_names = (
+
+=CN My @all_with_names = (
+
+=EN Note that we have just three elements, each of which is a reference to an array that has two elements: the name and its corresponding initial provisions.
+
+=CN Note That We Have Just Three Elements, Each Of Which Is a Reference To An Array That Has Two Elements: The Name And Its 相应的 Initial provisions.
+
+=EN A picture of that is in Figure 4-1.
+
+=CN A 图片 Of That Is In Figure 4-1.
+
+=EN The array @all_with_names holds a multilevel data structure containing strings and references to arrays
+
+=CN The Array @all_with_names holds a 多级 Data Structure Containing Strings And References To Arrays
+
+=EN Therefore, $all_with_names[2] will be the array reference for the Gilligan's data.
+
+=CN Therefore, $all_with_names[2] Will Be The Array Reference For The Gilligan's Data.
+
+=EN If you dereference it as @{$all_with_names[2]}, you get a two-element array, "Gilligan" and another array reference.
+
+=CN If You 废弃 It As @{$all_with_names[2]}, You Get a Two-Element Array, "Gilligan" And 另一个 Array Reference.
+
+=EN How do we access that array reference?
+
+=CN How Do We Access That Array Reference?
+
+=EN Using our rules again, it's ${$all_with_names[2]}[1].
+
+=CN Using Our 规则 Again, It's ${$all_with_names[2]}[1].
+
+=EN In other words, taking $all_with_names[2], we dereference it in an expression that would be something like $DUMMY[1] as an ordinary array, so we'll place {$all_with_names[2]} in place of DUMMY.
+
+=CN In Other Words, Taking $all_with_names[2], We 废弃 It In An Expression That Would Be Something Like $DUMMY[1] As An Ordinary Array, So We'我 Place {$all_with_names[2]} In Place Of DUMMY.
+
+=EN How do we call the existing check_required_items( ) with this data structure?
+
+=CN How Do We Call The 现存的 check_required_items( ) With This Data Structure?
+
+=EN The following code is easy enough.
+
+=CN The Following Code Is Easy Enough.
+
+=EN for my $person (@all_with_names) {
+
+=CN For My $人 (@all_with_names) {
+
+=EN This requires no changes to the subroutine.
+
+=CN This Requires No Changes To The Subroutine.
+
+=EN The control variable $person will be each of $all_with_names[0], $all_with_names[1], and $all_with_names[2], as the loop progresses.
+
+=CN The Control Variable $人 Will Be Each Of $all_with_names[0], $all_with_names[1], And $all_with_names[2], As The Loop progresses.
+
+=EN When we dereference $$person[0], we get "Skipper, " "Professor, " and "Gilligan, " respectively. $$person[1] is the corresponding array reference of provisions for that person.
+
+=CN When We 废弃 $$人[0], We Get "Skipper, " "Professor, " And "Gilligan, " 各自. $$人[1] Is The 相应的 Array Reference Of provisions For That 人.
+
+=EN Of course, we can shorten this as well, since the entire dereferenced array matches the argument list precisely:
+
+=CN Of Course, We Can 缩短 This As Well, Since The 完全的 dereferenced Array 比赛 The Argument List 精确地:
+
+=EN check_required_items(@$_) for @all_with_names;
+
+=CN check_required_items(@$_) For @all_with_names;
+
+=EN As you can see, various levels of optimization can lead to obfuscation.
+
+=CN As You Can See, 各种各样的 levels Of 优化 Can 铅 To obfuscation.
+
+=EN Be sure to consider where your head will be a month from now when you have to reread your own code.
+
+=CN Be Sure To Consider Where Your Head Will Be a 月份 From Now When You Have To reread Your Own Code.
+
+=EN If that's not enough, consider the new person who will take over your job after you have left.[*]
+
+=CN If That's Not Enough, Consider The New 人 Who Will Take 在 Your 工作 After You Have Left.[*]
+
+=EN Simplifying Nested Element References with Arrows Look at the curly-brace dereferencing again.
+
+=CN Simplifying Nested Element References With Arrows Look At The 卷曲的-支撑 dereferencing Again.
+
+=EN As in our earlier example, the array reference for Gilligan's provision list is ${$all_with_names[2]}[1].
+
+=CN As In Our Earlier Example, The Array Reference For Gilligan's 准备 List Is ${$all_with_names[2]}[1].
+
+=EN Now, what if we want to know Gilligan's first provision?
+
+=CN Now, What If We Want To Know Gilligan's First 准备?
+
+=EN We need to dereference this item one more level, so it's yet another layer of braces: ${${$all_with_names[2]}[1]}[0].
+
+=CN We Need To 废弃 This 条款 One More Level, So It's 仍然 另一个 层 Of 牙套: ${${$all_with_names[2]}[1]}[0].
+
+=EN That's a really noisy piece of syntax.
+
+=CN That's a Really 吵闹的 件 Of Syntax.
+
+=EN Can we shorten that?
+
+=CN Can We 缩短 That?
+
+=EN Everywhere we write ${DUMMY}[$y], we can write DUMMY->[$y] instead.
+
+=CN Everywhere We Write ${DUMMY}[$y], We Can Write DUMMY->[$y] Instead.
+
+=EN In other words, we can dereference an array reference, picking out a particular element of that array by simply following the expression defining the array reference with an arrow and a square-bracketed subscript.
+
+=CN In Other Words, We Can 废弃 An Array Reference, picking Out a Particular Element Of That Array By Simply Following The Expression 定义 The Array Reference With An 箭 And a 正方形-bracketed 下标.
+
+=EN For this example, this means we can pick out the array reference for Gilligan with a simple $all_with_names[2]->[1], and Gilligan's first provision with $all_with_names[2]->[1]->[0].
+
+=CN For This Example, This Means We Can 拣 Out The Array Reference For Gilligan With a Simple $all_with_names[2]->[1], And Gilligan's First 准备 With $all_with_names[2]->[1]->[0].
+
+=EN Wow, that's definitely easier on the eyes.
+
+=CN Wow, That's 明确地 Easier On The eyes.
+
+=EN If that weren't already simple enough, there's one more rule: if the arrow ends up between "subscripty kinds of things, " such as square brackets, we can also drop the arrow. $all_with_names[2]->[1]->[0] becomes $all_with_names[2][1][0].
+
+=CN If That 傻乎乎的't Already Simple Enough, There's One More Rule: If The 箭 Ends Up Between "subscripty 种类 Of Things, " Such As 正方形 支架, We Can Also 落下 The 箭. $all_with_names[2]->[1]->[0] Becomes $all_with_names[2][1][0].
+
+=EN Now it's looking even easier on the eyes.
+
+=CN Now It's 看 Even Easier On The eyes.
+
+=EN The arrow has to be between non-subscripty things.
+
+=CN The 箭 Has To Be Between Non-subscripty Things.
+
+=EN Why wouldn't it be between subscripty things?
+
+=CN Why Wouldn't It Be Between subscripty Things?
+
+=EN Well, imagine a reference to the array @all_with_names:
+
+=CN Well, 想象 a Reference To The Array @all_with_names:
+
+=EN my $root = \@all_with_names;
+
+=CN My $Root = \@all_with_names;
+
+=EN Now how do we get to Gilligan's first item?
+
+=CN Now How Do We Get To Gilligan's First 条款?
+
+=EN $root -> [2] -> [1] -> [0]
+
+=CN $Root -> [2] -> [1] -> [0]
+
+=EN More simply, using the "drop arrow" rule, we can use:
+
+=CN More Simply, Using The "落下 箭" Rule, We Can Use:
+
+=EN $root -> [2][1][0]
+
+=CN $Root -> [2][1][0]
+
+=EN We cannot drop the first arrow, however, because that would mean an array @root's third element, an entirely unrelated data structure.
+
+=CN We Cannot 落下 The First 箭, However, Because That Would Mean An Array @Root's 第三 Element, An 完全地 unrelated Data Structure.
+
+=EN Let's compare this to the full curly-brace form again:
+
+=CN Let's 比较 This To The Full 卷曲的-支撑 Form Again:
+
+=EN ${${${$root}[2]}[1]}[0]
+
+=CN ${${${$Root}[2]}[1]}[0]
+
+=EN It looks much better with the arrow.
+
+=CN It Looks Much Better With The 箭.
+
+=EN Note, however, that no shortcut gets the entire array from an array reference.
+
+=CN Note, However, That No 捷径 Gets The 完全的 Array From An Array Reference.
+
+=EN If we want all of Gilligan's provisions, we say:
+
+=CN If We Want All Of Gilligan's provisions, We Say:
+
+=EN @{$root->[2][1]}
+
+=CN @{$Root->[2][1]}
+
+=EN Reading this from the inside out, we can think of it like this:
+
+=CN Reading This From The 里面 Out, We Can 想 Of It Like This:
+
+=EN Take $root.
+
+=CN Take $Root.
+
+=EN Dereference it as an array reference, taking the third element of that array (index number 2).
+
+=CN Dereference It As An Array Reference, Taking The 第三 Element Of That Array (Index Number 2).
+
+=EN Dereference that as an array reference, taking the second element of that array (index number 1).
+
+=CN Dereference That As An Array Reference, Taking The Second Element Of That Array (Index Number 1).
+
+=EN Dereference that as an array reference, taking the entire array.
+
+=CN Dereference That As An Array Reference, Taking The 完全的 Array.
+
+=EN The last step doesn't have a shortcut arrow form.
+
+=CN The Last 脚步 Doesn't Have a 捷径 箭 Form.
+
+=EN Oh well.[*]
+
+=CN Oh Well.[*]
+
+=EN References to Hashes Just as we can take a reference to an array, we can also take a reference to a hash.
+
+=CN References To Hashes Just As We Can Take a Reference To An Array, We Can Also Take a Reference To a Hash.
+
+=EN Once again, we use the backslash as the "take a reference to" operator:
+
+=CN Once Again, We Use The 反斜杠 As The "Take a Reference To" Operator:
+
+=EN my %gilligan_info = (
+
+=CN My %gilligan_info = (
+
+=EN We can dereference a hash reference to get back to the original data.
+
+=CN We Can 废弃 a Hash Reference To Get Back To The Original Data.
+
+=EN The strategy is similar to dereferencing an array reference.
+
+=CN The 战略 Is Similar To dereferencing An Array Reference.
+
+=EN We write the hash syntax as we would have without references and then replace the name of the hash with a pair of curly braces surrounding the thing holding the reference.
+
+=CN We Write The Hash Syntax As We Would Have Without References And Then 归还原处 The Name Of The Hash With a 对 Of 卷曲的 牙套 周围 The Thing 支持 The Reference.
+
+=EN For example, to pick a particular value for a given key, we do this:
+
+=CN For Example, To 拣 a Particular Value For a Given Key, We Do This:
+
+=EN my $name = $ gilligan_info { 'name' }; my $name = $ { $hash_ref } { 'name' };
+
+=CN My $Name = $ gilligan_info { 'Name' }; My $Name = $ { $hash_ref } { 'Name' };
+
+=EN In this case, the curly braces have two different meanings.
+
+=CN In This Case, The 卷曲的 牙套 Have Two Different Meanings.
+
+=EN The first pair denotes the expression returning a reference, while the second pair delimits the expression for the hash key.
+
+=CN The First 对 denotes The Expression Returning a Reference, While The Second 对 delimits The Expression For The Hash Key.
+
+=EN To perform an operation on the entire hash, we proceed similarly:
+
+=CN To 执行 An Operation On The 完全的 Hash, We 前进 同样:
+
+=EN my @keys = keys % gilligan_info; my @keys = keys % { $hash_ref };
+
+=CN My @Keys = Keys % gilligan_info; My @Keys = Keys % { $hash_ref };
+
+=EN As with array references, we can use shortcuts to replace the complex curly-braced forms under some circumstances.
+
+=CN As With Array References, We Can Use shortcuts To 归还原处 The 综合的 卷曲的-braced 形式 在 Some 情况下.
+
+=EN For example, if the only thing inside the curly braces is a simple scalar variable (as shown in these examples so far), we can drop the curly braces:
+
+=CN For Example, If The Only Thing 里面 The 卷曲的 牙套 Is a Simple Scalar Variable (As shown In These Examples So Far), We Can 落下 The 卷曲的 牙套:
+
+=EN my $name = $$hash_ref{'name'}; my @keys = keys %$hash_ref;
+
+=CN My $Name = $$hash_ref{'Name'}; My @Keys = Keys %$hash_ref;
+
+=EN Like an array reference, when referring to a specific hash element, we can use an arrow form:
+
+=CN Like An Array Reference, When Referring To a 特殊的 Hash Element, We Can Use An 箭 Form:
+
+=EN my $name = $hash_ref->{'name'};
+
+=CN My $Name = $hash_ref->{'Name'};
+
+=EN Because a hash reference fits wherever a scalar fits, we can create an array of hash references:
+
+=CN Because a Hash Reference fits 无论哪里 a Scalar fits, We Can Create An Array Of Hash References:
+
+=EN Thus, $crew[0] is a hash reference to the information about Gilligan.
+
+=CN Thus, $（飞机等的）全体人员[0] Is a Hash Reference To The Information About Gilligan.
+
+=EN We can get to Gilligan's name via any one of:
+
+=CN We Can Get To Gilligan's Name Via Any One Of:
+
+=EN ${ $crew[0] } { 'name' } my $ref = $crew[0]; $$ref{'name'} $crew[0]->{'name'} $crew[0]{'name'}
+
+=CN ${ $（飞机等的）全体人员[0] } { 'Name' } My $Ref = $（飞机等的）全体人员[0]; $$Ref{'Name'} $（飞机等的）全体人员[0]->{'Name'} $（飞机等的）全体人员[0]{'Name'}
+
+=EN On that last one, we can still drop the arrow between "subscripty kinds of things, " even though one is an array bracket and one is a hash brace.
+
+=CN On That Last One, We Can Still 落下 The 箭 Between "subscripty 种类 Of Things, " Even Though One Is An Array 括号 And One Is a Hash 支撑.
+
+=EN Let's print a crew roster:
+
+=CN Let's Print a （飞机等的）全体人员 roster:
+
+=EN my $format = "%-15s %-7s %-7s %-15s\n"; printf $format, qw(Name Shirt Hat Position); for my $crewmember (@crew) {
+
+=CN My $Format = "%-15s %-7s %-7s %-15s\n"; Printf $Format, Qw(Name Shirt Hat Position); For My $crewmember (@（飞机等的）全体人员) {
+
+=EN That last part looks very repetitive.
+
+=CN That Last Part Looks Very 重复的.
+
+=EN We can shorten it with a hash slice.
+
+=CN We Can 缩短 It With a Hash 薄片.
+
+=EN Again, if the original syntax is:
+
+=CN Again, If The Original Syntax Is:
+
+=EN @ gilligan_info { qw(name position) }
+
+=CN @ gilligan_info { Qw(Name Position) }
+
+=EN the hash slice notation from a reference looks like:
+
+=CN The Hash 薄片 符号 From a Reference Looks Like:
+
+=EN @ { $hash_ref } { qw(name position) }
+
+=CN @ { $hash_ref } { Qw(Name Position) }
+
+=EN We can drop the first brace pair because the only thing within is a simple scalar value, yielding:
+
+=CN We Can 落下 The First 支撑 对 Because The Only Thing Within Is a Simple Scalar Value, yielding:
+
+=EN @ $hash_ref { qw(name position) }
+
+=CN @ $hash_ref { Qw(Name Position) }
+
+=EN Thus, we can replace that final loop with:
+
+=CN Thus, We Can 归还原处 That 最终的 Loop With:
+
+=EN for my $crewmember (@crew) {
+
+=CN For My $crewmember (@（飞机等的）全体人员) {
+
+=EN There is no shortcut form with an arrow (->) for array slices or hash slices, just as there is no shortcut for entire arrays or hashes.
+
+=CN There Is No 捷径 Form With An 箭 (->) For Array 片 Or Hash 片, Just As There Is No 捷径 For 完全的 Arrays Or Hashes.
+
+=EN A hash reference prints as a string that looks like HASH(0x1a2b3c), showing the hexadecimal memory address of the hash.
+
+=CN A Hash Reference Prints As a String That Looks Like HASH(0x1a2b3c), showing The hexadecimal Memory 地址 Of The Hash.
+
+=EN That's not very useful to an end user and only barely more usable to the programmer, except as an indication of the lack of appropriate dereferencing.
+
+=CN That's Not Very Useful To An End User And Only 赤裸裸地 More Usable To The Programmer, Except As An 表示 Of The 缺少 Of 恰当的 dereferencing.
+
+=EN Exercises You can find the answers to these exercises in "Answers for Chapter 4" in the Appendix.
+
+=CN Exercises You Can 寻找 The answers To These exercises In "Answers For Chapter 4" In The Appendix.
+
+=EN Exercise 1 [5 min] How many different things do these expressions refer to?
+
+=CN Exercise 1 [5 min] How Many Different Things Do These Expressions Refer To?
+
+=EN $ginger->[2][1] ${$ginger[2]}[1] $ginger->[2]->[1] ${$ginger->[2]}[1]
+
+=CN $姜->[2][1] ${$姜[2]}[1] $姜->[2]->[1] ${$姜->[2]}[1]
+
+=EN Exercise 2 [30 min] Using the final version of check_required_items, write a subroutine check_items_for_all that takes a hash reference as its only parameter, pointing at a hash whose keys are the people aboard the Minnow and whose corresponding values are array references of the things they intend to bring onboard.
+
+=CN Exercise 2 [30 min] Using The 最终的 Version Of check_required_items, Write a Subroutine check_items_for_all That Takes a Hash Reference As Its Only Parameter, 指向 At a Hash Whose Keys Are The People 船上 The Minnow And Whose 相应的 Values Are Array References Of The Things They 打算 To 拿来 onboard.
+
+=EN For example, the hash reference might be constructed like so:
+
+=CN For Example, The Hash Reference Might Be 构造 Like So:
+
+=EN my @gilligan = ... gilligan items ...; my @skipper = ... skipper items ...; my @professor = ... professor items ...; my %all = (
+
+=CN My @gilligan = ... gilligan 物品 ...; My @skipper = ... skipper 物品 ...; My @教授 = ... 教授 物品 ...; My %All = (
+
+=EN The newly constructed subroutine should call check_required_items for each person in the hash, updating their provisions list to include the required items.
+
+=CN The 新 构造 Subroutine Should Call check_required_items For Each 人 In The Hash, updating Their provisions List To Include The 要求 物品.
+

@@ -1,0 +1,904 @@
+=EN Objects with Data Using the simple syntax introduced in Chapter 11, we have class methods, (multiple) inheritance, overriding, and extending.
+
+=CN Objects With Data Using The Simple Syntax Introduced In Chapter 11, We Have Class Methods, (Multiple) Inheritance, Overriding, And Extending.
+
+=EN We've been able to factor out common code and provide a way to reuse implementations with variations.
+
+=CN We'Ve Been Able To 因素 Out Common Code And Provide a Way To Reuse 实现 With variations.
+
+=EN This is at the core of what objects provide, but objects also provide instance data, which we haven't even begun to cover.
+
+=CN This Is At The Core Of What Objects Provide, But Objects Also Provide 例子 Data, Which We 还't Even begun To 盖.
+
+=EN A Horse Is a Horse, of Course of Courseor Is It?
+
+=CN A Horse Is a Horse, Of Course Of Courseor Is It?
+
+=EN Let's look at the code used in Chapter 11 for the Animal classes and Horse classes:
+
+=CN Let's Look At The Code Used In Chapter 11 For The Animal 类 And Horse 类:
+
+=EN { package Animal;
+
+=CN { Package Animal;
+
+=EN This lets us invoke Horse->speak to ripple upward to Animal::speak, calling back to Horse::sound to get the specific sound, and the output of:
+
+=CN This Lets Us 调用 Horse->说话 To 波纹 向上（的） To Animal::说话, Calling Back To Horse::声 To Get The 特殊的 声, And The 出产 Of:
+
+=EN a Horse goes neigh!
+
+=CN a Horse 去 neigh!
+
+=EN But all Horse objects would have to be absolutely identical.
+
+=CN But All Horse Objects Would Have To Be 绝对 同一的.
+
+=EN If we add a method, all horses automatically share it.
+
+=CN If We 增添 a Method, All horses Automatically 份 It.
+
+=EN That's great for making horses identical, but how do we capture the properties of an individual horse?
+
+=CN That's 大的 For 制作 horses 同一的, But How Do We 俘获 The propertie(绑定操作符)s Of An Individual 马?
+
+=EN For example, suppose we want to give our horse a name.
+
+=CN For Example, 猜想 We Want To Give Our 马 a Name.
+
+=EN There's got to be a way to keep its name separate from those of other horses.
+
+=CN There's Got To Be a Way To 保持 Its Name Separate From Those Of Other horses.
+
+=EN We can do so by establishing an instance.
+
+=CN We Can Do So By establishing An 例子.
+
+=EN An instance is generally created by a class, much like a car is created by a car factory.
+
+=CN An 例子 Is Generally Created By a Class, Much Like a 小汽车 Is Created By a 小汽车 工厂.
+
+=EN An instance will have associated properties, called instance variables (or member variables, if you come from a C++ or Java background).
+
+=CN An 例子 Will Have Associated propertie(绑定操作符)s, Called 例子 Variables (Or Member Variables, If You 来到 From a C++ Or Java 背景).
+
+=EN An instance has a unique identity (like the serial number of a registered horse), shared properties (the color and talents of the horse), and common behavior (e.g., pulling the reins back tells the horse to stop).
+
+=CN An 例子 Has a 唯一的 认同 (Like The 串行 Number Of a 登记的 马), Shared propertie(绑定操作符)s (The 颜色 And talents Of The 马), And Common Behavior (e.g., pulling The reins Back 告诉 The 马 To Stop).
+
+=EN In Perl, an instance must be a reference to one of the built-in types.
+
+=CN In Perl, An 例子 Must Be a Reference To One Of The Built-In Types.
+
+=EN Start with the simplest reference that can hold a horse's name, a scalar reference:[*]
+
+=CN Start With The simplest Reference That Can Hold a 马's Name, a Scalar Reference:[*]
+
+=EN [*] It's the simplest, but rarely used in real code for reasons we'll show shortly.
+
+=CN [*] It's The simplest, But 难得 Used In Real Code For Reasons We'我 Show 立刻.
+
+=EN my $name = 'Mr. Ed'; my $tv_horse = \$name;
+
+=CN My $Name = 'Mr. Ed'; My $tv_horse = \$Name;
+
+=EN Now $tv_horse is a reference to what will be the instance-specific data (the name).
+
+=CN Now $tv_horse Is a Reference To What Will Be The 例子-特殊的 Data (The Name).
+
+=EN The final step in turning this into a real instance involves a special operator called bless:
+
+=CN The 最终的 脚步 In Turning This Into a Real 例子 involves a Special Operator Called 保佑:
+
+=EN bless $tv_horse, 'Horse';
+
+=CN 保佑 $tv_horse, 'Horse';
+
+=EN The bless operator follows the reference to find what variable it points toin this case, the scalar $name.
+
+=CN The 保佑 Operator Follows The Reference To 寻找 What Variable It 分 toin This Case, The Scalar $Name.
+
+=EN Then it "blesses" that variable, turning $tv_horse into an objecta Horse object, in fact.
+
+=CN Then It "blesses" That Variable, Turning $tv_horse Into An objecta Horse Object, In Fact.
+
+=EN (Imagine that a little sticky-note that says Horse is now attached to $name.)
+
+=CN (Imagine That a Little 黏的-Note That 说 Horse Is Now attached To $Name.)
+
+=EN At this point, $tv_horse is an instance of Horse.[] That is, it's a specific horse.
+
+=CN At This 尖, $tv_horse Is An 例子 Of Horse.[] That Is, It's a 特殊的 马.
+
+=EN The reference is otherwise unchanged and can still be used with traditional dereferencing operators.[]
+
+=CN The Reference Is Otherwise unchanged And Can Still Be Used With 传统的 dereferencing Operators.[]
+
+=EN [] Actually, $tv_horse points to the object, but, in common terms, we nearly always deal with objects by references to those objects.
+
+=CN [] Actually, $tv_horse 分 To The Object, But, In Common Terms, We 几乎 Always 处理 With Objects By References To Those Objects.
+
+=EN Hence, it's simpler to say that $tv_horse is the horse, not "the thing that $tv_horse references."
+
+=CN Hence, It's simpler To Say That $tv_horse Is The 马, Not "The Thing That $tv_horse References."
+
+=EN [] Although doing so outside the class is a bad idea, as we'll show later.
+
+=CN [] Although Doing So Outside The Class Is a 坏的 思想, As We'我 Show 更晚.
+
+=EN Invoking an Instance Method The method arrow can be used on instances, as well as names of packages (classes).
+
+=CN Invoking An Instance Method The Method 箭 Can Be Used On 实例, As Well As Names Of Packages (类).
+
+=EN Let's get the sound that $tv_horse makes:
+
+=CN Let's Get The 声 That $tv_horse 使:
+
+=EN my $noise = $tv_horse->sound;
+
+=CN My $Noise = $tv_horse->声;
+
+=EN To invoke sound, Perl first notes that $tv_horse is a blessed reference, and thus an instance.
+
+=CN To 调用 声, Perl First 备忘 That $tv_horse Is a 有福的 Reference, And 如此 An 例子.
+
+=EN Perl then constructs an argument list, similar to the way an argument list was constructed when we used the method arrow with a class name.
+
+=CN Perl Then Constructs An Argument List, Similar To The Way An Argument List Was 构造 When We Used The Method 箭 With a Class Name.
+
+=EN In this case, it'll be just ($tv_horse).
+
+=CN In This Case, It'我 Be Just ($tv_horse).
+
+=EN (Later we'll show that arguments will take their place following the instance variable, just as with classes.)
+
+=CN (Later We'我 Show That Arguments Will Take Their Place Following The 例子 Variable, Just As With 类.)
+
+=EN Now for the fun part: Perl takes the class in which the instance was blessed, in this case, Horse, and uses it to locate and invoke the method, as if we had said Horse->sound instead of $tv_horse->sound.
+
+=CN Now For The 娱乐 Part: Perl Takes The Class In Which The 例子 Was 有福的, In This Case, Horse, And Uses It To Locate And 调用 The Method, As If We Had Said Horse->声 Instead Of $tv_horse->声.
+
+=EN The purpose of the original blessing is to associate a class with that reference to allow Perl to find the proper method.
+
+=CN The Purpose Of The Original 祝福 Is To Associate a Class With That Reference To Allow Perl To 寻找 The 合适的 Method.
+
+=EN In this case, Perl finds Horse::sound directly (without using inheritance), yielding the final subroutine invocation:
+
+=CN In This Case, Perl 发现 Horse::声 直接地 (Without Using Inheritance), yielding The 最终的 Subroutine 调用:
+
+=EN Horse::sound($tv_horse)
+
+=CN Horse::声($tv_horse)
+
+=EN Note that the first parameter here is still the instance, not the name of the class as before. neigh is the return value, which ends up as the earlier $noise variable.
+
+=CN Note That The First Parameter Here Is Still The 例子, Not The Name Of The Class As Before. neigh Is The Return Value, Which Ends Up As The Earlier $Noise Variable.
+
+=EN If Perl did not find Horse::sound, it would walk up the @Horse::ISA list to try to find the method in one of the superclasses, just as for a class method.
+
+=CN If Perl Did Not 寻找 Horse::声, It Would 步行 Up The @Horse::ISA List To Try To 寻找 The Method In One Of The 策略, Just As For a Class Method.
+
+=EN The only difference between a class method and an instance method is whether the first parameter is an instance (a blessed reference) or a class name (a string).[*]
+
+=CN The Only Difference Between a Class Method And An 例子 Method Is Whether The First Parameter Is An 例子 (a 有福的 Reference) Or a Class Name (a String).[*]
+
+=EN [*] This is perhaps different from other OOP languages with which you may be familiar.
+
+=CN [*] This Is 也许 Different From Other OOP Languages With Which You May Be 熟悉的.
+
+=EN Accessing the Instance Data Because we get the instance as the first parameter, we can now access the instance-specific data.
+
+=CN Accessing The Instance Data Because We Get The 例子 As The First Parameter, We Can Now Access The 例子-特殊的 Data.
+
+=EN In this case, let's add a way to get at the name:
+
+=CN In This Case, Let's 增添 a Way To Get At The Name:
+
+=EN { package Horse;
+
+=CN { Package Horse;
+
+=EN Now we call for the name:
+
+=CN Now We Call For The Name:
+
+=EN print $tv_horse->name, " says ", $tv_horse->sound, "\n";
+
+=CN Print $tv_horse->Name, " 说 ", $tv_horse->声, "\n";
+
+=EN Inside Horse::name, the @_ array contains just $tv_horse, which the shift stores into $self.
+
+=CN Inside Horse::Name, The @_ Array 包含 Just $tv_horse, Which The Shift stores Into $自己.
+
+=EN It's traditional to shift the first parameter into a variable named $self for instance methods, so stay with that unless you have strong reasons to do otherwise (Perl places no significance on the name $self, however).[] Then we dereference $self as a scalar reference, yielding Mr. Ed.
+
+=CN It's 传统的 To Shift The First Parameter Into a Variable Named $自己 For 例子 Methods, So Stay With That Unless You Have 强壮的 Reasons To Do Otherwise (Perl Places No 重要性 On The Name $自己, However).[] Then We 废弃 $自己 As a Scalar Reference, yielding Mr. Ed.
+
+=EN The result is:
+
+=CN The Result Is:
+
+=EN [] If you come from another OO language background, you might choose $this or $me for the variable name, but you'll probably confuse most other Perl OO hackers.
+
+=CN [] If You 来到 From 另一个 OO 语言 背景, You Might 选择 $This Or $Me For The Variable Name, But You'我 Probably 混淆 Most Other Perl OO 黑客.
+
+=EN Mr. Ed says neigh.
+
+=CN Mr. Ed 说 neigh.
+
+=EN How to Build a Horse If we constructed all our horses by hand, we'd most likely make mistakes from time to time.
+
+=CN How To Build a Horse If We 构造 All Our horses By Hand, We'd Most Likely Make mistakes From Time To Time.
+
+=EN Making the "inside guts" of a Horse visible also violates one of the principles of OOP.
+
+=CN Making The "里面 深入内部系列书籍" Of a Horse Visible Also violates One Of The 原则 Of OOP.
+
+=EN That's good if we're a veterinarian but not if we just like to own horses.
+
+=CN That's Good If We'Re a veterinarian But Not If We Just Like To Own horses.
+
+=EN We let the Horse class build a new horse:
+
+=CN We Let The Horse Class Build a New 马:
+
+=EN Now, with the new named method, we build a Horse:
+
+=CN Now, With The New Named Method, We Build a Horse:
+
+=EN my $tv_horse = Horse->named('Mr. Ed');
+
+=CN My $tv_horse = Horse->Named('Mr. Ed');
+
+=EN We're back to a class method, so the two arguments to Horse::named are "Horse" and "Mr. Ed".
+
+=CN We'Re Back To a Class Method, So The Two Arguments To Horse::Named Are "Horse" And "Mr. Ed".
+
+=EN The bless operator not only blesses $name, it also returns the reference to $name, so that's fine as a return value.
+
+=CN The 保佑 Operator Not Only blesses $Name, It Also Returns The Reference To $Name, So That's Fine As a Return Value.
+
+=EN And that's how we build a horse.
+
+=CN And That's How We Build a 马.
+
+=EN We called the constructor named here so it quickly denotes the constructor's argument as the name for this particular Horse.
+
+=CN We Called The 构造函数 Named Here So It 快 denotes The 构造函数's Argument As The Name For This Particular Horse.
+
+=EN We can use different constructors with different names for different ways of "giving birth" to the object (such as recording its pedigree or date of birth).
+
+=CN We Can Use Different 构造函数 With Different Names For Different Ways Of "Giving 出生" To The Object (Such As recording Its pedigree Or Date Of 出生).
+
+=EN However, we'll find that most people use a single constructor named new, with various ways of interpreting the arguments to new.
+
+=CN However, We'我 寻找 That Most People Use a Single 构造函数 Named New, With 各种各样的 Ways Of interpreting The Arguments To New.
+
+=EN Either style is fine, as long as we document our particular way of giving birth to an object.
+
+=CN Either Style Is Fine, As Long As We Document Our Particular Way Of Giving 出生 To An Object.
+
+=EN Most core and CPAN modules use new, with notable exceptions, such as DBI's DBI->connect( ).
+
+=CN Most Core And Perl综合典藏网 Modules Use New, With 值得注意的 exceptions, Such As DBI's DBI->连接( ).
+
+=EN It's really up to the author.
+
+=CN It's Really Up To The 作者.
+
+=EN Inheriting the Constructor Was there anything specific to Horse in that method?
+
+=CN Inheriting The Constructor Was There Anything 特殊的 To Horse In That Method?
+
+=EN Therefore, it's also the same recipe for building anything else inherited from Animal, so let's put it there:
+
+=CN Therefore, It's Also The Same 菜谱 For 建筑物 Anything Else 继承 From Animal, So Let's Put It There:
+
+=EN Ahh, but what happens if we invoke speak on an instance?
+
+=CN Ahh, But What Happens If We 调用 说话 On An 例子?
+
+=EN my $tv_horse = Horse->named('Mr. Ed'); $tv_horse->speak;
+
+=CN My $tv_horse = Horse->Named('Mr. Ed'); $tv_horse->说话;
+
+=EN We get a debugging value:
+
+=CN We Get a Debugging Value:
+
+=EN a Horse=SCALAR(0xaca42ac) goes neigh!
+
+=CN a Horse=SCALAR(0xaca42ac) 去 neigh!
+
+=EN Because the Animal::speak method expects a class name as its first parameter, not an instance.
+
+=CN Because The Animal::说话 Method Expects a Class Name As Its First Parameter, Not An 例子.
+
+=EN When we pass in the instance, we'll use a blessed scalar reference as a string, which shows up as we showed it just nowsimilar to a stringified reference, but with the class name in front.
+
+=CN When We Pass In The 例子, We'我 Use a 有福的 Scalar Reference As a String, Which Shows Up As We showed It Just nowsimilar To a stringified Reference, But With The Class Name In Front.
+
+=EN Making a Method Work with Either Classes or Instances All we need to fix this is a way to detect whether the method is called on a class or an instance.
+
+=CN Making a Method Work With Either Classes Or Instances All We Need To 固定 This Is a Way To 发现 Whether The Method Is Called On a Class Or An 例子.
+
+=EN The most straightforward way to find out is with the ref operator.
+
+=CN The Most 直爽的 Way To 寻找 Out Is With The Ref Operator.
+
+=EN This operator returns a string (the class name) when used on a blessed reference, and undef when used on a string (like a class name).
+
+=CN This Operator Returns a String (The Class Name) When Used On a 有福的 Reference, And Undef When Used On a String (Like a Class Name).
+
+=EN We modify the name method first to notice the change:
+
+=CN We Modify The Name Method First To Notice The Change:
+
+=EN sub name {
+
+=CN Sub Name {
+
+=EN  # it's an instance, return name
+
+=CN  # It's An 例子, Return Name
+
+=EN  # it's a class, return generic }
+
+=CN  # It's a Class, Return 通用 }
+
+=EN Here the ?: operator selects either the dereference or a derived string.
+
+=CN Here The ?: Operator 选择 Either The 废弃 Or a 派生 String.
+
+=EN Now we can use it with either an instance or a class.
+
+=CN Now We Can Use It With Either An 例子 Or a Class.
+
+=EN Note that we changed the first parameter holder to $either to show that it is intentional:
+
+=CN Note That We 改变 The First Parameter 持有人 To $Either To Show That It Is 有意的:
+
+=EN print Horse->name, "\n"; # prints "an unnamed Horse\n"
+
+=CN Print Horse->Name, "\n"; # Prints "An unnamed Horse\n"
+
+=EN my $tv_horse = Horse->named('Mr. Ed'); print $tv_horse->name, "\n"; # prints "Mr. Ed.\n"
+
+=CN My $tv_horse = Horse->Named('Mr. Ed'); Print $tv_horse->Name, "\n"; # Prints "Mr. Ed.\n"
+
+=EN and now we'll fix speak to use this:
+
+=CN And Now We'我 固定 说话 To Use This:
+
+=EN sub speak {
+
+=CN Sub 说话 {
+
+=EN Since sound already worked with either a class or an instance, we're done!
+
+=CN Since 声 Already 工作 With Either a Class Or An 例子, We'Re Done!
+
+=EN Adding Parameters to a Method Let's train our animals to eat:
+
+=CN Adding Parameters To a Method Let's 列车 Our animals To 吃:
+
+=EN  # it's an instance, return name
+
+=CN  # It's An 例子, Return Name
+
+=EN  # it's a class, return generic
+
+=CN  # It's a Class, Return 通用
+
+=EN Now try it out:
+
+=CN Now Try It Out:
+
+=EN my $tv_horse = Horse->named('Mr. Ed'); $tv_horse->eat('hay'); Sheep->eat('grass');
+
+=CN My $tv_horse = Horse->Named('Mr. Ed'); $tv_horse->吃('干草'); Sheep->吃('草');
+
+=EN It prints:
+
+=CN It Prints:
+
+=EN Mr. Ed eats hay. an unnamed Sheep eats grass.
+
+=CN Mr. Ed Eats 干草. An unnamed Sheep Eats 草.
+
+=EN An instance method with parameters gets invoked with the instance, and then the list of parameters.
+
+=CN An 例子 Method With Parameters Gets invoked With The 例子, And Then The List Of Parameters.
+
+=EN That first invocation is like:
+
+=CN That First 调用 Is Like:
+
+=EN Animal::eat($tv_horse, 'hay');
+
+=CN Animal::吃($tv_horse, '干草');
+
+=EN The instance methods form the Application Programming Interface (API) for an object.
+
+=CN The 例子 Methods Form The Application Programming Interface (API) For An Object.
+
+=EN Most of the effort involved in designing a good object class goes into the API design, because the API defines how reusable and maintainable the object and its subclasses will be.
+
+=CN Most Of The 努力 涉及的 In designing a Good Object Class 去 Into The API 设计, Because The API 定义 How reusable And maintainable The Object And Its 子类 Will Be.
+
+=EN Don't rush to freeze an API design before you've considered how you (or others) will use the object.
+
+=CN Don't 冲 To 结冰 An API 设计 Before You'Ve Considered How You (Or 别人) Will Use The Object.
+
+=EN More Interesting Instances What if an instance needs more data?
+
+=CN More Interesting Instances What If An 例子 Needs More Data?
+
+=EN Most interesting instances are made of many items, each of which can, in turn, be a reference or another object.
+
+=CN Most Interesting 实例 Are Made Of Many 物品, Each Of Which Can, In 转向, Be a Reference Or 另一个 Object.
+
+=EN The easiest way to store these items is often in a hash.
+
+=CN The easiest Way To 商店 These 物品 Is Often In a Hash.
+
+=EN The keys of the hash serve as the names of parts of the object (also called instance or member variables), and the corresponding values are, well, the values.
+
+=CN The Keys Of The Hash 服务 As The Names Of 部分 Of The Object (Also Called 例子 Or Member Variables), And The 相应的 Values Are, Well, The Values.
+
+=EN How do we turn the horse into a hash?[*] Recall that an object is any blessed reference.
+
+=CN How Do We 转向 The 马 Into a Hash?[*] Recall That An Object Is Any 有福的 Reference.
+
+=EN We can just as easily make it a blessed hash reference as a blessed scalar reference, as long as everything that looks at the reference is changed accordingly.
+
+=CN We Can Just As 容易地 Make It a 有福的 Hash Reference As a 有福的 Scalar Reference, As Long As Everything That Looks At The Reference Is 改变 相应地.
+
+=EN [*] Other than calling on a butcher, that is.
+
+=CN [*] Other Than Calling On a 屠夫, That Is.
+
+=EN Let's make a sheep that has a name and a color:
+
+=CN Let's Make a 绵羊 That Has a Name And a 颜色:
+
+=EN my $lost = bless { Name => 'Bo', Color => 'white' }, Sheep;
+
+=CN My $Lost = 保佑 { Name => 'Bo', Color => '白的' }, Sheep;
+
+=EN $lost->{Name} has Bo, and $lost->{Color} has white.
+
+=CN $Lost->{Name} Has Bo, And $Lost->{Color} Has 白的.
+
+=EN But we want to make $lost->name access the name, and that's now messed up because it's expecting a scalar reference.
+
+=CN But We Want To Make $Lost->Name Access The Name, And That's Now messed Up Because It's expecting a Scalar Reference.
+
+=EN Not to worry, because it's pretty easy to fix:
+
+=CN Not To 烦恼, Because It's 精致的 Easy To 固定:
+
+=EN ## in Animal sub name {
+
+=CN ## In Animal Sub Name {
+
+=EN named still builds a scalar sheep, so let's fix that as well:
+
+=CN Named Still builds a Scalar 绵羊, So Let's 固定 That As Well:
+
+=EN ## in Animal sub named {
+
+=CN ## In Animal Sub Named {
+
+=EN What's this default_color?
+
+=CN What's This default_color?
+
+=EN If named has only the name, we still need to set a color, so we'll have a class-specific initial color.
+
+=CN If Named Has Only The Name, We Still Need To Set a 颜色, So We'我 Have a Class-特殊的 Initial 颜色.
+
+=EN For a sheep, we might define it as white:
+
+=CN For a 绵羊, We Might Define It As 白的:
+
+=EN ## in Sheep sub default_color { 'white' }
+
+=CN ## In Sheep Sub default_color { '白的' }
+
+=EN Then, to keep from having to define one for each additional class, define a backstop method, which serves as the "default default, " directly in Animal:
+
+=CN Then, To 保持 From Having To Define One For Each Additional Class, Define a 控股 Method, Which 服务 As The "Default Default, " 直接地 In Animal:
+
+=EN ## in Animal sub default_color { 'brown' }
+
+=CN ## In Animal Sub default_color { '褐色（的）' }
+
+=EN Thus, all animals are brown (muddy, perhaps), unless a specific animal class gives a specific override to this method.
+
+=CN Thus, All animals Are 褐色（的） (泥泞的, 也许), Unless a 特殊的 动物 Class Gives a 特殊的 Override To This Method.
+
+=EN Now, because name and named were the only methods that referenced the structure of the object, the remaining methods can stay the same, so speak still works as before.
+
+=CN Now, Because Name And Named Were The Only Methods That 参考 The Structure Of The Object, The Remaining Methods Can Stay The Same, So 说话 Still Works As Before.
+
+=EN This supports another basic rule of OOP: if only the object accesses its internal data, there's less code to change when it's time to modify that structure.
+
+=CN This Supports 另一个 基本的 Rule Of OOP: If Only The Object Accesses Its Internal Data, There's 更少的 Code To Change When It's Time To Modify That Structure.
+
+=EN A Horse of a Different Color Having all horses be brown would be boring.
+
+=CN A Horse Of a Different Color Having All horses Be 褐色（的） Would Be 讨厌的.
+
+=EN Let's add a method or two to get and set the color:
+
+=CN Let's 增添 a Method Or Two To Get And Set The 颜色:
+
+=EN ## in Animal sub color {
+
+=CN ## In Animal Sub 颜色 {
+
+=EN Now we can fix that color for Mr. Ed:
+
+=CN Now We Can 固定 That 颜色 For Mr. Ed:
+
+=EN my $tv_horse = Horse->named('Mr. Ed'); $tv_horse->set_color('black-and-white'); print $tv_horse->name, ' is colored ', $tv_horse->color, "\n";
+
+=CN My $tv_horse = Horse->Named('Mr. Ed'); $tv_horse->set_color('黑的-And-白的'); Print $tv_horse->Name, ' Is colored ', $tv_horse->颜色, "\n";
+
+=EN which results in:
+
+=CN Which Results In:
+
+=EN Mr. Ed is colored black-and-white
+
+=CN Mr. Ed Is colored 黑的-And-白的
+
+=EN Getting Our Deposit Back Because of the way the code is written, the setter also returns the updated value.
+
+=CN Getting Our Deposit Back Because Of The Way The Code Is Written, The setter Also Returns The Updated Value.
+
+=EN Think about this (and document it) when we write a setter.
+
+=CN Think About This (And Document It) When We Write a setter.
+
+=EN What does the setter return?
+
+=CN What Does The setter Return?
+
+=EN Here are some common variations:
+
+=CN Here Are Some Common variations:
+
+=EN The updated parameter (same as what was passed in)
+
+=CN The Updated Parameter (Same As What Was Passed In)
+
+=EN The previous value (similar to the way umask or the single-argument form of select works)
+
+=CN The Previous Value (Similar To The Way umask Or The Single-Argument Form Of 挑选 Works)
+
+=EN The object itself
+
+=CN The Object Itself
+
+=EN A success/fail code
+
+=CN A 成功/失败 Code
+
+=EN Each has advantages and disadvantages.
+
+=CN Each Has advantages And disadvantages.
+
+=EN For example, if we return the updated parameter, we can use it again for another object:
+
+=CN For Example, If We Return The Updated Parameter, We Can Use It Again For 另一个 Object:
+
+=EN The implementation given earlier returns the newly updated value.
+
+=CN The 实行 Given Earlier Returns The 新 Updated Value.
+
+=EN Frequently, this is the easiest code to write, and often the fastest to execute.
+
+=CN Frequently, This Is The easiest Code To Write, And Often The fastest To Execute.
+
+=EN If we return the previous parameter, we can easily create "set this value temporarily to that" functions:
+
+=CN If We Return The Previous Parameter, We Can 容易地 Create "Set This Value temporarily To That" Functions:
+
+=EN This is implemented as:
+
+=CN This Is 实施 As:
+
+=EN sub set_color {
+
+=CN Sub set_color {
+
+=EN For more efficiency, we can avoid stashing the previous value when in a void context using the wantarray function:
+
+=CN For More Efficiency, We Can Avoid stashing The Previous Value When In a Void Context Using The wantarray Function:
+
+=EN  # this method call is not in void context, so
+
+=CN  # This Method Call Is Not In Void Context, So
+
+=EN  # the return value matters
+
+=CN  # The Return Value matters
+
+=EN  # this method call is in void context
+
+=CN  # This Method Call Is In Void Context
+
+=EN If we return the object itself, we can chain settings:
+
+=CN If We Return The Object Itself, We Can 链条 settings:
+
+=EN my $tv_horse =
+
+=CN My $tv_horse =
+
+=EN This works because the output of each setter is the original object, becoming the object for the next method call.
+
+=CN This Works Because The 出产 Of Each setter Is The Original Object, becoming The Object For The 下一次 Method Call.
+
+=EN Implementing this is, again, relatively easy:
+
+=CN Implementing This Is, Again, 比较地 Easy:
+
+=EN The void context trick can be used here too, although with questionable value because we've already established $self.
+
+=CN The Void Context 诡计 Can Be Used Here Too, Although With questionable Value Because We'Ve Already 已建立的 $自己.
+
+=EN Finally, returning a success status is useful if it's fairly common for an update to fail, rather than an exceptional event.
+
+=CN Finally, Returning a 成功 形势 Is Useful If It's 公平地 Common For An Update To 失败, Rather Than An 异常的 Event.
+
+=EN The other variations would have to indicate failure by throwing an exception with die.
+
+=CN The Other variations Would Have To 指明 失败 By 投掷 An Exception With Die.
+
+=EN In summary: use what you want, be consistent if you can, but document it nonetheless (and don't change it after you've already released one version).
+
+=CN In 概要: Use What You Want, Be 始终如一的 If You Can, But Document It nonetheless (And Don't Change It After You'Ve Already released One Version).
+
+=EN Don't Look Inside the Box We might have obtained or set the color outside the class simply by following the hash reference: $tv_horse->{Color}.
+
+=CN Don't Look Inside The Box We Might Have Obtained Or Set The 颜色 Outside The Class Simply By Following The Hash Reference: $tv_horse->{Color}.
+
+=EN However, this violates the encapsulation of the object by exposing its internal structure.
+
+=CN However, This violates The 封装 Of The Object By exposing Its Internal Structure.
+
+=EN The object is supposed to be a black box, but we've pried off the hinges and looked inside.
+
+=CN The Object Is 应该 To Be a 黑的 箱, But We'Ve pried Off The hinges And looked 里面.
+
+=EN One purpose of OOP is to enable the maintainer of Animal or Horse to make reasonably independent changes to the implementation of the methods and still have the exported interface work properly.
+
+=CN One Purpose Of OOP Is To 使能够 The maintainer Of Animal Or Horse To Make 合理地 独立的 Changes To The 实行 Of The Methods And Still Have The Exported Interface Work Properly.
+
+=EN To see why accessing the hash directly violates this, let's say that Animal no longer uses a simple color name for the color, but instead changes to use a computed RGB triple to store the color (holding it as an arrayref).
+
+=CN To See Why 访问 The Hash 直接地 violates This, Let's Say That Animal No 长 Uses a Simple 颜色 Name For The 颜色, But Instead Changes To Use a computed RGB 三倍的 To 商店 The 颜色 (支持 It As An Arrayref).
+
+=EN In this example, we use a fictional (at the time of this writing) Color::Conversions module to change the format of the color data behind the scenes:
+
+=CN In This Example, We Use a 虚构的 (At The Time Of This 写作) Color::Conversions Module To Change The Format Of The 颜色 Data 在 The scenes:
+
+=EN use Color::Conversions qw(color_name_to_rgb rgb_to_color_name); ... sub set_color {
+
+=CN Use Color::Conversions Qw(color_name_to_rgb rgb_to_color_name); ... Sub set_color {
+
+=EN  # arrayref } sub color {
+
+=CN  # Arrayref } Sub 颜色 {
+
+=EN  # takes arrayref }
+
+=CN  # Takes Arrayref }
+
+=EN We can still maintain the old interface if we use a setter and getter, because they can perform the translations without the user knowing about it.
+
+=CN We Can Still Maintain The Old Interface If We Use a setter And getter, Because They Can 执行 The translations Without The User 知道 About It.
+
+=EN We can also add new interfaces now to enable the direct setting and getting of the RGB triple:
+
+=CN We Can Also 增添 New 接口 Now To 使能够 The Direct Setting And 得到 Of The RGB 三倍的:
+
+=EN sub set_color_rgb {
+
+=CN Sub set_color_rgb {
+
+=EN  # set colors to remaining parameters } sub get_color_rgb {
+
+=CN  # Set colors To Remaining Parameters } Sub get_color_rgb {
+
+=EN  # return RGB list }
+
+=CN  # Return RGB List }
+
+=EN If we use code outside the class that looks at $tv_horse->{Color} directly, this change is no longer possible.
+
+=CN If We Use Code Outside The Class That Looks At $tv_horse->{Color} 直接地, This Change Is No 长 Possible.
+
+=EN It won't work to store a string ('blue') where an arrayref is needed ([0, 0, 255]) or to use an arrayref as a string.
+
+=CN It Won't Work To 商店 a String ('蓝色的') Where An Arrayref Is Needed ([0, 0, 255]) Or To Use An Arrayref As a String.
+
+=EN This is why OO programming encourages you to call getters and setters, even if they take some time.
+
+=CN This Is Why OO Programming encourages You To Call getters And setters, Even If They Take Some Time.
+
+=EN Faster Getters and Setters Because we're going to play nice and always call the getters and setters instead of reaching into the data structure, getters and setters are called frequently.
+
+=CN Faster Getters And Setters Because We'Re Going To 玩 Nice And Always Call The getters And setters Instead Of reaching Into The Data Structure, getters And setters Are Called 时常.
+
+=EN To save a teeny-tiny bit of time, we might see these getters and setters written as:
+
+=CN To Save a teeny-微小的 Bit Of Time, We Might See These getters And setters Written As:
+
+=EN ## in Animal sub color { $_[0]->{Color} } sub set_color { $_[0]->{Color} = $_[1] }
+
+=CN ## In Animal Sub 颜色 { $_[0]->{Color} } Sub set_color { $_[0]->{Color} = $_[1] }
+
+=EN We save a bit of typing when we do this, and the code is slightly faster, although probably not enough for us to notice it with everything else that's going on in our program.
+
+=CN We Save a Bit Of 打字 When We Do This, And The Code Is 轻微地 Faster, Although Probably Not Enough For Us To Notice It With Everything Else That's Going On In Our Program.
+
+=EN The $_[0] is just the single element access to the @_ array.
+
+=CN The $_[0] Is Just The Single Element Access To The @_ Array.
+
+=EN Instead of using shift to put the argument into another variable, we can simply use it directly.
+
+=CN Instead Of Using Shift To Put The Argument Into 另一个 Variable, We Can Simply Use It 直接地.
+
+=EN Getters That Double as Setters Another alternative to the pattern of creating two different methods for getting and setting a parameter is to create one method that notes whether or not it gets any additional arguments.
+
+=CN Getters That Double As Setters Another 两者取一 To The 模式 Of Creating Two Different Methods For 得到 And Setting a Parameter Is To Create One Method That 备忘 Whether Or Not It Gets Any Additional Arguments.
+
+=EN If the arguments are absent, it's a get operation; if the arguments are present, it's a set operation.
+
+=CN If The Arguments Are 缺席的, It's a Get Operation; If The Arguments Are 在场的, It's a Set Operation.
+
+=EN A simple version looks like:
+
+=CN A Simple Version Looks Like:
+
+=EN sub color {
+
+=CN Sub 颜色 {
+
+=EN  # are there any more parameters?
+
+=CN  # Are There Any More Parameters?
+
+=EN  # yes, it's a setter:
+
+=CN  # Yes, It's a setter:
+
+=EN  # no, it's a getter:
+
+=CN  # No, It's a getter:
+
+=EN Now we can say:
+
+=CN Now We Can Say:
+
+=EN my $tv_horse = Horse->named('Mr. Ed'); $tv_horse->color('black-and-white'); print $tv_horse->name, ' is colored ', $tv_horse->color, "\n";
+
+=CN My $tv_horse = Horse->Named('Mr. Ed'); $tv_horse->颜色('黑的-And-白的'); Print $tv_horse->Name, ' Is colored ', $tv_horse->颜色, "\n";
+
+=EN The presence of the parameter in the second line denotes that we are setting the color, while its absence in the third line indicates a getter.
+
+=CN The 出席 Of The Parameter In The Second Line denotes That We Are Setting The 颜色, While Its 缺席 In The 第三 Line 表明 a getter.
+
+=EN This strategy is attractive because of its simplicity, but it also has disadvantages.
+
+=CN This 战略 Is attractive Because Of Its 简单, But It Also Has disadvantages.
+
+=EN It complicates the actions of the getter, which is called frequently.
+
+=CN It complicates The 行动 Of The getter, Which Is Called 时常.
+
+=EN It also makes it difficult to search through our code to find the setters of a particular parameter, which are often more important than the getters.
+
+=CN It Also 使 It 困难的 To 搜查 通过 Our Code To 寻找 The setters Of a Particular Parameter, Which Are Often More Important Than The getters.
+
+=EN We've been burned in the past when a setter became a getter because another function returned more parameters than expected after an upgrade.
+
+=CN We'Ve Been burned In The 过去的 When a setter Became a getter Because 另一个 Function Returned More Parameters Than Expected After An upgrade.
+
+=EN Restricting a Method to Class-Only or Instance-Only Setting the name of an unnameable generic Horse is probably not a good idea; neither is calling named on an instance.
+
+=CN Restricting a Method To Class-Only Or Instance-Only Setting The Name Of An unnameable 通用 Horse Is Probably Not a Good 思想; Neither Is Calling Named On An 例子.
+
+=EN Nothing in the Perl method definition says "this is a class method" or "this is an instance method."
+
+=CN Nothing In The Perl Method Definition 说 "This Is a Class Method" Or "This Is An 例子 Method."
+
+=EN Fortunately, the ref operator lets us throw an exception when called incorrectly.
+
+=CN Fortunately, The Ref Operator Lets Us 投 An Exception When Called incorrectly.
+
+=EN As an example of instance- or class-only methods, consider the following, where we check the argument to see what to do:
+
+=CN As An Example Of 例子- Or Class-Only Methods, Consider The Following, Where We Check The Argument To See What To Do:
+
+=EN use Carp qw(croak);
+
+=CN Use Carp qw(croak);
+
+=EN sub instance_only {
+
+=CN Sub instance_only {
+
+=EN sub class_only {
+
+=CN Sub class_only {
+
+=EN The ref function returns true for an instance, which is just a blessed reference, or false for a class, which is just a string.
+
+=CN The Ref Function Returns True For An 例子, Which Is Just a 有福的 Reference, Or False For a Class, Which Is Just a String.
+
+=EN If it returns an undesired value, we use the croak function from the Carp module (which comes in the standard distribution).
+
+=CN If It Returns An undesired Value, We Use The croak Function From The Carp Module (Which 来 In The Standard 分配).
+
+=EN The croak function places the blame on the caller by making the error message look like it came from the spot where we called the method instead of the spot where we issued the error.
+
+=CN The croak Function Places The 责备 On The Caller By 制作 The Error 音讯 Look Like It 来 From The 点 Where We Called The Method Instead Of The 点 Where We issued The Error.
+
+=EN The caller will get an error message like this, giving the line number in their code where the wrong method was called:
+
+=CN The Caller Will Get An Error 音讯 Like This, Giving The Line Number In Their Code Where The 错误的 Method Was Called:
+
+=EN instance variable needed at their_code line 1234
+
+=CN 例子 Variable Needed At their_code Line 1234
+
+=EN Just as croak is provided as the alternate form of die, Carp also provides carp as a replacement for warn.
+
+=CN Just As croak Is Provided As The 轮流 Form Of Die, Carp Also Provides 鲤鱼 As a Replacement For 警告.
+
+=EN Each tells the user which line of code called the code that caused the problem.
+
+=CN Each 告诉 The User Which Line Of Code Called The Code That caused The Problem.
+
+=EN Instead of using die or warn in your modules, use the Carp functions instead.
+
+=CN Instead Of Using Die Or 警告 In Your Modules, Use The Carp Functions Instead.
+
+=EN Your users will thank you for it.
+
+=CN Your Users Will 谢谢 You For It.
+
+=EN Exercise You can find the answer to this exercise in "Answer for Chapter 12" in the Appendix.
+
+=CN Exercise You Can 寻找 The Answer To This 锻炼 In "Answer For Chapter 12" In The Appendix.
+
+=EN Exercise [45 min] Give the Animal class the ability to get and set the name and color.
+
+=CN Exercise [45 min] Give The Animal Class The 能力 To Get And Set The Name And 颜色.
+
+=EN Be sure that your result works under use strict.
+
+=CN Be Sure That Your Result Works 在 Use Strict.
+
+=EN Also make sure your get methods work with both a generic animal and a specific animal instance.
+
+=CN Also Make Sure Your Get Methods Work With Both a 通用 动物 And a 特殊的 动物 例子.
+
+=EN Test your work with:
+
+=CN Test Your Work With:
+
+=EN my $tv_horse = Horse->named('Mr. Ed'); $tv_horse->set_name('Mister Ed'); $tv_horse->set_color('grey'); print $tv_horse->name, ' is ', $tv_horse->color, "\n"; print Sheep->name, ' colored ', Sheep->color, ' goes ', Sheep->sound, "\n";
+
+=CN My $tv_horse = Horse->Named('Mr. Ed'); $tv_horse->set_name('Mister Ed'); $tv_horse->set_color('灰色的'); Print $tv_horse->Name, ' Is ', $tv_horse->颜色, "\n"; Print Sheep->Name, ' colored ', Sheep->颜色, ' 去 ', Sheep->声, "\n";
+
+=EN What should you do if you're asked to set the name or color of a generic animal?
+
+=CN What Should You Do If You'Re 问 To Set The Name Or 颜色 Of a 通用 动物?
+

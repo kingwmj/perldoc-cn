@@ -1,0 +1,23 @@
+*** WARNING: (section) in 'prctl(2)' deprecated at line 30 in file ..\project\perldoc\00_raw_txt\perl5130delta.pod
+*** WARNING: (section) in 'prctl(2)' deprecated at line 402 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'curl(1)' deprecated at line 1223 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'wget(1)' deprecated at line 1223 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'unzip(1)' deprecated at line 1288 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'tar(1)' deprecated at line 1302 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'ptar(1)' deprecated at line 1315 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'ptargrep(1)' deprecated at line 1321 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'bzip2(1)' deprecated at line 1432 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'bzip2(1)' deprecated at line 1465 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'sha1sum(1)' deprecated at line 1550 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'md5sum(1)' deprecated at line 1550 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'gcc(1)' deprecated at line 1593 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'fetch(1)' deprecated at line 1672 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'perllexwarn(1)' deprecated at line 2195 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'pod2man(1)' deprecated at line 2274 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: (section) in 'perlbug(1)' deprecated at line 2566 in file ..\project\perldoc\00_raw_txt\perl5140delta.pod
+*** WARNING: =item type mismatch ('definition' vs. 'number') at line 4195 in file ..\project\perldoc\00_raw_txt\perldiag.pod
+*** WARNING: (section) in 'man(5)' deprecated at line 274 in file ..\project\perldoc\00_raw_txt\perlpodstyle.pod
+*** WARNING: (section) in 'man(7)' deprecated at line 274 in file ..\project\perldoc\00_raw_txt\perlpodstyle.pod
+*** WARNING: empty section in previous paragraph at line 1271 in file ..\project\perldoc\00_raw_txt\perltodo.pod
+*** WARNING: empty section in previous paragraph at line 1273 in file ..\project\perldoc\00_raw_txt\perltodo.pod
+*** WARNING: empty section in previous paragraph at line 139 in file ..\project\perldoc\00_raw_txt\perlunifaq.pod

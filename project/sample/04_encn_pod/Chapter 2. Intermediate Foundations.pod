@@ -1,0 +1,608 @@
+=EN Intermediate Foundations Before we get started on the meat of the book, we want to introduce some intermediate-level Perl idioms that we use throughout the book.
+
+=CN Intermediate Foundations Before We Get 开始 On The Meat Of The 书, We Want To 介绍 Some 中间的-Level Perl idioms That We Use Throughout The 书.
+
+=EN These are the things that typically set apart the beginning and intermediate Perl programmers.
+
+=CN These Are The Things That 典型的 Set 分离 The 开端 And 中间的 Perl Programmers.
+
+=EN Along the way, we'll also introduce you to the cast of characters that we'll use in the examples throughout the book.
+
+=CN Along The Way, We'我 Also 介绍 You To The 掷 Of Characters That We'我 Use In The Examples Throughout The 书.
+
+=EN List Operators You already know about several list operators in Perl, but you may not have thought of them as working with lists.
+
+=CN List Operators You Already Know About Several List Operators In Perl, But You May Not Have Thought Of Them As Working With Lists.
+
+=EN The most common list operator is probably print.
+
+=CN The Most Common List Operator Is Probably Print.
+
+=EN We give it one or more arguments, and it puts them together for us.
+
+=CN We Give It One Or More Arguments, And It 把 Them Together For Us.
+
+=EN print 'Two castaways are ', 'Gilligan', ' and ', 'Skipper', "\n";
+
+=CN Print 'Two castaways Are ', 'Gilligan', ' And ', 'Skipper', "\n";
+
+=EN There are several other list operators that you already know about from Learning Perl.
+
+=CN There Are Several Other List Operators That You Already Know About From Learning Perl.
+
+=EN The sort operator puts its input list in order.
+
+=CN The Sort Operator 把 Its Input List In Order.
+
+=EN In their theme song, the castaways don't come in alphabetical order, but sort can fix that for us.
+
+=CN In Their 主题 歌, The castaways Don't 来到 In alphabetical Order, But Sort Can 固定 That For Us.
+
+=EN my @castaways = sort qw(Gilligan Skipper Ginger Professor Mary-Ann);
+
+=CN My @castaways = Sort Qw(Gilligan Skipper Ginger Professor Mary-Ann);
+
+=EN The reverse operator returns a list in the opposite order.
+
+=CN The 颠倒的 Operator Returns a List In The 对立的 Order.
+
+=EN my @castaways = reverse qw(Gilligan Skipper Ginger Professor Mary-Ann);
+
+=CN My @castaways = 颠倒的 Qw(Gilligan Skipper Ginger Professor Mary-Ann);
+
+=EN Perl has many other operators that work with lists, and, once you get used to them, you'll find yourself typing less and expressing your intent more clearly.
+
+=CN Perl Has Many Other Operators That Work With Lists, And, Once You Get Used To Them, You'我 寻找 你（们）自己 打字 更少的 And expressing Your 意图 More 清晰地.
+
+=EN List Filtering with grep The grep operator takes a list of values and a "testing expression."
+
+=CN List Filtering With Grep The Grep Operator Takes a List Of Values And a "testing Expression."
+
+=EN It takes one item after another in the list and places it into the $_ variable.
+
+=CN It Takes One 条款 After 另一个 In The List And Places It Into The $_ Variable.
+
+=EN It then evaluates the testing expression in a scalar context.
+
+=CN It Then 评价 The testing Expression In a Scalar Context.
+
+=EN If the expression evaluates to a true value, grep passes $_ on to the output list.
+
+=CN If The Expression 评价 To a True Value, Grep 经过 $_ On To The 出产 List.
+
+=EN my @lunch_choices = grep &is_edible($_), @gilligans_posessions.
+
+=CN My @lunch_choices = Grep &is_edible($_), @gilligans_posessions.
+
+=EN In a list context, the grep operator returns a list of all such selected items.
+
+=CN In a List Context, The Grep Operator Returns a List Of All Such 选定 物品.
+
+=EN In a scalar context, grep returns the number of selected items.
+
+=CN In a Scalar Context, Grep Returns The Number Of 选定 物品.
+
+=EN my @results = grep EXPR, @input_list; my $count = grep EXPR, @input_list;
+
+=CN My @Results = Grep EXPR, @input_list; My $计算 = Grep EXPR, @input_list;
+
+=EN Here, EXPR stands in for any scalar expression that should refer to $_ (explicitly or implicitly).
+
+=CN Here, EXPR Stands In For Any Scalar Expression That Should Refer To $_ (清晰地 Or Implicitly).
+
+=EN For example, to find all the numbers greater than 10, in our grep expression we check if $_ is greater than 10.
+
+=CN For Example, To 寻找 All The 编号 更大的 Than 10, In Our Grep Expression We Check If $_ Is 更大的 Than 10.
+
+=EN my @input_numbers = (1, 2, 4, 8, 16, 32, 64); my @bigger_than_10 = grep $_ > 10, @input_numbers;
+
+=CN My @input_numbers = (1, 2, 4, 8, 16, 32, 64); My @bigger_than_10 = Grep $_ > 10, @input_numbers;
+
+=EN The result is just 16, 32, and 64.
+
+=CN The Result Is Just 16, 32, And 64.
+
+=EN This uses an explicit reference to $_.
+
+=CN This Uses An 清楚的 Reference To $_.
+
+=EN Here's an example of an implicit reference to $_ from the pattern match operator:
+
+=CN Here's An Example Of An Implicit Reference To $_ From The 模式 Match Operator:
+
+=EN my @end_in_4 = grep /4$/, @input_numbers;
+
+=CN My @end_in_4 = Grep /4$/, @input_numbers;
+
+=EN And now we get just 4 and 64.
+
+=CN And Now We Get Just 4 And 64.
+
+=EN While the grep is running, it shadows any existing value in $_, which is to say that grep borrows the use of this variable but puts the original value back when it's done.
+
+=CN While The Grep Is 连续的, It shadows Any 现存的 Value In $_, Which Is To Say That Grep borrows The Use Of This Variable But 把 The Original Value Back When It's Done.
+
+=EN The variable $_ isn't a mere copy of the data item, though; it is an alias for the actual data element, similar to the control variable in a foreach loop.
+
+=CN The Variable $_ Isn't a 仅仅的 Copy Of The Data 条款, Though; It Is An Alias For The Actual Data Element, Similar To The Control Variable In a Foreach Loop.
+
+=EN If the testing expression is complex, we can hide it in a subroutine:
+
+=CN If The testing Expression Is 综合的, We Can Hide It In a Subroutine:
+
+=EN my @odd_digit_sum = grep digit_sum_is_odd($_), @input_numbers;
+
+=CN My @odd_digit_sum = Grep digit_sum_is_odd($_), @input_numbers;
+
+=EN sub digit_sum_is_odd {
+
+=CN Sub digit_sum_is_odd {
+
+=EN  # Assume no nondigit characters
+
+=CN  # Assume No nondigit Characters
+
+=EN Now we get back the list of 1, 16, and 32.
+
+=CN Now We Get Back The List Of 1, 16, And 32.
+
+=EN These numbers have a digit sum with a remainder of "1" in the last line of the subroutine, which counts as true.
+
+=CN These 编号 Have a 数字 总数 With a 剩余部分 Of "1" In The Last Line Of The Subroutine, Which 计数 As True.
+
+=EN The syntax comes in two forms, though: we just showed you the expression form, and now here's the block form.
+
+=CN The Syntax 来 In Two 形式, Though: We Just showed You The Expression Form, And Now Here's The Block Form.
+
+=EN Rather than define an explicit subroutine that we'd use for only a single test, we can put the body of a subroutine directly in line in the grep operator, using the block forms:[*]
+
+=CN Rather Than Define An 清楚的 Subroutine That We'd Use For Only a Single Test, We Can Put The 身体 Of a Subroutine 直接地 In Line In The Grep Operator, Using The Block 形式:[*]
+
+=EN [*] In the block form of grep, there's no comma between the block and the input list.
+
+=CN [*] In The Block Form Of Grep, There's No 逗号 Between The Block And The Input List.
+
+=EN In the expression form of grep, there must be a comma between the expression and the list.
+
+=CN In The Expression Form Of Grep, There Must Be a 逗号 Between The Expression And The List.
+
+=EN my @results = grep {
+
+=CN My @Results = Grep {
+
+=EN my $count = grep {
+
+=CN My $计算 = Grep {
+
+=EN Just like the expression form, grep temporarily places each element of the input list into $_.
+
+=CN Just Like The Expression Form, Grep temporarily Places Each Element Of The Input List Into $_.
+
+=EN Next, it evaluates the entire block of code.
+
+=CN Next, It 评价 The 完全的 Block Of Code.
+
+=EN The last evaluated expression in the block is the testing expression.
+
+=CN The Last 评估 Expression In The Block Is The testing Expression.
+
+=EN (And like all testing expressions, it's evaluated in a scalar context.)
+
+=CN (And Like All testing Expressions, It's 评估 In a Scalar Context.)
+
+=EN Because it's a full block, we can introduce variables that are scoped to the block.
+
+=CN Because It's a Full Block, We Can 介绍 Variables That Are Scoped To The Block.
+
+=EN Let's rewrite that last example to use the block form:
+
+=CN Let's 重写 That Last Example To Use The Block Form:
+
+=EN my @odd_digit_sum = grep {
+
+=CN My @odd_digit_sum = Grep {
+
+=EN  # Assume no nondigit characters
+
+=CN  # Assume No nondigit Characters
+
+=EN Note the two changes: the input value comes in via $_ rather than an argument list, and we removed the keyword return.
+
+=CN Note The Two Changes: The Input Value 来 In Via $_ Rather Than An Argument List, And We Removed The Keyword Return.
+
+=EN In fact, we would have been wrong to keep the return because we're no longer in a separate subroutine: just a block of code.[*] Of course, we can optimize a few things out of that routine since we don't need the intermediate variables:
+
+=CN In Fact, We Would Have Been 错误的 To 保持 The Return Because We'Re No 长 In a Separate Subroutine: Just a Block Of Code.[*] Of Course, We Can 最佳化 a Few Things Out Of That Routine Since We Don't Need The 中间的 Variables:
+
+=EN [*] The return would have exited the subroutine that contains this entire section of code.
+
+=CN [*] The Return Would Have Exited The Subroutine That 包含 This 完全的 Section Of Code.
+
+=EN And yes, some of us have been bitten by that mistake in real, live coding on the first draft.
+
+=CN And Yes, Some Of Us Have Been bitten By That 错误 In Real, 居住生存 coding On The First 草案.
+
+=EN Feel free to crank up the explicitness if it helps you and your coworkers understand and maintain the code.
+
+=CN Feel Free To crank Up The explicitness If It 帮助 You And Your coworkers Understand And Maintain The Code.
+
+=EN That's the main thing that matters.
+
+=CN That's The Main Thing That matters.
+
+=EN Transforming Lists with map The map operator has a very similar syntax to the grep operator and shares a lot of the same operational steps.
+
+=CN Transforming Lists With Map The Map Operator Has a Very Similar Syntax To The Grep Operator And 股票 a 许多 Of The Same 业务上的 步骤.
+
+=EN For example, it temporarily places items from a list into $_ one at a time, and the syntax allows both the expression block forms.
+
+=CN For Example, It temporarily Places 物品 From a List Into $_ One At a Time, And The Syntax Allows Both The Expression Block 形式.
+
+=EN However, the testing expression becomes a mapping expression.
+
+=CN However, The testing Expression Becomes a 映射 Expression.
+
+=EN The map operator evaluates the expression in a list context (not a scalar context like grep).
+
+=CN The Map Operator 评价 The Expression In a List Context (Not a Scalar Context Like Grep).
+
+=EN Each evaluation of the expression gives a portion of the many results.
+
+=CN Each 估价 Of The Expression Gives a 一份 Of The Many Results.
+
+=EN The overall result is the list concatenation of all individual results.
+
+=CN The 总的 Result Is The List 连入 Of All Individual Results.
+
+=EN In a scalar context, map returns the number of elements that are returned in a list context.
+
+=CN In a Scalar Context, Map Returns The Number Of Elements That Are Returned In a List Context.
+
+=EN But map should rarely, if ever, be used in anything but a list context.)
+
+=CN But Map Should 难得, If 曾经, Be Used In Anything But a List Context.)
+
+=EN Let's start with a simple example:
+
+=CN Let's Start With a Simple Example:
+
+=EN my @input_numbers = (1, 2, 4, 8, 16, 32, 64); my @result = map $_ + 100, @input_numbers;
+
+=CN My @input_numbers = (1, 2, 4, 8, 16, 32, 64); My @Result = Map $_ + 100, @input_numbers;
+
+=EN For each of the seven items map places into $_, we get a single output result: the number that is 100 greater than the input number.
+
+=CN For Each Of The seven 物品 Map Places Into $_, We Get a Single 出产 Result: The Number That Is 100 更大的 Than The Input Number.
+
+=EN So the value of @result is 101, 102, 104, 108, 116, 132, and 164.
+
+=CN So The Value Of @Result Is 101, 102, 104, 108, 116, 132, And 164.
+
+=EN But we're not limited to having only one output for each input.
+
+=CN But We'Re Not Limited To Having Only One 出产 For Each Input.
+
+=EN Let's see what happens when each input produces two output items:
+
+=CN Let's See What Happens When Each Input Produces Two 出产 物品:
+
+=EN my @result = map { $_, 3 * $_ } @input_numbers;
+
+=CN My @Result = Map { $_, 3 * $_ } @input_numbers;
+
+=EN Now there are two items for each input item: 1, 3, 2, 6, 4, 12, 8, 24, 16, 48, 32, 96, 64, and 192.
+
+=CN Now There Are Two 物品 For Each Input 条款: 1, 3, 2, 6, 4, 12, 8, 24, 16, 48, 32, 96, 64, And 192.
+
+=EN We can store those pairs in a hash, if we need a hash showing what number is three times a small power of two:
+
+=CN We Can 商店 Those 双 In a Hash, If We Need a Hash showing What Number Is Three Times a Small 力 Of Two:
+
+=EN my %hash = @result;
+
+=CN My %Hash = @Result;
+
+=EN Or, without using the intermediate array from the map:
+
+=CN Or, Without Using The 中间的 Array From The Map:
+
+=EN my %hash = map { $_, 3 * $_ } @input_numbers;
+
+=CN My %Hash = Map { $_, 3 * $_ } @input_numbers;
+
+=EN You can see that map is pretty versatile; we can produce any number of output items for each input item.
+
+=CN You Can See That Map Is 精致的 多才多艺的; We Can Produce Any Number Of 出产 物品 For Each Input 条款.
+
+=EN And we don't always need to produce the same number of output items.
+
+=CN And We Don't Always Need To Produce The Same Number Of 出产 物品.
+
+=EN Let's see what happens when we break apart the digits:
+
+=CN Let's See What Happens When We 打破 分离 The digits:
+
+=EN my @result = map { split //, $_ } @input_numbers;
+
+=CN My @Result = Map { Split //, $_ } @input_numbers;
+
+=EN The inline block of code splits each number into its individual digits.
+
+=CN The inline Block Of Code Splits Each Number Into Its Individual digits.
+
+=EN For 1, 2, 4, and 8, we get a single result.
+
+=CN For 1, 2, 4, And 8, We Get a Single Result.
+
+=EN For 16, 32, and 64, we get two results per number.
+
+=CN For 16, 32, And 64, We Get Two Results 每 Number.
+
+=EN When map concatenates the results lists, we end up with 1, 2, 4, 8, 1, 6, 3, 2, 6, and 4.
+
+=CN When Map concatenates The Results Lists, We End Up With 1, 2, 4, 8, 1, 6, 3, 2, 6, And 4.
+
+=EN If a particular invocation results in an empty list, map concatenates that empty result into the larger list, contributing nothing to the list.
+
+=CN If a Particular 调用 Results In An Empty List, Map concatenates That Empty Result Into The larger List, contributing Nothing To The List.
+
+=EN We can use this feature to select and reject items.
+
+=CN We Can Use This Feature To 挑选 And 拒绝 物品.
+
+=EN For example, suppose we want only the split digits of numbers ending in 4:
+
+=CN For Example, 猜想 We Want Only The Split digits Of 编号 结局 In 4:
+
+=EN my @result = map {
+
+=CN My @Result = Map {
+
+=EN If the last digit is 4, we return the digits themselves by evaluating @digits (which is in list context).
+
+=CN If The Last 数字 Is 4, We Return The digits 他们、它们自己 By evaluating @digits (Which Is In List Context).
+
+=EN If the last digit is not 4, we return an empty list, effectively removing results for that particular item.
+
+=CN If The Last 数字 Is Not 4, We Return An Empty List, Effectively removing Results For That Particular 条款.
+
+=EN Thus, we can always use a map in place of a grep, but not vice versa.
+
+=CN Thus, We Can Always Use a Map In Place Of a Grep, But Not 坏事 versa.
+
+=EN Of course, everything we can do with map and grep, we can also do with explicit foreach loops.
+
+=CN Of Course, Everything We Can Do With Map And Grep, We Can Also Do With 清楚的 Foreach loops.
+
+=EN But then again, we can also code in assembler or by toggling bits into a front panel.[*] The point is that proper application of grep and map can help reduce the complexity of the program, allowing us to concentrate on high-level issues rather than details.
+
+=CN But Then Again, We Can Also Code In assembler Or By toggling 位 Into a Front 镶板.[*] The 尖 Is That 合适的 申请 Of Grep And Map Can Help Reduce The 复杂性 Of The Program, 允许 Us To 集中 On 高的-Level Issues Rather Than Details.
+
+=EN Trapping Errors with eval Many lines of ordinary code have the potential to terminate a program prematurely if something goes wrong.
+
+=CN Trapping Errors With Eval Many Lines Of Ordinary Code Have The 潜在的 To 终止 a Program prematurely If Something 去 错误的.
+
+=EN my $average = $total / $count; # divide by zero? print "okay\n" unless /$match/; # illegal pattern?
+
+=CN My $平均的 = $总 / $计算; # 分开 By 零? Print "Okay\n" Unless /$Match/; # 不合法的 模式?
+
+=EN open MINNOW, '>ship.txt' or die "Can't create 'ship.txt': $!"; # user-defined die?
+
+=CN Open MINNOW, '>ship.txt' Or Die "Can't Create 'ship.txt': $!"; # User-Defined Die?
+
+=EN &implement($_) foreach @rescue_scheme; # die inside sub?
+
+=CN &实行($_) Foreach @rescue_scheme; # Die 里面 Sub?
+
+=EN But just because something has gone wrong with one part of our code, that doesn't mean that we want everything to crash.
+
+=CN But Just Because Something Has 不见了 错误的 With One Part Of Our Code, That Doesn't Mean That We Want Everything To 碰撞.
+
+=EN Perl uses the eval operator as its error-trapping mechanism.
+
+=CN Perl Uses The Eval Operator As Its Error-trapping Mechanism.
+
+=EN eval { $average = $total / $count } ;
+
+=CN Eval { $平均的 = $总 / $计算 } ;
+
+=EN If an error happens while running code inside an eval block, the block is done executing.
+
+=CN If An Error Happens While 连续的 Code 里面 An Eval Block, The Block Is Done 执行.
+
+=EN But even though the code inside the block is finished, Perl continues running the code just after the eval.
+
+=CN But Even Though The Code 里面 The Block Is 制成的, Perl 继续 连续的 The Code Just After The Eval.
+
+=EN It's most common after an eval to immediately check $@, which will either be empty (meaning that there was no error) or the dying words Perl had from the code that failed, perhaps something like "divide by zero" or a longer error message.
+
+=CN It's Most Common After An Eval To 立即 Check $@, Which Will Either Be Empty (Meaning That There Was No Error) Or The dying Words Perl Had From The Code That failed, 也许 Something Like "分开 By 零" Or a 长 Error 音讯.
+
+=EN eval { $average = $total / $count } ; print "Continuing after error: $@" if $@;
+
+=CN Eval { $平均的 = $总 / $计算 } ; Print "Continuing After Error: $@" If $@;
+
+=EN eval { &rescue_scheme_42 } ; print "Continuing after error: $@" if $@;
+
+=CN Eval { &rescue_scheme_42 } ; Print "Continuing After Error: $@" If $@;
+
+=EN The semicolon is needed after the eval block because eval is a function (not a control structure, such as if or while).
+
+=CN The semicolon Is Needed After The Eval Block Because Eval Is a Function (Not a Control Structure, Such As If Or While).
+
+=EN But the block is a true block and may include lexical variables ("my" variables) and any other arbitrary statements.
+
+=CN But The Block Is a True Block And May Include Lexical Variables ("My" Variables) And Any Other 专横的 Statements.
+
+=EN As a function, eval has a return value much like a subroutine's (the last expression evaluated, or a value returned early by the return keyword).
+
+=CN As a Function, Eval Has a Return Value Much Like a Subroutine's (The Last Expression 评估, Or a Value Returned Early By The Return Keyword).
+
+=EN Of course, if the code in the block fails, no value is returned; this gives undef in a scalar context, or an empty list in a list context.
+
+=CN Of Course, If The Code In The Block 失败, No Value Is Returned; This Gives Undef In a Scalar Context, Or An Empty List In a List Context.
+
+=EN Thus, another way to calculate an average safely looks like this:
+
+=CN Thus, 另一个 Way To 计算 An 平均的 Safely Looks Like This:
+
+=EN my $average = eval { $total / $count } ;
+
+=CN My $平均的 = Eval { $总 / $计算 } ;
+
+=EN Now $average is either the quotient or undef, depending upon whether the operation completed successfully or not.
+
+=CN Now $平均的 Is Either The quotie(绑定操作符)nt Or Undef, Depending Upon Whether The Operation completed 成功地 Or Not.
+
+=EN Perl even supports nested eval blocks.
+
+=CN Perl Even Supports 嵌套的 Eval Blocks.
+
+=EN The power of an eval block to trap errors extends for as long as it's executing, so it catches errors deep within nested subroutine calls. eval can't trap the most serious of errors, though: the ones in which Perl itself stops running.
+
+=CN The 力 Of An Eval Block To 陷井 Errors Extends For As Long As It's 执行, So It catches Errors 深的 Within 嵌套的 Subroutine Calls. Eval Can't 陷井 The Most 慎重的 Of Errors, Though: The Ones In Which Perl Itself stops 连续的.
+
+=EN These include things such as an uncaught signal, running out of memory, and other catastrophes. eval doesn't catch syntax errors, either; because Perl compiles the eval block with the rest of the code, it catches syntax errors at compile time, not at runtime.
+
+=CN These Include Things Such As An uncaught 信号, 连续的 Out Of Memory, And Other catastrophes. Eval Doesn't Catch Syntax Errors, Either; Because Perl compiles The Eval Block With The 休息 Of The Code, It catches Syntax Errors At Compile Time, Not At Runtime.
+
+=EN It doesn't catch warnings either (although Perl does provide a way to intercept warning messages; see $SIG{_ _WARN_ _}).
+
+=CN It Doesn't Catch 警告 Either (Although Perl Does Provide a Way To intercept Warning Messages; See $SIG{_ _WARN_ _}).
+
+=EN Dynamic Code with eval There's also a second form of eval, whose parameter is a string expression instead of a block.
+
+=CN Dynamic Code With Eval There's Also a Second Form Of Eval, Whose Parameter Is a String Expression Instead Of a Block.
+
+=EN It compiles and executes code from a string at runtime.
+
+=CN It compiles And 实行 Code From a String At Runtime.
+
+=EN While this is useful and supported, it is also dangerous if any untrustworthy data has gotten into the string.
+
+=CN While This Is Useful And Supported, It Is Also Dangerous If Any untrustworthy Data Has gotten Into The String.
+
+=EN With a few notable exceptions, we recommend you avoid eval on a string.
+
+=CN With a Few 值得注意的 exceptions, We 推荐 You Avoid Eval On a String.
+
+=EN We'll use it a bit later, and you might see it in other people's code, so we'll show you how it works anyway.
+
+=CN We'我 Use It a Bit 更晚, And You Might See It In Other People's Code, So We'我 Show You How It Works 不管怎样.
+
+=EN eval '$sum = 2 + 2'; print "The sum is $sum\n";
+
+=CN Eval '$总数 = 2 + 2'; Print "The 总数 Is $总数\n";
+
+=EN Perl executes that code in the lexical context of the code around it, meaning that it's virtually as if we had typed that code right there.
+
+=CN Perl 实行 That Code In The Lexical Context Of The Code Around It, Meaning That It's 几乎 As If We Had 打印 That Code Right There.
+
+=EN The result of the eval is the last evaluated expression, so we really don't need the entire statement inside the eval.
+
+=CN The Result Of The Eval Is The Last 评估 Expression, So We Really Don't Need The 完全的 Statement 里面 The Eval.
+
+=EN #!/usr/bin/perl
+
+=CN #!/usr/bin/Perl
+
+=EN foreach my $operator ( qw(+ - * /) ) {
+
+=CN Foreach My $Operator ( Qw(+ - * /) ) {
+
+=EN Here, we go through the operators + - * / and use each of those inside our eval code.
+
+=CN Here, We Go 通过 The Operators + - * / And Use Each Of Those 里面 Our Eval Code.
+
+=EN In the string we give to eval, we interpolate the value of $operator into the string.
+
+=CN In The String We Give To Eval, We interpolate The Value Of $Operator Into The String.
+
+=EN The eval executes the code that the string represents and returns the last evaluated expression, which we assign it to $result.
+
+=CN The Eval 实行 The Code That The String Represents And Returns The Last 评估 Expression, Which We Assign It To $Result.
+
+=EN If eval can't properly compile and run the Perl code we hand it, it sets $@ just like in its block form.
+
+=CN If Eval Can't Properly Compile And Run The Perl Code We Hand It, It Sets $@ Just Like In Its Block Form.
+
+=EN In this example, we want to trap any divide-by-zero errors, but we don't divide by anything (another sort of error).
+
+=CN In This Example, We Want To 陷井 Any 分开-By-零 Errors, But We Don't 分开 By Anything (另一个 Sort Of Error).
+
+=EN print 'The quotient is ', eval '5 /', "\n"; warn $@ if $@;
+
+=CN Print 'The quotie(绑定操作符)nt Is ', Eval '5 /', "\n"; 警告 $@ If $@;
+
+=EN The eval catches the syntax error and puts the message in $@, which we check immediately after calling eval.
+
+=CN The Eval catches The Syntax Error And 把 The 音讯 In $@, Which We Check 立即 After Calling Eval.
+
+=EN The quotient is syntax error at (eval 1) line 2, at EOF
+
+=CN The quotie(绑定操作符)nt Is Syntax Error At (Eval 1) Line 2, At 结束标志
+
+=EN Later, in Chapters 10, 17, and 18, we'll use this to optionally load modules.
+
+=CN Later, In Chapters 10, 17, And 18, We'我 Use This To Optionally Load Modules.
+
+=EN If we can't load the module, Perl normally would stop the program.
+
+=CN If We Can't Load The Module, Perl Normally Would Stop The Program.
+
+=EN We'll catch the error and recover on our own when this happens.
+
+=CN We'我 Catch The Error And 寻回 On Our Own When This Happens.
+
+=EN In case you didn't catch our warning before, we'll say it again: be very careful with this form of eval.
+
+=CN In Case You Didn't Catch Our Warning Before, We'我 Say It Again: Be Very Careful With This Form Of Eval.
+
+=EN If you can find another way to do what you need, try that first.
+
+=CN If You Can 寻找 另一个 Way To Do What You Need, Try That First.
+
+=EN We'll use it later, in Chapter 10 to load code from an external file, but then we'll also show you a much better way to do that too.
+
+=CN We'我 Use It 更晚, In Chapter 10 To Load Code From An External File, But Then We'我 Also Show You a Much Better Way To Do That Too.
+
+=EN Exercises You can find the answers to these exercises in "Answers for Chapter 2" in the Appendix.
+
+=CN Exercises You Can 寻找 The answers To These exercises In "Answers For Chapter 2" In The Appendix.
+
+=EN Exercise 1 [15 min] Write a program that takes a list of filenames on the command line and uses grep to select the ones whose size in bytes is less than 1000.
+
+=CN Exercise 1 [15 min] Write a Program That Takes a List Of filenames On The 命令 Line And Uses Grep To 挑选 The Ones Whose Size In 字节 Is 更少的 Than 1000.
+
+=EN Use map to transform the strings in this list, putting four space characters in front of each and a newline character after.
+
+=CN Use Map To 转变 The Strings In This List, Putting 四 Space Characters In Front Of Each And a 换行符 Character After.
+
+=EN Print the resulting list.
+
+=CN Print The 造成 List.
+
+=EN Exercise 2 [25 min] Write a program that asks the user to enter a pattern (regular expression).
+
+=CN Exercise 2 [25 min] Write a Program That 问 The User To 进入 a 模式 (正则表达式).
+
+=EN Read this as data from the keyboard; don't get it from the command-line arguments.
+
+=CN Read This As Data From The 键盘; Don't Get It From The 命令-Line Arguments.
+
+=EN Report a list of files in some hardcoded directory (such as "/etc" or 'C:\\Windows') whose names match the pattern.
+
+=CN Report a List Of Files In Some hardcoded Directory (Such As "/Etc" Or 'C:\\微软视窗操作系统') Whose Names Match The 模式.
+
+=EN Repeat this until the user enters an empty string instead of a pattern.
+
+=CN Repeat This Until The User enters An Empty String Instead Of a 模式.
+
+=EN The user should not type the forward slashes that are traditionally used to delimit pattern matches in Perl; the input pattern is delimited by the trailing newline.
+
+=CN The User Should Not Type The Forward slashes That Are traditionally Used To delimit 模式 比赛 In Perl; The Input 模式 Is delimited By The 落后 换行符.
+
+=EN Ensure that a faulty pattern, such as one with unbalanced parentheses, doesn't crash the program
+
+=CN Ensure That a 有缺点的 模式, Such As One With unbalanced Parentheses, Doesn't 碰撞 The Program
+

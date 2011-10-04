@@ -1,0 +1,82 @@
+11.2. Introducing the Method Invocation Arrow
+11.2. 介绍方法调用符
+A class is a group of things with similar behaviors and traits. For now, let’s say that Class->method invokes subroutine method in package Class. A method is the object-oriented version of the subroutine, so we’ll say "method" from now on.[*] That’s not completely accurate, but we’ll go on one step at a time. Let’s use it like so:
+    [*] In Perl, there really isn’t a difference between a subroutine and a method. They both get an argument list in @_, and we have to make sure we do the right thing.
+sub Cow::speak {
+  print "a Cow goes moooo!\n";
+}
+sub Horse::speak {
+  print "a Horse goes neigh!\n";
+}
+sub Sheep::speak {
+  print "a Sheep goes baaaah!\n";
+}
+Cow->speak;
+Horse->speak;
+Sheep->speak;
+一个类是一组具有相同很行为性状的事物的集合。 对于Perl， 我们就认为类->方法就是Class包调用method子程序。 一个方法就是面向对象版本的子程序，所以从现在开始， 我们会说“方法”[*] 这不是特别准确， 但是第一步。 让我们像下面那样使用：
+ [*] 在Perl，实际上子程序和方法没什么差别。他们都以@_作参数， 我们来决定什么是对的。
+sub Cow::speak {
+  print "a Cow goes moooo!\n";
+}
+sub Horse::speak {
+  print "a Horse goes neigh!\n";
+}
+sub Sheep::speak {
+  print "a Sheep goes baaaah!\n";
+}
+Cow->speak;
+Horse->speak;
+Sheep->speak;
+And once again, this results in:
+a Cow goes moooo!
+a Horse goes neigh!
+a Sheep goes baaaah!
+同样，其输出是：
+a Cow goes moooo!
+a Horse goes neigh!
+a Sheep goes baaaah!
+That’s not fun yet. We’ve got the same number of characters, all constant, no variables. However, the parts are separable now:
+my $beast = ‘Cow’;
+$beast->speak;                # invokes Cow->speak
+不好玩是不是？ 我们得到了相同的输出结果， 都是常量，没有变量。 然而， 现在被拆开了：
+my $beast = ‘Cow’;
+$beast->speak;                # invokes Cow->speak
+Ahh! Now that the package name is separated from the subroutine name, we can use a variable package name. This time, we’ve got something that works even when we enable use strict ‘refs’.
+哈！既然包名和子程序的名字分开，我们就可用一个变量包名。 这次，我们就可以得到我们用use strict ‘refs’时也可以工作的东西。
+Take the arrow invocation and put it back in the barnyard example:
+sub Cow::speak {
+  print "a Cow goes moooo!\n";
+}
+sub Horse::speak {
+  print "a Horse goes neigh!\n";
+}
+sub Sheep::speak {
+  print "a Sheep goes baaaah!\n";
+}
+my @pasture = qw(Cow Cow Horse Sheep Sheep);
+foreach my $beast (@pasture) {
+  $beast->speak;
+}
+我们用箭头调用来看前面农场的例子：
+sub Cow::speak {
+  print "a Cow goes moooo!\n";
+}
+sub Horse::speak {
+  print "a Horse goes neigh!\n";
+}
+sub Sheep::speak {
+  print "a Sheep goes baaaah!\n";
+}
+my @pasture = qw(Cow Cow Horse Sheep Sheep);
+foreach my $beast (@pasture) {
+  $beast->speak;
+}
+There! Now all the animals are talking, and safely at that, without the use of symbolic coderefs.
+如此！ 现在所有的动物都能安全地交谈， 不必使用符号代码引用。
+But look at all that common code. Each speak method has a similar structure: a print operator and a string that contains common text, except for two words. One of OOP’s core principles is to minimize common code: if we write it only once, we’ll save time. If we test and debug it only once, we’ll save more time.
+但查看一般代码。 每个speak方法都相似结构：一个打印操作符和一个包含一般文本的字串， 除了两个字不同。 OOP的一个核心原则就是把通用的代码最小化：如果我们仅写一次，我们就节约了时间。如果我们调试一次就可以了，我们就节省了更多时间。
+Now that we know more about what the method invocation arrow actually does, we’ve got an easier way to do the same thing.
+即然我们已经知道了箭头调用符是如何工作的，我们就得到了入门的捷径。
+
+

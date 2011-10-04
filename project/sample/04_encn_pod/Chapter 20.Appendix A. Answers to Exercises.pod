@@ -1,0 +1,1760 @@
+=EN Appendix A. Answers to Exercises This appendix contains the answers to the exercises presented throughout the book.
+
+=CN Appendix A. Answers To Exercises This 附录 包含 The answers To The exercises 提出 Throughout The 书.
+
+=EN Answers for Chapter 2
+
+=CN Answers For Chapter 2
+
+=EN Exercise 1 Here's one way to do it.
+
+=CN Exercise 1 Here's One Way To Do It.
+
+=EN The command-line arguments show up in the special array @ARGV, so we use that for our input list.
+
+=CN The 命令-Line Arguments Show Up In The Special Array @命令行传入参数, So We Use That For Our Input List.
+
+=EN The file test operator -s works on $_ by default, and that's just the current element that grep tests.
+
+=CN The File Test Operator -s Works On $_ By Default, And That's Just The Current Element That Grep 测试.
+
+=EN All of the files with a byte -size smaller than 1, 000 bytes end up in @smaller_than_1000.
+
+=CN All Of The Files With a 字节 -Size smaller Than 1, 000 字节 End Up In @smaller_than_1000.
+
+=EN That array becomes the input for the map, which takes each element and returns it with spaces tacked on the front and a newline on the end.
+
+=CN That Array Becomes The Input For The Map, Which Takes Each Element And Returns It With spaces tacked On The Front And a 换行符 On The End.
+
+=EN #!/usr/bin/perl
+
+=CN #!/usr/bin/Perl
+
+=EN my @smaller_than_1000 = grep { -s < 1000 } @ARGV;
+
+=CN My @smaller_than_1000 = Grep { -s < 1000 } @命令行传入参数;
+
+=EN print map { " $_\n" } @smaller_than_1000;
+
+=CN Print Map { " $_\n" } @smaller_than_1000;
+
+=EN Typically we'll do that without the intermediate array, though.
+
+=CN Typically We'我 Do That Without The 中间的 Array, Though.
+
+=EN print map { " $_\n" } grep { -s < 1000 } @ARGV;
+
+=CN Print Map { " $_\n" } Grep { -s < 1000 } @命令行传入参数;
+
+=EN Exercise 2 We chose to use our home directory as the hardcoded directory.
+
+=CN Exercise 2 We chose To Use Our 家 Directory As The hardcoded Directory.
+
+=EN When we call chdir without an argument, it goes to our home directory (so this is one of the few places where Perl doesn't use $_ as the default).
+
+=CN When We Call Chdir Without An Argument, It 去 To Our 家 Directory (So This Is One Of The Few Places Where Perl Doesn't Use $_ As The Default).
+
+=EN After that, an infinite while loop keeps our code running, at least until we can't satisfy the condition to last that breaks us out of the loop.
+
+=CN After That, An 无限大的 While Loop 保持 Our Code 连续的, At Least Until We Can't 满足 The 状态 To Last That 打破 Us Out Of The Loop.
+
+=EN Look at the condition carefully: we don't just test for truth.
+
+=CN Look At The 状态 仔细: We Don't Just Test For 真相.
+
+=EN What would happen if we wanted to find all the files with a 0 in them?
+
+=CN What Would 发生 If We 想要 To 寻找 All The Files With a 0 In Them?
+
+=EN We look for defined values with a nonzero length, so undef (end of input) and the empty string (simply hitting enter) stop the loop.
+
+=CN We Look For Defined Values With a nonzero Length, So Undef (End Of Input) And The Empty String (Simply hitting 进入) Stop The Loop.
+
+=EN Once we have our regular expression, we do that same thing we did in the previous answer.
+
+=CN Once We Have Our 正则表达式, We Do That Same Thing We Did In The Previous Answer.
+
+=EN This time we use the result of glob as the input list and a pattern match inside the grep.
+
+=CN This Time We Use The Result Of Glob As The Input List And a 模式 Match 里面 The Grep.
+
+=EN We wrap an eval { } around the pattern match in case the pattern doesn't compile (for instance, it has an unmatched parenthesis or square bracket).
+
+=CN We 包 An Eval { } Around The 模式 Match In Case The 模式 Doesn't Compile (For 例子, It Has An unmatched parenthesis Or 正方形 括号).
+
+=EN chdir; # go to our home directory
+
+=CN Chdir; # Go To Our 家 Directory
+
+=EN while( 1 )
+
+=CN While( 1 )
+
+=EN Answers for Chapter 3
+
+=CN Answers For Chapter 3
+
+=EN Exercise 1 The trick in this exercise is to let the modules do all of the hard work.
+
+=CN Exercise 1 The 诡计 In This 锻炼 Is To Let The Modules Do All Of The 硬的 Work.
+
+=EN It's a good thing we've shown you how to use modules!
+
+=CN It's a Good Thing We'Ve shown You How To Use Modules!
+
+=EN The Cwd module (cwd is an acronym for "current working directory") automatically imports the getcwd function.
+
+=CN The Cwd Module (cwd Is An acronym For "Current Working Directory") Automatically Imports The getcwd Function.
+
+=EN We don't have to worry about how it does its magic, but we can be confident that it does it correctly for most major platforms.
+
+=CN We Don't Have To 烦恼 About How It Does Its Magic, But We Can Be 确信的 That It Does It 正确地 For Most 主要的 Platforms.
+
+=EN Once we have the current path in $cwd, we can use that as the first argument to the catfile method from the File::Spec function.
+
+=CN Once We Have The Current Path In $cwd, We Can Use That As The First Argument To The catfile Method From The File::Spec Function.
+
+=EN The second argument comes from the input list to our map and shows up in $_.
+
+=CN The Second Argument 来 From The Input List To Our Map And Shows Up In $_.
+
+=EN use Cwd; use File::Spec;
+
+=CN Use Cwd; Use File::Spec;
+
+=EN my $cwd = getcwd;
+
+=CN My $cwd = getcwd;
+
+=EN print map { " " .
+
+=CN Print Map { " " .
+
+=EN Exercise 2 We can't give you much help installing the module, although if you run into problems, you might want to ask brian about them since he wrote the module, as well as the cpan program you can use to install it.
+
+=CN Exercise 2 We Can't Give You Much Help installing The Module, Although If You Run Into 问题, You Might Want To 问 brian About Them Since 他 写 The Module, As Well As The Cpan Program You Can Use To 安装 It.
+
+=EN Once we have the module, we just have to follow the example in the documentation.
+
+=CN Once We Have The Module, We Just Have To 跟随 The Example In The 提供文件.
+
+=EN Our program takes the ISBN from the command line and creates the new ISBN object, which we store in $isbn.
+
+=CN Our Program Takes The ISBN From The 命令 Line And Creates The New ISBN Object, Which We 商店 In $isbn.
+
+=EN Once we have the object, we simply follow the examples in the documentation.
+
+=CN Once We Have The Object, We Simply 跟随 The Examples In The 提供文件.
+
+=EN use Business::ISBN;
+
+=CN Use Business::ISBN;
+
+=EN my $isbn = Business::ISBN->new( $ARGV[0] );
+
+=CN My $isbn = Business::ISBN->New( $命令行传入参数[0] );
+
+=EN print "ISBN is " . $isbn->as_string . "\n"; print "Country code: " . $isbn->country_code . "\n"; print "Publisher code: " . $isbn->publisher_code . "\n";
+
+=CN Print "ISBN Is " . $isbn->as_string . "\n"; Print "Country Code: " . $isbn->country_code . "\n"; Print "Publisher Code: " . $isbn->publisher_code . "\n";
+
+=EN Answers for Chapter 4 A.3.1.
+
+=CN Answers For Chapter 4 A.3.1.
+
+=EN Exercise 1 They're all referring to the same thing, except for the second one, ${$ginger[2]}[1].
+
+=CN Exercise 1 They'Re All Referring To The Same Thing, Except For The Second One, ${$姜[2]}[1].
+
+=EN That one is the same as $ginger[2][1], whose base is the array @ginger, rather than the scalar $ginger.
+
+=CN That One Is The Same As $姜[2][1], Whose Base Is The Array @姜, Rather Than The Scalar $姜.
+
+=EN Exercise 2 First, we construct the hash structure:
+
+=CN Exercise 2 First, We Construct The Hash Structure:
+
+=EN my @gilligan = qw(red_shirt hat lucky_socks water_bottle); my @professor = qw(sunscreen water_bottle slide_rule batteries radio); my @skipper = qw(blue_shirt hat jacket preserver sunscreen); my %all = (
+
+=CN My @gilligan = Qw(red_shirt 帽子 lucky_socks water_bottle); My @教授 = Qw(sunscreen water_bottle slide_rule batteries 无线电); My @skipper = Qw(blue_shirt 帽子 短外套 preserver sunscreen); My %All = (
+
+=EN Then we pass it to the first subroutine:
+
+=CN Then We Pass It To The First Subroutine:
+
+=EN check_items_for_all(\%all);
+
+=CN check_items_for_all(\%All);
+
+=EN In the subroutine, the first parameter is a hashref, so we dereference it to get the keys and the corresponding values:
+
+=CN In The Subroutine, The First Parameter Is a Hashref, So We 废弃 It To Get The Keys And The 相应的 Values:
+
+=EN sub check_items_for_all {
+
+=CN Sub check_items_for_all {
+
+=EN From there, we call the original subroutine:
+
+=CN From There, We Call The Original Subroutine:
+
+=EN sub check_required_items {
+
+=CN Sub check_required_items {
+
+=EN  # not found in list?
+
+=CN  # Not Found In List?
+
+=EN Answers for Chapter 5 A.4.1.
+
+=CN Answers For Chapter 5 A.4.1.
+
+=EN Exercise 1 The curly braces of the anonymous hash constructor make a reference to a hash.
+
+=CN Exercise 1 The 卷曲的 牙套 Of The Anonymous Hash 构造函数 Make a Reference To a Hash.
+
+=EN That's a scalar (as are all references), so it's not suitable to use alone as the value of a hash.
+
+=CN That's a Scalar (As Are All References), So It's Not Suitable To Use 单独的 As The Value Of a Hash.
+
+=EN Perhaps this code's author intended to assign to scalar variables (like $passenger_1 and $passenger_2) instead of hashes.
+
+=CN Perhaps This Code's 作者 预期 To Assign To Scalar Variables (Like $passenger_1 And $passenger_2) Instead Of Hashes.
+
+=EN But you can fix the problem simply by changing the two pairs of curly braces to parentheses.
+
+=CN But You Can 固定 The Problem Simply By Changing The Two 双 Of 卷曲的 牙套 To Parentheses.
+
+=EN If you tried running this, Perl may have given you a helpful diagnostic message as a warning.
+
+=CN If You tried 连续的 This, Perl May Have Given You a 有用的 诊断 音讯 As a Warning.
+
+=EN If you didn't get the warning, perhaps you didn't have warnings turned on, either with the -w switch or with the use warnings pragma.
+
+=CN If You Didn't Get The Warning, 也许 You Didn't Have 警告 转 On, Either With The -w Switch Or With The Use 警告 Pragma.
+
+=EN Even if you don't usually use Perl's warnings, you should enable them during debugging.
+
+=CN Even If You Don't Usually Use Perl's 警告, You Should 使能够 Them 在 Debugging.
+
+=EN (How long would it take you to debug this without Perl's warnings to help you?
+
+=CN (How Long Would It Take You To debug This Without Perl's 警告 To Help You?
+
+=EN How long would it take to enable Perl's warnings?
+
+=CN How Long Would It Take To 使能够 Perl's 警告?
+
+=EN 'Nuff said.)
+
+=CN 'Nuff Said.)
+
+=EN What if you got the warning message but couldn't tell what it meant?
+
+=CN What If You Got The Warning 音讯 But 也't Tell What It 意味着?
+
+=EN That's what the perldiag manpage is for.
+
+=CN That's What The perldiag manpage Is For.
+
+=EN Warning texts need to be concise because they're compiled into the perl binary (the program that runs your Perl code).
+
+=CN Warning texts Need To Be 简明的 Because They'Re Compiled Into The Perl 二进制 (The Program That 跑 Your Perl Code).
+
+=EN But perldiag should list all the messages you should ever get from Perl, along with a longer explanation of what each one means, why it's a problem, and how to fix it.
+
+=CN But perldiag Should List All The Messages You Should 曾经 Get From Perl, 沿着 With a 长 说明 Of What Each One Means, Why It's a Problem, And How To 固定 It.
+
+=EN If you want to be ultimately lazy, you can add use diagnostics; at the beginning of your program, and any error message will look itself up in the documentation and display the entire detailed message.
+
+=CN If You Want To Be 最后 懒惰的, You Can 增添 Use 诊断; At The 开端 Of Your Program, And Any Error 音讯 Will Look Itself Up In The 提供文件 And 陈列 The 完全的 Detailed 音讯.
+
+=EN Don't leave this in production code, however, unless you like burning a lot of CPU cycles every time your program starts, whether or not an error occurs.
+
+=CN Don't 出发 This In 生产 Code, However, Unless You Like burning a 许多 Of CPU cycles Every Time Your Program Starts, Whether Or Not An Error Occurs.
+
+=EN Exercise 2 You will be keeping count of how much data has been sent to all machines, so at the start, set the variable $all to a name that will stand in for all of them.
+
+=CN Exercise 2 You Will Be 一致 计算 Of How Much Data Has Been 打发 To All Machines, So At The Start, Set The Variable $All To a Name That Will 站立 In For All Of Them.
+
+=EN It should be a name that will never be used for any real machine, of course.
+
+=CN It Should Be a Name That Will Never Be Used For Any Real 机器, Of Course.
+
+=EN Storing it in a variable is convenient for writing the program and makes it easy to change later.
+
+=CN Storing It In a Variable Is 便利的 For 写作 The Program And 使 It Easy To Change 更晚.
+
+=EN my $all = "**all machines**";
+
+=CN My $All = "**All Machines**";
+
+=EN The input loop is nearly the same as given in the chapter, but it skips comment lines.
+
+=CN The Input Loop Is 几乎 The Same As Given In The 章, But It 翻斗车 Comment Lines.
+
+=EN Also, it keeps a second running total, filed under $all.
+
+=CN Also, It 保持 a Second 连续的 总, filed 在 $All.
+
+=EN my %total_bytes; while (<>) {
+
+=CN My %total_bytes; While (<>) {
+
+=EN Next, make a sorted list.
+
+=CN Next, Make a 分类 List.
+
+=EN This holds the names of the source machines in descending order of total transferred bytes.
+
+=CN This holds The Names Of The Source Machines In descending Order Of 总 transferred 字节.
+
+=EN This list is used for the outer for loop.
+
+=CN This List Is Used For The 外部的 For Loop.
+
+=EN (Rather than using a temporary array, @sources, you might have put the sort directly into the parens of the for loop.)
+
+=CN (Rather Than Using a temporary Array, @来源, You Might Have Put The Sort 直接地 Into The parens Of The For Loop.)
+
+=EN my @sources =
+
+=CN My @来源 =
+
+=EN for my $source (@sources) {
+
+=CN For My $Source (@来源) {
+
+=EN Inside the loop, print out the total number of bytes sent from that source machine, and then make a sorted list of the destination files (similar to the list in @sources).
+
+=CN Inside The Loop, Print Out The 总 Number Of 字节 打发 From That Source 机器, And Then Make a 分类 List Of The 终点 Files (Similar To The List In @来源).
+
+=EN As you step through that list, use next to skip over the dummy $all item.
+
+=CN As You 脚步 通过 That List, Use 下一次 To 跳过 在 The 傀儡 $All 条款.
+
+=EN Because that item will be at the head of the sorted list, why wasn't shift used to discard it, since that would avoid checking repeatedly for $all inside the inner loop?
+
+=CN Because That 条款 Will Be At The Head Of The 分类 List, Why Wasn't Shift Used To 丢弃 It, Since That Would Avoid Checking 重复地 For $All 里面 The Inner Loop?
+
+=EN The answer is in this footnote.[*] You can simplify this program, perhaps.
+
+=CN The Answer Is In This footnote.[*] You Can 简单化 This Program, 也许.
+
+=EN The subexpression $total_bytes{$source} is used many times in the large output for loop (and twice in the input loop as well).
+
+=CN The subexpression $total_bytes{$Source} Is Used Many Times In The Large 出产 For Loop (And 两次 In The Input Loop As Well).
+
+=EN That can be replaced by a simple scalar, initialized at the top of the loop:
+
+=CN That Can Be Replaced By a Simple Scalar, 初始化 At The 顶 Of The Loop:
+
+=EN [*] Even though the dummy item will sort to the head of the sorted list, it won't necessarily be the first item in the list.
+
+=CN [*] Even Though The 傀儡 条款 Will Sort To The Head Of The 分类 List, It Won't Necessarily Be The First 条款 In The List.
+
+=EN If a machine sent data to just one other, that destination machine's total will be equal to the source machine's total output, so that list could sort in either order.
+
+=CN If a 机器 打发 Data To Just One Other, That 终点 机器's 总 Will Be Equal To The Source 机器's 总 出产, So That List Could Sort In Either Order.
+
+=EN This makes the code shorter and (likely) a bit faster as well.
+
+=CN This 使 The Code 短 And (Likely) a Bit Faster As Well.
+
+=EN Give yourself extra credit if you thought to do this.
+
+=CN Give 你（们）自己 Extra 信誉 If You Thought To Do This.
+
+=EN Also give yourself extra credit if you thought that it might be too confusing and decided not to make the change.
+
+=CN Also Give 你（们）自己 Extra 信誉 If You Thought That It Might Be Too 混淆 And 明确的 Not To Make The Change.
+
+=EN Answers for Chapter 6 A.5.1.
+
+=CN Answers For Chapter 6 A.5.1.
+
+=EN Exercise 1 This is similar to what you saw in Chapter 5, but now it uses Storable.
+
+=CN Exercise 1 This Is Similar To What You 锯 In Chapter 5, But Now It Uses Storable.
+
+=EN use Storable;
+
+=CN Use Storable;
+
+=EN my $all = "**all machines**"; my $data_file = "total_bytes.data";
+
+=CN My $All = "**All Machines**"; My $data_file = "total_bytes.data";
+
+=EN my %total_bytes; if (-e $data_file) {
+
+=CN My %total_bytes; If (-g $data_file) {
+
+=EN while (<>) {
+
+=CN While (<>) {
+
+=EN store \%total_bytes, $data_file;
+
+=CN 商店 \%total_bytes, $data_file;
+
+=EN ### remainder of program is unchanged
+
+=CN ### 剩余部分 Of Program Is unchanged
+
+=EN Near the top, put the filename into a variable.
+
+=CN Near The 顶, Put The 文件名 Into a Variable.
+
+=EN You can then retrieve the data but only if the datafile already exists.
+
+=CN You Can Then retrieve The Data But Only If The datafile Already Exists.
+
+=EN After reading the data, use Storable again to write it back out to the same disk file.
+
+=CN After 读书 The Data, Use Storable Again To Write It Back Out To The Same disk File.
+
+=EN If you chose to write the hash's data to a file the hard way, by writing your own code and your own file format, you're working too hard.
+
+=CN If You chose To Write The Hash's Data To a File The 硬的 Way, By 写作 Your Own Code And Your Own File Format, You'Re Working Too 硬的.
+
+=EN More to the point, unless you're extraordinarily talented or spend way too long on this exercise, you almost certainly have bugs in your serialization routines, or at least flaws in your file format.
+
+=CN More To The 尖, Unless You'Re extraordinarily talented Or 花费 Way Too Long On This 锻炼, You Almost Certainly Have bugs In Your serialization Routines, Or At Least flaws In Your File Format.
+
+=EN Exercise 2 There should probably be some checks to ensure that Storable was successful.
+
+=CN Exercise 2 There Should Probably Be Some 检查 To Ensure That Storable Was 成功的.
+
+=EN It will catch some errors (and die), but it will simply return undef for some.
+
+=CN It Will Catch Some Errors (And Die), But It Will Simply Return Undef For Some.
+
+=EN See the documentation for Storable.
+
+=CN See The 提供文件 For Storable.
+
+=EN (Of course, if you checked the return values from store and retrieve, you should give yourself extra credit on the previous exercise.)
+
+=CN (Of Course, If You Checked The Return Values From 商店 And retrieve, You Should Give 你（们）自己 Extra 信誉 On The Previous 锻炼.)
+
+=EN The program should save the old datafile (if any) under a backup filename so that it's easy to revert the latest additions.
+
+=CN The Program Should Save The Old datafile (If Any) 在 a backup 文件名 So That It's Easy To 回复到 The 最新 additions.
+
+=EN In fact, it could even keep several backups, such as the last week's worth.
+
+=CN In Fact, It Could Even 保持 Several backups, Such As The Last 星期's worth.
+
+=EN It might also be nice to be able to print the output without having any new input data.
+
+=CN It Might Also Be Nice To Be Able To Print The 出产 Without Having Any New Input Data.
+
+=EN As it's written, this can be done by giving an empty file (such as /dev/null) as the input.
+
+=CN As It's Written, This Can Be Done By Giving An Empty File (Such As /Dev/Null) As The Input.
+
+=EN However, there should be an easier way.
+
+=CN However, There Should Be An Easier Way.
+
+=EN The output functionality could be separated entirely from the updating, in fact.
+
+=CN The 出产 Functionality Could Be Separated 完全地 From The updating, In Fact.
+
+=EN Answer for Chapter 7 A.6.1.
+
+=CN Answer For Chapter 7 A.6.1.
+
+=EN Exercise sub gather_mtime_between {
+
+=CN Exercise Sub gather_mtime_between {
+
+=EN This code is pretty straightforward.
+
+=CN This Code Is 精致的 直爽的.
+
+=EN The main challenge is getting the item names correct.
+
+=CN The Main 挑战 Is 得到 The 条款 Names 正确的.
+
+=EN When using stat inside the callback, the filename is $_, but when returning the filename (or reporting it to the user), the name is $File::Find::name.
+
+=CN When Using stat 里面 The callback, The 文件名 Is $_, But When Returning The 文件名 (Or reporting It To The User), The Name Is $File::Find::Name.
+
+=EN If the stat fails for some reason, the timestamp will be undef.
+
+=CN If The stat 失败 For Some Reason, The timestamp Will Be Undef.
+
+=EN (That can happen, for example, if it finds a dangling symbolic link.)
+
+=CN (That Can 发生, For Example, If It 发现 a dangling Symbolic 联系.)
+
+=EN In that case, the callback simply warns the user and returns early.
+
+=CN In That Case, The callback Simply warns The User And Returns Early.
+
+=EN If you omit that check, you can get warnings of an undefined value during the comparison with $begin and $end.
+
+=CN If You 省略 That Check, You Can Get 警告 Of An Undefined Value 在 The 比较 With $开始 And $End.
+
+=EN When you run the completed program with this subroutine, your output should show only file modification dates on the previous Monday (unless you changed the code to use a different day of the week, of course).
+
+=CN When You Run The completed Program With This Subroutine, Your 出产 Should Show Only File 修改 dates On The Previous Monday (Unless You 改变 The Code To Use a Different 一天 Of The 星期, Of Course).
+
+=EN Answers for Chapter 8 A.7.1.
+
+=CN Answers For Chapter 8 A.7.1.
+
+=EN Exercise 1 In this exercise, we have to use three different output methods: to a file, which you're already familiar with; to a scalar (and you'll need Perl 5.8 for this); or to both at the same time.
+
+=CN Exercise 1 In This 锻炼, We Have To Use Three Different 出产 Methods: To a File, Which You'Re Already 熟悉的 With; To a Scalar (And You'我 Need Perl 5.8 For This); Or To Both At The Same Time.
+
+=EN The trick is to store the output channels in the same variable that you'll use for the print statement.
+
+=CN The 诡计 Is To 商店 The 出产 channels In The Same Variable That You'我 Use For The Print Statement.
+
+=EN When the filehandle is a variable, we can put anything we like in it and decide what to put in it at runtime.
+
+=CN When The Filehandle Is a Variable, We Can Put Anything We Like In It And Decide What To Put In It At Runtime.
+
+=EN #!/usr/bin/perl use strict;
+
+=CN #!/usr/bin/Perl Use Strict;
+
+=EN use IO::Tee;
+
+=CN Use IO::Tee;
+
+=EN my $fh; my $scalar;
+
+=CN My $Fh; My $Scalar;
+
+=EN print "Enter type of output [Scalar/File/Tee]> "; my $type = <STDIN>;
+
+=CN Print "Enter Type Of 出产 [Scalar/File/Tee]> "; My $Type = <STDIN>;
+
+=EN if( $type =~ /^s/i ) {
+
+=CN If( $Type =~ /^s/我 ) {
+
+=EN my $date = localtime; my $day_of_week = (localtime)[6];
+
+=CN My $Date = localtime; My $day_of_week = (localtime)[6];
+
+=EN print $fh <<"HERE"; This is run $$ The date is $date The day of the week is $day_of_week HERE
+
+=CN Print $Fh <<"HERE"; This Is Run $$ The Date Is $Date The 一天 Of The 星期 Is $day_of_week HERE
+
+=EN print STDOUT <<"HERE" if $type =~ m/^[st]/i; Scalar contains: $scalar HERE
+
+=CN Print STDOUT <<"HERE" If $Type =~ m/^[st]/我; Scalar 包含: $Scalar HERE
+
+=EN In this program, we prompt the user for the type of output, and we want her to type either "scalar", "file", or "tee".
+
+=CN In This Program, We 及时的 The User For The Type Of 出产, And We Want Her To Type Either "Scalar", "File", Or "tee".
+
+=EN Once we read the input, we detect which one she typed by matching on the first character (using a case-insensitive match for more flexibility).
+
+=CN Once We Read The Input, We 发现 Which One 她 打印 By 匹配 On The First Character (Using a Case-insensitive Match For More 柔韧).
+
+=EN If the user chose "scalar", we open $fh to a scalar reference.
+
+=CN If The User chose "Scalar", We Open $Fh To a Scalar Reference.
+
+=EN If she chose "file", we open $fh to a file, as you know from before.
+
+=CN If 她 chose "File", We Open $Fh To a File, As You Know From Before.
+
+=EN We name the file after the program name, stored in $0, and append .out to it.
+
+=CN We Name The File After The Program Name, Stored In $0, And append .Out To It.
+
+=EN If the user chose "tee", we create filehandles for a file and a scalar, then combine both of those in an IO::Tee object that we store in $fh.
+
+=CN If The User chose "tee", We Create Filehandles For a File And a Scalar, Then 组合 Both Of Those In An IO::Tee Object That We 商店 In $Fh.
+
+=EN No matter which method the user chose, the output channels, whether sole or multiple, end up in the same variable.
+
+=CN No Matter Which Method The User chose, The 出产 channels, Whether 唯一的 Or Multiple, End Up In The Same Variable.
+
+=EN From there it's just a matter of programming, and it doesn't matter much what we actually print.
+
+=CN From There It's Just a Matter Of Programming, And It Doesn't Matter Much What We Actually Print.
+
+=EN For this exercise, we get the date string by using localtime in scalar context, then get the day of the week with a literal list slice.
+
+=CN For This 锻炼, We Get The Date String By Using localtime In Scalar Context, Then Get The 一天 Of The 星期 With a Literal List 薄片.
+
+=EN In the string we print to $fh, we include the process ID (contained in the special variable $$), so we can tell the difference between separate runs of our program, and then the date and the day of the week.
+
+=CN In The String We Print To $Fh, We Include The 程序 ID (包含 In The Special Variable $$), So We Can Tell The Difference Between Separate 跑 Of Our Program, And Then The Date And The 一天 Of The 星期.
+
+=EN Finally, if we choose to send the output to a scalar (either alone or with a file), we print the scalar value to STDOUT to ensure the right thing ended up there.
+
+=CN Finally, If We 选择 To 派遣 The 出产 To a Scalar (Either 单独的 Or With a File), We Print The Scalar Value To STDOUT To Ensure The Right Thing 结束 Up There.
+
+=EN Exercise 2 use IO::File; my %output_handles; while (<>) {
+
+=CN Exercise 2 Use IO::File; My %output_handles; While (<>) {
+
+=EN At the beginning of the while loop, use a pattern to extract the person's name from the data line, issuing a warning if that's not found.
+
+=CN At The 开端 Of The While Loop, Use a 模式 To 取出 The 人's Name From The Data Line, issuing a Warning If That's Not Found.
+
+=EN Once you have the name, force it to lowercase so that an entry for "Maryann" will get filed in the same place as one for "MaryAnn."
+
+=CN Once You Have The Name, Force It To lowercase So That An Entry For "Maryann" Will Get filed In The Same Place As One For "MaryAnn."
+
+=EN This is also handy for naming the files, as the next statement shows.
+
+=CN This Is Also 方便的 For Naming The Files, As The 下一次 Statement Shows.
+
+=EN The first time through the loop, the filehandle must be created.
+
+=CN The First Time 通过 The Loop, The Filehandle Must Be Created.
+
+=EN Let's see how to do that.
+
+=CN Let's See How To Do That.
+
+=EN The || operator has a higher precedence than the assignment, so it is evaluated first; the program will die if the file can't be created.
+
+=CN The || Operator Has a 更高的 领先 Than The Assignment, So It Is 评估 First; The Program Will Die If The File Can't Be Created.
+
+=EN The ||= operator assigns the filehandle to the hash, and the = operator passes it to $handle as well.
+
+=CN The ||= Operator Assigns The Filehandle To The Hash, And The = Operator 经过 It To $Handle As Well.
+
+=EN The next time you have the same name in $name, the ||= operator kicks in.
+
+=CN The 下一次 Time You Have The Same Name In $Name, The ||= Operator kicks In.
+
+=EN Remember that $gilligan ||= $anything is effectively like $gilligan = $gilligan || $anything.
+
+=CN Remember That $gilligan ||= $Anything Is Effectively Like $gilligan = $gilligan || $Anything.
+
+=EN If the variable on the left is a false value (such as undef), it's replaced by the value on the right, but if it's true (such as a filehandle), the value on the right won't even be evaluated.
+
+=CN If The Variable On The Left Is a False Value (Such As Undef), It's Replaced By The Value On The Right, But If It's True (Such As a Filehandle), The Value On The Right Won't Even Be 评估.
+
+=EN Thus, since the hash already has a value for that person's name, the hash's value is used and assigned directly to $handle without having to (re)create the file.
+
+=CN Thus, Since The Hash Already Has a Value For That 人's Name, The Hash's Value Is Used And Assigned 直接地 To $Handle Without Having To (Re)Create The File.
+
+=EN It wasn't necessary to code the castaways' names into this program, because they will be read in as data.
+
+=CN It Wasn't 必要的 To Code The castaways' Names Into This Program, Because They Will Be Read In As Data.
+
+=EN This is good because any additional castaway won't require having to rewrite the program.
+
+=CN This Is Good Because Any Additional castaway Won't Require Having To 重写 The Program.
+
+=EN If someone's name is accidentally misspelled, however, it puts some of their data into a new file under the wrong name.
+
+=CN If Someone's Name Is 偶尔 拼错的, However, It 把 Some Of Their Data Into a New File 在 The 错误的 Name.
+
+=EN Exercise 3 Here's one way to do it.
+
+=CN Exercise 3 Here's One Way To Do It.
+
+=EN First, we go through the arguments in @ARGV to find out which ones don't represent directories, then print error messages for each of those.
+
+=CN First, We Go 通过 The Arguments In @命令行传入参数 To 寻找 Out Which Ones Don't 表示 directories, Then Print Error Messages For Each Of Those.
+
+=EN After that, we go through @ARGV again to find the elements that are valid directories.
+
+=CN After That, We Go 通过 @命令行传入参数 Again To 寻找 The Elements That Are Valid directories.
+
+=EN We take the list that comes out of that grep and send it into map, where we turn each string into an IO::Dir object (ignoring error handling for the moment).
+
+=CN We Take The List That 来 Out Of That Grep And 派遣 It Into Map, Where We 转向 Each String Into An IO::Dir Object (Ignoring Error 处理 For The Moment).
+
+=EN The file output list ends up in @dir_hs, which we go through with the foreach loop and send to print_contents.
+
+=CN The File 出产 List Ends Up In @dir_hs, Which We Go 通过 With The Foreach Loop And 派遣 To print_contents.
+
+=EN There is nothing fancy about print_contents, though.
+
+=CN There Is Nothing 幻想 About print_contents, Though.
+
+=EN It simply takes its first argument and stores it in $dh, which it then uses to walk through the directory.
+
+=CN It Simply Takes Its First Argument And stores It In $dh, Which It Then Uses To 步行 通过 The Directory.
+
+=EN #!/usr/bin/perl -w use strict;
+
+=CN #!/usr/bin/Perl -w Use Strict;
+
+=EN use IO::Dir;
+
+=CN Use IO::Dir;
+
+=EN my @not_dirs = grep { ! -d } @ARGV; foreach my $not_dir ( @not_dirs ) {
+
+=CN My @not_dirs = Grep { ! -d } @命令行传入参数; Foreach My $not_dir ( @not_dirs ) {
+
+=EN my @dirs = grep { -d } @ARGV;
+
+=CN My @dirs = Grep { -d } @命令行传入参数;
+
+=EN my @dir_hs = map { IO::Dir->new( $_ ) } grep { -d } @ARGV;
+
+=CN My @dir_hs = Map { IO::Dir->New( $_ ) } Grep { -d } @命令行传入参数;
+
+=EN foreach my $dh ( @dir_hs ) { print_contents( $dh ) };
+
+=CN Foreach My $dh ( @dir_hs ) { print_contents( $dh ) };
+
+=EN sub print_contents {
+
+=CN Sub print_contents {
+
+=EN Answers for Chapter 9 A.8.1.
+
+=CN Answers For Chapter 9 A.8.1.
+
+=EN Exercise 1 my @sorted =
+
+=CN Exercise 1 My @分类 =
+
+=EN Using the -s operator to determine the file's size is an expensive operation; by caching its value, you can save some time.
+
+=CN Using The -s Operator To 决心 The File's Size Is An Expensive Operation; By 缓存 Its Value, You Can Save Some Time.
+
+=EN How much?
+
+=CN How Much?
+
+=EN Let's see in the next exercise's answer.
+
+=CN Let's See In The 下一次 锻炼's Answer.
+
+=EN Exercise 2 use Benchmark qw(timethese);
+
+=CN Exercise 2 Use Benchmark qw(timethese);
+
+=EN my @files = glob "/bin/*";
+
+=CN My @Files = Glob "/bin/*";
+
+=EN On the 33-element /bin on his laptop, Randal was seeing 260 iterations per second of the Ordinary implementation and roughly 500 per second of the Schwartzian implementation, so writing the complex code saved about half of the execution time.
+
+=CN On The 33-Element /bin On 他的 laptop, Randal Was seeing 260 iterations 每 Second Of The Ordinary 实行 And 大约地 500 每 Second Of The Schwartzian 实行, So 写作 The 综合的 Code Saved About 一半 Of The 执行 Time.
+
+=EN On a 74-element /etc, the Schwartzian Transform was nearly three times as fast.
+
+=CN On a 74-Element /Etc, The Schwartzian Transform Was 几乎 Three Times As 快的.
+
+=EN In general, the more items sorted, the more expensive the computed function, and the better you can expect the Schwartzian Transform to perform.
+
+=CN In General, The More 物品 分类, The More Expensive The computed Function, And The Better You Can 盼望 The Schwartzian Transform To 执行.
+
+=EN That doesn't even count the burden on the monkeyer, we mean the operating system.
+
+=CN That Doesn't Even 计算 The 担子 On The monkeyer, We Mean The Operating System.
+
+=EN In the previous edition of this book, we had a slight design error in this code that made the Schwartzian transform seem a lot slower. brian noticed this one day while he was teaching this exercise, then sat down to go over it in way too much detail.
+
+=CN In The Previous 片（本） Of This 书, We Had a 轻微的 设计 Error In This Code That Made The Schwartzian 转变 好象 a 许多 slower. brian Noticed This One 一天 While 他 Was 教学 This 锻炼, Then sat 向下 To Go 在 It In Way Too Much 细节.
+
+=EN You can read the lengthy analysis on Perl Monks : http://www.perlmonks.com/?node_id=393128.
+
+=CN You Can Read The lengthy 分析 On Perl Monks : http://www.perlmonks.com/?node_id=393128.
+
+=EN Exercise 3 my @dictionary_sorted =
+
+=CN Exercise 3 My @dictionary_sorted =
+
+=EN Inside the second map, which executes first, make a copy of $_.
+
+=CN Inside The Second Map, Which 实行 First, Make a Copy Of $_.
+
+=EN (If you don't, you'll mangle the data.)
+
+=CN (If You Don't, You'我 mangle The Data.)
+
+=EN Exercise 4 sub data_for_path {
+
+=CN Exercise 4 Sub data_for_path {
+
+=EN sub dump_data_for_path {
+
+=CN Sub dump_data_for_path {
+
+=EN  # plain file
+
+=CN  # 明白的 File
+
+=EN By adding a third (prefix) parameter to the dumping subroutine, you can ask it to indent its output.
+
+=CN By Adding a 第三 (前缀) Parameter To The 倾销 Subroutine, You Can 问 It To （书写）缩行 Its 出产.
+
+=EN By default, the prefix is empty, of course.
+
+=CN By Default, The 前缀 Is Empty, Of Course.
+
+=EN When the subroutine calls itself, it adds two spaces to the end of the prefix.
+
+=CN When The Subroutine Calls Itself, It Adds Two spaces To The End Of The 前缀.
+
+=EN Why the end and not the beginning?
+
+=CN Why The End And Not The 开端?
+
+=EN Because it's comprised of spaces, either end will work.
+
+=CN Because It's comprised Of spaces, Either End Will Work.
+
+=EN By using trailing spaces, you can call the subroutine like this:
+
+=CN By Using 落后 spaces, You Can Call The Subroutine Like This:
+
+=EN This invocation quotes the entire output by prefixing each line with the given string.
+
+=CN This 调用 引用 The 完全的 出产 By prefixing Each Line With The Given String.
+
+=EN You can (in some hypothetical future version of this program) use such quoting to denote NFS-mounted directories or other special items.
+
+=CN You Can (In Some 假设的 Future Version Of This Program) Use Such 引用 To 表示 NFS-mounted directories Or Other Special 物品.
+
+=EN Answers for Chapter 10 A.9.1.
+
+=CN Answers For Chapter 10 A.9.1.
+
+=EN Exercise 1 Here's one way to do it.
+
+=CN Exercise 1 Here's One Way To Do It.
+
+=EN First, start with the package directive and use strict:
+
+=CN First, Start With The Package 命令 And Use Strict:
+
+=EN package Oogaboogoo::date; use strict;
+
+=CN Package Oogaboogoo::Date; Use Strict;
+
+=EN Then define the constant arrays to hold the mappings for day-of-week and month names:
+
+=CN Then Define The Constant Arrays To Hold The 映射 For 一天-Of-星期 And 月份 Names:
+
+=EN my @day = qw(ark dip wap sen pop sep kir); my @mon = qw(diz pod bod rod sip wax lin sen kun fiz nap dep);
+
+=CN My @一天 = Qw(ark 蘸 wap sen Pop sep kir); My @mon = Qw(diz B<pod> bod 小棒 sip 蜡 lin sen kun fiz 打盹 dep);
+
+=EN Next, define the subroutine for day-of-week number to name.
+
+=CN Next, Define The Subroutine For 一天-Of-星期 Number To Name.
+
+=EN Note that this subroutine will be accessible as Ooogaboogoo::date::day:
+
+=CN Note That This Subroutine Will Be Accessible As Ooogaboogoo::Date::一天:
+
+=EN sub day {
+
+=CN Sub 一天 {
+
+=EN Similarly, you have the subroutine for the month-of-year number to name:
+
+=CN Similarly, You Have The Subroutine For The 月份-Of-年 Number To Name:
+
+=EN sub mon {
+
+=CN Sub mon {
+
+=EN Finally, the mandatory true value at the end of the package:
+
+=CN Finally, The 强制性 True Value At The End Of The Package:
+
+=EN Name this file date.pm within a directory of Oogaboogoo in one of the directories given in your @INC variable, such as the current directory.
+
+=CN Name This File date.pm Within a Directory Of Oogaboogoo In One Of The directories Given In Your @INC Variable, Such As The Current Directory.
+
+=EN Exercise 2 Here's one way to do it.
+
+=CN Exercise 2 Here's One Way To Do It.
+
+=EN Pull in the .pm file from a place in your @INC path:
+
+=CN Pull In The .Pm File From a Place In Your @INC Path:
+
+=EN use strict; require 'Oogaboogoo/date.pm';
+
+=CN Use Strict; Require 'Oogaboogoo/date.pm';
+
+=EN Then get the information for the current time:
+
+=CN Then Get The Information For The Current Time:
+
+=EN my($sec, $min, $hour, $mday, $mon, $year, $wday) = localtime;
+
+=CN My($sec, $min, $小时, $mday, $mon, $年, $wday) = localtime;
+
+=EN Then use the newly defined subroutines for the conversions:
+
+=CN Then Use The 新 Defined Subroutines For The 转换:
+
+=EN my $day_name = Oogaboogoo::date::day($wday); my $mon_name = Oogaboogoo::date::mon($mon);
+
+=CN My $day_name = Oogaboogoo::Date::一天($wday); My $mon_name = Oogaboogoo::Date::mon($mon);
+
+=EN The year number is offset by 1900 for historical purposes, so you need to fix that:
+
+=CN The 年 Number Is Offset By 1900 For Historical purposes, So You Need To 固定 That:
+
+=EN $year += 1900;
+
+=CN $年 += 1900;
+
+=EN Finally, it's time for the output:
+
+=CN Finally, It's Time For The 出产:
+
+=EN print "Today is $day_name, $mon_name $mday, $year.\n";
+
+=CN Print "Today Is $day_name, $mon_name $mday, $年.\n";
+
+=EN Answers for Chapter 11 A.10.1.
+
+=CN Answers For Chapter 11 A.10.1.
+
+=EN Exercise 1 Here's one way to do it.
+
+=CN Exercise 1 Here's One Way To Do It.
+
+=EN First define the Animal class with a single method:
+
+=CN First Define The Animal Class With a Single Method:
+
+=EN use strict; { package Animal;
+
+=CN Use Strict; { Package Animal;
+
+=EN Now define each subclass with a specific sound:
+
+=CN Now Define Each 子类 With a 特殊的 声:
+
+=EN { package Cow;
+
+=CN { Package Cow;
+
+=EN The Mouse package is slightly different because of the extra quietness:
+
+=CN The Mouse Package Is 轻微地 Different Because Of The Extra 平静:
+
+=EN { package Mouse;
+
+=CN { Package Mouse;
+
+=EN Now, enter the interactive part of the program:
+
+=CN Now, 进入 The 互动 Part Of The Program:
+
+=EN my @barnyard = ( ); {
+
+=CN My @barnyard = ( ); {
+
+=EN foreach my $beast (@barnyard) {
+
+=CN Foreach My $野兽 (@barnyard) {
+
+=EN This code uses a simple check, via a pattern match, to ensure that the user doesn't enter Alpaca or another unavailable animal, because doing so will crash the program.
+
+=CN This Code Uses a Simple Check, Via a 模式 Match, To Ensure That The User Doesn't 进入 Alpaca Or 另一个 unavailable 动物, Because Doing So Will 碰撞 The Program.
+
+=EN In Chapter 14, you'll learn about the isa method, which lets you check more simply whether something is an available animal, even allowing for the possibility that it is an animal that was added to the program after the check was written.
+
+=CN In Chapter 14, You'我 学习 About The isa Method, Which Lets You Check More Simply Whether Something Is An Available 动物, Even 允许 For The 可能性 That It Is An 动物 That Was added To The Program After The Check Was Written.
+
+=EN Exercise 2 Here's one way to do it.
+
+=CN Exercise 2 Here's One Way To Do It.
+
+=EN First, create the base class of LivingCreature with a single speak method:
+
+=CN First, Create The Base Class Of LivingCreature With a Single 说话 Method:
+
+=EN use strict; { package LivingCreature;
+
+=CN Use Strict; { Package LivingCreature;
+
+=EN  # something to say
+
+=CN  # Something To Say
+
+=EN A person is a living creature, so define the derived class here:
+
+=CN A 人 Is a 活着的 家伙, So Define The 派生 Class Here:
+
+=EN { package Person;
+
+=CN { Package Person;
+
+=EN The Animal class comes next, making appropriate sounds but unable to talk (except to Dr. Dolittle):
+
+=CN The Animal Class 来 下一次, 制作 恰当的 听起来 But 不能的 To 谈话 (Except To Dr. Dolittle):
+
+=EN { package Animal;
+
+=CN { Package Animal;
+
+=EN Finally, have the person speak:
+
+=CN Finally, Have The 人 说话:
+
+=EN Person->speak; # just hmms Person->speak("Hello, world!");
+
+=CN Person->说话; # Just hmms Person->说话("Hello, World!");
+
+=EN Notice that the main speak routine has now moved into the LivingCreature class, which means you don't need to write it again to use it in Person.
+
+=CN Notice That The Main 说话 Routine Has Now moved Into The LivingCreature Class, Which Means You Don't Need To Write It Again To Use It In Person.
+
+=EN In Animal, though, you need to check that to ensure an Animal won't try to speak before calling SUPER::speak.
+
+=CN In Animal, Though, You Need To Check That To Ensure An Animal Won't Try To 说话 Before Calling SUPER::说话.
+
+=EN Although it's not the way the assignment was written, you can get a similar result if you choose to make Person a subclass of Animal.
+
+=CN Although It's Not The Way The Assignment Was Written, You Can Get a Similar Result If You 选择 To Make Person a 子类 Of Animal.
+
+=EN (In that case, LivingCreature would presumably be needed as a parent class for an eventual Plant class.)
+
+=CN (In That Case, LivingCreature Would 也许 Be Needed As a 父或母亲 Class For An 最终 Plant Class.)
+
+=EN Of course, since an Animal can't speak, how can a Person?
+
+=CN Of Course, Since An Animal Can't 说话, How Can a Person?
+
+=EN The answer is that Person::speak would have to handle its parameters, if any, before or after (or instead of) calling SUPER::speak.
+
+=CN The Answer Is That Person::说话 Would Have To Handle Its Parameters, If Any, Before Or After (Or Instead Of) Calling SUPER::说话.
+
+=EN Which would be the better way to implement this?
+
+=CN Which Would Be The Better Way To 实行 This?
+
+=EN It all depends upon what classes you'll need in the future and how you'll use them.
+
+=CN It All Depends Upon What 类 You'我 Need In The Future And How You'我 Use Them.
+
+=EN If you expect to add features to Animal that would be needed for Person, it makes sense for Person to inherit from Animal.
+
+=CN If You 盼望 To 增添 特征 To Animal That Would Be Needed For Person, It 使 Sense For Person To 继承 From Animal.
+
+=EN If the two are nearly completely distinct, and nearly anything that a Person has in common with an Animal is common to all LivingCreatures, it's probably better to avoid the extra inheritance step.
+
+=CN If The Two Are 几乎 完全地 不同的, And 几乎 Anything That a Person Has In Common With An Animal Is Common To All LivingCreatures, It's Probably Better To Avoid The Extra Inheritance 脚步.
+
+=EN The ability to design a suitable inheritance structure is a crucial talent for any OOP programmer.
+
+=CN The 能力 To 设计 a Suitable Inheritance Structure Is a 至关重要的 人才 For Any OOP Programmer.
+
+=EN In fact, you may find that after developing the code one way, you'll want to "refactor" the code a different way.
+
+=CN In Fact, You May 寻找 That After 发展中的 The Code One Way, You'我 Want To "重构" The Code a Different Way.
+
+=EN This is common with OOP.
+
+=CN This Is Common With OOP.
+
+=EN However, it's very important to have enough testing in place to ensure that you don't break things while you're moving them around.
+
+=CN However, It's Very Important To Have Enough testing In Place To Ensure That You Don't 打破 Things While You'Re moving Them Around.
+
+=EN Answer for Chapter 12 A.11.1.
+
+=CN Answer For Chapter 12 A.11.1.
+
+=EN Exercise First, start the Animal package:
+
+=CN Exercise First, Start The Animal Package:
+
+=EN And now for the constructor:
+
+=CN And Now For The 构造函数:
+
+=EN ## constructors sub named {
+
+=CN ## 构造函数 Sub Named {
+
+=EN Now, for virtual methods: the methods that should be overridden in a subclass.
+
+=CN Now, For 实质上的 Methods: The Methods That Should Be Overridden In a 子类.
+
+=EN Perl doesn't require virtual methods to be declared in the base class, but they're nice as a documentation item.
+
+=CN Perl Doesn't Require 实质上的 Methods To Be Declared In The Base Class, But They'Re Nice As a 提供文件 条款.
+
+=EN ## backstops (should be overridden) sub default_color { "brown" } sub sound { croak "subclass must define a sound" }
+
+=CN ## backstops (Should Be Overridden) Sub default_color { "褐色（的）" } Sub 声 { croak "子类 Must Define a 声" }
+
+=EN Next comes the methods that work with either a class or an instance:
+
+=CN Next 来 The Methods That Work With Either a Class Or An 例子:
+
+=EN ## class/instance methods sub speak {
+
+=CN ## Class/例子 Methods Sub 说话 {
+
+=EN Finally, the methods that work only for the particular instance:
+
+=CN Finally, The Methods That Work Only For The Particular 例子:
+
+=EN ## instance-only methods sub set_name {
+
+=CN ## 例子-Only Methods Sub set_name {
+
+=EN Now that you have your abstract base class, define some concrete classes that can have instances:
+
+=CN Now That You Have Your 抽象的 Base Class, Define Some 混凝土 类 That Can Have 实例:
+
+=EN { package Horse;
+
+=CN { Package Horse;
+
+=EN  # override the default color
+
+=CN  # Override The Default 颜色
+
+=EN  # no Silence of the Lambs }
+
+=CN  # No Silence Of The Lambs }
+
+=EN Finally, a few lines of code to test your classes:
+
+=CN Finally, a Few Lines Of Code To Test Your 类:
+
+=EN my $tv_horse = Horse->named("Mr. Ed"); $tv_horse->set_name("Mister Ed"); $tv_horse->set_color("grey"); print $tv_horse->name, " is ", $tv_horse->color, "\n"; print Sheep->name, " colored ", Sheep->color, " goes ", Sheep->sound, "\n";
+
+=CN My $tv_horse = Horse->Named("Mr. Ed"); $tv_horse->set_name("Mister Ed"); $tv_horse->set_color("灰色的"); Print $tv_horse->Name, " Is ", $tv_horse->颜色, "\n"; Print Sheep->Name, " colored ", Sheep->颜色, " 去 ", Sheep->声, "\n";
+
+=EN Answer for Chapter 13 A.12.1.
+
+=CN Answer For Chapter 13 A.12.1.
+
+=EN Exercise First, start the class:
+
+=CN Exercise First, Start The Class:
+
+=EN { package RaceHorse;
+
+=CN { Package RaceHorse;
+
+=EN Next, use a simple dbmopen to associate %STANDINGS with permanent storage:
+
+=CN Next, Use a Simple dbmopen To Associate %STANDINGS With 永久性的 贮藏:
+
+=EN dbmopen (our %STANDINGS, "standings", 0666)
+
+=CN dbmopen (Our %STANDINGS, "standings", 0666)
+
+=EN When a new RaceHorse is named, either pull the existing standings from the database or invent zeros for everything:
+
+=CN When a New RaceHorse Is Named, Either 拖 The 现存的 standings From The database Or 发明 zeros For Everything:
+
+=EN sub named { # class method
+
+=CN Sub Named { # Class Method
+
+=EN When the RaceHorse is destroyed, the standings are updated:
+
+=CN When The RaceHorse Is destroyed, The standings Are Updated:
+
+=EN sub DESTROY { # instance method, automatically invoked
+
+=CN Sub DESTROY { # 例子 Method, Automatically invoked
+
+=EN Finally, the instance methods are defined:
+
+=CN Finally, The 例子 Methods Are Defined:
+
+=EN ## instance methods: sub won { shift->{wins}++; } sub placed { shift->{places}++; } sub showed { shift->{shows}++; } sub lost { shift->{losses}++; } sub standings {
+
+=CN ## 例子 Methods: Sub Won { Shift->{赢得}++; } Sub Placed { Shift->{Places}++; } Sub showed { Shift->{Shows}++; } Sub Lost { Shift->{losses}++; } Sub standings {
+
+=EN Answers for Chapter 14 A.13.1.
+
+=CN Answers For Chapter 14 A.13.1.
+
+=EN Exercise 1 There a couple of ways to tackle this problem.
+
+=CN Exercise 1 There a 一对 Of Ways To 用具 This Problem.
+
+=EN In our solution, we created a MyDate package in the same file as the script.
+
+=CN In Our 解决, We Created a MyDate Package In The Same File As The 临时单据.
+
+=EN The naked block defines the scope of the package MyDate statement.
+
+=CN The 裸体的 Block 定义 The Scope Of The Package MyDate Statement.
+
+=EN Later, in our script, we can't use the module because Perl won't find a file for it.
+
+=CN Later, In Our 临时单据, We Can't Use The Module Because Perl Won't 寻找 a File For It.
+
+=EN We'll have to remember to call the import method to get the symbols into our main namespace.
+
+=CN We'我 Have To 记得 To Call The Import Method To Get The Symbols Into Our Main Namespace.
+
+=EN To make the AUTOLOAD subroutine work only for the right subroutines, we defined %Allowed_methods to hold the names of the methods that will work.
+
+=CN To Make The AUTOLOAD Subroutine Work Only For The Right Subroutines, We Defined %Allowed_methods To Hold The Names Of The Methods That Will Work.
+
+=EN Their values are their offsets in the list we get back from localtime.
+
+=CN Their Values Are Their 抵消 In The List We Get Back From localtime.
+
+=EN That almost solves it, but localtime uses 0-based numbers for the month and year.
+
+=CN That Almost Solves It, But localtime Uses 0-基于 编号 For The 月份 And 年.
+
+=EN In the @Offsets array, we store the number to add to the corresponding entry in the localtime list.
+
+=CN In The @Offsets Array, We 商店 The Number To 增添 To The 相应的 Entry In The localtime List.
+
+=EN It seems like a lot of work now since only two values have offsets, but doing it this way eliminates two special cases.
+
+=CN It 似乎 Like a 许多 Of Work Now Since Only Two Values Have 抵消, But Doing It This Way eliminates Two Special Cases.
+
+=EN We need a new method (or some constructor) to give us an object.
+
+=CN We Need a New Method (Or Some 构造函数) To Give Us An Object.
+
+=EN In this example, it doesn't really matter what the object actually looks like.
+
+=CN In This Example, It Doesn't Really Matter What The Object Actually Looks Like.
+
+=EN We just use an empty, anonymous hash blessed into the current package (that's the first thing in the argument list, so it's $_[0]).
+
+=CN We Just Use An Empty, Anonymous Hash 有福的 Into The Current Package (That's The First Thing In The Argument List, So It's $_[0]).
+
+=EN We also know that we'll need a DESTROY method, since Perl will automatically look for it when it tries to clean up the object.
+
+=CN We Also Know That We'我 Need a DESTROY Method, Since Perl Will Automatically Look For It When It 试 To 清洁的 Up The Object.
+
+=EN If we don't have it, our AUTOLOAD will complain about an unknown method when it tries to handle DESTROY on its own (comment out the DESTROY to see what happens).
+
+=CN If We Don't Have It, Our AUTOLOAD Will 抱怨 About An Unknown Method When It 试 To Handle DESTROY On Its Own (Comment Out The DESTROY To See What Happens).
+
+=EN Inside the AUTOLOAD, we store the method name in $method so we can change it.
+
+=CN Inside The AUTOLOAD, We 商店 The Method Name In $Method So We Can Change It.
+
+=EN We want to strip off the package information and get just the method name.
+
+=CN We Want To Strip Off The Package Information And Get Just The Method Name.
+
+=EN That's everything after the last ::, so we use the substitution operator to get rid of everything up to that point.
+
+=CN That's Everything After The Last ::, So We Use The 代替 Operator To Get 使摆脱 Of Everything Up To That 尖.
+
+=EN Once we have the method name, we look for its key in %Allowed_methods.
+
+=CN Once We Have The Method Name, We Look For Its Key In %Allowed_methods.
+
+=EN If it's not there, we print an error with carp.
+
+=CN If It's Not There, We Print An Error With 鲤鱼.
+
+=EN TRy calling an unknown method.
+
+=CN TRy Calling An Unknown Method.
+
+=EN For which line does Perl report the error?
+
+=CN For Which Line Does Perl 报告 The Error?
+
+=EN If we find the method name in %Allowed_methods, we get the value, which is the position of the value in the localtime list.
+
+=CN If We 寻找 The Method Name In %Allowed_methods, We Get The Value, Which Is The Position Of The Value In The localtime List.
+
+=EN We store that in $slice_index and use it to get the value from localtime as well as the offset for that value.
+
+=CN We 商店 That In $slice_index And Use It To Get The Value From localtime As Well As The Offset For That Value.
+
+=EN We add those two values together and return the result.
+
+=CN We 增添 Those Two Values Together And Return The Result.
+
+=EN That sounds like a lot of work, but how much work would we have to do to add new methods for the hour and minute?
+
+=CN That 听起来 Like a 许多 Of Work, But How Much Work Would We Have To Do To 增添 New Methods For The 小时 And 分钟?
+
+=EN We simply add those names to %Allowed_methods.
+
+=CN We Simply 增添 Those Names To %Allowed_methods.
+
+=EN Everything else already works.
+
+=CN Everything Else Already Works.
+
+=EN { package MyDate; use vars qw($AUTOLOAD);
+
+=CN { Package MyDate; Use Vars Qw($AUTOLOAD);
+
+=EN use Carp;
+
+=CN Use Carp;
+
+=EN my %Allowed_methods = qw( date 3 month 4 year 5 ); my @Offsets = qw(0 0 0 0 1 1900 0 0 0);
+
+=CN My %Allowed_methods = Qw( Date 3 月份 4 年 5 ); My @Offsets = Qw(0 0 0 0 1 1900 0 0 0);
+
+=EN sub new { bless { }, $_[0] } sub DESTROY { }
+
+=CN Sub New { 保佑 { }, $_[0] } Sub DESTROY { }
+
+=EN sub AUTOLOAD {
+
+=CN Sub AUTOLOAD {
+
+=EN MyDate->import; # we don't use it my $date = MyDate->new( );
+
+=CN MyDate->Import; # We Don't Use It My $Date = MyDate->New( );
+
+=EN print "The date is " . $date->date . "\n"; print "The month is " . $date->month . "\n"; print "The year is " . $date->year . "\n";
+
+=CN Print "The Date Is " . $Date->Date . "\n"; Print "The 月份 Is " . $Date->月份 . "\n"; Print "The 年 Is " . $Date->年 . "\n";
+
+=EN Exercise 2 Our script looks the same as the previous answer with the addition of the UNIVERSAL::debug routine.
+
+=CN Exercise 2 Our 临时单据 Looks The Same As The Previous Answer With The 增加 Of The UNIVERSAL::debug Routine.
+
+=EN At the end of our script, we call the debug method on our $date object.
+
+=CN At The End Of Our 临时单据, We Call The debug Method On Our $Date Object.
+
+=EN It works without changing the MyDate module.
+
+=CN It Works Without Changing The MyDate Module.
+
+=EN sub UNIVERSAL::debug {
+
+=CN Sub UNIVERSAL::debug {
+
+=EN $date->debug( "I'm all done" );
+
+=CN $Date->debug( "I'm All Done" );
+
+=EN How did that get past the AUTOLOAD?
+
+=CN How Did That Get 过去的 The AUTOLOAD?
+
+=EN Remember that Perl searches through all of @ISA and UNIVERSAL before it starts looking in any AUTOLOAD method.
+
+=CN Remember That Perl searches 通过 All Of @ISA And UNIVERSAL Before It Starts 看 In Any AUTOLOAD Method.
+
+=EN So, Perl finds UNIVERSAL::debug before it has to use our AUTOLOAD magic.
+
+=CN So, Perl 发现 UNIVERSAL::debug Before It Has To Use Our AUTOLOAD Magic.
+
+=EN Answers for Chapter 15 A.14.1.
+
+=CN Answers For Chapter 15 A.14.1.
+
+=EN Exercise 1 The module Oogaboogoo/date.pm looks like this:
+
+=CN Exercise 1 The Module Oogaboogoo/date.pm Looks Like This:
+
+=EN package Oogaboogoo::date; use strict; use Exporter; our @ISA = qw(Exporter); our @EXPORT = qw(day mon);
+
+=CN Package Oogaboogoo::Date; Use Strict; Use Exporter; Our @ISA = qw(Exporter); Our @EXPORT = Qw(一天 mon);
+
+=EN The main program now looks like this:
+
+=CN The Main Program Now Looks Like This:
+
+=EN use strict; use Oogaboogoo::date qw(day mon);
+
+=CN Use Strict; Use Oogaboogoo::Date Qw(一天 mon);
+
+=EN my($sec, $min, $hour, $mday, $mon, $year, $wday) = localtime; my $day_name = day($wday); my $mon_name = mon($mon); $year += 1900; print "Today is $day_name, $mon_name $mday, $year.\n";
+
+=CN My($sec, $min, $小时, $mday, $mon, $年, $wday) = localtime; My $day_name = 一天($wday); My $mon_name = mon($mon); $年 += 1900; Print "Today Is $day_name, $mon_name $mday, $年.\n";
+
+=EN Exercise 2 Most of this answer is the same as the previous answer.
+
+=CN Exercise 2 Most Of This Answer Is The Same As The Previous Answer.
+
+=EN We just need to add the parts for the export tag all.
+
+=CN We Just Need To 增添 The 部分 For The Export 标签 All.
+
+=EN our @EXPORT = qw(day mon); our %EXPORT_TAGS = ( all => \@EXPORT );
+
+=CN Our @EXPORT = Qw(一天 mon); Our %EXPORT_TAGS = ( All => \@EXPORT );
+
+=EN Everything that we put in %EXPORT_TAGS has to also be in either @EXPORT or @EXPORT_OK.
+
+=CN Everything That We Put In %EXPORT_TAGS Has To Also Be In Either @EXPORT Or @EXPORT_OK.
+
+=EN For the all tag, we use a reference to @EXPORT directly.
+
+=CN For The All 标签, We Use a Reference To @EXPORT 直接地.
+
+=EN If we don't like that, we can make a fresh copy so the two do not reference each other.
+
+=CN If We Don't Like That, We Can Make a 新鲜的 Copy So The Two Do Not Reference Each Other.
+
+=EN our @EXPORT = qw(day mon); our %EXPORT_TAGS = ( all => [ @EXPORT ] );
+
+=CN Our @EXPORT = Qw(一天 mon); Our %EXPORT_TAGS = ( All => [ @EXPORT ] );
+
+=EN Modify the program from the previous exercise to use the import tag by prefacing it with a colon in the import list.
+
+=CN Modify The Program From The Previous 锻炼 To Use The Import 标签 By prefacing It With a 结肠 In The Import List.
+
+=EN The main program now starts off like this:
+
+=CN The Main Program Now Starts Off Like This:
+
+=EN use strict; use Oogaboogoo::date qw(:all);
+
+=CN Use Strict; Use Oogaboogoo::Date Qw(:All);
+
+=EN Answer for Chapter 16 A.15.1.
+
+=CN Answer For Chapter 16 A.15.1.
+
+=EN Exercise We don't have code to show you: it's just the stuff in Chapter 12.
+
+=CN Exercise We Don't Have Code To Show You: It's Just The 材料 In Chapter 12.
+
+=EN Lift that code and put it into a distribution.
+
+=CN Lift That Code And Put It Into a 分配.
+
+=EN Most of the work is just typing.
+
+=CN Most Of The Work Is Just 打字.
+
+=EN There are a few different approaches, though.
+
+=CN There Are a Few Different 方法, Though.
+
+=EN Once you have the distribution built with your favorite tool, you can split up the classes into separate module files.
+
+=CN Once You Have The 分配 Built With Your 最喜爱的人或物 工具, You Can Split Up The 类 Into Separate Module Files.
+
+=EN You can have an Animal.pm, Horse.pm, and so on.
+
+=CN You Can Have An Animal.pm, Horse.pm, And So On.
+
+=EN Put all the files in the same place as the original .pm that the module tool created.
+
+=CN Put All The Files In The Same Place As The Original .Pm That The Module 工具 Created.
+
+=EN You also need to change the Makefile.PL or Build.PL to tell it about the new module files.
+
+=CN You Also Need To Change The Makefile.PL Or Build.PL To Tell It About The New Module Files.
+
+=EN Just follow the example of what is already there.
+
+=CN Just 跟随 The Example Of What Is Already There.
+
+=EN Finally, make sure all the right files show up in MANIFEST.
+
+=CN Finally, Make Sure All The Right Files Show Up In MANIFEST.
+
+=EN Once you have all of the code in place, run the Makefile.PL, which you'll need to do every time you change that file.
+
+=CN Once You Have All Of The Code In Place, Run The Makefile.PL, Which You'我 Need To Do Every Time You Change That File.
+
+=EN When you change the module files, you'll need to run make again too, although that happens when you run make test or make dist.
+
+=CN When You Change The Module Files, You'我 Need To Run Make Again Too, Although That Happens When You Run Make Test Or Make dist.
+
+=EN When you're ready, run make dist.
+
+=CN When You'Re 准备好的, Run Make dist.
+
+=EN You should find a new archive file in the current directory.
+
+=CN You Should 寻找 a New archive File In The Current Directory.
+
+=EN You can also call make zipdist if you want a ZIP archive.
+
+=CN You Can Also Call Make zipdist If You Want a ZIP archive.
+
+=EN Move that archive to another directory and unpack it.
+
+=CN Move That archive To 另一个 Directory And unpack It.
+
+=EN When you run Makefile.PL, you shouldn't get any errors or warnings if you did everything right.
+
+=CN When You Run Makefile.PL, You 应该't Get Any Errors Or 警告 If You Did Everything Right.
+
+=EN If you get a warning, fix that (it's probably a missing file, if anything) and try again.
+
+=CN If You Get a Warning, 固定 That (It's Probably a Missing File, If Anything) And Try Again.
+
+=EN Answer for Chapter 17 A.16.1.
+
+=CN Answer For Chapter 17 A.16.1.
+
+=EN Exercise Let's start with the test file.
+
+=CN Exercise Let's Start With The Test File.
+
+=EN We write this first, and as we write the code (which we can't run until we write the module), we get an idea of the interface that we want.
+
+=CN We Write This First, And As We Write The Code (Which We Can't Run Until We Write The Module), We Get An 思想 Of The Interface That We Want.
+
+=EN In the BEGIN block, we first test if we can use My::List::Util.
+
+=CN In The BEGIN Block, We First Test If We Can Use My::List::Util.
+
+=EN This will obviously fail, since we haven't written the module yet.
+
+=CN This Will 明显地 失败, Since We 还't Written The Module 仍然.
+
+=EN We'll worry about that later.
+
+=CN We'我 烦恼 About That 更晚.
+
+=EN Next, we check if we've defined the sum subroutine.
+
+=CN Next, We Check If We'Ve Defined The 总数 Subroutine.
+
+=EN Once we implement the My::List::Util minimal module, the use_ok will pass but this will fail.
+
+=CN Once We 实行 The My::List::Util 最小 Module, The use_ok Will Pass But This Will 失败.
+
+=EN That's Test Driven Development.
+
+=CN That's Test Driven 开发.
+
+=EN You define what you want, ensure that the test fails when the infrastructure is missing, then make it pass.
+
+=CN You Define What You Want, Ensure That The Test 失败 When The infrastructure Is Missing, Then Make It Pass.
+
+=EN Getting tests to pass can be easy if we don't care if they fail when they should.
+
+=CN Getting 测试 To Pass Can Be Easy If We Don't Care If They 失败 When They Should.
+
+=EN After we check for the sum routine, we test a series of sums, using different numbers of arguments and different values.
+
+=CN After We Check For The 总数 Routine, We Test a 系列 Of sums, Using Different 编号 Of Arguments And Different Values.
+
+=EN We don't have to identify every special case at this point (we can always add tests later), but we want to ensure that we test several different ways to call the subroutine.
+
+=CN We Don't Have To 认出 Every Special Case At This 尖 (We Can Always 增添 测试 更晚), But We Want To Ensure That We Test Several Different Ways To Call The Subroutine.
+
+=EN We even throw in a test where we pass it a non-number and a number, then a test where we pass it two non-numbers.
+
+=CN We Even 投 In a Test Where We Pass It a Non-Number And a Number, Then a Test Where We Pass It Two Non-编号.
+
+=EN We do something different for shuffle.
+
+=CN We Do Something Different For 拖脚走.
+
+=EN We ensure the subroutine is defined, then define $array as a starting point, but immediately copy it to $shuffled so we don't disturb the original.
+
+=CN We Ensure The Subroutine Is Defined, Then Define $Array As a Starting 尖, But 立即 Copy It To $shuffled So We Don't 打扰 The Original.
+
+=EN Before we've written the code, we've decided to pass an array reference, and that will allow our routine to affect the data that we pass to it (rather than creating a copy).
+
+=CN Before We'Ve Written The Code, We'Ve 明确的 To Pass An Array Reference, And That Will Allow Our Routine To 影响 The Data That We Pass To It (Rather Than Creating a Copy).
+
+=EN To test this, we do something really simple.
+
+=CN To Test This, We Do Something Really Simple.
+
+=EN We compare the original array to the shuffled one and use cmp_ok to test that at least two positions are different.
+
+=CN We 比较 The Original Array To The shuffled One And Use cmp_ok To Test That At Least Two 位置 Are Different.
+
+=EN That wouldn't be a very good shuffle, but we're going to punt to you for the rest of the tests.
+
+=CN That Wouldn't Be a Very Good 拖脚走, But We'Re Going To punt To You For The 休息 Of The 测试.
+
+=EN use Test::More 'no_plan';
+
+=CN Use Test::More 'no_plan';
+
+=EN # # # # # # sum ok( defined &sum, 'The sum( ) routine exists'); is( sum( 2, 2 ), 4, '2 + 2 = 4' ); is( sum( 2, 2, 3 ), 7, '2 + 2 + 3 = 7' ); is( sum( ), 0, 'null sum is 0' ); is( sum( -1 ), -1, '-1 = -1' ); is( sum( -1, 1 ), 0, '-1 + 1 = 0' ); is( sum( 'Ginger', 5 ),
+
+=CN # # # # # # 总数 Ok( Defined &总数, 'The 总数( ) Routine Exists'); Is( 总数( 2, 2 ), 4, '2 + 2 = 4' ); Is( 总数( 2, 2, 3 ), 7, '2 + 2 + 3 = 7' ); Is( 总数( ), 0, 'Null 总数 Is 0' ); Is( 总数( -1 ), -1, '-1 = -1' ); Is( 总数( -1, 1 ), 0, '-1 + 1 = 0' ); Is( 总数( 'Ginger', 5 ),
+
+=EN # # # # # # shuffle ok( defined &shuffle, "The shuffle( ) routine exists"); my $array = [qw( a b c d e f )];
+
+=CN # # # # # # 拖脚走 Ok( Defined &拖脚走, "The 拖脚走( ) Routine Exists"); My $Array = [Qw( a b c d g f )];
+
+=EN my $shuffled = $array; shuffle( $shuffled );
+
+=CN My $shuffled = $Array; 拖脚走( $shuffled );
+
+=EN my $same_count = 0;
+
+=CN My $same_count = 0;
+
+=EN foreach my $index ( 0 .. $#$array ) {
+
+=CN Foreach My $Index ( 0 .. $#$Array ) {
+
+=EN cmp_ok( $same_count, '<', $#$array - 2,
+
+=CN cmp_ok( $same_count, '<', $#$Array - 2,
+
+=EN Now that we have the tests, we write the code.
+
+=CN Now That We Have The 测试, We Write The Code.
+
+=EN As we write the code, we run the tests.
+
+=CN As We Write The Code, We Run The 测试.
+
+=EN At first, most of the tests will fail, but as we add more code (and possibly debug the code that's already there), more and more tests pass.
+
+=CN At First, Most Of The 测试 Will 失败, But As We 增添 More Code (And Possibly debug The Code That's Already There), More And More 测试 Pass.
+
+=EN Here's our finished module:
+
+=CN Here's Our 制成的 Module:
+
+=EN package My::List::Util; use strict;
+
+=CN Package My::List::Util; Use Strict;
+
+=EN use base qw(Exporter); use vars qw(@EXPORT $VERSION);
+
+=CN Use Base qw(Exporter); Use Vars Qw(@EXPORT $VERSION);
+
+=EN use Exporter;
+
+=CN Use Exporter;
+
+=EN $VERSION = '0.10'; @EXPORT = qw(sum shuffle);
+
+=CN $VERSION = '0.10'; @EXPORT = Qw(总数 拖脚走);
+
+=EN sub shuffle { # Fisher-Yates shuffle from perlfaq4
+
+=CN Sub 拖脚走 { # Fisher-Yates 拖脚走 From perlfaq4
+
+=EN  # $deck is a reference to an array
+
+=CN  # $甲板 Is a Reference To An Array
+
+=EN sub sum {
+
+=CN Sub 总数 {
+
+=EN Answers for Chapter 18 A.17.1.
+
+=CN Answers For Chapter 18 A.17.1.
+
+=EN Exercise 1 Since you're starting with your distribution from the last chapter, we don't have much code to show you.
+
+=CN Exercise 1 Since You'Re Starting With Your 分配 From The Last 章, We Don't Have Much Code To Show You.
+
+=EN To add a POD test, create a t/pod.t file (or whatever you want to call it).
+
+=CN To 增添 a POD Test, Create a t/pod.t File (Or Whatever You Want To Call It).
+
+=EN In there, put the code you lift for Test::Pod:
+
+=CN In There, Put The Code You 举起 For Test::Pod:
+
+=EN use Test::More; eval "use Test::Pod 1.00"; plan skip_all => "Test::Pod 1.00 required for testing POD" if $@; all_pod_files_ok( );
+
+=CN Use Test::More; Eval "Use Test::Pod 1.00"; 计划平面图 skip_all => "Test::Pod 1.00 要求 For testing POD" If $@; all_pod_files_ok( );
+
+=EN This code is clever: it only runs tests if the user has installed Test::Pod, and doesn't cause any problems if she hasn't.
+
+=CN This Code Is 聪明的: It Only 跑 测试 If The User Has 安装 Test::Pod, And Doesn't 原因 Any 问题 If 她 hasn't.
+
+=EN If you are especially motivated, you can do the same thing with Test::Pod::Coverage.
+
+=CN If You Are Especially motivated, You Can Do The Same Thing With Test::Pod::Coverage.
+
+=EN Create a t/pod_coverage.t file and lift the code directly from the module documentation.
+
+=CN Create a t/pod_coverage.t File And 举起 The Code 直接地 From The Module 提供文件.
+
+=EN Depending on which module creation tool you used, you might already have these files, too.
+
+=CN Depending On Which Module 创造 工具 You Used, You Might Already Have These Files, Too.
+
+=EN Exercise 2 You could create a new distribution for your test module, but you don't have to.
+
+=CN Exercise 2 You Could Create a New 分配 For Your Test Module, But You Don't Have To.
+
+=EN You can include it with the distribution that you already made.
+
+=CN You Can Include It With The 分配 That You Already Made.
+
+=EN You just have to put the module file in the right place and ensure that Makefile.PL or Build.PL knows about it.
+
+=CN You Just Have To Put The Module File In The Right Place And Ensure That Makefile.PL Or Build.PL 知道 About It.
+
+=EN We'll just show you the code, though.
+
+=CN We'我 Just Show You The Code, Though.
+
+=EN This is a long way to go to test $n = = $m, but we wanted to make it as uncomplicated as possible so you could focus on the Test::Builder part.
+
+=CN This Is a Long Way To Go To Test $n = = $m, But We 想要 To Make It As uncomplicated As Possible So You Could 焦点 On The Test::Builder Part.
+
+=EN You can lift most of the code directly from the example in the chapter and then write the sum_ok function.
+
+=CN You Can 举起 Most Of The Code 直接地 From The Example In The 章 And Then Write The sum_ok Function.
+
+=EN package Test::My::List::Util; use strict;
+
+=CN Package Test::My::List::Util; Use Strict;
+
+=EN use Exporter; use Test::Builder;
+
+=CN Use Exporter; Use Test::Builder;
+
+=EN my $Test = Test::Builder->new( );
+
+=CN My $Test = Test::Builder->New( );
+
+=EN sub sum_ok {
+
+=CN Sub sum_ok {
+
+=EN Answer for Chapter 19 A.18.1.
+
+=CN Answer For Chapter 19 A.18.1.
+
+=EN Exercise Were you able to solve the halting problem?
+
+=CN Exercise Were You Able To 解答 The halting Problem?
+
+=EN We didn't really expect you to solve this problem since, in 1936, Alan Turing proved you couldn't create a general solution.
+
+=CN We Didn't Really 盼望 You To 解答 This Problem Since, In 1936, Alan Turing proved You 也't Create a General 解决.
+
+=EN You can read about the halting problem at Wikipedia: http://en.wikipedia.org/wiki/Halting_problem.
+
+=CN You Can Read About The halting Problem At Wikipedia: http://en.wikipedia.org/wiki/Halting_problem.
+
+=EN There's not much we can show you as an answer to an exercise about distributions.
+
+=CN There's Not Much We Can Show You As An Answer To An 锻炼 About 分布.
+
+=EN You know about testing now, so as long as your tests pass, you know you're doing the right thing (or the tests don't work!).
+
+=CN You Know About testing Now, So As Long As Your 测试 Pass, You Know You'Re Doing The Right Thing (Or The 测试 Don't Work!).
+
+=EN We're kicking you out into the real world now.
+
+=CN We'Re kicking You Out Into The Real World Now.
+
+=EN We don't have anything left to tell you in this book.
+
+=CN We Don't Have Anything Left To Tell You In This 书.
+
+=EN Go back and read the footnotes now.
+
+=CN Go Back And Read The footnotes Now.
+
+=EN Good luck!
+
+=CN Good 运气!
+
