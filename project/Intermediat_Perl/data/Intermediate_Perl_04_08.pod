@@ -1,0 +1,117 @@
+=EN 4.8. References to Hashes
+=CN 4.8. 指向散列的引用
+=EN Just as we can take a reference to an array, we can also take a reference to a hash. Once again, we use the backslash as the "take a reference to" operator:
+=CN 就像我们可以取到一个指向一个数组的引用一样，我们也可以用反斜杠取到一个指向散列的引用：
+
+my %gilligan_info = (
+  name     => ‘Gilligan’,
+  hat      => ‘White’,
+  shirt    => ‘Red’,
+  position => ‘First Mate’,
+);
+my $hash_ref = \%gilligan_info;
+
+=EN We can dereference a hash reference to get back to the original data. The strategy is similar to dereferencing an array reference. We write the hash syntax as we would have without references and then replace the name of the hash with a pair of curly braces surrounding the thing holding the reference. For example, to pick a particular value for a given key, we do this:
+=CN 我们也能还原一个对散列的引用，得到它原来的数据。其方法与还原一个数组引用相同。就是当作没有引用这回事一样，在散列引用变量的名字外面再加一对花括号。比如，我们要取散列中一个给定键的特定值，我们像这样写：
+
+my $name = $ gilligan_info { ‘name’ };
+my $name = $ { $hash_ref } { ‘name’ };
+
+=EN In this case, the curly braces have two different meanings. The first pair denotes the expression returning a reference, while the second pair delimits the expression for the hash key.
+=CN 在上例中，同样是花括号表达了两个不同的含意。第一对花括号表示还原一个引用，而第二个花括号限定散列键。
+To perform an operation on the entire hash, we proceed similarly:
+对整个散列操作，其操作也类似：
+
+my @keys = keys % gilligan_info;
+my @keys = keys % { $hash_ref };
+
+=EN As with array references, we can use shortcuts to replace the complex curly-braced forms under some circumstances. For example, if the only thing inside the curly braces is a simple scalar variable (as shown in these examples so far), we can drop the curly braces:
+=CN 在某种环境下，我们也可以像对数组引用那样，用快捷方法不用复杂的花括号形式。比如说，花括号里仅仅是简单的标量变量的话（就像到现在为止的例子展示的那样），我们可以把花括号拿掉：
+
+my $name = $$hash_ref{’name’};
+my @keys = keys %$hash_ref;
+
+=EN Like an array reference, when referring to a specific hash element, we can use an arrow form:
+=CN 像数组引用一样，当我们要访问一个特定的散列元素的话，我们可以用箭头形式：
+
+my $name = $hash_ref->{’name’};
+
+=EN Because a hash reference fits wherever a scalar fits, we can create an array of hash references:
+=CN 因为在标量适合的地方，散列引用也适合，所以我们可以创建一个散列引用的数组。
+
+my %gilligan_info = (
+  name     => ‘Gilligan’,
+  hat      => ‘White’,
+  shirt    => ‘Red’,
+  position => ‘First Mate’,
+);
+my %skipper_info = (
+  name     => ‘Skipper’,
+  hat      => ‘Black’,
+  shirt    => ‘Blue’,
+  position => ‘Captain’,
+);
+my @crew = (\%gilligan_info, \%skipper_info);
+
+=EN Thus, $crew[0] is a hash reference to the information about Gilligan. We can get to Gilligan’s name via any one of:
+=CN 所以啦，$crew[0]的内容是指向Gilligan信息的一个散列的引用。我们可以通过以下任一种方法取得Gilligan的名字。
+
+${ $crew[0] } { ‘name’ }
+my $ref = $crew[0]; $$ref{’name’}
+$crew[0]->{’name’}
+$crew[0]{’name’}
+
+=EN On that last one, we can still drop the arrow between "subscripty kinds of things," even though one is an array bracket and one is a hash brace.
+=CN 在最后一个例子中，我们一样可以去掉“类似下标”间的箭头，不管箭头是在数组方括号还是散列花括号中间。
+=EN Let’s print a crew roster:
+=CN 接下来，我们打印一下船员的花名册：
+
+my %gilligan_info = (
+  name     => ‘Gilligan’,
+  hat      => ‘White’,
+  shirt    => ‘Red’,
+  position => ‘First Mate’,
+);
+my %skipper_info = (
+  name     => ‘Skipper’,
+  hat      => ‘Black’,
+  shirt    => ‘Blue’,
+  position => ‘Captain’,
+);
+my @crew = (\%gilligan_info, \%skipper_info);
+my $format = "%-15s %-7s %-7s %-15s\n";
+printf $format, qw(Name Shirt Hat Position);
+for my $crewmember (@crew) {
+  printf $format,
+    $crewmember->{’name’},
+    $crewmember->{’shirt’},
+    $crewmember->{’hat’},
+    $crewmember->{’position’};
+}
+
+=EN That last part looks very repetitive. We can shorten it with a hash slice. Again, if the original syntax is:
+=CN 上例中最后部份看上去比较重复。我们可以用散列片断来简化写法。 一样的，如果散列的语法是这样的：
+
+@ gilligan_info { qw(name position) }
+
+=EN the hash slice notation from a reference looks like:
+=CN 那么散列引用片断的写法看上去如下：
+
+@ { $hash_ref } { qw(name position) }
+
+=EN We can drop the first brace pair because the only thing within is a simple scalar value, yielding:
+=CN 因为大括号里是简单的标量变量，所以我们可以把第一个大括号去掉，形如：
+
+@ $hash_ref { qw(name position) }
+
+=EN Thus, we can replace that final loop with:
+=CN 因而，我们可以把最后的循环语句替换成：
+
+for my $crewmember (@crew) {
+  printf $format, @$crewmember{qw(name shirt hat position)};
+}
+
+=EN There is no shortcut form with an arrow (->) for array slices or hash slices, just as there is no shortcut for entire arrays or hashes.
+=CN 对于数组片断或散列片断没有快捷写法，就像对整个数组或散列也没有快捷写法一样。
+=EN A hash reference prints as a string that looks like HASH(0x1a2b3c), showing the hexadecimal memory address of the hash. That’s not very useful to an end user and only barely more usable to the programmer, except as an indication of the lack of appropriate dereferencing.
+=CN 如果打印一个散列引用，会得到一个类似于HASH(0x1a2b3c)一样的字串，显示这个散列在内存中的用十六进制表示的地址。这个对终端用户来说没有多少用处。除非表示没有很好还原，这个对程序员来说也没多大用处。

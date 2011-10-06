@@ -1,0 +1,252 @@
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’ 1 times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ， 1 times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’ 1 times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ， 4 times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ” 1 times
+touch ， 2 times
+touch ’  times
+touch “ 1 times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ” 1 times
+touch ， 1 times
+touch ’  times
+touch “ 1 times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’ 1 times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ， 1 times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’ 1 times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ， 2 times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’ 1 times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ， 2 times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。 2 times
+touch ；  times
+touch ” 2 times
+touch ， 1 times
+touch ’  times
+touch “ 2 times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’ 1 times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ， 1 times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’ 1 times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ， 2 times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’ 1 times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ， 1 times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’ 1 times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ， 1 times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’ 1 times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ， 2 times
+touch ’  times
+touch “  times
+touch ‘  times
+touch 。  times
+touch ；  times
+touch ”  times
+touch ，  times
+touch ’ 1 times
+touch “  times
+touch ‘  times
+touch 。 1 times
+touch ；  times
+touch ”  times
+touch ， 1 times
+touch ’  times
+touch “  times

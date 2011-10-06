@@ -1,0 +1,62 @@
+=EN 5.8. Autovivification and Hashes
+=CN 5.8. 自生成功能与散列
+=EN Autovivification also works for hash references . If we dereference a variable containing undef as if it were a hash reference, a reference to an empty anonymous hash is inserted, and the operation continues.
+=CN 在散列引用中，自生成功能也起作用。 如果我们还原一个含有undef的变量，就好像它是一个散列引用一样， 那么一个指向空的匿名散列的引用就会被插入，让操作继续下去。
+=EN One place this comes in very handy is in a typical data reduction task. For example, let’s say the Professor gets an island-area network up and running (perhaps using Coco-Net or maybe Vines) and now wants to track the traffic from host to host. He begins logging the number of bytes transferred to a log file, giving the source host, the destination host, and the number of transferred bytes:
+=CN 自生成功能一大用处是在那些典型的单向读取的任务（消防水带）。比如说，假设教授要建立一个岛间的网络。现在他要跟踪主机与主机之间的流量。他现在开始把之间传输的字间记录到日志文件。记录源主机，目标主机和传输的字节数：
+
+professor.hut gilligan.crew.hut 1250
+professor.hut lovey.howell.hut 910
+thurston.howell.hut lovey.howell.hut 1250
+professor.hut lovey.howell.hut 450
+professor.hut laser3.copyroom.hut 2924
+ginger.girl.hut professor.hut 1218
+ginger.girl.hut maryann.girl.hut 199
+…
+
+=EN Now the Professor wants to produce a summary of the source host, the destination host, and the total number of transferred bytes for the day. Tabulating the data is as simple as:
+=CN 现在，教授要生成一个有关源主机，目标主机和总传输字节数的报表。把数据列表显示出来：
+
+my %total_bytes;
+while (<>) {
+  my ($source, $destination, $bytes) = split;
+  $total_bytes{$source}{$destination} += $bytes;
+}
+
+=EN Let’s see how this works on the first line of data. We’ll be executing:
+=CN 让我们看第一行如何生成的：
+
+$total_bytes{’professor.hut’}{’gilligan.crew.hut’} += 1250;
+
+=EN Because %total_bytes is initially empty, Perl doesn’t find the first key of professor.hut, but it establishes an undef value for the dereferencing as a hash reference. (Keep in mind that an implicit arrow is between the two sets of curly braces here.) Perl sticks a reference to an empty anonymous hash in that element, which it then immediately extends to include the element with a key of gilligan.crew.hut. Its initial value is undef, which acts like a zero when you add 1250 to it, and the result of 1250 is inserted back into the hash.
+=CN 因为散列%total_bytes初始时是空的， Perl没有找到第一个以professor.hut命名的键， 但它会为了还原而建立一个未定义值作为散列引用。（记住，这里在花括号间有隐含的箭头。）Perl会在那个元素里放个指向空值的匿名散列，这样它可以立即扩展数组 ，将把gilligan.crew.hut作为一个元素放入。它的初始值是未定义值 ，与零等同，而当你把1250与它相加的时候，其相加的结果1250也放回散列。
+=EN Any later data line that contains this same source host and destination host will re-use that same value, adding more bytes to the running total. But each new destination host extends a hash to include a new initially undef byte count, and each new source host uses autovivification to create a destination host hash. In other words, Perl does the right thing, as always.
+=CN 任何后来的数据行，如果有相同的源主机和目标主机，都会重用原来的值，并加上新读入的值，再计算出总数。但是新的目标主机会扩展散列来包括一个新的初始未定义值，重新计数，每个新的源主机会用自生成功能建立目标主机散列。 换句话说，Perl 总是做对的事情，就像它一直表现的那样。
+=EN Once we’ve processed the file, it’s time to display the summary. First, we determine all the sources:
+=CN 一旦我们处理完文件，应该是显示总计的时候了。首先，我们取源主机：
+
+for my $source (keys %total_bytes) {
+…
+
+=EN Now, we should get all destinations. The syntax for this is a bit tricky. We want all keys of the hash, resulting from dereferencing the value of the hash element, in the first structure:
+=CN 好，现在我们取所有的目标主机。这里的语法有些“搞”。 我们用散列元素还原出来的值作为键来取目标主机，比如：
+
+for my $source (keys %total_bytes) {
+  for my $destination (keys %{ $total_bytes{$source} }) {
+….
+
+=EN For good measure, we should probably sort both lists to be consistent:
+=CN 为了好的效率，我们应该对列表进行排序，以保持一致性：
+
+for my $source (sort keys %total_bytes) {
+  for my $destination (sort keys %{ $total_bytes{$source} }) {
+    print "$source => $destination:",
+     " $total_bytes{$source}{$destination} bytes\n";
+  }
+  print "\n";
+}
+
+=EN This is a typical data-reduction report generation strategy.[*] Simply create a hash-of-hashrefs (perhaps nested even deeper, as you’ll see later), using autovivification to fill in the gaps in the upper data structures as needed, and then walk through the resulting data structure to display the results.
+=CN 这是一个典型的“消防水带”式的报表生成策略。［＊］简单地建立一个散列引用的散列（还可以嵌套更深，后面你就可以看到），运用自生成功能，根据需要填充数据结构，然后遍历结果数据，打印输出结果。
+=EN [*] You can read more examples in the Perl Data Structures Cookbook, the perldsc documentation page.
+=CN [*] 你可以在《Perl数据结构烹调书》（Perldsc文档页）来接触更多的例子。

@@ -1,0 +1,12 @@
+=EN 3.10. Exercises
+=CN 3.10. 练习
+=EN You can find the answers to these exercises in "Answers for Chapter 3" in the Appendix. 
+=CN 在附录找答案。
+=EN 3.10.1. Exercise 1 [25 min]
+=CN 3.10.1. 练习 1 [25 分钟]
+=EN Read the list of files in the current directory and convert the names to their full path specification. Don’t use the shell or an external program to get the current directory. The File::Spec and Cwd modules, both of which come with Perl, should help. Print each path with four spaces before it and a newline after it, just like you did for Exercise 1 of Chapter 2. Can you reuse part of that answer for this problem? 
+=CN 读当前目录的文件列表并转换成全路径。不能用shell命令或外部程序读当前目录。Perl的File::Spec和Cwd两个模块对这个程序有帮助。每个路径条目前加四个空格并每个条目开个新行，就像第二章的练习一做的那样。你可以重用原来的程序吗？
+=EN 3.10.2. Exercise 2 [35 min]
+=CN 3.10.2. 练习 2 [35 分钟]
+=EN Parse the International Standard Book Number from the back of this book (0596102062). Install the Business::ISBN module from CPAN and use it to extract the country code and the publisher code from the number. 
+=CN 分析一下这本书的国际标准书号（0596102062）。 从CPAN里安装一下Business::ISBN模块，并且用它来从ISBN数字中抽取国家代码和发行商代码。
