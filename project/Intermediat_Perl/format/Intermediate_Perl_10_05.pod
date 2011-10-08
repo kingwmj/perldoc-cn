@@ -1,0 +1,65 @@
+=EN 10. 5. require and @INC
+=CN 10. 5. require 和 @INC
+=EN So far, the examples have glossed over how we've set up the directory structure of where the main code and the included files are located. That's because it "just works" for the simplest case where we have a program and its libraries in the same directory and we run the program from that directory. 
+=CN 到目前为止, 这些例子都忽略了我们如何建立目录结构来安排主要代码和要导入的代码文件应该安放的位置. 那是因为"能工作就行", 用最简单的情形, 我们把程序和它的库放在同一目录, 并就在这个目录里运行程序. 
+=EN Things get a bit more complicated when the libraries aren't in the current directory. In fact, Perl searches for libraries along a library search path, similar to what the shell does with the PATH environment variable. The current directory (represented in Unix by a single dot) is an element of the search path. So, as long as our libraries are in our current working directory, everything is fine. 
+=CN 当库文件不在当前目录的时候, 事件就有些复杂了. 实际上, Perl按库一个库搜索路径来查找库, 有些像UNIX shell用PATH环境变量一样. 当前目录（在Unix里以句点表示）是查寻目录之一. 所以只要我们的库在我们的当前工作目录, 就没问题. 
+=EN The search path is a list of elements in the special @INC array, as we briefly discussed in Chapter 3. By default, the array contains the current directory and a half-dozen or so directories specified by the person who compiled Perl. Typing perl -V on the command line shows what these directories are, in the last dozen lines of the output. Also, the following command displays just the @INC directories:[*]
+=CN 查寻目录是在一个特别的数组@INC中的列表中一系列的元素, 就象我们在第三章讲过的一样. 缺省时, 数组包括当前目录和一些由编译Perl的用户指定的目录. 在命令行输入Perl -V 可以在最后几行显示出这些目录. 用如下的命令也可以显示@INC所包括的目录[*]
+=EN [*] On a Windows machine, use double quotes instead of single quotes on the command line. 
+=CN [*] 在Windows操作系统的电脑上, 用双引号代替单引号. 
+perl -le 'print for @INC'
+=EN Except for. in that list, we probably won't be able to write to any of the other directories unless we're the person responsible for maintaining Perl on our machine, in which case, we should be able to write to all of them. The remaining directories are where Perl searches for system-wide libraries and modules, as we'll see later. 
+=CN 在输出列表中, 除了句点. , 除非我们是负责在这台电脑上维护Perl的人, 我们大概不能写任何其它的目录进去. 在这种情况下, 我们应该能把它们写进去. 象我们后面要看到的, 余下的目录是Perl系统搜索系统库和模块的目录, 象我们后面所看到的. 
+=EN 10. 5. 1. Extending @INC
+=CN 10. 5. 1. 括展@INC
+=EN We may run into some cases where we can't install modules in the pre-configured directories in @INC. We can change @INC itself before the require, so Perl searches our directories too. The @INC array is an ordinary array, so have the Skipper add a directory below his home directory to the mix:
+=CN 我们可能碰到这些情况, 即不能（想）在预先配置在@INC中的目录中安装模块. 但我们可以在require之前先改变数组@INC自己, 这样Perl也会去查找我们的目录. 数组@INC就是平常的数组, 所以让Skipper把它主目录加进去：
+unshift @INC, '/home/skipper/perl-lib';
+=EN Now, in addition to searching the standard directories and the current directory, Perl searches the Skipper's personal Perl library. In fact, Perl searches in that directory first, since it is the first one in @INC. By using unshift rather than push, Perl resolves any conflict in names between the Skipper's private files and the system-installed files, with the Skipper's file-taking precedence. 
+=CN 现在, 除了搜索标准目录和当前目录, Perl还搜索Skipper的个人Perl模块库. 实际上, Perl首先就会查这个目录, 因为这条会排在数组@INC最前面. 因为使用的是unshift而不是push, Perl会将取Skipper的文件放在优先位置, 以此解决Skipper的私有文件与系统安装的文件之间可能的冲突. 
+=EN Normally we want to ensure that this happens before anything else, so we can wrap it in a BEGIN block. Perl executes the code in the BEGIN block during the compile phase before the require executes at runtime. Otherwise, Perl executes statements in the order that it finds them, and we have to ensure that our unshift shows up before our require. 
+=CN 一般来说, 我们要保证添加搜索目录一定要放在其它事之前, 我们可以把它放进BEGIN块. Perl会在编译阶段执行在BEGIN块中的语句, 而在运行时执行require语句. 除此之外, Perl会以文件中的自然顺序执行语句, 所以我们要保证我们的unshift要出现在我们的require之前. 
+BEGIN {
+ unshift @INC, '/home/skipper/perl-lib';
+};
+=EN This is such a common operation, though, that Perl has a pragma for it. The pragma makes everything happen before runtime, so we'll get what we expect. 
+=CN 因为这个操作太常见了, 所以Perl有一个编译指示字来处理. 编译指示字发生在任何运行时之前, 所以我们可以得到预期的效果. 
+=EN It puts the directories we specify at the beginning of @INC, just like we did before. 
+=CN 它会把我们指示的目录放到@INC数组的最前面, 正象我们前面做的那样. 
+use lib qw(/home/skipper/perl-lib);
+=EN We don't always have to know the path ahead of time, either. In the previous examples, we've hardcoded the paths. If we don't know what those will be because we're passing code around to several machines, the FindBin module, which comes with Perl, can help. It finds the full path to the script directory so we can use it to build paths. 
+=CN 我们不一定总是能事先预知目录路径. 在前面的例子中, 我们对路径是硬编码的. 如果我们事先不知道路径是什么, 这有可能是我们在几个机器之前传送代码, Perl自带的FindBin模块可以帮助你. 它会找到脚本所在的目录的全路径, 这样我们可以依此来建立自己的路径. 
+use FindBin qw($Bin);
+=EN Now, in $Bin is the path to the directory that holds our script. If we have our libraries in the same directory, our next line can be:
+=CN 现在, 变量$Bin中的路径是我们的脚本所在的路径. 如果我们把库放在同一路径, 我们下一行可以是：
+use lib $Bin;
+=EN If we have the libraries in a directory close to the script directory, we put the right path components together to make it work. 
+=CN 如果我们把库放在脚本目录中的一个目录, 我们只要把正确的路径加上去就可以了, 这样就能工作了. 
+use lib "$Bin/lib"; # in a subdirectory
+use lib "$Bin/. . /lib"; # up one, then down into lib
+=EN So, if we know the relative path from the script directory, we don't have to hardcode the whole path. This makes the script more portable. 
+=CN 这样, 如果我们知道脚本目录的相对路径, 我们就不必硬编码全路径了. 这使我们的脚本更加易于移植. 
+=EN 10. 5. 2. Extending @INC with PERL5LIB
+=CN 10. 5. 2. 用PERL5LIB环境变量扩展@INC
+=EN The Skipper must edit each program that uses his private libraries to include those lines from the previous section. If that seems like too much editing, he can instead set the PERL5LIB environment variable to the directory name. For example, in the C shell, he'd use the line:
+=CN Skipper必须编辑每个程序里以使用他的私有库来导入前面的那些代码. 如果这样编辑太麻烦了, 他可以设置PERL5LIB环境变量, 加上库文件目录. 比如, 在C shell中, 他可以用下面这行：
+setenv PERL5LIB /home/skipper/perl-lib
+=EN In Bourne-style shells, he'd use something like:
+=CN 在Bourne类型的shell中, 他可以用类似于如下的行：
+PERL5LIB=/home/skipper/perl-lib; export PERL5LIB
+=EN The Skipper can set PERL5LIB once and forget about it. However, unless Gilligan has the same PERL5LIB environment variable, his program will fail! While PERL5LIB is useful for personal use, we can't rely on it for programs we intend to share with others. (And we can't make our entire team of programmers add a common PERL5LIB variable. Believe us, we've tried. )
+=CN Skipper可以在一次设置PERL5LIB后就把它忘了. 然而, 除非Gilligan使用同样的PERL5LIB环境变量, 它的程序就会失败！ 因为PERL5LIB对个人使用非常有用, 当我们与其它人共享程序时, 我们不能依靠它. （而且我们也不能让我们整个程序员团队的人用一个共同的PERL5LIB变量. 相信我们, 我们试过. ）
+=EN The PERL5LIB variable can include multiple directories separated by colons. Perl inserts all specified directories at the beginning of @INC. 
+=CN PERL5LIB环境变量可以加多个目录, 中间用分号分开. Perl会把所有这些目录加到@INC中. 
+=EN While a system administrator might add a setting of PERL5LIB to a system-wide startup script, most people frown on that. The purpose of PERL5LIB is to enable non-administrators to extend Perl to recognize additional directories. If a system administrator wants additional directories, he merely needs to recompile and reinstall Perl. 
+=CN 当一个系统管理员把PERL5LIB作为系统范围的设置, 大多数人可能为此而不悦. PERL5LIB的目录是使非管理员来扩展Perl搜索目录. 如果一个系统管理员要添加目录, 它仅仅需要重编译和重装Perl. 
+=EN 10. 5. 3. Extending @INC with -I
+=CN 10. 5. 3. 用 -I 扩展@INC
+=EN If Gilligan recognizes that one of the Skipper's programs is missing the proper directive, Gilligan can either add the proper PERL5LIB variable or invoke Perl directly with one or more -I options. For example, to invoke the Skipper's get_us_home program, the command line might be something like:
+=CN 如果Gilligan注意到Skipper的程序丢失了合适的指示字, Gilligan可以通过设置正确的PERL5LIB环境变量, 也可以用Perl的-I 选项. 比如, 要调用Skipper的get_us_home程序, 在命令行可能是：
+perl -I/home/skipper/perl-lib /home/skipper/bin/get_us_home
+=EN Obviously, it's easier for Gilligan if the program itself defines the extra libraries. But sometimes just adding a -I fixes things right up. [*] This works even if Gilligan can't edit the Skipper's program. He still has to be able to read it, of course, but Gilligan can use this technique to try a new version of his library with the Skipper's program, for example. 
+=CN 显然, 如果程序自己定义额外的库, 对Gilligan来说更方便. 但有时加一个-I仅是修复一些东西. [*] 这在Gilligan无需编辑Skipper的程序的情况下也能工作. 当然, 它要有读的权限, 但是, 举个例子来说, Gilligan可以用这个技术试一个使用Skipper程序的新版本. 
+=EN [*] Extending @INC with either PERL5LIB or I also automatically adds the version and architecture-specific subdirectories of the specified directories. Adding these directories automatically simplifies the task of installing Perl modules that include architecture- or version-sensitive components, such as compiled C code. 
+=CN [*] 不论是用PERL5LIB环境变量或者I选项来扩展@INC, 自动会把所在目录的下面的子目录全都引入. 自动引入这些目录也简化了安装Perl模块的任务, 如果这些代码是结构化的或对版本敏事情的, 就像编译过的C代码之类. 

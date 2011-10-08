@@ -1,0 +1,192 @@
+=EN 6. 1. Using the Debugger to View Complex Data
+=CN 6. 1. 使用测试工作来查看复杂数据结构
+=EN The Perl debugger can display complex data easily. For example, let's single-step through one version of the byte-counting program from Chapter 5:
+=CN Perl的测试工具可以方便地显示复杂的数据结构. 例如, 让我们单步执行第五章中我们说过的那个字节计数的程序：
+my %total_bytes;
+while (<>) {
+ my ($source, $destination, $bytes) = split;
+ $total_bytes{$source}{$destination} += $bytes;
+}
+for my $source (sort keys %total_bytes) {
+ for my $destination (sort keys %{ $total_bytes{$source} }) {
+ print "$source => $destination:", 
+ " $total_bytes{$source}{$destination} bytes\n";
+ }
+ print "\n";
+}
+=EN Here's the data we'll use to test it:
+=CN 下面是我们要测试的数据：
+professor. hut gilligan. crew. hut 1250
+professor. hut lovey. howell. hut 910
+thurston. howell. hut lovey. howell. hut 1250
+professor. hut lovey. howell. hut 450
+ginger. girl. hut professor. hut 1218
+ginger. girl. hut maryann. girl. hut 199
+=EN We can do this a number of ways. One of the easiest is to invoke Perl with a -d switch on the command line:
+=CN 我们可以有多种方法来执行测试. 其中一种最简单的是以-d开关在命令行执行Perl解释器：
+myhost% perl -d bytecounts bytecounts-in
+Loading DB routines from perl5db. pl version 1. 19
+Editor support available. 
+Enter h or 'h h' for help, or 'man perldebug' for more help. 
+main::(bytecounts:2): my %total_bytes;
+ DB<1> s
+main::(bytecounts:3): while (<>) {
+ DB<1> s
+main::(bytecounts:4): my ($source, $destination, $bytes) = split;
+ DB<1> s
+main::(bytecounts:5): $total_bytes{$source}{$destination} += $bytes;
+ DB<1> x $source, $destination, $bytes
+0 'professor. hut'
+1 'gilligan. crew. hut'
+2 1250
+=EN If you're playing along at home, be aware that each new release of the debugger works differently than any other, so your screen probably won't look exactly like ours. Also, if you get stuck at any time, type h for help or look at perldoc perldebug. 
+=CN 如果在你这儿运行的话, 要注意因为测试工具的版本不同, 所以你的屏幕显示可能与我们的不尽相同. 还有, 如果你在测试中遇到了麻烦, 可以输入h键来获得perldoc perldebug提供的在线帮助. 
+=EN The debugger shows each line of code before it executes it. That means that, at this point, we're about to invoke the autovivification, and we've got our keys established. The s command single-steps the program, while the x command dumps a list of values in a nice format. We can see that $source, $destination, and $bytes are correct, and now it's time to
+=CN 测试工具会在程序的每一行被执行之前, 显示该语句. 这个意思就是说, 在此时, 我们将会调用一个自生成, 建立我们的索引键. 's' 表示单步执行, 而'x'表示以适当的格式输出值的列表. 这样我们就可以看到$source, $destination和$bytes这些变量是正确的, 且现在正更新数据：
+DB<2> s
+ main::(bytecounts:3): while (<>) {
+=EN We've created the hash entries through autovivification. Let's see what we've got:
+=CN 我们已经通过自生成建立了散列条目. 让我们看看我们得到了什么：
+DB<2> x \%total_bytes
+ 0 HASH(0x132dc)
+ 'professor. hut' => HASH(0x37a34)
+ 'gilligan. crew. hut' => 1250
+=EN When we give x a hash reference, it dumps the entire contents of the hash, showing the key/value pairs. If any of the values are also hash references, it dumps those as well, recursively. What we'll see is that the %total_bytes hash has a single key of professor. hut, whose corresponding value is another hash reference. The referenced hash contains a single key of gilligan. crew. hut, with a value of 1250, as expected. 
+=CN 当我们给调试命令x 一个散列引用的时候, 它会把这个散列的所有内容（键／值对）打印出来. 如果其中的值也是指向散列的引用的话, 它同样也会打印, 以此类推. 我们可以看到散列%total_bytes中professor. hut键相对应的值是指向另一个散列的引用. 就像你预期的那样, 这个散列引用内中有单个键：gilligan. crew. hut, 其对应的值为1250. 
+=EN Let's see what happens just after the next assignment:
+=CN 我们看看下一个赋值会发生什么：
+DB<3> s
+ main::(bytecounts:4): my ($source, $destination, $bytes) = split;
+DB<3> s
+ main::(bytecounts:5): $total_bytes{$source}{$destination} += $bytes;
+DB<3> x $source, $destination, $bytes
+ 0 'professor. hut'
+ 1 'lovey. howell. hut'
+ 2 910
+DB<4> s
+ main::(bytecounts:3): while (<>) {
+DB<4> x \%total_bytes
+ 0 HASH(0x132dc)
+ 'professor. hut' => HASH(0x37a34)
+ 'gilligan. crew. hut' => 1250
+ 'lovey. howell. hut' => 910
+=EN Now we've added bytes flowing from professor. hut to lovey. howell. hut. The top-level hash hasn't changed, but the second-level hash has added a new entry. Let's continue:
+=CN 现在我们已经把从professor. hut流向lovey. howell. hut主机的字节数加上了. 顶层的散列没有变化, 而下一级的散列已加上了新的条目. 让我们继续：
+DB<5> s
+ main::(bytecounts:4): my ($source, $destination, $bytes) = split;
+DB<6> s
+ main::(bytecounts:5): $total_bytes{$source}{$destination} += $bytes;
+DB<6> x $source, $destination, $bytes
+ 0 'thurston. howell. hut'
+ 1 'lovey. howell. hut'
+ 2 1250
+DB<7> s
+ main::(bytecounts:3): while (<>) {
+DB<7> x \%total_bytes
+ 0 HASH(0x132dc)
+ 'professor. hut' => HASH(0x37a34)
+ 'gilligan. crew. hut' => 1250
+ 'lovey. howell. hut' => 910
+ 'thurston. howell. hut' => HASH(0x2f9538)
+ 'lovey. howell. hut' => 1250
+=EN Ah, now it's getting interesting. A new entry in the top-level hash has a key of thurston. howell. hut, and a new hash reference, autovivified initially to an empty hash. 
+=CN 哈, 有趣的事发生了. 顶层散列的一个键：thurston. howell. hut添加了一个新的条目, 于是一个新的散列引用自生成为一个空的散列. 
+=EN Immediately after the new empty hash was put in place, a new key/value pair was added, indicating 1250 bytes transferred from thurston. howell. hut to lovey. howell. hut. Let's step some more:
+=CN 在空散列被加好之后, 马上一个新的键/值对被加上, 标示1250字节从thurston. howell. hut传到lovey. howell. hut. 让我们单步执行, 查看一下：
+DB<8> s
+ main::(bytecounts:4): my ($source, $destination, $bytes) = split;
+DB<8> s
+ main::(bytecounts:5): $total_bytes{$source}{$destination} += $bytes;
+DB<8> x $source, $destination, $bytes
+ 0 'professor. hut'
+ 1 'lovey. howell. hut'
+ 2 450
+DB<9> s
+ main::(bytecounts:3): while (<>) {
+DB<9> x \%total_bytes
+ 0 HASH(0x132dc)
+ 'professor. hut' => HASH(0x37a34)
+ 'gilligan. crew. hut
+=EN Now we're adding in some more bytes from professor. hut to lovey. howell. hut, reusing the existing value place. Nothing too exciting there. Let's keep stepping:
+=CN 现在我们添加更多的字节从professor. hut到lovey. howell. hut, 我们用现存的值. 这儿没有什么新鲜的, 让我们继续：
+DB<10> s
+ main::(bytecounts:4): my ($source, $destination, $bytes) = split;
+DB<10> s
+ main::(bytecounts:5): $total_bytes{$source}{$destination} += $bytes;
+DB<10> x $source, $destination, $bytes
+ 0 'ginger. girl. hut'
+ 1 'professor. hut'
+ 2 1218
+DB<11> s
+ main::(bytecounts:3): while (<>) {
+DB<11> x \%total_bytes
+ 0 HASH(0x132dc)
+ 'ginger. girl. hut' => HASH(0×297474)
+ 'professor. hut' => 1218
+ 'professor. hut' => HASH(0x37a34)
+ 'gilligan. crew. hut' => 1250
+ 'lovey. howell. hut' => 1360
+ 'thurston. howell. hut' => HASH(0x2f9538)
+ 'lovey. howell. hut' => 1250
+=EN This time, we added a new source, ginger. girl. hut. Notice that the top level hash now has three elements, and each element has a different hash reference value. Let's step some more:
+=CN 这次, 我们添加了个新的源主机, ginger. girl. hut. 注意顶层散列现在有三个元素了, 每个元素有一个不同的散列引用. 好, 我们继续：
+DB<12> s
+ main::(bytecounts:4): my ($source, $destination, $bytes) = split;
+DB<12> s
+ main::(bytecounts:5): $total_bytes{$source}{$destination} += $bytes;
+DB<12> x $source, $destination, $bytes
+ 0 'ginger. girl. hut'
+ 1 'maryann. girl. hut'
+ 2 199
+DB<13> s
+ main::(bytecounts:3): while (<>) {
+DB<13> x \%total_bytes
+ 0 HASH(0x132dc)
+ 'ginger. girl. hut' => HASH(0×297474)
+ 'maryann. girl. hut' => 199
+ 'professor. hut' => 1218
+ 'professor. hut' => HASH(0x37a34)
+ 'gilligan. crew. hut' => 1250
+ 'lovey. howell. hut' => 1360
+ 'thurston. howell. hut' => HASH(0x2f9538)
+ 'lovey. howell. hut' => 1250
+=EN Now we've added a second destination to the hash that records information for all bytes originating at ginger. girl. hut. Because that was the final line of data (in this run), a step brings us down to the lower foreach loop:
+=CN 现在我们已经给源发于ginger. girl. hut. 的主机加了两个目标主机在散列中了. 因为这是数据的最后一行(这次运行中), 单步执行带我们到更底的那一层：
+DB<14> s
+ main::(bytecounts:8): for my $source (sort keys %total_bytes) {
+=EN Even though we can't directly examine the list value from inside those parentheses, we can display it:
+=CN 尽这我们不能直接从括号内部验核列表值, 但我们可以显示它：
+DB<14> x sort keys %total_bytes
+ 0 'ginger. girl. hut'
+ 1 'professor. hut'
+ 2 'thurston. howell. hut'
+=EN This is the list the foreach now scans. These are all the sources for transferred bytes seen in this particular logfile. Here's what happens when we step into the inner loop:
+=CN 这是foreach语句扫描的清单. 这些是所有特定日志文件中传输字节的所有源主机. 下面是当我们单步执行到里层循环时发生的事情：
+DB<15> s
+ main::(bytecounts:9): for my $destination (sort keys %{ $total_bytes{$source} }) {
+=EN At this point, we can determine from the inside out exactly what values will result from the list value from inside the parentheses. Let's look at them:
+=CN 当下, 我们可以由内而外精确地确定括号里的清单的值 得出的结果是什么值. 我们往下看：
+DB<15> x $source
+ 0 'ginger. girl. hut'
+DB<16> x $total_bytes{$source}
+ 0 HASH(0×297474)
+ 'maryann. girl. hut' => 199
+ 'professor. hut' => 1218
+DB<18> x keys %{ $total_bytes{$source } }
+ 0 'maryann. girl. hut'
+ 1 'professor. hut'
+DB<19> x sort keys %{ $total_bytes{$source } }
+ 0 'maryann. girl. hut'
+ 1 'professor. hut'
+=EN Note that dumping $total_bytes{$source} shows that it was a hash reference. Also, the sort appears not to have done anything, but the output of keys is not necessarily in a sorted order. The next step finds the data:
+=CN 注意, 打印$total_bytes{$source}显示它是一个散列引用. 这样, sort 看上去好像什么都没做, 输出的键不必以排序输出. 下一步是找数据：
+DB<20> s
+ main::(bytecounts:10): print "$source => $destination:", 
+ main::(bytecounts:11): " $total_bytes{$source}{$destination} bytes\n";
+DB<20> x $source, $destination
+ 0 'ginger. girl. hut'
+ 1 'maryann. girl. hut'
+DB<21> x $total_bytes{$source}{$destination}
+ 0 199
+=EN As we can see with the debugger, we can easily show the data, even structured data, to help us understand our program. 
+=CN 当我们用测试工具看到的, 我们可以方便地查验数据, 甚至是结构化的数据, 来帮助我们理解我们的程序. 

@@ -1,0 +1,432 @@
+Chapter 11. Introduction to Objects
+
+Object-oriented programming (OOP) helps programmers run code sooner and maintain it easier by organizing the code into things that we can name. We need a little more infrastructure to get going with objects, but in the long run, it's worth it.
+
+The benefits of OOP become worthwhile when our program (including all external libraries and modules) exceeds about N lines of code. Unfortunately, nobody can agree on what the value of N is, but for Perl programs, it's arguably around 1,000 lines of code. If our whole program is only a couple hundred lines of code, using objects is probably overkill.
+
+Like references, Perl's object architecture was grafted on after a substantial amount of existing pre-Perl 5 code was already in use, so we had to ensure that it wouldn't break existing syntax. Amazingly, the only additional syntax to achieve object nirvana is the method call, introduced shortly. But the meaning of that syntax requires a bit of study, so let's proceed.
+
+The Perl object architecture relies heavily on packages, subroutines, and references, so if you're skipping around in this book, please go back to the beginning. Ready? Here we go.
+
+11.1. If We Could Talk to the Animals...
+
+Obviously, the castaways can't survive on coconuts and pineapples alone. Luckily for them, a barge carrying random farm animals crashed on the island not long after they arrived, and the castaways began farming and raising animals.
+
+Let's listen to those animals for a moment:
+
+ sub Cow::speak {
+   print "a Cow goes moooo!\n";
+ }
+ sub Horse::speak {
+   print "a Horse goes neigh!\n";
+ }
+ sub Sheep::speak {
+   print "a Sheep goes baaaah!\n";
+ }
+ 
+ Cow::speak;
+ Horse::speak;
+ Sheep::speak;
+
+This results in:
+
+ a Cow goes moooo!
+ a Horse goes neigh!
+ a Sheep goes baaaah!
+
+Nothing spectacular here: simple subroutines, albeit from separate packages, and called using the full package name. Let's create an entire pasture:
+
+ sub Cow::speak {
+   print "a Cow goes moooo!\n";
+ }
+ sub Horse::speak {
+   print "a Horse goes neigh!\n";
+ }
+ sub Sheep::speak {
+   print "a Sheep goes baaaah!\n";
+ }
+ 
+ my @pasture = qw(Cow Cow Horse Sheep Sheep);
+ foreach my $beast (@pasture) {
+   &{$beast."::speak"};                # Symbolic coderef
+ }
+
+This results in:
+
+ a Cow goes moooo!
+ a Cow goes moooo!
+ a Horse goes neigh!
+ a Sheep goes baaaah!
+ a Sheep goes baaaah!
+
+Wow. That symbolic coderef dereferencing there in the body of the loop is pretty nasty. We're counting on no strict 'refs' mode, certainly not recommended for larger programs.[*] And why was that necessary? Because the name of the package seems inseparable from the name of the subroutine we want to invoke within that package.
+
+[*] Although all examples in this book should be valid Perl code, some examples in this chapter will break the rules enforced by use strict to make them easier to understand. By the end of the chapter, though, we'll show how to make strict-compliant code again.
+
+Or is it?
+
+11.2. Introducing the Method Invocation Arrow
+
+A class is a group of things with similar behaviors and traits. For now, let's say that Class->method invokes subroutine method in package Class. A method is the object-oriented version of the subroutine, so we'll say "method" from now on.[*] That's not completely accurate, but we'll go on one step at a time. Let's use it like so:
+
+[*] In Perl, there really isn't a difference between a subroutine and a method. They both get an argument list in @_, and we have to make sure we do the right thing.
+
+ sub Cow::speak {
+   print "a Cow goes moooo!\n";
+ }
+ sub Horse::speak {
+   print "a Horse goes neigh!\n";
+ }
+ sub Sheep::speak {
+   print "a Sheep goes baaaah!\n";
+ }
+ 
+ Cow->speak;
+ Horse->speak;
+ Sheep->speak;
+
+And once again, this results in:
+
+ a Cow goes moooo!
+ a Horse goes neigh!
+ a Sheep goes baaaah!
+
+That's not fun yet. We've got the same number of characters, all constant, no variables. However, the parts are separable now:
+
+ my $beast = 'Cow';
+ $beast->speak;                # invokes Cow->speak
+
+Ahh! Now that the package name is separated from the subroutine name, we can use a variable package name. This time, we've got something that works even when we enable use strict 'refs'.
+
+Take the arrow invocation and put it back in the barnyard example:
+
+ sub Cow::speak {
+   print "a Cow goes moooo!\n";
+ }
+ sub Horse::speak {
+   print "a Horse goes neigh!\n";
+ }
+ sub Sheep::speak {
+   print "a Sheep goes baaaah!\n";
+ }
+ 
+ my @pasture = qw(Cow Cow Horse Sheep Sheep);
+ foreach my $beast (@pasture) {
+   $beast->speak;
+ }
+
+There! Now all the animals are talking, and safely at that, without the use of symbolic coderefs.
+
+But look at all that common code. Each speak method has a similar structure: a print operator and a string that contains common text, except for two words. One of OOP's core principles is to minimize common code: if we write it only once, we'll save time. If we test and debug it only once, we'll save more time.
+
+Now that we know more about what the method invocation arrow actually does, we've got an easier way to do the same thing.
+
+11.3. The Extra Parameter of Method Invocation
+
+The invocation of:
+
+ Class->method(@args)
+
+attempts to invoke the subroutine Class::method as:
+
+ Class::method('Class', @args);
+
+(If it can't find the method, inheritance kicks in, but we'll show that later.) This means that we get the class name as the first parameter, or the only parameter, if no arguments are given. We can rewrite the Sheep speaking method as:
+
+ sub Sheep::speak {
+   my $class = shift;
+   print "a $class goes baaaah!\n";
+ }
+
+The other two animals come out similarly:
+
+ sub Cow::speak {
+   my $class = shift;
+   print "a $class goes moooo!\n";
+ }
+ sub Horse::speak {
+   my $class = shift;
+   print "a $class goes neigh!\n";
+ }
+
+In each case, $class gets the value appropriate for that method. But once again, we have a lot of similar structure. Can we factor out that commonality even further? Yesby calling another method in the same class.
+
+11.4. Calling a Second Method to Simplify Things
+
+We can call out from speak to a helper method called sound. This method provides the constant text for the sound itself:
+
+ { package Cow;
+   sub sound { 'moooo' }
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+
+Now, when we call Cow->speak, we get a $class of Cow in speak. This, in turn, selects the Cow->sound method, which returns moooo. How different would this be for the Horse?
+
+ { package Horse;
+   sub sound { 'neigh' }
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+
+Only the name of the package and the specific sound change. So can we share the definition for speak between the cow and the horse? Yes, with inheritance !
+
+Now let's define a common method package called Animal with the definition for speak:
+
+ { package Animal;
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+
+Then, for each animal, we can say it inherits from Animal, along with the animal-specific sound:
+
+ { package Cow;
+   @ISA = qw(Animal);
+   sub sound { "moooo" }
+ }
+
+Note the added @ISA array. We'll get to that in a minute.
+
+What happens when we invoke Cow->speak now?
+
+First, Perl constructs the argument list. In this case, it's just Cow. Then Perl looks for Cow::speak. That's not there, so Perl checks for the inheritance array @Cow::ISA. It's there and contains the single name Animal.
+
+Perl next checks for speak inside Animal instead, as in Animal::speak. That found, Perl invokes that method with the already frozen argument list, as if we had said:
+
+ Animal::speak('Cow');
+
+Inside the Animal::speak method, $class becomes Cow as the first argument is shifted off. When we get to the step of invoking $class->sound while performing the print, it looks for Cow->sound:
+
+ print "a $class goes ", $class->sound, "!\n";
+ # but $class is Cow, so...
+ print 'a Cow goes ', Cow->sound, "!\n";
+ # which invokes Cow->sound, returning 'moooo', so
+ print 'a Cow goes ', 'moooo', "!\n";
+ 
+and we get our desired output.
+
+11.5. A Few Notes About @ISA
+
+This magical @ISA variable (pronounced "is a" not "ice-uh") declares that Cow "is a" Animal.[*] Note that it's an array, not a simple single value, because on rare occasions it makes sense to have more than one parent class searched for the missing methods. We'll show more about that later.
+
+[*] ISA is actually a linguistic term. Once again, Larry Wall's background as a linguist has come back to influence Perl.
+
+If Animal also had an @ISA, Perl would check there too.[] Typically, each @ISA has only one element (multiple elements means multiple inheritance and multiple headaches), so we get a nice tree of inheritance.[]
+
+[] The search is recursive, depth-first, and left to right in each @ISA.
+
+[] There is also inheritance through UNIVERSAL and AUTOLOAD; see the perlobj manpage for the whole story.
+
+When we turn on use strict, we'll get complaints on @ISA because it's not a variable containing an explicit package name, nor is it a lexical (my) variable. We can't make it a lexical variable, though: it has to belong to the package to be found by the inheritance mechanism.
+
+There are a couple of straightforward ways to handle the declaration and setting of @ISA. The easiest is to just spell out the package name:
+
+ @Cow::ISA = qw(Animal);
+
+We can also allow it as an implicitly named package variable:
+
+ package Cow;
+ use vars qw(@ISA);
+ @ISA = qw(Animal);
+
+If you're on a recent-enough Perl (5.6 or later), you can use the our declaration to shorten it to:
+
+ package Cow;
+ our @ISA = qw(Animal);
+
+However, if you think your code might be used by people stuck with Perl 5.005 or earlier, it's best to avoid our.
+
+If we're bringing in the class from outside, via an object-oriented module, we can change:
+
+ package Cow;
+ use Animal;
+ use vars qw(@ISA);
+ @ISA = qw(Animal);
+ 
+to just:
+
+ package Cow;
+ use base qw(Animal);
+
+That's pretty darn compact. Furthermore, use base has the advantage that it's performed at compile time, eliminating a few potential errors from setting @ISA at runtime, like some of the other solutions.
+
+11.6. Overriding the Methods
+
+Let's add a mouse that can barely be heard:
+
+ { package Animal;
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+ { package Mouse;
+   @ISA = qw(Animal);
+   sub sound { 'squeak' }
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+     print "[but you can barely hear it!]\n";
+   }
+ }
+ 
+ Mouse->speak;
+
+which results in:
+
+ a Mouse goes squeak!
+ [but you can barely hear it!]
+
+Here, Mouse has its own speaking routine, so Mouse->speak doesn't immediately invoke Animal->speak. This is known as overriding . We use overriding to shadow the method in the derived class (Mouse) because we have a specialized version of the routine, instead of calling the more general base class's method (in Animal). In fact, we didn't even need to initialize @Mouse::ISA to say that a Mouse was an Animal, because all the methods needed for speak are defined completely with Mouse.
+
+We've now duplicated some of the code from Animal->speak; this can be a maintenance headache. For example, suppose someone decides that the word goes in the output of the Animal class is a bug. Now the maintainer of that class changes goes to says. Our mice will still say goes, which means the code still has the bug. The problem is that we invoked cut and paste to duplicate code, and in OOP, that's a sin. We should reuse code through inheritance, not by cut and paste.
+
+How can we avoid that? Can we say somehow that a Mouse does everything any other Animal does, but add in the extra comment? Sure!
+
+As our first attempt, let's invoke the Animal::speak method directly:
+
+ { package Animal;
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+ { package Mouse;
+   @ISA = qw(Animal);
+   sub sound { 'squeak' }
+   sub speak {
+     my $class = shift;
+     Animal::speak($class);
+     print "[but you can barely hear it!]\n";
+   }
+ }
+
+Note that because we've stopped using the method arrow, we have to include the $class parameter (almost surely the value Mouse) as the first parameter to Animal::speak.
+
+Why did we stop using the arrow? Well, if we invoke Animal->speak there, the first parameter to the method is "Animal" not "Mouse" and when the time comes for it to call for the sound, it won't have the right class to select the proper methods for this object.
+
+Invoking Animal::speak directly is a mess, however. What if Animal::speak didn't exist before, and it inherited from a class mentioned in @Animal::ISA? For example, suppose the code was:
+
+ { package LivingCreature;
+   sub speak { ... }
+   ...
+ }
+ { package Animal;
+   @ISA = qw(LivingCreature);
+   # no definition for speak(  )
+   ...
+ }
+ { package Mouse;
+   @ISA = qw(Animal);
+   sub speak {
+     ...
+     Animal::speak(  ... );
+   }
+   ...
+ }
+
+Because we no longer use the method arrow, we get one and only one chance to hit the right method because we're treating it like a regular subroutine with no inheritance magic. We'll look for it in Animal and not find it, and the program aborts.
+
+The Animal class name is now hardwired into the method selection. This is a mess if someone maintains the code, changing @ISA for Mouse, and doesn't notice Animal there in speak. Thus, this is probably not the right way to go.
+
+11.7. Starting the Search from a Different Place
+
+A better solution is to tell Perl to search from a different place in the inheritance chain:
+
+ { package Animal;
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+ { package Mouse;
+   @ISA = qw(Animal);
+   sub sound { 'squeak' }
+   sub speak {
+     my $class = shift;
+     $class->Animal::speak(@_);
+     print "[but you can barely hear it!]\n";
+   }
+ }
+
+Ahh. As ugly as this is, it works. Using this syntax, start with Animal to find speak and use all of Animal's inheritance chain if not found immediately. The first parameter is $class (because we're using an arrow again), so the found speak method gets Mouse as its first entry and eventually works its way back to Mouse::sound for the details.
+
+This isn't the best solution, however. We still have to keep the @ISA and the initial search package in sync (changes in one must be considered for changes in the other). Worse, if Mouse had multiple entries in @ISA, we wouldn't necessarily know which one had actually defined speak.
+
+So, is there an even better way?
+
+11.8. The SUPER Way of Doing Things
+
+By changing the Animal class to the SUPER class in that invocation, we get a search of all our superclasses (classes listed in @ISA) automatically:
+
+ { package Animal;
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+ { package Mouse;
+   @ISA = qw(Animal);
+   sub sound { 'squeak' }
+   sub speak {
+     my $class = shift;
+     $class->SUPER::speak;
+     print "[but you can barely hear it!]\n";
+   }
+ }
+
+Thus, SUPER::speak means to look in the current package's @ISA for speak, invoking the first one found if there's more than one. In this case, we look in the one and only base class, Animal, find Animal::speak, and pass it Mouse as its only parameter.
+
+11.9. What to Do with @_
+
+In that last example, had there been any additional parameters to the speak method (like how many times, or in what pitch for singing, for example), the parameters would be ignored by the Mouse::speak method. If we want them to be passed uninterpreted to the parent class, we can add it as a parameter:
+
+ $class->SUPER::speak(@_);
+
+This invokes the speak method of the parent class, including all the parameters that we've not yet shifted off of our parameter list.
+
+Which one is correct? It depends. If we are writing a class that simply adds to the parent class behavior, it's best to simply pass along arguments we haven't dealt with. However, if we want precise control over the parent class's behavior, we should determine the argument list explicitly and pass it.
+
+11.10. Where We Are So Far...
+
+So far, we've used the method arrow syntax:
+
+ Class->method(@args);
+
+or the equivalent:
+
+ my $beast = 'Class';
+ $beast->method(@args);
+
+which constructs an argument list of:
+
+ ('Class', @args)
+
+and attempts to invoke:
+
+ Class::method('Class', @args);
+
+However, if Perl doesn't find Class::method, it examines @Class::ISA (recursively) to locate a package that does indeed contain method and then invokes that version instead.
+
+Chapter 12 shows how to distinguish the individual animals by giving them associated properties, called instance variables.
+
+11.11. Exercises
+
+You can find the answers to these exercises in "Answers for Chapter 11" in the Appendix.
+
+11.11.1. Exercise 1 [20 min]
+
+Type in the Animal, Cow, Horse, Sheep, and Mouse class definitions. Make it work with use strict. Use our if you're using a recent enough version of Perl. Your program should ask the user to enter the names of one or more barnyard animals. Create a barnyard with those animals, and have each animal speak once.
+
+11.11.2. Exercise 2 [40 min]
+
+Add a Person class at the same level as Animal, and have both of them inherit from a new class called LivingCreature. Also make the speak method take a parameter of what to say, falling back to the sound (humming for a Person) if no parameter is given. Since this isn't Dr. Dolittle, make sure the animals can't talk. (That is, don't let speak have any parameters for an animal.) Try not to duplicate any code, but be sure to catch likely errors of usage, such as forgetting to define a sound for an animal.
+
+Demonstrate the Person class by invoking a person with nothing to say, and then demonstrate it a second time by invoking a person with something to say.
+

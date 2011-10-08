@@ -1,0 +1,48 @@
+=EN 12. 7. Adding Parameters to a Method
+=CN 12. 7. 给方法导入参数
+=EN Let's train our animals to eat:
+=CN 现在让我们训练我们的动物会吃：
+{ package Animal;
+ sub named {
+ my $class = shift;
+ my $name = shift;
+ bless \$name, $class;
+ }
+ sub name {
+ my $either = shift;
+ ref $either
+ ? $$either # it's an instance, return name
+ : "an unnamed $either"; # it's a class, return generic
+ }
+ sub speak {
+ my $either = shift;
+ print $either->name, ' goes ', $either->sound, "\n";
+ }
+ sub eat {
+ my $either = shift;
+ my $food = shift;
+ print $either->name, " eats $food. \n";
+ }
+}
+{ package Horse;
+ @ISA = qw(Animal);
+ sub sound { 'neigh' }
+}
+{ package Sheep;
+ @ISA = qw(Animal);
+ sub sound { 'baaaah' }
+}
+=EN Now try it out:
+=CN 然后试试：
+my $tv_horse = Horse->named('Mr. Ed');
+$tv_horse->eat('hay');
+Sheep->eat('grass');
+=EN It prints:
+=CN 输出如下：
+Mr. Ed eats hay. 
+an unnamed Sheep eats grass. 
+=EN An instance method with parameters gets invoked with the instance, and then the list of parameters. That first invocation is like:
+=CN 一个带实例方法把实际作为参数, 然后是参数列表. 调用的样子如下：
+Animal::eat($tv_horse, 'hay');
+=EN The instance methods form the Application Programming Interface (API) for an object. Most of the effort involved in designing a good object class goes into the API design, because the API defines how reusable and maintainable the object and its subclasses will be. Don't rush to freeze an API design before you've considered how you (or others) will use the object. 
+=CN 一个实际的方法就是一个对象的应用程序接口（ＡＰＩ）. 一个好的面向对象的设计很大程度上取决于ＡＰＩ设计, 因为ＡＰＩ决定了对象如何被使用和被维护, 以及其子类应该是什么样子的. 不要在还没有考虑好你（或其他人）如何用这个对象前急急忙忙的确定ＡＰＩ设计. 

@@ -22,7 +22,7 @@ $project_name ||= 'sample';
 my $project_dir = "../project/$project_name";
 # ------------------------------------
 
-my $encn_dir = "$project_dir/04_encn_pod";
+my $encn_dir = "$project_dir/format";
 
 my $blank = "\x{0020}";
 open(DEBUG, '>', 'debug.pod');

@@ -1,0 +1,29 @@
+=EN 5. 2. What If That Was the Name?
+=CN 5. 2. 假若它曾经有一个名字
+=EN Typically, all references to a variable are gone before the variable itself. But what if one of the references outlives the variable name? For example, consider this code:
+=CN 一般来说, 引用总是比其指向的变量之前被释放. 但是如果引用比其指向的变量活得长会发生什么情况？比如, 考虑下面的情况：
+my $ref;
+{
+ my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+ $ref = \@skipper;
+ print "$ref->[2]\n"; # 输出jacket\n
+}
+print "$ref->[2]\n"; # 还是输出 jacket\n
+=EN Immediately after we declare the @skipper array, we have one reference to the five-element list. After $ref is initialized, we'll have two, down to the end of the block. When the block ends, the @skipper name disappears. However, this was only one of the two ways to access the data! Thus, the five-element list is still in memory, and $ref still points to that data. 
+=CN 在我们声明@skipper数组之后, 我们有了一个指向这个五个元素的列表的引用. 在$ref被初始化后, 到块结束的地方, 我们会有两个引用. 到块结束, @skipper名子消失了. 然而, 这不过是仅仅访问数据的一个途径而已！ 这样, 这个五个元素的列表依旧在内存里, 而且$ref变量仍然指向这块数据. 
+=EN At this point, the five-element list is in an anonymous array, which is a fancy term for an array without a name. 
+=CN 这个时候, 这个五个元素的列表是个匿名数组－－为没有名字的数组起的一个漂亮名字. 
+=EN Until the value of $ref changes, or $ref itself disappears, we can still use all the dereferencing strategies we used prior to when the name of the array disappeared. In fact, it's still a fully functional array that we can shrink or grow just as we do any other Perl array:
+=CN 直到$ref的值改变, 或者$ref自己消失, 我们依旧可以使用任何我们在前面学到的还原方法, 尽管数组的名字已经不存在了. 实际上, 它仍然是一个不折不扣的数组, 我们可以像对待其它任何Perl数组那样把它拉长和缩小：
+push @$ref, 'sextant'; # add a new provision
+print "$ref->[-1]\n"; # prints sextant\n
+=EN We can even increase the reference count at this point:
+=CN 此时我们甚至还可以增加引用计数：
+my $copy_of_ref = $ref;
+=EN or equivalently:
+=CN 下面也一样：
+my $copy_of_ref = \@$ref;
+=EN The data stays alive until we destroy the last reference:
+=CN 数据一直会存在, 直到我们销毀最后一个引用：
+$ref = undef; # 我还在…
+$copy_of_ref = undef; # 完啰!

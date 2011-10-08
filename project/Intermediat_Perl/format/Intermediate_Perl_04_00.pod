@@ -1,0 +1,6 @@
+=EN Chapter 4. Introduction to References
+=CN 第四章 介绍引用
+=EN References are the basis for complex data structures, object-oriented programming (OOP), and fancy subroutine magic. They're the magic that was added between Perl version 4 and version 5 to make it all possible. 
+=CN 引用是复杂数据结构、面向对象编程和令人眩目的子例程魔术的基础. Perl 版本4和版本5加入的一些功能使这些魔术成为可能. 
+=EN A Perl scalar variable holds a single value. An array holds an ordered list of one or more scalars. A hash holds a collection of scalars as values, keyed by other scalars. Although a scalar can be an arbitrary string, which allows complex data to be encoded into an array or hash, none of the three data types are well suited to complex data interrelationships. This is a job for the reference. Let's look at the importance of references by starting with an example. 
+=CN 一个Perl标量变量保存一个单个值. 一个数组保存一个或多个标量的次序列表. 一个散列保存一个标量作为键值, 另一个标量作为值. 尽管一个标量可以是任意字串, 可以被复杂数据结构用来编入一个数组或一个散列, 但是三种数据类型中没有一个适合用来做复杂数据关系. 这就是引用的工作. 我们由一个例子来探查一下引用的重要性. 

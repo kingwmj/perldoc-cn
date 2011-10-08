@@ -1,0 +1,24 @@
+=EN 12. 4. How to Build a Horse
+=CN 12. 4. 如何创建Horse类
+=EN If we constructed all our horses by hand, we'd most likely make mistakes from time to time. Making the "inside guts" of a Horse visible also violates one of the principles of OOP. That's good if we're a veterinarian but not if we just like to own horses. We let the Horse class build a new horse:
+=CN 如果我们手工创建所有的马, 那我们很可能一次次犯错. 而且暴露Horse内部的信息也违反了面向对象编程的基本原则. 我们不是兽医, 我们只想拥有一匹马而已. 我们用Horse类创建一个新的马：
+{ package Horse;
+ @ISA = qw(Animal);
+ sub sound { 'neigh' }
+ sub name {
+ my $self = shift;
+ $$self;
+ }
+ sub named {
+ my $class = shift;
+ my $name = shift;
+ bless \$name, $class;
+ }
+}
+=EN Now, with the new named method, we build a Horse:
+=CN 现在, 用新的named方法, 我们来创建一个Horse:
+my $tv_horse = Horse->named('Mr. Ed');
+=EN We're back to a class method, so the two arguments to Horse::named are "Horse" and "Mr. Ed". The bless operator not only blesses $name, it also returns the reference to $name, so that's fine as a return value. And that's how we build a horse. 
+=CN 参考类方法, 所以有两个参数传给Horse::named, "Horse"和"Mr. Ed". Bless操作符不仅"祝福"了$name, 也返回了$name的引用, 所以返回值是对的. 我们就是这样创建一个horse对象. 
+=EN We called the constructor named here so it quickly denotes the constructor's argument as the name for this particular Horse. We can use different constructors with different names for different ways of "giving birth" to the object (such as recording its pedigree or date of birth). However, we'll find that most people use a single constructor named new, with various ways of interpreting the arguments to new. Either style is fine, as long as we document our particular way of giving birth to an object. Most core and CPAN modules use new, with notable exceptions, such as DBI's DBI->connect( ). It's really up to the author. 
+=CN 我们调用构建函数named来快速地把参数作为马的名字. 我们可以用不同名字的构建函数来给对象加上生日（如谱系记录或生日）. 然而, 大多数人喜欢用new来命名构建函数, 并对不同的参数以不同的解释. 只要能太到目的, 两种方法都可以. CPAN上大多数模块用new, 也有些是例外, 比如DBI模块的DBI->connect(). 这根据开发者的习俗. 

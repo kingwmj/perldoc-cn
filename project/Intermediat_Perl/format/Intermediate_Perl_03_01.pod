@@ -1,0 +1,12 @@
+=EN 3. 1. The Standard Distribution
+=CN 3. 1. 标准发行版
+=EN Perl comes with many of the popular modules already. Indeed, most of the 50+ MB of the most recent distribution are from modules. In October 1996, Perl 5. 003_07 had 98 modules. Today, at the beginning of 2006, Perl 5. 8. 8 has 359. [*] Indeed, this is one of the advantages of Perl: it already comes with a lot of stuff that you need to make useful and complex programs without doing a lot of work yourself. 
+=CN Perl发行版已经自带了最受欢迎的模块. 实际上, 最近的发行版中有超过50兆模块. 于1996年十月发布的Perl 5. 003_07有98个模块. 现如今, 2006年的年初发行的Perl 5. 8. 8有359个模块［*］. 这实在是Perl的优点之一：许多有用且复杂的程序用不着你动手, 发行版里已经给你带来了. 
+=EN [*] After you make it through this book, you should be able to use Module::CoreList to discover that count for yourself. That's what we did to get those numbers, after all. 
+=CN [*] 在读完本书之后, 你就能用Module::CoreList模块来自己计算一下共有多少模块. 毕竟, 我们就是用这种方法来得到模块总数. 
+=EN Throughout this book, we'll try to identify which modules comes with Perl (and in most cases, with which version they started coming with Perl). We'll call these "core modules " or note that they're in "the standard distribution. " If you have Perl, you should have these modules. Since we're using Perl 5. 8. 7 as we write this, we'll assume that's the current version of Perl. 
+=CN 在这本书里, 我们会向你标出哪些模块是Perl自带的（而且在大多数情况下, 会说明是从哪个版本开始收入Perl发行版中的）. 我们把它们称为"核心模块", 或者标注它们是在"标准发行版"中的. 如果你安装了Perl, 那你就可以用这些模块. 因为我们写这本书的时候是用的Perl 5. 8. 7版, 所以我们也假定这是Perl的当前版本. 
+=EN As you develop your code, you may want to consider if you want to use only core modules, so that you can be sure that anyone with Perl will have that module as long as they have at least the same version as you. [] We'll avoid that debate here, mostly because we love CPAN too much to do without it. 
+=CN 当你在开发你的程序的时候, 你可能要考虑是否你应该仅仅用核心模块. 这样的话你就能保证任何用Perl的人都能执行你的代码, 只要他们的Perl版本同你相同. ［＋］这里我们也不多费口舌了, 主要是因为我们太喜欢CPAN了, 不用它就舍不得. 
+=EN [+] Although we don't go into here, the Module::CoreList module has the lists of which modules came with which versions of Perl, along with other historical data. 
+=CN [＋] 尽管还没深入到这一步, 还是说一下. 模块Module::CoreList有各个Perl版本所带的模块的列表, 以及其它的历史数据. 

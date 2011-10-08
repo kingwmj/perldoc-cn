@@ -1,0 +1,26 @@
+=EN 10. 4. Using require
+=CN 10. 4. 使用 require
+=EN Suppose navigation. pm itself also pulls in drop_anchor. pm for some common navigation task. Perl reads the file once directly and then again while processing the navigation package. This needlessly redefines drop_anchor( ). Worse than that, if we have warnings enabled, [*] we'll get a warning from Perl that we've redefined the subroutine, even if it's the same definition. 
+=CN 假定navigation. pm自己, 因为一些导航任务而把drop_anchor. pm引进自己的模块里. Perl在处理导航程序包的时候将文件一次直接读入. 在这次重新定义drop_anchor()是不必要的. 更糟的是, 如果我们把警告打开, 我们会从Perl得到一个警告信息, 说我们已经重新定义子程序, 尽管是一模一样的定义. 
+=EN [*] You are using warnings, right? You can enable them with either -w or use warnings;. 
+=CN [*] 你开启警告是吗？你可以用-w开关, 以及use warnings来开始警告;
+=EN We need a mechanism that tracks which files we've brought in and then brings them in only once. Perl has such an operation, called require. Change the previous code to simply:
+=CN 我们需要一种机制来跟踪哪些文件我们已经调入了, 而且应该只把它们调入一次. Perl提供了这个功能, 叫作require. 把前面的代码改成如下就可以了：
+require 'drop_anchor. pm';
+require 'navigation. pm';
+=EN The require operator keeps track of the files Perl has read. [] Once Perl has processed a file successfully, it simply ignores any further require operations on that same file. This means that even if navigation. pm contains require "drop_anchor. pm", Perl imports the drop_anchor. pm file exactly once, and we'll get no annoying error messages about duplicate subroutine definitions (see Figure 10-2). Most importantly, we'll also save time by not processing the file more than once. 
+=CN require操作符会在Perl每次读入文件的时候进行跟踪[+] 一旦Perl成功加载了一个文件, 它就会忽略之后require引入相同的文件. 这意味着就算navigation. pm包括require "drop_anchor. pm", Perl只会把drop_anchor. pm引入一次, 我们就不会收到烦人的警告重复定义子程序的消息了（见图10－2）. 更重要的是, 我们同样节省时间, 不必多次加载文件了. 
+=EN In the %INC hash, as described in the entry for require in the perlfunc documentation. 
+=CN 在%INC散列中, 正如perlfunc文档中require条目所描述的一样. 
+=EN Figure 10-2. Once Perl brings in the drop_anchor. pm file, it ignores another attempt to require it
+=CN 图10-2. 一旦Perl调入drop_anchor. pm文件, 它会忽略其它相同文件的导入
+=EN The require operator also has two additional features:
+=CN require操作符同样有以下两个功能：
+=EN Any syntax error in the required file causes the program to die; thus, the many die $@ if $@ statements are unnecessary. 
+=CN 任何语法错误会导致程序终止; 所以许多 die $@ if $@语句在这里是不需要的. 
+=EN The last expression evaluated in the file must return a true value. 
+=CN 文件最后一个求值必须返回真值
+=EN Because of the second point, most files evaluated for require have a cryptic 1; as their last line of code. This ensures that the last evaluated expression is, in fact, true. Try to carry on this tradition as well. 
+=CN 正因为第二点, 所以大多数给require导入的文件最后求值总有个神秘的1. 这保证了最后的表达式总是1. 努力保持这个传统吧. 
+=EN Originally, the mandatory true value was intended as a way for an included file to signal to the invoker that the code was processed successfully and that no error condition existed. However, nearly everyone has adopted the die if ... strategy instead, deeming the "last expression evaluated is false" strategy a mere historic annoyance. 
+=CN 一开始, 强制性的返回真值是给导入文件的一个方法, 给调用者一个信号－－代码被成功处理且没有错误. 然而, 大家都采用die if …的策略, 推定的"最后表达式的计算是错误的"策略只是历史的烦扰. 

@@ -1,0 +1,523 @@
+Chapter 6. Manipulating Complex Data Structures
+
+Now that you've seen the basics of references, let's look at additional ways to manipulate complex data. We'll start by using the debugger to examine complex data structures and then use Data::Dumper to show the data under programmatic control. Next, you'll learn to store and retrieve complex data easily and quickly using Storable, and finally we'll wrap up with a review of grep and map and see how they apply to complex data.
+
+6.1. Using the Debugger to View Complex Data
+
+The Perl debugger can display complex data easily. For example, let's single-step through one version of the byte-counting program from Chapter 5:
+
+ my %total_bytes;
+  while (<>) {
+   my ($source, $destination, $bytes) = split;
+   $total_bytes{$source}{$destination} += $bytes;
+  }
+  for my $source (sort keys %total_bytes) {
+   for my $destination (sort keys %{ $total_bytes{$source} }) {
+     print "$source => $destination:",
+      " $total_bytes{$source}{$destination} bytes\n";
+   }
+   print "\n";
+  }
+
+Here's the data we'll use to test it:
+
+ professor.hut gilligan.crew.hut 1250
+ professor.hut lovey.howell.hut 910
+ thurston.howell.hut lovey.howell.hut 1250
+ professor.hut lovey.howell.hut 450
+ ginger.girl.hut professor.hut 1218
+ ginger.girl.hut maryann.girl.hut 199
+
+We can do this a number of ways. One of the easiest is to invoke Perl with a -d switch on the command line:
+
+ myhost% perl -d bytecounts bytecounts-in
+
+ Loading DB routines from perl5db.pl version 1.19
+ Editor support available.
+
+ Enter h or 'h h' for help, or 'man perldebug' for more help.
+
+ main::(bytecounts:2):        my %total_bytes;
+  DB<1> s
+ main::(bytecounts:3):        while (<>) {
+  DB<1> s
+ main::(bytecounts:4):          my ($source, $destination, $bytes) = split;
+  DB<1> s
+ main::(bytecounts:5):          $total_bytes{$source}{$destination} += $bytes;
+  DB<1> x $source, $destination, $bytes
+ 0  'professor.hut'
+ 1  'gilligan.crew.hut'
+ 2  1250
+
+If you're playing along at home, be aware that each new release of the debugger works differently than any other, so your screen probably won't look exactly like ours. Also, if you get stuck at any time, type h for help or look at perldoc perldebug.
+
+The debugger shows each line of code before it executes it. That means that, at this point, we're about to invoke the autovivification, and we've got our keys established. The s command single-steps the program, while the x command dumps a list of values in a nice format. We can see that $source, $destination, and $bytes are correct, and now it's time to update the data:
+
+ DB<2> s
+   main::(bytecounts:3):        while (<>) {
+
+We've created the hash entries through autovivification. Let's see what we've got:
+
+ DB<2> x \%total_bytes
+    0  HASH(0x132dc)
+  'professor.hut' => HASH(0x37a34)
+     'gilligan.crew.hut' => 1250
+
+When we give x a hash reference, it dumps the entire contents of the hash, showing the key/value pairs. If any of the values are also hash references, it dumps those as well, recursively. What we'll see is that the %total_bytes hash has a single key of professor.hut, whose corresponding value is another hash reference. The referenced hash contains a single key of gilligan.crew.hut, with a value of 1250, as expected.
+
+Let's see what happens just after the next assignment:
+
+ DB<3> s
+  main::(bytecounts:4):          my ($source, $destination, $bytes) = split;
+ DB<3> s
+  main::(bytecounts:5):          $total_bytes{$source}{$destination} += $bytes;
+ DB<3> x $source, $destination, $bytes
+  0  'professor.hut'
+  1  'lovey.howell.hut'
+  2  910
+ DB<4> s
+  main::(bytecounts:3):        while (<>) {
+ DB<4> x \%total_bytes
+  0  HASH(0x132dc)
+ 'professor.hut' => HASH(0x37a34)
+    'gilligan.crew.hut' => 1250
+    'lovey.howell.hut' => 910
+
+Now we've added bytes flowing from professor.hut to lovey.howell.hut. The top-level hash hasn't changed, but the second-level hash has added a new entry. Let's continue:
+
+ DB<5> s
+  main::(bytecounts:4):          my ($source, $destination, $bytes) = split;
+ DB<6> s
+  main::(bytecounts:5):          $total_bytes{$source}{$destination} += $bytes;
+ DB<6> x $source, $destination, $bytes
+  0  'thurston.howell.hut'
+  1  'lovey.howell.hut'
+  2  1250
+ DB<7> s
+  main::(bytecounts:3):        while (<>) {
+ DB<7> x \%total_bytes
+  0  HASH(0x132dc)
+ 'professor.hut' => HASH(0x37a34)
+    'gilligan.crew.hut' => 1250
+    'lovey.howell.hut' => 910
+ 'thurston.howell.hut' => HASH(0x2f9538)
+    'lovey.howell.hut' => 1250
+
+Ah, now it's getting interesting. A new entry in the top-level hash has a key of thurston.howell.hut, and a new hash reference, autovivified initially to an empty hash. Immediately after the new empty hash was put in place, a new key/value pair was added, indicating 1250 bytes transferred from thurston.howell.hut to lovey.howell.hut. Let's step some more:
+
+ DB<8> s
+  main::(bytecounts:4):          my ($source, $destination, $bytes) = split;
+ DB<8> s
+  main::(bytecounts:5):          $total_bytes{$source}{$destination} += $bytes;
+ DB<8> x $source, $destination, $bytes
+  0  'professor.hut'
+  1  'lovey.howell.hut'
+  2  450
+ DB<9> s
+  main::(bytecounts:3):        while (<>) {
+ DB<9> x \%total_bytes
+  0  HASH(0x132dc)
+ 'professor.hut' => HASH(0x37a34)
+    'gilligan.crew.hut' => 1250
+    'lovey.howell.hut' => 1360
+ 'thurston.howell.hut' => HASH(0x2f9538)
+    'lovey.howell.hut' => 1250
+
+Now we're adding in some more bytes from professor.hut to lovey.howell.hut, reusing the existing value place. Nothing too exciting there. Let's keep stepping:
+
+ DB<10> s
+  main::(bytecounts:4):          my ($source, $destination, $bytes) = split;
+ DB<10> s
+  main::(bytecounts:5):          $total_bytes{$source}{$destination} += $bytes;
+ DB<10> x $source, $destination, $bytes
+  0  'ginger.girl.hut'
+  1  'professor.hut'
+  2  1218
+ DB<11> s
+  main::(bytecounts:3):        while (<>) {
+ DB<11> x \%total_bytes
+  0  HASH(0x132dc)
+ 'ginger.girl.hut' => HASH(0x297474)
+    'professor.hut' => 1218
+ 'professor.hut' => HASH(0x37a34)
+    'gilligan.crew.hut' => 1250
+    'lovey.howell.hut' => 1360
+ 'thurston.howell.hut' => HASH(0x2f9538)
+    'lovey.howell.hut' => 1250
+
+This time, we added a new source, ginger.girl.hut. Notice that the top level hash now has three elements, and each element has a different hash reference value. Let's step some more:
+
+ DB<12> s
+  main::(bytecounts:4):          my ($source, $destination, $bytes) = split;
+ DB<12> s
+  main::(bytecounts:5):          $total_bytes{$source}{$destination} += $bytes;
+ DB<12> x $source, $destination, $bytes
+  0  'ginger.girl.hut'
+  1  'maryann.girl.hut'
+  2  199
+ DB<13> s
+  main::(bytecounts:3):        while (<>) {
+ DB<13> x \%total_bytes
+  0  HASH(0x132dc)
+ 'ginger.girl.hut' => HASH(0x297474)
+    'maryann.girl.hut' => 199
+    'professor.hut' => 1218
+ 'professor.hut' => HASH(0x37a34)
+    'gilligan.crew.hut' => 1250
+    'lovey.howell.hut' => 1360
+ 'thurston.howell.hut' => HASH(0x2f9538)
+    'lovey.howell.hut' => 1250
+
+Now we've added a second destination to the hash that records information for all bytes originating at ginger.girl.hut. Because that was the final line of data (in this run), a step brings us down to the lower foreach loop:
+
+ DB<14> s
+  main::(bytecounts:8):        for my $source (sort keys %total_bytes) {
+
+Even though we can't directly examine the list value from inside those parentheses, we can display it:
+
+ DB<14> x sort keys %total_bytes
+    0  'ginger.girl.hut'
+    1  'professor.hut'
+    2  'thurston.howell.hut'
+
+This is the list the foreach now scans. These are all the sources for transferred bytes seen in this particular logfile. Here's what happens when we step into the inner loop:
+
+ DB<15> s
+    main::(bytecounts:9):     for my $destination (sort keys %{ $total_bytes{$source} }) {
+
+At this point, we can determine from the inside out exactly what values will result from the list value from inside the parentheses. Let's look at them:
+
+ DB<15> x $source
+  0  'ginger.girl.hut'
+ DB<16> x $total_bytes{$source}
+  0  HASH(0x297474)
+ 'maryann.girl.hut' => 199
+ 'professor.hut' => 1218
+ DB<18> x keys %{ $total_bytes{$source } }
+  0  'maryann.girl.hut'
+  1  'professor.hut'
+ DB<19> x sort keys %{ $total_bytes{$source } }
+  0  'maryann.girl.hut'
+  1  'professor.hut'
+
+Note that dumping $total_bytes{$source} shows that it was a hash reference. Also, the sort appears not to have done anything, but the output of keys is not necessarily in a sorted order. The next step finds the data:
+
+ DB<20> s
+  main::(bytecounts:10):            print "$source => $destination:",
+  main::(bytecounts:11):              " $total_bytes{$source}{$destination} bytes\n";
+ DB<20> x $source, $destination
+  0  'ginger.girl.hut'
+  1  'maryann.girl.hut'
+ DB<21> x $total_bytes{$source}{$destination}
+  0  199
+
+As we can see with the debugger, we can easily show the data, even structured data, to help us understand our program.
+
+6.2. Viewing Complex Data with Data::Dumper
+
+Another way to visualize a complex data structure rapidly is to dump it. A particularly nice dumping package is included in the Perl core distribution, called Data::Dumper. Let's replace the last half of the byte-counting program with a simple call to Data::Dumper:
+
+ use Data::Dumper;
+
+ my %total_bytes;
+ while (<>) {
+   my ($source, $destination, $bytes) = split;
+   $total_bytes{$source}{$destination} += $bytes;
+ }
+
+ print Dumper(\%total_bytes);
+
+The Data::Dumper module defines the Dumper subroutine. This subroutine is similar to the x command in the debugger. We can give Dumper one or more values, and Dumper turns those values into a printable string. The difference between the debugger's x command and Dumper, however, is that the string generated by Dumper is Perl code:
+
+ myhost% perl bytecounts2 <bytecounts-in
+  $VAR1 = {
+           'thurston.howell.hut' => {
+                                      'lovey.howell.hut' => 1250
+                                    },
+           'ginger.girl.hut' => {
+                                  'maryann.girl.hut' => 199,
+                                  'professor.hut' => 1218
+                                },
+           'professor.hut' => {
+                                'gilligan.crew.hut' => 1250,
+                                'lovey.howell.hut' => 1360
+                              }
+         };
+ myhost%
+
+The Perl code is fairly understandable; it shows that we have a reference to a hash of three elements, with each value of the hash being a reference to a nested hash. We can evaluate this code and get a hash that's equivalent to the original hash. However, if you're thinking about doing this in order to have a complex data structure persist from one program invocation to the next, please keep reading.
+
+Data::Dumper, like the debugger's x command, handles shared data properly. For example, go back to that "leaking" data from Chapter 5:
+
+ use Data::Dumper;
+ $Data::Dumper::Purity = 1; # declare possibly self-referencing structures
+ my @data1 = qw(one won);
+ my @data2 = qw(two too to);
+ push @data2, \@data1;
+ push @data1, \@data2;
+ print Dumper(\@data1, \@data2);
+
+Here's the output from this program:
+
+ $VAR1 = [
+          'one',
+          'won',
+          [
+            'two',
+            'too',
+            'to',
+            [  ]
+          ]
+        ];
+ $VAR1->[2][3] = $VAR1;
+ $VAR2 = $VAR1->[2];
+
+Notice how we've created two different variables now, since there are two parameters to Dumper. The element $VAR1 corresponds to a reference to @data1, while $VAR2 corresponds to a reference to @data2. The debugger shows the values similarly:
+
+ DB<1> x \@data1, \@data2
+    0  ARRAY(0xf914)
+ 0  'one'
+ 1  'won'
+ 2  ARRAY(0x3122a8)
+    0  'two'
+    1  'too'
+    2  'to'
+    3  ARRAY(0xf914)
+       -> REUSED_ADDRESS
+    1  ARRAY(0x3122a8)
+ -> REUSED_ADDRESS
+
+Note that the phrase REUSED_ADDRESS indicates that some parts of the data are actually references we've already seen.
+
+6.3. YAML
+
+Data::Dumper is not the only game on the island, though. Brian Ingerson came up with Yet Another Markup Language (YAML) to provide a more readable (and more compact) dump. It works in the same way as Data::Dumper. We'll see more about YAML when we talk about modules later, so we won't say much about it here.
+
+From the earlier example, we plug in YAML where we had Data::Dumper, and use Dump( ) where we had Dumper( ).
+
+ use YAML;
+
+ my %total_bytes;
+
+ while (<>) {
+        my ($source, $destination, $bytes) = split;
+        $total_bytes{$source}{$destination} += $bytes;
+        }
+
+ print Dump(\%total_bytes);
+
+When you use the same data from the earlier example, you get this output:
+
+ --- #YAML:1.0
+ ginger.girl.hut:
+  maryann.girl.hut: 199
+  professor.hut: 1218
+ professor.hut:
+  gilligan.crew.hut: 1250
+  lovey.howell.hut: 1360
+ thurston.howell.hut:
+  lovey.howell.hut: 1250
+
+That's a lot easier to read because it takes up less space on the screen, which can be really handy when you have deeply nested data structures.
+
+6.4. Storing Complex Data with Storable
+
+We can take the output of Data::Dumper's Dumper routine, place it into a file, and then load the file to a different program. When we evaluate the code as Perl code, we end up with two package variables, $VAR1 and $VAR2, that are equivalent to the original data. This is called marshaling the data: converting complex data into a form that we can write to a file as a stream of bytes for later reconstruction.
+
+However, another Perl core module is much better suited for marshaling: Storable. It's better suited because compared to Data::Dumper, Storable produces smaller and faster-to-process files. (The Storable module is standard in recent versions of Perl, but you can always install it from the CPAN if it's missing.)
+
+The interface is similar to using Data::Dumper, except we must put everything into one reference. For example, let's store the mutually referencing data structures:
+
+ use Storable;
+ my @data1 = qw(one won);
+ my @data2 = qw(two too to);
+ push @data2, \@data1;
+ push @data1, \@data2;
+ store [\@data1, \@data2], 'some_file';
+
+The file produced by this step is under 100 bytes, which is quite a bit shorter than the equivalent Data::Dumper output. It's also much less readable for humans. It's easy for Storable to read, as you'll soon see.[*] Next, fetch the data, again using the Storable module. The result will be a single array reference. We dump the result to see if it stored the right values:
+
+[*] The format used by Storable is architecture byte-order dependent by default. Its documentation shows how to create byte-order-independent storage files.
+
+ use Storable;
+ my $result = retrieve 'some_file';
+ use Data::Dumper;
+ $Data::Dumper::Purity = 1;
+ print Dumper($result);
+
+Here's the result:
+
+ $VAR1 = [
+          [
+            'one',
+            'won',
+            [
+              'two',
+              'too',
+              'to',
+              [  ]
+            ]
+          ],
+          [  ]
+        ];
+ $VAR1->[0][2][3] = $VAR1->[0];
+ $VAR1->[1] = $VAR1->[0][2];
+
+This is functionally the same as the original data structure. We're now looking at the two array references within one top-level array. To get something closer to what we saw before, we can be more explicit about the return value:
+
+ use Storable;
+ my ($arr1, $arr2) = @{ retrieve 'some_file' };
+ use Data::Dumper;
+ $Data::Dumper::Purity = 1;
+ print Dumper($arr1, $arr2);
+
+or equivalently:
+
+ use Storable;
+ my $result = retrieve 'some_file';
+ use Data::Dumper;
+ $Data::Dumper::Purity = 1;
+ print Dumper(@$result);
+
+and we'll get:
+
+ $VAR1 = [
+          'one',
+          'won',
+          [
+            'two',
+            'too',
+            'to',
+            [  ]
+          ]
+        ];
+ $VAR1->[2][3] = $VAR1;
+ $VAR2 = $VAR1->[2];
+
+just as we did in the original program. With Storable, we can store data and retrieve it later. More information on Storable can be found in perldoc Storable, as always.
+
+6.5. Using the map and grep Operators
+
+As the data structures become more complex, it helps to have higher-level constructs deal with common tasks such as selection and transformation. In this regard, Perl's grep and map operators are worth mastering.
+
+6.6. Applying a Bit of Indirection
+
+Some problems that may appear very complex are actually simple once we've seen a solution or two. For example, suppose we want to find the items in a list that have odd digit sums but don't want the items themselves. What we want to know is where they occurred in the original list.
+
+All that's required is a bit of indirection .[*] First, we have a selection problem, so we use a grep. Let's not grep the values themselves but the index for each item:
+
+[*] A famous computing maxim states that "there is no problem so complex that it cannot be solved with appropriate additional layers of indirection." Of course, with indirection comes obfuscation, so there's got to be a magic middle ground somewhere.
+
+ my @input_numbers = (1, 2, 4, 8, 16, 32, 64);
+ my @indices_of_odd_digit_sums = grep {
+   ...
+ } 0..$#input_numbers;
+
+Here, the expression 0..$#input_numbers will be a list of indices for the array. Inside the block, $_ is a small integer, from 0 to 6 (seven items total). Now, we don't want to decide whether $_ has an odd digit sum. We want to know whether the array element at that index has an odd digit sum. Instead of using $_ to get the number of interest, use $input_numbers[$_]:
+
+ my @indices_of_odd_digit_sums = grep {
+  my $number = $input_numbers[$_];
+  my $sum;
+  $sum += $_ for split //, $number;
+  $sum % 2;
+ } 0..$#input_numbers;
+
+The result will be the indices at which 1, 16, and 32 appear in the list: 0, 4, and 5. We could use these indices in an array slice to get the original values again:
+
+ my @odd_digit_sums = @input_numbers[ @indices_of_odd_digit_sums ];
+
+The strategy here for an indirect grep or map is to think of the $_ values as identifying a particular item of interest, such as the key in a hash or the index of an array, and then use that identification within the block or expression to access the actual values.
+
+Here's another example: select the elements of @x that are larger than the corresponding value in @y. Again, we'll use the indices of @x as our $_ items:
+
+ my @bigger_indices = grep {
+  if ($_ > $#y or $x[$_] > $y[$_]) {
+    1; # yes, select it
+  } else {
+    0; # no, don't select it
+  }
+ } 0..$#x;
+ my @bigger = @x[@bigger_indices];
+
+In the grep, $_ varies from 0 to the highest index of @x. If that element is beyond the end of @y, we automatically select it. Otherwise, we look at the individual corresponding values of the two arrays, selecting only the ones that meet our match.
+
+However, this is a bit more verbose than it needs to be. We could simply return the boolean expression rather than a separate 1 or 0:
+
+ my @bigger_indices = grep {
+  $_ > $#y or $x[$_] > $y[$_];
+ } 0..$#x;
+ my @bigger = @x[@bigger_indices];
+
+More easily, we can skip the step of building the intermediate array by simply returning the items of interest with a map:
+
+ my @bigger = map {
+  if ($_ > $#y or $x[$_] > $y[$_]) {
+    $x[$_];
+  } else {
+    (  );
+  }
+ } 0..$#x;
+
+If the index is good, return the resulting array value. If the index is bad, return an empty list, making that item disappear.
+
+6.7. Selecting and Altering Complex Data
+
+We can use these operators on more complex data. Taking the provisions list from Chapter 5:
+
+ my %provisions = (
+  'The Skipper'   => [qw(blue_shirt hat jacket preserver sunscreen)],
+  'The Professor' => [qw(sunscreen water_bottle slide_rule radio)  ],
+  'Gilligan'      => [qw(red_shirt hat lucky_socks water_bottle)   ],
+ );
+
+In this case, $provisions{"The Professor"} gives an array reference of the provisions brought by the Professor, and $provisions{"Gilligan"}[-1] gives the last item Gilligan thought to bring.
+
+We run a few queries against this data. Who brought fewer than five items?
+
+ my @packed_light = grep @{ $provisions{$_} } < 5, keys %provisions;
+
+In this case, $_ is the name of a person. We take that name, look up the array reference of the provisions for that person, dereference that in a scalar context to get the count of provisions, and then compare it to 5. And wouldn't you know it; the only name is Gilligan.
+
+Here's a trickier one. Who brought a water bottle?
+
+ my @all_wet = grep {
+  my @items = @{ $provisions{$_} };
+  grep $_ eq 'water_bottle', @items;
+ } keys %provisions;
+
+Starting with the list of names again (keys %provisions), we pull up all the packed items first and then use that list in an inner grep to count the number of those items that equal water_bottle. If the count is 0, there's no bottle, so the result is false for the outer grep. If the count is nonzero, we have a bottle, so the result is true for the outer grep. Now we see that the Skipper will be a bit thirsty later, without any relief.
+
+We can also perform transformations. For example, turn this hash into a list of array references, with each array containing two items. The first is the original person's name; the second is a reference to an array of the provisions for that person:
+
+ my @remapped_list = map {
+   [ $_ => $provisions{$_} ];
+ } keys %provisions;
+
+The keys of %provisions are names of the people. For each name, we construct a two-element list of the name and the corresponding provisions array reference. This list is inside an anonymous array constructor, so we get back a reference to a newly created array for each person. Three names in; three references out.[*] Or, let's go a different way. Turn the input hash into a series of references to arrays. Each array will have a person's name and one of the items they brought:
+
+[*] If we had left the inner brackets off, we'd end up with six items out. That's not very useful, unless we're creating a different hash from them.
+
+ my @person_item_pairs = map {
+   my $person = $_;
+   my @items = @{ $provisions{$person} };
+   map [$person => $_], @items;
+ } keys %provisions;
+
+Yes, a map within a map. The outer map selects one person at a time. We save this name in $person, and then we extract the item list from the hash. The inner map walks over this item list, executing the expression to construct an anonymous array reference for each item. The anonymous array contains the person's name and the provision item.
+
+We had to use $person here to hold the outer $_ temporarily. Otherwise, we can't refer to both temporary values for the outer map and the inner map.
+
+6.8. Exercises
+
+You can find the answers to these exercises in "Answers for Chapter 6" in the Appendix.
+
+6.8.1. Exercise 1 [20 min]
+
+The program from Exercise 2 in Chapter 5 needs to read the entire datafile each time it runs. However, the Professor has a new router logfile each day and doesn't want to keep all that data in one giant file that takes longer and longer to process.
+
+Fix up that program to keep the running totals in a datafile so the Professor can simply run it on each day's logs to get the new totals.
+
+6.8.2. Exercise 2 [5 min]
+
+To make it really useful, what other features should be added to that program? You don't need to implement them!
+

@@ -63,7 +63,7 @@ my %dict_hash = dict2hash($file_dict_common, $file_dict_simple);
 my (%wordlist);
 foreach my $file ( @filelist ) {
     # 进度提示
-	say "Starting parse file $file ...";
+	say "Parse $file ...";
     my $text = read_file $file;
 
     # 提取所有不需要翻译字符串列表

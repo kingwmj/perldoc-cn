@@ -1,878 +1,1355 @@
-=EN F<perlmodstyle.pod> - Perl modules: how to write modules with style
-=CN-CORE F<perlmodstyle.pod> - Perl 模块： 如何有风格的写模块
-=CN-PROJ 
-
-=EN F<perldata.pod> - Perl data structures
-=CN-CORE F<perldata.pod> - Perl 数据结构
-=CN-PROJ 
-
-=EN F<perlrun.pod> - Perl execution and options
-=CN-CORE F<perlrun.pod> - Perl 执行和选项
-=CN-PROJ 
-
-=EN Over the years, Perl has grown into a general-purpose programming language.
-=CN-CORE 经过多年以后，Perl已经成长为一种多用途的语言。
-=CN-PROJ 
-
-=EN F<perlfaq9.pod> - Networking
-=CN-CORE F<perlfaq9.pod> - 利用网络通信
-=CN-PROJ 
-
-=EN F<perlboot.pod> - Perl OO tutorial for beginners
-=CN-CORE F<perlboot.pod> - Perl 为初学者准备的面向对象编程介绍
-=CN-PROJ 
-
-=EN F<perldebtut.pod> - Perl debugging tutorial
-=CN-CORE F<perldebtut.pod> - Perl 调试指南
-=CN-PROJ 
-
-=EN F<perlreftut.pod> - Perl references short introduction
-=CN-CORE F<perlreftut.pod> - Perl 引用的简短介绍
-=CN-PROJ 
-
-=EN F<perlpodspec.pod> - Perl plain old documentation format specification
-=CN-CORE F<perlpodspec.pod> - Perl POD 格式定义
-=CN-PROJ 
-
-=EN F<perlfaq1.pod> - General Questions About Perl
-=CN-CORE F<perlfaq1.pod> - 关于 Perl 通常的问题
-=CN-PROJ 
-
-=EN It quickly became a good language for many system management tasks.
-=CN-CORE 她很快变成一门许多系统管理员完成任务的利器。
-=CN-PROJ 
-
-=EN F<perlmodlib.pod> - Perl modules: how to write and use
-=CN-CORE F<perlmodlib.pod> - Perl 模块： 如何写和使用
-=CN-PROJ 
-
-=EN F<perlfaq8.pod> - System Interaction
-=CN-CORE F<perlfaq8.pod> - 系统交互
-=CN-PROJ 
-
-=EN F<perlperf.pod> - Perl Performance and Optimization Techniques
-=CN-CORE F<perlperf.pod> - Perl 性能和优化技术
-=CN-PROJ 
-
-=EN Perl officially stands for Practical Extraction and Report Language, except when it doesn't.
-=CN-CORE Perl语言官方提供的意思是，实用摘录和报表语言的缩写，但其领域远不止如此。
-=CN-PROJ 
-
-=EN F<perlfaq5.pod> - Files and Formats
-=CN-CORE F<perlfaq5.pod> - 文件和格式
-=CN-PROJ 
-
-=EN F<perlbot.pod> - Perl OO tricks and examples
-=CN-CORE F<perlbot.pod> - Perl 面向对象的一些技巧和实例
-=CN-PROJ 
-
-=EN F<perldiag.pod> - Perl diagnostic messages
-=CN-CORE F<perldiag.pod> - Perl 诊断信息
-=CN-PROJ 
-
-=EN The F<perldoc> program gives you access to all the documentation that comes with Perl.
-=CN-CORE F<perldoc>程序为您提供了访问所有Perl文档的入口.
-=CN-PROJ 
-
-=EN F<perlsub.pod> - Perl subroutines
-=CN-CORE F<perlsub.pod> - Perl 子程序
-=CN-PROJ 
-
-=EN FILES
-=CN-CORE 文件
-=CN-PROJ 
-
-=EN F<perltrap.pod> - Perl traps for the unwary
-=CN-CORE F<perltrap.pod> - Perl 对于粗心者的陷阱
-=CN-PROJ 
-
-=EN F<perl.pod> - Perl overview (this section)
-=CN-CORE F<perl.pod> - Perl 预览（你在看的就是）
-=CN-PROJ 
-
-=EN F<perldsc.pod> - Perl data structures intro
-=CN-CORE F<perldsc.pod> - Perl 数据结构介绍
-=CN-PROJ 
-
-=EN AVAILABILITY
-=CN-CORE 有效性
-=CN-PROJ 
-
-=EN F<perlunitut.pod> - Perl Unicode tutorial
-=CN-CORE F<perlunitut.pod> - Perl Unicode 教程
-=CN-PROJ 
-
-=EN F<perlrequick.pod> - Perl regular expressions quick start
-=CN-CORE F<perlrequick.pod> - Perl 正则表达式预览
-=CN-PROJ 
-
-=EN You can get more documentation, tutorials and community support online at L<http://www.perl.org/>.
-=CN-CORE 如果您想获得更多的文档支持，教程指南和社区在线支持，请访问L<http：//www.perl.org/>.
-=CN-PROJ 
-
-=EN F<perltoc.pod> - Perl documentation table of contents
-=CN-CORE F<perltoc.pod> - Perl 文档的索引目录
-=CN-PROJ 
-
-=EN F<perllol.pod> - Perl data structures: arrays of arrays
-=CN-CORE F<perllol.pod> - Perl 数据结构： 数组的数组
-=CN-PROJ 
-
-=EN F<perluniintro.pod> - Perl Unicode introduction
-=CN-CORE F<perluniintro.pod> - Perl Unicode 介绍
-=CN-PROJ 
-
-=EN F<perldebug.pod> - Perl debugging
-=CN-CORE F<perldebug.pod> - Perl 调试
-=CN-PROJ 
-
-=EN AUTHOR
-=CN-CORE 作者
-=CN-PROJ 
-
-=EN F<perlfork.pod> - Perl fork() information
-=CN-CORE F<perlfork.pod> - Perl fork（） 信息
-=CN-PROJ 
-
-=EN F<perlsec.pod> - Perl security
-=CN-CORE F<perlsec.pod> - Perl 安全
-=CN-PROJ 
-
-=EN DESCRIPTION
-=CN-CORE 描述
-=CN-PROJ 
-
-=EN F<perlfaq.pod> - Perl frequently asked questions
-=CN-CORE F<perlfaq.pod> - Perl 经常问的问题
-=CN-PROJ 
-
-=EN Perl was originally a language optimized for scanning arbitrary text files, extracting information from those text files, and printing reports based on that information.
-=CN-CORE Perl起初用来扫描文本文档，从这些文件中扫描信息，然后基于这些信息输出报告。
-=CN-PROJ 
-
-=EN BUGS
-=CN-CORE 待改进
-=CN-PROJ 
-
-=EN F<perl.pod> - The Perl 5 language interpreter
-=CN-CORE F<perl.pod> - Perl 5 语言简介
-=CN-PROJ 
-
-=EN F<perlsyn.pod> - Perl syntax
-=CN-CORE F<perlsyn.pod> - Perl 语法
-=CN-PROJ 
-
-=EN F<perllexwarn.pod> - Perl warnings and their control
-=CN-CORE F<perllexwarn.pod> - Perl 警告和控制原理l
-=CN-PROJ 
-
-=EN F<perlvar.pod> - Perl predefined variables
-=CN-CORE F<perlvar.pod> - Perl 预定义变量
-=CN-PROJ 
-
-=EN F<perltooc.pod> - Perl OO tutorial, part 2
-=CN-CORE F<perltooc.pod> - Perl 面向对象编程介绍，第二部分
-=CN-PROJ 
-
-=EN F<perlopentut.pod> - Perl open() tutorial
-=CN-CORE F<perlopentut.pod> - Perl open（） 简介
-=CN-PROJ 
-
-=EN F<perlop.pod> - Perl operators and precedence
-=CN-CORE F<perlop.pod> - Perl 操作符和优先级
-=CN-PROJ 
-
-=EN DIAGNOSTICS
-=CN-CORE 诊断
-=CN-PROJ 
-
-=EN F<perlfaq6.pod> - Regexes
-=CN-CORE F<perlfaq6.pod> - 正则表达式
-=CN-PROJ 
-
-=EN F<perlmod.pod> - Perl modules: how they work
-=CN-CORE F<perlmod.pod> - Perl 模块： 他们如何工作
-=CN-PROJ 
-
-=EN F<perltoot.pod> - Perl OO tutorial, part 1
-=CN-CORE F<perltoot.pod> - Perl 面向对象编程介绍，第一部分
-=CN-PROJ 
-
-=EN Run C<perldoc perldoc> to learn more things you can do with F<perldoc>.
-=CN-CORE 尽可能使用 C<perldoc> 来学习所有你想学的东西吧。
-=CN-PROJ 
-
-=EN F<perlfaq4.pod> - Data Manipulation
-=CN-CORE F<perlfaq4.pod> - 数据操作
-=CN-PROJ 
-
-=EN F<perlref.pod> - Perl references, the rest of the story
-=CN-CORE F<perlref.pod> - Perl 参考， 剩下的故事
-=CN-PROJ 
-
-=EN F<perlfaq2.pod> - Obtaining and Learning about Perl
-=CN-CORE F<perlfaq2.pod> - 如何获得并学习 Perl
-=CN-PROJ 
-
-=EN F<perllocale.pod> - Perl locale support
-=CN-CORE F<perllocale.pod> - Perl 区域支持
-=CN-PROJ 
-
-=EN F<perlreref.pod> - Perl regular expressions quick reference
-=CN-CORE F<perlreref.pod> - Perl 正则表达式快速参考
-=CN-PROJ 
-
-=EN F<perlpacktut.pod> - Perl pack() and unpack() tutorial
-=CN-CORE F<perlpacktut.pod> - Perl pack（） 和 unpack（） 简介
-=CN-PROJ 
-
-=EN F<perlmodinstall.pod> - Perl modules: how to install from CPAN
-=CN-CORE F<perlmodinstall.pod> - Perl 模块： 如何通过 CPAN 安装模块
-=CN-PROJ 
-
-=EN F<perlpod.pod> - Perl plain old documentation
-=CN-CORE F<perlpod.pod> - Perl 简易老式文档 POD
-=CN-PROJ 
-
-=EN F<perlebcdic.pod> - Considerations for running Perl on EBCDIC platforms
-=CN-CORE F<perlebcdic.pod> - 考虑将 Perl 运行在 EBCDIC 编码的平台上
-=CN-PROJ 
-
-=EN F<perlfaq7.pod> - Perl Language Issues
-=CN-CORE F<perlfaq7.pod> - Perl 语言问题
-=CN-PROJ 
-
-=EN F<perlport.pod> - Perl portability guide
-=CN-CORE F<perlport.pod> - Perl 移植向导
-=CN-PROJ 
-
-=EN It's widely used for everything from quick "one-liners" to full-scale application development.
-=CN-CORE 从单行命令到全面开发应用领域，Perl被广泛使用。
-=CN-PROJ 
-
-=EN F<perlform.pod> - Perl formats
-=CN-CORE F<perlform.pod> - Perl 格式
-=CN-PROJ 
-
-=EN F<perlcheat.pod> - Perl cheat sheet
-=CN-CORE F<perlcheat.pod> - Perl 备忘录
-=CN-PROJ 
-
-=EN F<perlnumber.pod> - Perl number semantics
-=CN-CORE F<perlnumber.pod> - Perl 数字符号
-=CN-PROJ 
-
-=EN If you're new to Perl, you should start by running C<perldoc perlintro>, which is a general intro for beginners and provides some background to help you navigate the rest of Perl's extensive documentation.
-=CN-CORE 如果您第一次了解 Perl， 应当从运行C<perldoc perlintro>开始， 那是一个为初学者专门准备的简单介绍，为你讲解一些 Perl 的基础知识， 并且帮助你浏览其他的大量 Perl 文档。
-=CN-PROJ 
-
-=EN ENVIRONMENT
-=CN-CORE 环境
-=CN-PROJ 
-
-=EN F<perlipc.pod> - Perl interprocess communication
-=CN-CORE F<perlipc.pod> - Perl 进程间通信
-=CN-PROJ 
-
-=EN F<perldbmfilter.pod> - Perl DBM filters
-=CN-CORE F<perldbmfilter.pod> - Perl DBM 过滤器
-=CN-PROJ 
-
-=EN F<perlstyle.pod> - Perl style guide
-=CN-CORE F<perlstyle.pod> - Perl 风格向导
-=CN-PROJ 
-
-=EN F<perlobj.pod> - Perl objects
-=CN-CORE F<perlobj.pod> - Perl 对象
-=CN-PROJ 
-
-=EN F<perlpodstyle.pod> - Perl pod: style guide
-=CN-CORE F<perlpodstyle.pod> - Perl POD： 风格向导
-=CN-PROJ 
-
-=EN F<perlre.pod> - Perl regular expressions, the rest of the story
-=CN-CORE F<perlre.pod> - Perl 正则表达式，剩下的故事
-=CN-PROJ 
-
-=EN F<perlintro.pod> - Perl introduction for beginners
-=CN-CORE F<perlintro.pod> - Perl 为初学者准备的简介
-=CN-PROJ 
-
-=EN F<perlunicode.pod> - Perl Unicode support
-=CN-CORE F<perlunicode.pod> - Perl Unicode 支持
-=CN-PROJ 
-
-=EN F<perlretut.pod> - Perl regular expressions tutorial
-=CN-CORE F<perlretut.pod> - Perl 正则表达式详细介绍
-=CN-PROJ 
-
-=EN For ease of access, the Perl manual has been split up into several sections.
-=CN-CORE 为了更容易开始，Perl 的帮助文档被分成几个部分.
-=CN-PROJ 
-
-=EN F<perlnewmod.pod> - Perl modules: preparing a new module for distribution
-=CN-CORE F<perlnewmod.pod> - Perl 模块： 准备发布自己的模块
-=CN-PROJ 
-
-=EN F<perlfunc.pod> - Perl built-in functions
-=CN-CORE F<perlfunc.pod> - Perl 内置函数
-=CN-PROJ 
-
-=EN F<perlrecharclass.pod> - Perl regular expression character classes
-=CN-CORE F<perlrecharclass.pod> - Perl 正则字符集
-=CN-PROJ 
-
-=EN F<perlpragma.pod> - Perl modules: writing a user pragma
-=CN-CORE F<perlpragma.pod> - Perl 模块： 编写用户使用接口
-=CN-PROJ 
-
-=EN F<perlthrtut.pod> - Perl threads tutorial
-=CN-CORE F<perlthrtut.pod> - Perl 线程教程
-=CN-PROJ 
-
-=EN F<perlrebackslash.pod> - Perl regular expression backslash sequences
-=CN-CORE F<perlrebackslash.pod> - Perl 正则表达式转义优先级
-=CN-PROJ 
-
-&&01ba=>F<perlplan9.pod>
-&&01a7=>F<perlce.pod>
-&&00b5=>perlcn.pod
-&&01e1=>L<perlthrtut>
-&&00e4=>B<-V>
-&&0035=>perlpod.pod
-&&01dd=>L<perlboot>
-&&00cd=>perlos2.pod
-&&00aa=>perl571delta.pod
-&&00dd=>perl.org
-&&0118=>F<perldebtut.pod>
-&&00b1=>perl5004delta.pod
-&&001e=>perlbot.pod
-&&0154=>F<perlxstut.pod>
-&&000f=>sprintf()
-&&0112=>F<perltooc.pod>
-&&00a4=>perl582delta.pod
-&&01b3=>F<perlmacosx.pod>
-&&0132=>F<perlre.pod>
-&&001a=>perlretut.pod
-&&01f9=>S<[ B<-pna> ] [ B<-F>I<pattern> ] [ B<-l>[I<octal>] ] [ B<-0>[I<octal/hexadecimal>] ]>
-&&013a=>F<perldbmfilter.pod>
-&&011f=>F<perlfaq6.pod>
-&&00f1=>B<-0>
-&&0030=>perlop.pod
-&&0015=>perltoc.pod
-&&01e7=>L<perlop>
-&&0153=>F<perldebguts.pod>
-&&0116=>F<perlcheat.pod>
-&&0200=>S<[ B<-C [I<number/list>] >]>
-&&003e=>perlrebackslash.pod
-&&019e=>F<perlgpl.pod>
-&&0183=>F<perl5101delta.pod>
-&&0047=>perlfork.pod
-&&01da=>L<perldsc>
-&&00e8=>B<t>
-&&00c6=>perlirix.pod
-&&017b=>F<perl5121delta.pod>
-&&000b=>pack()
-&&0121=>F<perlfaq8.pod>
-&&01b2=>F<perlmacos.pod>
-&&0027=>perlfaq3.pod
-&&00e2=>B<-sTtuUWX>
-&&0166=>F<perlgit.pod>
-&&016e=>F<perl51310delta.pod>
-&&00e3=>B<-hv>
-&&00c2=>perlfreebsd.pod
-&&016c=>F<perldelta.pod>
-&&0088=>perl5122delta.pod
-&&0191=>F<perl583delta.pod>
-&&01b1=>F<perllinux.pod>
-&&0074=>perlcommunity.pod
-&&0051=>perlunitut.pod
-&&00b0=>5.005
-&&00ed=>B<-F>
-&&00db=>1003.1
-&&00d0=>perlplan9.pod
-&&0040=>perlreref.pod
-&&012c=>F<perlpodstyle.pod>
-&&005e=>perlembed.pod
-&&008d=>perl5114delta.pod
-&&00a1=>perl585delta.pod
-&&003b=>perldebug.pod
-&&0003=>larry@wall.org
-&&01f3=>C<perl -V>
-&&0199=>F<perl561delta.pod>
-&&0187=>F<perl593delta.pod>
-&&014d=>F<perlpragma.pod>
-&&01d3=>L<perlguts>
-&&010a=>F<perltoc.pod>
-&&01bd=>F<perlsolaris.pod>
-&&0173=>F<perl5135delta.pod>
-&&009e=>perl588delta.pod
-&&00f3=>B<-I>
-&&0099=>perl592delta.pod
-&&00cf=>perlos400.pod
-&&017f=>F<perl5113delta.pod>
-&&01df=>L<perltooc>
-&&00e6=>B<-cw>
-&&01ed=>L<perlport/"Supported Platforms">
-&&01db=>L<perllol>
-&&009d=>5.8
-&&005d=>perlglossary.pod
-&&005a=>perlutil.pod
-&&017a=>F<perl5122delta.pod>
-&&01a2=>F<perltw.pod>
-&&0123=>F<perlsyn.pod>
-&&01b5=>F<perlnetware.pod>
-&&018a=>F<perl590delta.pod>
-&&004f=>perluniprops.pod
-&&00d2=>perlriscos.pod
-&&006a=>perliol.pod
-&&010d=>F<perllol.pod>
-&&00c9=>perlmacosx.pod
-&&01aa=>F<perldos.pod>
-&&01fd=>S<[ B<-x>[I<dir>] ]>
-&&016b=>F<perlhist.pod>
-&&00f5=>B<-m>
-&&0176=>F<perl5132delta.pod>
-&&01ee=>L<perlrun>
-&&0054=>perlmod.pod
-&&001f=>perlperf.pod
-&&0114=>F<perlperf.pod>
-&&01cd=>L<perlmodlib>
-&&0098=>perl593delta.pod
-&&0050=>6.0
-&&00c4=>perlhpux.pod
-&&01dc=>L<perlobj>
-&&0105=>F<perldoc>
-&&015e=>F<perliol.pod>
-&&0007=>http://www.perl.com/
-&&0180=>F<perl5112delta.pod>
-&&00a3=>perl583delta.pod
-&&010b=>F<perlreftut.pod>
-&&01a8=>F<perlcygwin.pod>
-&&012d=>F<perlrun.pod>
-&&01f0=>L<perldiag>
-&&0111=>F<perltoot.pod>
-&&01f8=>S<[ B<-cw> ] [ B<-d>[B<t>][:I<debugger>] ] [ B<-D>[I<number/list>] ]>
-&&0130=>F<perldebug.pod>
-&&0089=>perl5121delta.pod
-&&01eb=>L<POSIX>
-&&00c3=>perlhaiku.pod
-&&0085=>perl5130delta.pod
-&&013f=>F<perlport.pod>
-&&0026=>perlfaq2.pod
-&&00cb=>perlnetware.pod
-&&0144=>F<perluniprops.pod>
-&&00bf=>perldgux.pod
-&&0045=>perldbmfilter.pod
-&&0006=>http://www.perl.org/
-&&006d=>perlsource.pod
-&&00e1=>B<perl>
-&&01f4=>L<perlbug>
-&&01fa=>S<[ B<-I>I<dir> ] [ B<-m>[B<->]I<module> ] [ B<-M>[B<->]I<'module...'> ] [ B<-f> ]>
-&&018d=>F<perl587delta.pod>
-&&01b6=>F<perlopenbsd.pod>
-&&003a=>perllexwarn.pod
-&&0043=>perlobj.pod
-&&013e=>F<perlthrtut.pod>
-&&01c2=>F<perlvms.pod>
-&&0125=>F<perlop.pod>
-&&01c8=>B<awk>
-&&01ca=>B<csh>
-&&0124=>F<perldata.pod>
-&&0165=>F<perlpolicy.pod>
-&&01f1=>C<use diagnostics>
-&&0087=>5.12
-&&0094=>perl5100delta.pod
-&&0148=>F<perlmod.pod>
-&&009b=>perl590delta.pod
-&&01f7=>S<[ B<-hv> ] [ B<-V>[:I<configvar>] ]>
-&&01a5=>F<perlbeos.pod>
-&&018e=>F<perl586delta.pod>
-&&0073=>perlbook.pod
-&&0106=>L<http://www.perl.org/>
-&&0069=>perlintern.pod
-&&0019=>perlrequick.pod
-&&0012=>perl.pod
-&&0182=>F<perl5110delta.pod>
-&&01e8=>L<perldebtut>
-&&00ae=>perl56delta.pod
-&&00b9=>perlaix.pod
-&&001b=>perlboot.pod
-&&01c0=>F<perluts.pod>
-&&0048=>perlnumber.pod
-&&0190=>F<perl584delta.pod>
-&&00ba=>perlamiga.pod
-&&0038=>perlrun.pod
-&&00bc=>perlbs2000.pod
-&&0174=>F<perl5134delta.pod>
-&&0024=>perlfaq.pod
-&&012f=>F<perllexwarn.pod>
-&&01c7=>B<sed>
-&&0127=>F<perlfunc.pod>
-&&019f=>F<perlcn.pod>
-&&01ac=>F<perlfreebsd.pod>
-&&0158=>F<perlcall.pod>
-&&0145=>F<perlunitut.pod>
-&&00ce=>perlos390.pod
-&&0161=>F<perlsource.pod>
-&&0077=>perlhist.pod
-&&013b=>F<perlipc.pod>
-&&002f=>perldata.pod
-&&0071=>perlpolicy.pod
-&&00d7=>perlvmesa.pod
-&&01ab=>F<perlepoc.pod>
-&&0149=>F<perlmodlib.pod>
-&&01bf=>F<perltru64.pod>
-&&0155=>F<perlxs.pod>
-&&0171=>F<perl5137delta.pod>
-&&0001=>@wall
-&&01a9=>F<perldgux.pod>
-&&01ce=>L<perlmodinstall>
-&&0036=>perlpodspec.pod
-&&005c=>perlfilter.pod
-&&0138=>F<perlobj.pod>
-&&010e=>F<perlrequick.pod>
-&&01a0=>F<perljp.pod>
-&&009a=>perl591delta.pod
-&&0053=>perlsec.pod
-&&000d=>fork()
-&&0119=>F<perlfaq.pod>
-&&004c=>perluniintro.pod
-&&01e9=>L<perldebug>
-&&015a=>F<perlreapi.pod>
-&&005f=>perldebguts.pod
-&&01af=>F<perlhurd.pod>
-&&01d2=>L<perlcall>
-&&0079=>perl51311delta.pod
-&&0076=>perldoc.pod
-&&00be=>perlcygwin.pod
-&&01f5=>F<utils/>
-&&0016=>perlreftut.pod
-&&01e5=>L<Locale::Maketext>
-&&0086=>perl5123delta.pod
-&&001c=>perltoot.pod
-&&01cc=>L<perlmod>
-&&0131=>F<perlvar.pod>
-&&00a9=>perl572delta.pod
-&&0014=>perlintro.pod
-&&0018=>perllol.pod
-&&019d=>F<perlartistic.pod>
-&&019c=>F<perl5004delta.pod>
-&&0168=>F<perlcommunity.pod>
-&&011b=>F<perlfaq2.pod>
-&&0178=>F<perl5130delta.pod>
-&&00cc=>perlopenbsd.pod
-&&0068=>perlapi.pod
-&&0032=>perlfunc.pod
-&&007d=>perl5138delta.pod
-&&0151=>F<perlglossary.pod>
-&&01ae=>F<perlhpux.pod>
-&&00ee=>I<pattern>
-&&009c=>perl589delta.pod
-&&0164=>F<perlhacktips.pod>
-&&00a5=>perl581delta.pod
-&&004b=>perllocale.pod
-&&010f=>F<perlretut.pod>
-&&0196=>F<perl572delta.pod>
-&&01e4=>L<perllocale>
-&&0037=>perlpodstyle.pod
-&&01ef=>C<use warnings>
-&&013c=>F<perlfork.pod>
-&&00df=>www.pm
-&&0065=>perlmroapi.pod
-&&0146=>F<perlebcdic.pod>
-&&011a=>F<perlfaq1.pod>
-&&01d1=>L<perlxs>
-&&00d8=>perlvms.pod
-&&0175=>F<perl5133delta.pod>
-&&0177=>F<perl5131delta.pod>
-&&0128=>F<perlopentut.pod>
-&&01a6=>F<perlbs2000.pod>
-&&00b8=>perltw.pod
-&&01ad=>F<perlhaiku.pod>
-&&0170=>F<perl5138delta.pod>
-&&00d5=>perltru64.pod
-&&0172=>F<perl5136delta.pod>
-&&00ca=>perlmpeix.pod
-&&018c=>F<perl588delta.pod>
-&&0039=>perldiag.pod
-&&004d=>perlunicode.pod
-&&01c3=>F<perlvos.pod>
-&&00dc=>wall.org
-&&000e=>atof()
-&&008c=>5.11
-&&01e2=>L<threads>
-&&0055=>perlmodlib.pod
-&&0061=>perlxs.pod
-&&00a7=>perl573delta.pod
-&&002b=>perlfaq7.pod
-&&011c=>F<perlfaq3.pod>
-&&0109=>F<perlintro.pod>
-&&00a8=>5.7
-&&00e0=>F<perl.pod>
-&&0186=>F<perl594delta.pod>
-&&0129=>F<perlpacktut.pod>
-&&006e=>perlinterp.pod
-&&009f=>perl587delta.pod
-&&00ab=>perl570delta.pod
-&&0031=>perlsub.pod
-&&00b3=>perlartistic.pod
-&&0189=>F<perl591delta.pod>
-&&006b=>perlapio.pod
-&&00ea=>B<-D>
-&&016f=>F<perl5139delta.pod>
-&&0167=>F<perlbook.pod>
-&&01de=>L<perltoot>
-&&0104=>I<argument>
-&&002c=>perlfaq8.pod
-&&00c8=>perlmacos.pod
-&&0194=>F<perl58delta.pod>
-&&0062=>perlclib.pod
-&&0157=>F<perlguts.pod>
-&&01e6=>L<perlre>
-&&003c=>perlvar.pod
-&&000c=>unpack()
-&&012b=>F<perlpodspec.pod>
-&&0139=>F<perltie.pod>
-&&017d=>F<perl5115delta.pod>
-&&0147=>F<perlsec.pod>
-&&012e=>F<perldiag.pod>
-&&01e0=>L<perlbot>
-&&00fd=>B<-i>
-&&00b4=>perlgpl.pod
-&&0110=>F<perlboot.pod>
-&&003f=>perlrecharclass.pod
-&&00f9=>I<'module...'>
-&&0156=>F<perlclib.pod>
-&&014b=>F<perlmodinstall.pod>
-&&01a3=>F<perlaix.pod>
-&&00c0=>perldos.pod
-&&018b=>F<perl589delta.pod>
-&&0103=>I<programfile>
-&&01c9=>B<sh>
-&&0059=>perlpragma.pod
-&&00fc=>B<-x>
-&&01cf=>L<perlembed>
-&&0060=>perlxstut.pod
-&&0188=>F<perl592delta.pod>
-&&015b=>F<perlreguts.pod>
-&&000a=>open()
-&&0169=>F<perltodo.pod>
-&&0136=>F<perlref.pod>
-&&01f2=>L<perlsec>
-&&0009=>http://www.pm.org/
-&&0122=>F<perlfaq9.pod>
-&&01d7=>L<perlsub>
-&&0002=>@perl
-&&0049=>perlthrtut.pod
-&&01d6=>L<AnyDBM_File>
-&&002d=>perlfaq9.pod
-&&01ec=>I<definitely>
-&&01be=>F<perlsymbian.pod>
-&&01d5=>L<perltie>
-&&01cb=>L<perlhist>
-&&0023=>perldebtut.pod
-&&0120=>F<perlfaq7.pod>
-&&0115=>F<perlstyle.pod>
-&&0152=>F<perlembed.pod>
-&&01fb=>B<-C [I<number/list>] >
-&&01a4=>F<perlamiga.pod>
-&&001d=>perltooc.pod
-&&0021=>perlcheat.pod
-&&0133=>F<perlrebackslash.pod>
-&&00da=>perlwin32.pod
-&&01fe=>S<[ B<-i>[I<extension>] ]>
-&&01b7=>F<perlos2.pod>
-&&011d=>F<perlfaq4.pod>
-&&0117=>F<perltrap.pod>
-&&019b=>F<perl5005delta.pod>
-&&0091=>perl5110delta.pod
-&&01c6=>B<-w>
-&&01bc=>F<perlriscos.pod>
-&&0143=>F<perlunifaq.pod>
-&&0162=>F<perlinterp.pod>
-&&00bd=>perlce.pod
-&&0057=>perlmodinstall.pod
-&&01a1=>F<perlko.pod>
-&&0029=>perlfaq5.pod
-&&00eb=>I<number/list>
-&&015f=>F<perlapio.pod>
-&&008e=>perl5113delta.pod
-&&0070=>perlhacktips.pod
-&&019a=>F<perl56delta.pod>
-&&018f=>F<perl585delta.pod>
-&&00d3=>perlsolaris.pod
-&&014e=>F<perlutil.pod>
-&&014a=>F<perlmodstyle.pod>
-&&0198=>F<perl570delta.pod>
-&&007f=>perl5136delta.pod
-&&0134=>F<perlrecharclass.pod>
-&&0108=>C<perldoc perldoc>
-&&00a6=>perl58delta.pod
-&&0160=>F<perlhack.pod>
-&&0056=>perlmodstyle.pod
-&&01b0=>F<perlirix.pod>
-&&0046=>perlipc.pod
-&&012a=>F<perlpod.pod>
-&&0025=>perlfaq1.pod
-&&0005=>perlbug@perl.org
-&&00fb=>B<-S>
-&&0142=>F<perlunicode.pod>
-&&00ef=>B<-l>
-&&00ff=>B<-e>
-&&00f4=>I<dir>
-&&0097=>perl594delta.pod
-&&0004=>thanks@perl.org
-&&0102=>B<-->
-&&0034=>perlpacktut.pod
-&&00de=>www.cpan
-&&0041=>perlref.pod
-&&0067=>perlreguts.pod
-&&01b9=>F<perlos400.pod>
-&&0028=>perlfaq4.pod
-&&0082=>perl5133delta.pod
-&&00c5=>perlhurd.pod
-&&01ff=>S<[ [B<-e>|B<-E>] I<'command'> ] [ B<--> ] [ I<programfile> ] [ I<argument> ]...>
-&&004a=>perlport.pod
-&&00d1=>perlqnx.pod
-&&0081=>perl5134delta.pod
-&&00ac=>perl561delta.pod
-&&00b6=>perljp.pod
-&&01d9=>L<perlref>
-&&007c=>perl5139delta.pod
-&&008a=>perl5120delta.pod
-&&016a=>F<perldoc.pod>
-&&015d=>F<perlintern.pod>
-&&0100=>B<-E>
-&&0042=>perlform.pod
-&&008b=>perl5115delta.pod
-&&00a0=>perl586delta.pod
-&&008f=>perl5112delta.pod
-&&00fe=>I<extension>
-&&006f=>perlhacktut.pod
-&&00c7=>perllinux.pod
-&&00ec=>B<-pna>
-&&0010=>sysread()
-&&00f0=>I<octal>
-&&01d0=>L<perlxstut>
-&&0017=>perldsc.pod
-&&0192=>F<perl582delta.pod>
-&&016d=>F<perl51311delta.pod>
-&&00e7=>B<-d>
-&&0008=>http://www.cpan.org/
-&&0083=>perl5132delta.pod
-&&0179=>F<perl5123delta.pod>
-&&0058=>perlnewmod.pod
-&&0197=>F<perl571delta.pod>
-&&003d=>perlre.pod
-&&00b7=>perlko.pod
-&&0185=>F<perl595delta.pod>
-&&00b2=>5.004
-&&00f2=>I<octal/hexadecimal>
-&&01e3=>L<perluniintro>
-&&00d9=>perlvos.pod
-&&01ea=>L<perldebguts>
-&&00f8=>B<-M>
-&&0163=>F<perlhacktut.pod>
-&&00fa=>B<-f>
-&&00a2=>perl584delta.pod
-&&0193=>F<perl581delta.pod>
-&&00f7=>I<module>
-&&00d6=>perluts.pod
-&&006c=>perlhack.pod
-&&007b=>perl51310delta.pod
-&&0020=>perlstyle.pod
-&&01fc=>S<[ B<-S> ]>
-&&00af=>perl5005delta.pod
-&&0078=>perldelta.pod
-&&0011=>syswrite()
-&&0126=>F<perlsub.pod>
-&&0084=>perl5131delta.pod
-&&00e9=>I<debugger>
-&&0063=>perlguts.pod
-&&0140=>F<perllocale.pod>
-&&002a=>perlfaq6.pod
-&&01b8=>F<perlos390.pod>
-&&01d8=>L<perlreftut>
-&&0075=>perltodo.pod
-&&0141=>F<perluniintro.pod>
-&&00ad=>5.6
-&&017e=>F<perl5114delta.pod>
-&&0101=>I<'command'>
-&&00d4=>perlsymbian.pod
-&&0080=>perl5135delta.pod
-&&0013=>www.perl
-&&0135=>F<perlreref.pod>
-&&0022=>perltrap.pod
-&&01c5=>F<man>
-&&01c1=>F<perlvmesa.pod>
-&&014f=>F<perlcompile.pod>
-&&00e5=>I<configvar>
-&&0137=>F<perlform.pod>
-&&01c4=>F<perlwin32.pod>
-&&0066=>perlreapi.pod
-&&0093=>5.10
-&&0184=>F<perl5100delta.pod>
-&&01b4=>F<perlmpeix.pod>
-&&0107=>C<perldoc perlintro>
-&&013d=>F<perlnumber.pod>
-&&011e=>F<perlfaq5.pod>
-&&0072=>perlgit.pod
-&&00f6=>B<->
-&&00c1=>perlepoc.pod
-&&007e=>perl5137delta.pod
-&&0044=>perltie.pod
-&&01f6=>S<[ B<-sTtuUWX> ]>
-&&01d4=>L<xsubpp>
-&&015c=>F<perlapi.pod>
-&&01bb=>F<perlqnx.pod>
-&&0090=>perl5111delta.pod
-&&002e=>perlsyn.pod
-&&0033=>perlopentut.pod
-&&00bb=>perlbeos.pod
-&&0195=>F<perl573delta.pod>
-&&0092=>perl5101delta.pod
-&&017c=>F<perl5120delta.pod>
-&&014c=>F<perlnewmod.pod>
-&&0181=>F<perl5111delta.pod>
-&&005b=>perlcompile.pod
-&&007a=>5.13
-&&0064=>perlcall.pod
-&&0095=>perl595delta.pod
-&&0159=>F<perlmroapi.pod>
-&&004e=>perlunifaq.pod
-&&0096=>5.9
-&&0150=>F<perlfilter.pod>
-&&010c=>F<perldsc.pod>
-&&0052=>perlebcdic.pod
-&&0113=>F<perlbot.pod>
-&&000a=>4.6
-&&0018=>C<%^H>
-&&001d=>C<pack>
-&&0003=>import()
-&&0019=>C<caller()>
-&&0006=>in_effect()
-&&0010=>C<use myint;>
-&&0004=>unimport()
-&&0015=>C<import>
-&&000f=>I<i.e.>
-&&001e=>C<exists>
-&&000d=>C<warnings>
-&&0005=>caller()
-&&000e=>C<use integer;>
-&&0013=>C<myint>
-&&000b=>i.e
-&&001c=>C<undef>
-&&0002=>in_effect(1)
-&&000c=>C<strict>
-&&0012=>C<MyMaths>
-&&0011=>C<no myint;>
-&&0017=>B<compile time>
-&&0016=>C<unimport>
-&&001b=>C<$^H{myint}>
-&&0014=>C<()>
-&&0009=>3.4
-&&001a=>C<in_effect()>
-&&0007=>5.10
-&&0008=>1.2
-&&0001=>myint()
+ Skipper walks into the room.  =>&&0042
+   my $total_size = 0; =>&&0087
+ find($callback2, 'lib'); =>&&007a
+ skipper_greets("Gilligan"); =>&&0015
+  for my $greeted (@everyone) { =>&&0036
+ for my $person (qw(Skipper Gilligan)) { =>&&0032
+   print "$when: $file\n"; =>&&00bf
+ my $total_size = $callback->('dummy'); # dummy parameter to get size =>&&0084
+ find(\&what_to_do, @starting_directories); =>&&0063
+   # Back up one day =>&&00b3
+ sub {. . . body of subroutine. . . }; =>&&0048
+  my $count; =>&&009f
+      $total_size += -s if -f; =>&&0081
+ use Time::Local; =>&&00ac
+  print "Skipper: Hey there, $person!\n"; =>&&000d
+ Gilligan: Sir, yes, sir, Skipper! =>&&0018
+ my $start = timelocal(0, 0, 0, $day, $mon, $yr);        # midnight today =>&&00b1
+ $ref_to_greeter -> ( 'Gilligan' ) =>&&0028
+ sub gilligan_greets { =>&&000f
+ for my $file (@files) { =>&&00bc
+ ## set up the subroutines =>&&008d
+ my $total_size = 0; =>&&0068
+   return(sub { $total_size += -s if -f }, sub { return $total_size }); =>&&0088
+     $dow += 7; =>&&00b6
+  $subs{$dir}{GETTER}     = $getter; =>&&0092
+=head2 7. 3. =>&&0004
+ for my $greeter (@everyone) { =>&&0035
+ ## show the data =>&&0096
+ my $callback = create_find_callback_that_sums_the_size(  ); =>&&0083
+      print "Gilligan: Sir, yes, sir, $person!\n"; =>&&0050
+=head2 =>&&0001
+ Professor: By my calculations, you must be Skipper! =>&&0023
+ find($count_em, 'bin'); =>&&008a
+ Professor: By my calculations, you must be Ginger! =>&&005e
+ my @everyone = sort keys %greets; =>&&0034
+    $greets{$room_person}->($person); # gets reply =>&&003f
+ find(sub { $total_size += -s if -f }, '. '); =>&&0069
+    print "$File::Find::name found\n"; =>&&0066
+ foreach my $dir (qw(bin lib man)) { =>&&008f
+   my $person = shift; =>&&001e
+  return sub { =>&&007d
+  return(sub { $total_size += -s if -f }, sub { return $total_size }); =>&&008c
+  @starting_directories,  =>&&0067
+ print "my lib:\n"; =>&&0075
+ Skipper: Hey there, Professor! =>&&001b
+  my $sum = $subs{$_}{GETTER}->(  ); =>&&0098
+  sub count_so_far { return $count } =>&&00a1
+  print "Professor: By my calculations, you must be $person!\n"; =>&&002c
+ sub what_to_do { =>&&0060
+ & $ref_to_greeter ( 'Gilligan' ) =>&&0027
+  Professor => \&professor_greets,  =>&&0030
+ & { $ref_to_greeter } ( 'Gilligan' ) =>&&0026
+ print "total size of bin is $total_size\n"; =>&&0085
+ use File::Find; =>&&005f
+ my @starting_directories = (". "); =>&&00ae
+ sub create_find_callback_that_counts { =>&&0070
+    print "Professor: By my calculations, you must be $person!\n"; =>&&0055
+  print "$_ has $sum bytes\n"; =>&&0099
+  }; =>&&0082
+    if (@_) { # it's our dummy invocation =>&&007e
+ my $callback; =>&&006b
+=head2 7. 8. 1. =>&&000a
+   print "Professor: By my calculations, you must be $person!\n"; =>&&001f
+ my $callback2 = create_find_callback_that_counts(  ); =>&&0078
+ my $bigger_than_1024 = print_bigger_than(1024); =>&&009d
+ my @files = $yield->(  ); =>&&00bb
+  Skipper   => \&skipper_greets,  =>&&002f
+ my $ref_to_greeter = \&skipper_greets; =>&&0024
+ while ($dow != $target_dow) { =>&&00b2
+ for (keys %subs) { =>&&0094
+  my $total_size = 0; =>&&007c
+=head2 7. 8. =>&&0009
+  sub count_one { ++$count } =>&&00a0
+  },  =>&&004d
+ Gilligan: Hi, Ginger! =>&&005b
+   print "$File::Find::name found\n"; =>&&0061
+ sub create_find_callback_that_sums_the_size { =>&&007b
+  my $person = shift; =>&&000c
+ Gilligan: Hi, Professor! =>&&001c
+ sub skipper_greets { =>&&000b
+ print 'we have seen ', count_so_far(  ), " coconuts!\n"; =>&&00a3
+=head2 7. 5. =>&&0006
+  } else { =>&&0012
+   $start -= $seconds_per_day;        # hope no DST! :-) =>&&00b4
+ my($gather, $yield)  = gather_mtime_between($start, $stop); =>&&00b9
+  push @room, $person; # come in, get comfy =>&&0040
+      unless $greeter eq $greeted; # no talking to yourself =>&&0038
+ Ginger: (in a sultry voice) Well hello, Gilligan! =>&&005a
+  sub count_remaining { $countdown } =>&&00a6
+ sub professor_greets { =>&&001d
+ find($bigger_than_1024, 'bin'); =>&&009e
+      print "Gilligan: Hi, $person!\n"; =>&&0052
+ my $callback = create_find_callback_that_counts(  ); =>&&0072
+ }; =>&&0046
+   return sub { print "$File::Find::name\n" if -f and -s >= $minimum_size }; =>&&009c
+ find($callback1, 'bin'); =>&&0079
+  $subs{$dir}{CALLBACK}   = $callback; =>&&0091
+ find($callback, '. '); =>&&006f
+ my ($count_em, $get_results) = create_find_callbacks_that_sum_the_size(  ); =>&&0089
+ my $total_size = &$get_results(  ); =>&&008b
+=head2 7. 7. =>&&0008
+ { =>&&006c
+ find($callback, 'bin'); =>&&0074
+=head2 7. 2. =>&&0003
+ Ginger: (in a sultry voice) Well hello, Skipper! =>&&0049
+ my %subs; =>&&008e
+  } =>&&0014
+ ); =>&&0031
+ Ginger: (in a sultry voice) Well hello, Professor! =>&&005d
+    if ($person eq 'Skipper') { =>&&004f
+ BEGIN { =>&&00aa
+ Professor walks into the room.  =>&&0043
+  Skipper => sub { =>&&004a
+ print "my bin:\n"; =>&&0073
+ my($sec, $min, $hour, $day, $mon, $yr, $dow) = localtime; =>&&00b0
+  Professor => sub { =>&&0054
+    print "Gilligan: Hi, $person!\n"; =>&&0013
+ professor_greets('Gilligan'); =>&&0020
+ my $timestamp = (stat $file_name)[9]; =>&&00ab
+ find($gather, @starting_directories); =>&&00ba
+  sub count_down { $countdown-- } =>&&00a5
+ professor_greets('Skipper'); =>&&0021
+  for my $room_person (@room) { =>&&003d
+    } =>&&0053
+  my $countdown = 10; =>&&00a4
+  find($subs{$_}{CALLBACK}, $_); =>&&0095
+  my ($callback, $getter) = create_find_callbacks_that_sum_the_size(  ); =>&&0090
+  if ($person eq 'Skipper') { =>&&002b
+   my $minimum_size = shift; =>&&009b
+   if (--$dow < 0) { =>&&00b5
+ my $seconds_per_day = 24 * 60 * 60; =>&&00af
+ $ginger->('Skipper'); =>&&0047
+ my $target_dow = 1;        # Sunday is 0, Monday is 1,. . .  =>&&00ad
+   my $when = localtime $mtime; =>&&00be
+      return $total_size; =>&&007f
+ Professor: By my calculations, you must be Gilligan! =>&&0022
+  sub { =>&&0065
+  $greets{$person}->('Professor'); =>&&0033
+ for my $person (qw(Gilligan Skipper Professor)) { =>&&003a
+    print "Ginger: (in a sultry voice) Well hello, $person!\n"; =>&&0057
+    $greets{$person}->($room_person); # speaks =>&&003e
+   my $mtime = (stat $file)[9];        # mtime via slice =>&&00bd
+ count_one(  ); =>&&00a2
+=head2 7. 1. =>&&0002
+ my %greets = ( =>&&002d
+ count_down(  ); =>&&00a7
+ print 'we're down to ', count_remaining(  ), " coconuts!\n"; =>&&00a8
+ sub create_find_callbacks_that_sum_the_size { =>&&0086
+    print "Gilligan: Sir, yes, sir, $person!\n"; =>&&0011
+    } else { # it's a callback from File::Find: =>&&0080
+ gilligan_greets('Professor'); =>&&001a
+ & skipper_greets ( 'Gilligan' ) =>&&0025
+ my @room; # initially empty =>&&0039
+  print "$person walks into the room. \n"; =>&&003c
+ sub print_bigger_than { =>&&009a
+   print "Ginger: (in a sultry voice) Well hello, $person!\n"; =>&&0045
+  $greet->('Professor'); =>&&002a
+  $callback = sub { print ++$count, ": $File::Find::name\n" }; =>&&006e
+ Ginger walks into the room.  =>&&0059
+  my $count = 0; =>&&006d
+ for my $greet (\&skipper_greets, \&gilligan_greets) { =>&&0029
+    $greets{$greeter}->($greeted) =>&&0037
+ my $stop = $start + $seconds_per_day; =>&&00b8
+ print $total_size, "\n"; =>&&006a
+ for my $person (qw(Gilligan Skipper Professor Ginger)) { =>&&0058
+=head2 7. 6. =>&&0007
+ my $callback1 = create_find_callback_that_counts(  ); =>&&0077
+  Ginger => sub { =>&&0056
+=head2 7. 4. =>&&0005
+ find( =>&&0064
+ for (sort keys %subs) { =>&&0097
+  if ($person eq "Skipper") { =>&&0010
+ ## gather the data =>&&0093
+ } =>&&000e
+    } else { =>&&0051
+  Gilligan  => \&gilligan_greets,  =>&&002e
+ Gilligan walks into the room.  =>&&0041
+ Skipper: Hey there, Ginger! =>&&005c
+ skipper_greets('Professor'); =>&&0019
+   } =>&&00b7
+ find($callback, 'lib'); =>&&0076
+ my @starting_directories = qw(. ); =>&&0062
+ my $countdown = 10; =>&&00a9
+ gilligan_greets("Skipper"); =>&&0016
+  print "\n"; =>&&003b
+    my $person = shift; =>&&004b
+  return sub { print ++$count, ": $File::Find::name\n" }; =>&&0071
+ my $ginger = sub { =>&&0044
+  Gilligan => sub { =>&&004e
+ Skipper: Hey there, Gilligan! =>&&0017
+    print "Skipper: Hey there, $person!\n"; =>&&004c
+ Skipper sorts into position 5 =>&&0018
+                 return; =>&&0076
+   bin                             => $skipper_bin,  =>&&004c
+   map [ $_, "\U$_" ],  =>&&0031
+ sub dump_data_for_path { =>&&006a
+ my @sorted = sort { -s $a <=> -s $b } glob "/bin/*"; =>&&007d
+         for (sort keys %directory) { =>&&0079
+     return \%directory; =>&&0067
+ my @numerically_descending = =>&&0008
+  } } =>&&003d
+                 print "$path\n"; =>&&0075
+ } @names_and_pineapples; =>&&0025
+ Ginger sorts into position 2 =>&&001a
+   eat                 => undef,  =>&&0046
+                 dump_data_for_path("$path/$_", $directory{$_}); =>&&007a
+     'Things_I_should_have_packed' => undef,  =>&&004b
+ $string =~ tr/A-Z/a-z/;       # force all lowercase =>&&007f
+ my @ranks; =>&&0010
+   ask_monkey_about($b) <=> ask_monkey_about($a) =>&&001f
+                     } . . .  =>&&0070
+         my $path = shift; =>&&0072
+     opendir PATH, $path or die "Cannot opendir $path: $!"; =>&&0060
+   map [ $_, ask_monkey_about($_) ],  =>&&002a
+   return undef; =>&&005c
+   if (-d $path) { . . .  =>&&005a
+   sort { $a->[1] cmp $b->[1] } =>&&0030
+   },  =>&&0054
+ my @input = qw(Gilligan Skipper Professor Ginger Mary_Ann); =>&&000d
+         $directory{$name} = data_for_path("$path/$name"); =>&&0065
+   [ $_, ask_monkey_about($_) ] =>&&0022
+   galley, with contents: =>&&0086
+     eat                 => undef,  =>&&0053
+         next if $name eq '. ' or $name eq '. . '; =>&&0064
+ my $skipper_bin = { =>&&0043
+ uss_minnow, with contents: =>&&0083
+   discipline_gilligan => undef,  =>&&0045
+ use Data::Dumper; =>&&0068
+   print "$input[$_] sorts into position $ranks[$_]\n"; =>&&0015
+ Gilligan sorts into position 1 =>&&0017
+                     print "$path\n"; =>&&006e
+             my $data = shift; =>&&006c
+   if ($a < $b)    { -1 } =>&&0004
+   broken_radio =>&&0085
+ my $skipper_home = { =>&&0048
+     tuna_fish_sandwich =>&&0089
+   elsif ($a > $b) { +1 } =>&&0005
+   map $_->[0],  =>&&0028
+   qw(Gilligan Skipper Professor Ginger Mary_Ann Thurston Lovey); =>&&001d
+   cp   => undef,  =>&&0040
+  }; =>&&0047
+     return undef; =>&&0058
+   if (-f $path or -l $path) {        # files or symbolic links =>&&005d
+             } =>&&0071
+ my @sorted_names_and_pineapples = sort { =>&&0023
+ my $bin_directory = { =>&&003e
+ my @castaways = =>&&001c
+ $string =~ tr/a-z//cd;        # strip all but a-z from the string =>&&0080
+ print "@ranks\n"; =>&&0012
+     captain_crunch_cereal =>&&0087
+ 1; =>&&008c
+ my @sorted_positions = sort { $input[$a] cmp $input[$b] } 0. . $#input; =>&&000e
+         if (not defined $data) { # plain file =>&&0074
+ Mary_Ann sorts into position 3 =>&&001b
+     discipline_gilligan => undef,  =>&&0052
+ sub data_for_path { =>&&0055
+ my @sorted = sort qw(Gilligan Skipper Professor Ginger Mary_Ann); =>&&0001
+  sort { SORT COMPARISON USING $a->[1] AND $b->[1] or =>&&0033
+ @ranks[@sorted_positions] = (0. . $#sorted_positions); =>&&0011
+ } 1, 2, 4, 8, 16, 32; =>&&0007
+   date => undef,  . . . and so on. . .  =>&&0041
+   my $path = shift; =>&&0056
+ my @names_and_pineapples = map { =>&&0021
+   Things_I_should_have_packed => undef,  =>&&004f
+ Gilligan Ginger Mary_Ann Professor Skipper =>&&000c
+  } else { =>&&003b
+     navigate            => undef,  =>&&0051
+         } =>&&0077
+                     return; =>&&006f
+ my @names = =>&&0027
+    sort { $b <=> $a } 1, 2, 4, 8, 16, 32; =>&&000a
+ }; =>&&0042
+     } =>&&0066
+ sub navigation_turn_toward_port { . . code here. .  =>&&008b
+ @ranks[@sorted_positions] = (1. . @sorted_positions); =>&&0013
+ my @numerically_sorted = sort { =>&&0003
+     my %directory; =>&&005f
+             if (not defined $data) { # plain file =>&&006d
+  @input_data; =>&&0037
+   @castaways; =>&&002b
+ my @wrongly_sorted = sort 1, 2, 4, 8, 16, 32; =>&&0002
+ print "@sorted_positions\n"; =>&&000f
+     for my $name (@names) { =>&&0063
+   life_preservers =>&&008a
+ for (0. . $#ranks) { =>&&0014
+     'Please_rescue_us. pdf'        => undef,  =>&&004a
+  my $n = shift; =>&&0038
+      YET ANOTHER USING $a->[3] AND $b->[3] } =>&&0035
+   '. cshrc'                    => undef,  =>&&004d
+             my $path = shift; =>&&006b
+ sandbar, an empty directory =>&&0082
+  map [ $_, SOME FUNCTION OF $_, ANOTHER, YET ANOTHER ],  =>&&0036
+     gallon_of_milk =>&&0088
+ my @names = map $_->[0], @sorted_names_and_pineapples; =>&&0026
+   if (-f $path) { =>&&0057
+   navigate            => undef,  =>&&0044
+   if (-d $path) { =>&&005e
+   Please_rescue_us. pdf        => undef,  =>&&004e
+   bin => { =>&&0050
+ find. -print =>&&007c
+    reverse sort { $a <=> $b } 1, 2, 4, 8, 16, 32; =>&&0009
+ my $string = 'Mary-Ann'; =>&&007e
+   $b->[1] <=> $a->[1]; =>&&0024
+   anchor =>&&0084
+ print Dumper(data_for_path('. ')); =>&&0069
+         my $data = shift; =>&&0073
+   map [ $_, EXPENSIVE FUNCTION OF $_ ],  =>&&002e
+   sort { SORT COMPARISON USING $a->[1] AND $b->[1] } =>&&002d
+ print "@sorted\n"; =>&&000b
+ } =>&&0016
+ my @wasters = sort { =>&&001e
+    return $n * factorial($n - 1); =>&&003c
+ my @output_data = =>&&002c
+   '. cshrc'                        => undef,  =>&&0049
+ dump_data_for_path('. ', data_for_path('. ')); =>&&007b
+   warn "$path is neither a file nor a directory\n"; =>&&005b
+         my %directory = %$data; =>&&0078
+    return 1; =>&&003a
+ print $string;                # prints "maryann" =>&&0081
+   cat  => undef,  =>&&003f
+   else            {  0 } =>&&0006
+   } =>&&0059
+ Professor sorts into position 4 =>&&0019
+     closedir PATH; =>&&0062
+ } @castaways; =>&&0020
+   @input_data; =>&&002f
+  map $_->[0],  =>&&0032
+     my @names = readdir PATH; =>&&0061
+   sort { $b->[1] <=> $a->[1] } =>&&0029
+          ANOTHER USING $a->[2] AND $b->[2] or =>&&0034
+  if ($n <= 1) { =>&&0039
+   print "Current heading is ", $current_heading, ". \n"; =>&&0004
+ die $@ if $@; =>&&001c
+ require 'drop_anchor. pm'; =>&&0022
+   my $direction = 'right'; =>&&0006
+ sub compute_heading_to_island { . . code here. .  =>&&0033
+ # back to package Navigation =>&&0045
+   package main;  # now in package main =>&&0042
+ sub main::turn_toward_heading { . . code here. .  =>&&0040
+   eval $more_code; =>&&0019
+   sub turn_toward_heading {  # main::turn_toward_heading . . code here. .  =>&&0043
+ {  # start scope block =>&&0041
+   if ($turn > 180) { # long way around =>&&0008
+ do 'navigation. pm'; =>&&001b
+ drop_anchor(  ) if at_dock(  ); =>&&0021
+ use lib $Bin; =>&&002a
+ @destination = @Navigation::homeport; =>&&003f
+ perl -I/home/skipper/perl-lib /home/skipper/bin/get_us_home =>&&002f
+   die $@ if $@; =>&&001a
+     print "On course (good job!). \n"; =>&&0012
+ Current heading is 234.  =>&&000f
+ }  # end scope block =>&&0044
+   open MORE_CODE, 'navigation. pm' or die "navigation. pm: $!"; =>&&0015
+ turn_toward_heading(90); . . .  =>&&0020
+ unshift @INC, '/home/skipper/perl-lib'; =>&&0025
+ sub load_common_subroutines { =>&&0014
+ sub turn_toward_port { . . code. .  =>&&003e
+   my $current_heading = current_heading(  ); =>&&0003
+ 1; =>&&0039
+ #!/usr/bin/perl =>&&0030
+ sub turn_toward_port { . . code here. .  =>&&0038
+ my ($new_heading) = @_; =>&&000e
+ use FindBin qw($Bin); =>&&0029
+   print "by turning $direction $turn degrees. \n"; =>&&000c
+ sub turn_toward_heading { . . code here. .  =>&&0037
+   Navigation::turn_toward_heading(compute_heading_to_island(  )); =>&&003c
+ @homeport = (21. 283, -157. 842); =>&&003d
+ Come about to 234 by turning right 0 degrees.  =>&&0010
+   my $turn = ($new_heading - $current_heading) % 360; =>&&0007
+ }; =>&&0028
+ @month = qw(diz pod bod rod sip wax lin sen kun fiz nap dep); =>&&004b
+ use lib "$Bin/lib";    # in a subdirectory =>&&002b
+   my $more_code = <MORE_CODE>; =>&&0017
+ drop_anchor(  ) if at_dock(  ) or in_port(  ); =>&&001f
+ BEGIN { =>&&0026
+ require 'navigation. pm'; =>&&0023
+ sub navigation_turn_toward_heading { . . code here. .  =>&&0035
+ sub turn_toward_port { =>&&0031
+ setenv PERL5LIB /home/skipper/perl-lib =>&&002d
+   turn_toward_heading(compute_heading_to_island(  )); =>&&0032
+   print "Come about to $new_heading "; =>&&0005
+   my $new_heading = shift; =>&&0002
+   navigation_turn_toward_heading(compute_heading_to_island(  )); =>&&0034
+   my @homeport; =>&&0048
+ sub turn_toward_port { # Navigation::turn_toward_port . . code here. .  =>&&0046
+ my($sec, $min, $hour, $mday, $mon, $year, $wday) = localtime; =>&&004c
+ PERL5LIB=/home/skipper/perl-lib; export PERL5LIB =>&&002e
+ sub Navigation::turn_toward_heading { . . code here. .  =>&&003a
+     $direction = 'left'; =>&&000a
+     return; =>&&0013
+     $turn = 360 - $turn; =>&&0009
+ } =>&&000d
+ sub number_to_day_name { my $num = shift @_; $day[$num]; } =>&&004a
+ use lib "$Bin/. . /lib"; # up one, then down into lib =>&&002c
+   unshift @INC, '/home/skipper/perl-lib'; =>&&0027
+   close MORE_CODE; =>&&0018
+ die $@ if $@; . . .  =>&&001e
+ do 'drop_anchor. pm'; =>&&001d
+   } =>&&000b
+ package Navigation; =>&&0036
+ @day = qw(ark dip wap sen pop sep kir); =>&&0049
+ perl -le 'print for @INC' =>&&0024
+ sub get_me_home { =>&&0047
+   undef $/; # enable slurp mode =>&&0016
+ sub turn_toward_heading { =>&&0001
+ sub Navigation::turn_toward_port { . . code here. .  =>&&003b
+   unless ($turn) { =>&&0011
+   sub sound { "moooo" } =>&&0027
+ Sheep->speak; =>&&0013
+   sub speak {. . . } . . .  =>&&003d
+   print "a Cow goes moooo!\n"; =>&&0002
+ use Animal; =>&&0033
+ Animal::speak('Cow'); =>&&0028
+ sub Horse::speak { =>&&0004
+ # which invokes Cow->sound, returning 'moooo', so =>&&002c
+ use vars qw(@ISA); =>&&0030
+ [but you can barely hear it!] =>&&003a
+ a Sheep goes baaaah! =>&&000d
+   sub sound { 'neigh' } =>&&0024
+ $beast->method(@args); =>&&0048
+   sub sound { 'moooo' } =>&&001e
+     $class->Animal::speak(@_); =>&&0043
+ { package Animal; =>&&0025
+ foreach my $beast (@pasture) { =>&&000f
+     my $class = shift; =>&&0020
+     Animal::speak(. . . ); =>&&0041
+ { package Cow; =>&&001d
+   print "a Horse goes neigh!\n"; =>&&0005
+ ('Class', @args) =>&&0049
+ sub Cow::speak { =>&&0001
+ print "a $class goes ", $class->sound, "!\n"; =>&&0029
+ our @ISA = qw(Animal); =>&&0032
+ { package Mouse; =>&&0035
+ { package LivingCreature; =>&&003c
+     print "a $class goes ", $class->sound, "!\n"; =>&&0021
+   print "a Sheep goes baaaah!\n"; =>&&0007
+ Class->method(@args); =>&&0046
+   print "a $class goes neigh!\n"; =>&&001c
+ @ISA = qw(Animal); =>&&0031
+ @Cow::ISA = qw(Animal); =>&&002e
+ a Cow goes moooo! =>&&000b
+ print 'a Cow goes ', Cow->sound, "!\n"; =>&&002b
+ sub Sheep::speak { =>&&0006
+   my $class = shift; =>&&0019
+ Horse::speak; =>&&0009
+ my $beast = 'Cow'; =>&&0014
+ Horse->speak; =>&&0012
+ { package Horse; =>&&0023
+   $beast->speak; =>&&0016
+ use base qw(Animal); =>&&0034
+   sub speak { . . .  =>&&0040
+     print "[but you can barely hear it!]\n"; =>&&0037
+ # but $class is Cow, so. . .  =>&&002a
+ print 'a Cow goes ', 'moooo', "!\n"; =>&&002d
+     $class->SUPER::speak; =>&&0044
+ $beast->speak;                # invokes Cow->speak =>&&0015
+ my @pasture = qw(Cow Cow Horse Sheep Sheep); =>&&000e
+   &{$beast. "::speak"};                # Symbolic coderef =>&&0010
+ Class->method(@args) =>&&0017
+ Sheep::speak; =>&&000a
+   print "a $class goes moooo!\n"; =>&&001b
+   sub speak { =>&&001f
+   } . . .  =>&&0042
+   sub sound { 'squeak' } =>&&0036
+ Cow::speak; =>&&0008
+ Class::method('Class', @args); =>&&0018
+ $class->SUPER::speak(@_); =>&&0045
+   print "a $class goes baaaah!\n"; =>&&001a
+ Cow->speak; =>&&0011
+ Mouse->speak; =>&&0038
+   # no definition for speak(  ) . . .  =>&&003f
+ package Cow; =>&&002f
+   @ISA = qw(Animal); =>&&0026
+ } =>&&0003
+   @ISA = qw(LivingCreature); =>&&003e
+   } =>&&0022
+ a Horse goes neigh! =>&&000c
+ a Mouse goes squeak! =>&&0039
+     Animal::speak($class); =>&&003b
+ my $beast = 'Class'; =>&&0047
+   my $input = $_; =>&&0019
+ my @lunch_choices = grep &is_edible($_), @gilligans_posessions.  =>&&0004
+   my @digits = split //, $input;   # Assume no nondigit characters =>&&001a
+        my $sum; =>&&000e
+ my $count = grep { =>&&0017
+        my @digits = split //, $_; =>&&0027
+ or die "Can't create 'ship. txt': $!";        # user-defined die? =>&&0030
+        } =>&&002c
+        my @digits = split //, $input;  # Assume no nondigit characters =>&&000d
+        if ($digits[-1] =  = 4) { =>&&0028
+ foreach my $operator ( qw(+ - * /) ) { =>&&0039
+   $sum += $_ for @digits; =>&&001c
+ &implement($_) foreach @rescue_scheme;        # die inside sub? =>&&0031
+ my $average = eval { $total / $count } ; =>&&0035
+ my @end_in_4 = grep /4$/, @input_numbers; =>&&0009
+   my $sum; =>&&001b
+ my @castaways = reverse qw(Gilligan Skipper Ginger Professor Mary-Ann); =>&&0003
+ print 'Two castaways are ', 'Gilligan', ' and ', 'Skipper', "\n"; =>&&0001
+ my @input_numbers = (1, 2, 4, 8, 16, 32, 64); =>&&0007
+          (  ); =>&&002b
+ my @results = grep EXPR, @input_list; =>&&0005
+ eval { &rescue_scheme_42 } ; =>&&0034
+ my @result = map { =>&&0026
+ my %hash = @result; =>&&0023
+ #!/usr/bin/perl =>&&0038
+ eval '$sum = 2 + 2'; =>&&0036
+ my @odd_digit_sum = grep { =>&&0018
+ sub digit_sum_is_odd { =>&&000b
+ print 'The quotient is ', eval '5 /', "\n"; =>&&003c
+   code; =>&&0015
+        } else { =>&&002a
+   of; =>&&0014
+ my @results = grep { =>&&0012
+ my $average = $total / $count;                # divide by zero? =>&&002d
+ print "Continuing after error: $@" if $@; =>&&0033
+ my @result = map { $_, 3 * $_ } @input_numbers; =>&&0022
+ eval { $average = $total / $count } ; =>&&0032
+ my %hash = map { $_, 3 * $_ } @input_numbers; =>&&0024
+ } @input_numbers; =>&&001e
+ my @castaways = sort qw(Gilligan Skipper Ginger Professor Mary-Ann); =>&&0002
+  } @input_numbers; =>&&0020
+        return $sum % 2; =>&&0010
+        my $input = shift; =>&&000c
+ open MINNOW, '>ship. txt' =>&&002f
+ } @input_list; =>&&0016
+   $sum += $_ for split //; =>&&001f
+ print "okay\n" unless /$match/;                # illegal pattern? =>&&002e
+ my @result = map { split //, $_ } @input_numbers; =>&&0025
+ my @result = map $_ + 100, @input_numbers; =>&&0021
+ warn $@ if $@; =>&&003d
+ print "The sum is $sum\n"; =>&&0037
+ my $count   = grep EXPR, @input_list; =>&&0006
+ } =>&&0011
+ my @bigger_than_10 = grep $_ > 10, @input_numbers; =>&&0008
+   block; =>&&0013
+ syntax error at (eval 1) line 2, at EOF =>&&003e
+   $sum % 2; =>&&001d
+        my $result = eval "2 $operator 2"; =>&&003a
+ my @odd_digit_sum = grep digit_sum_is_odd($_), @input_numbers; =>&&000a
+        print "2 $operator 2 is $result\n"; =>&&003b
+          @digits; =>&&0029
+        $sum += $_ for @digits; =>&&000f
+ my $tv_horse = =>&&0054
+ $tv_horse->eat('hay'); =>&&002d
+   $self->{Color} = shift; =>&&0042
+     $self->{Color}; =>&&0067
+ ## in Animal =>&&0033
+ Mr. Ed eats hay.  =>&&002f
+     : "an unnamed $either";   # it's a class, return generic =>&&001e
+ my $noise = $tv_horse->sound; =>&&000e
+ ## in Sheep =>&&003b
+ sub default_color { 'brown' } =>&&003d
+ sub named { =>&&0036
+     my $old = $self->{Color}; =>&&004f
+ Mr. Ed says neigh.  =>&&0013
+ sub class_only { =>&&006c
+   Horse->named('Mr. Ed') =>&&0055
+ print $tv_horse->name, ' is colored ', $tv_horse->color, "\n"; =>&&0044
+     # this method call is not in void context, so =>&&004d
+     my $either = shift; =>&&0023
+   $self->{Color} = [@_];                # set colors to remaining parameters =>&&005f
+     $old; =>&&0051
+   ref(my $self = shift) or croak "instance variable needed"; . . . use $self as the instance. . .  =>&&006b
+ use Color::Conversions qw(color_name_to_rgb rgb_to_color_name); . . .  =>&&005a
+   sub sound { 'neigh' } =>&&0009
+   print $either->name, ' goes ', $either->sound, "\n"; =>&&0022
+   if (@_) {              # are there any more parameters? =>&&0064
+ { package Animal; =>&&0001
+ sub color     { $_[0]->{Color} } =>&&0062
+     my $class = shift; =>&&0003
+   my $either = shift; =>&&001b
+   if (defined wantarray) { =>&&004c
+   } else { =>&&0052
+ sub get_color_rgb { =>&&0060
+ a Horse=SCALAR(0xaca42ac) goes neigh! =>&&0019
+ instance variable needed at their_code line 1234 =>&&006e
+     : "an unnamed $either"; =>&&0035
+     my $self = shift; =>&&0011
+     ref $either =>&&0024
+ sub set_color { =>&&0041
+     print "a $class goes ", $class->sound, "!\n" =>&&0004
+ sub set_color_rgb { =>&&005e
+ print Horse->name, "\n";      # prints "an unnamed Horse\n" =>&&001f
+   rgb_to_color_name($self->{Color});               # takes arrayref =>&&005d
+       : "an unnamed $either"; # it's a class, return generic =>&&0026
+ { package Sheep; =>&&002b
+       ? $$either # it's an instance, return name =>&&0025
+     bless \$name, $class; =>&&0016
+   my $name = shift; =>&&0038
+ $tv_horse->speak; =>&&0018
+ Animal::eat($tv_horse, 'hay'); =>&&0031
+   my $class = shift; =>&&0037
+ print Sheep->name, ' colored ', Sheep->color, ' goes ', Sheep->sound, "\n"; =>&&0072
+ my $name = 'Mr. Ed'; =>&&000b
+     print $either->name, ' goes ', $either->sound, "\n"; =>&&0027
+        ->set_color('grey') =>&&0056
+   $self->{Color}; =>&&0040
+     # this method call is in void context =>&&0053
+ $tv_horse->set_color( $eating->set_color( color_from_user(  ) )); =>&&0046
+     # no, it's a getter: =>&&0066
+ Horse::sound($tv_horse) =>&&000f
+     ? $$either                # it's an instance, return name =>&&001d
+ my $lost = bless { Name => 'Bo', Color => 'white' }, Sheep; =>&&0032
+   my $old = $self->{Color}; =>&&004a
+ { package Horse; =>&&0007
+   $tv_horse->set_color($old_color); =>&&0049
+     $self->{Color} = shift; =>&&0050
+ { =>&&0047
+ $tv_horse->set_color('grey'); =>&&0070
+ $tv_horse->color('black-and-white'); =>&&0068
+ sub default_color { 'white' } =>&&003c
+ Sheep->eat('grass'); =>&&002e
+     my $name = shift; =>&&0015
+ an unnamed Sheep eats grass.  =>&&0030
+ $tv_horse->set_color('black-and-white'); =>&&0043
+ sub set_color { $_[0]->{Color} = $_[1] } =>&&0063
+   ref $either =>&&001c
+   my $new_color = shift; =>&&005b
+ sub name { =>&&001a
+     # yes, it's a setter: =>&&0065
+   sub speak { =>&&0002
+ my $tv_horse = \$name; =>&&000c
+     # the return value matters =>&&004e
+   ref(my $class = shift) and croak "class name needed"; . . . use $class as the class. . .  =>&&006d
+ Mr. Ed is colored black-and-white =>&&0045
+   $self->{Color} = color_name_to_rgb($new_color);  # arrayref =>&&005c
+ sub speak { =>&&0021
+     ? $either->{Name} =>&&0034
+   sub name { =>&&0010
+ print $tv_horse->name, "\n";   # prints "Mr. Ed. \n" =>&&0020
+        ->set_age(4) =>&&0057
+   sub eat { =>&&0028
+ print $tv_horse->name, ' is ', $tv_horse->color, "\n"; =>&&0071
+     print $either->name, " eats $food. \n"; =>&&002a
+   sub sound { 'baaaah' } =>&&002c
+   @{ $self->{Color} };                  # return RGB list =>&&0061
+   @ISA = qw(Animal); =>&&0008
+   my $old_color = $tv_horse->set_color('orange'); . . . do things with $tv_horse. . .  =>&&0048
+ } =>&&0006
+   sub named { =>&&0014
+ bless $tv_horse, 'Horse'; =>&&000d
+ use Carp qw(croak); =>&&0069
+ my $tv_horse = Horse->named('Mr. Ed'); =>&&0017
+   $old; =>&&004b
+   bless $self, $class; =>&&003a
+   } =>&&0005
+ a Horse goes neigh! =>&&000a
+ sub instance_only { =>&&006a
+   $self; =>&&0059
+        ->set_height('17 hands'); =>&&0058
+   my $self = { Name => $name, Color => $class->default_color }; =>&&0039
+   my $self = shift; =>&&003f
+     my $food = shift; =>&&0029
+ sub color { =>&&003e
+     $$self; =>&&0012
+ $tv_horse->set_name('Mister Ed'); =>&&006f
+  my @data2 = qw(two too to); =>&&003d
+  jacket =>&&007a
+ ginger. girl. hut maryann. girl. hut 199 . . .  =>&&009d
+    name     => 'Skipper',  =>&&0073
+ my @data1 = qw(one won); =>&&0038
+ my $ref_to_skipper_provisions; =>&&0047
+  'The Skipper',  =>&&004d
+ Gilligan =>&&0080
+ my $not_yet; =>&&0093
+    \@gilligan_with_name,  =>&&0030
+  $fruits = \@secret_variable; =>&&0052
+ my $top; =>&&0095
+ my $second_reference_to_skipper = $reference_to_skipper; =>&&0003
+ ],  =>&&0059
+ push @$ref, 'sextant'; # add a new provision =>&&0016
+ professor. hut gilligan. crew. hut 1250 =>&&0097
+    die "I don't understand: $_"; =>&&008d
+  for my $destination (sort keys %{ $total_bytes{$source} }) { =>&&00a6
+    position => 'Captain',  =>&&0076
+ my $ref; =>&&000f
+ print "$ref->[2]\n"; # still prints jacket\n =>&&0015
+ my @all_with_names; =>&&0026
+ @skipper =>&&0005
+ @$not_yet = (1, 2, 3); =>&&0092
+  my @professor_with_name = ('The Professor', \@professor); =>&&002a
+ sub get_provisions_list { =>&&0033
+  [ qw(blue_shirt hat jacket preserver sunscreen) ]; =>&&0046
+  name     => 'Gilligan',  =>&&005b
+ my $copy_of_ref = $ref; =>&&0018
+  } elsif (/^\s+(\S. *)/) { # a provision =>&&0089
+ my @skipper_with_name = ( =>&&004c
+  push @data1, \@data2; . . . use @data1, @data2. . .  =>&&003f
+  print "$ref->[2]\n"; # prints jacket\n =>&&0013
+ push @{ $provisions{'The Skipper'} }, "blue_shirt"; =>&&0090
+    \@skipper_with_name,  =>&&002e
+  my @professor = qw(sunscreen water_bottle slide_rule batteries radio); =>&&0034
+ $not_yet = [  ]; # inserted through autovivification =>&&0094
+  $ref_to_gilligan_info = \%gilligan_info; =>&&006b
+  my @data1 = qw(one won); =>&&003c
+ my @gilligan = qw(red_shirt hat lucky_socks water_bottle); =>&&001f
+ my @professor_with_name = ('The Professor', \@professor); =>&&001e
+ my $ref_to_gilligan_info; =>&&0065
+   [  ] =>&&0058
+  $ref        = \@skipper; =>&&0012
+ my @all_with_names = ( =>&&0021
+ @$third_reference_to_skipper =>&&0008
+ my $ref_to_skipper_info = { =>&&006e
+    ['The Professor', [qw(sunscreen water_bottle slide_rule radio)  ] ],  =>&&0055
+    ['Gilligan', [qw(red_shirt hat lucky_socks water_bottle)   ] ],  =>&&0056
+        \@gilligan_with_name,  =>&&0024
+ initialize_provisions_list(  ); =>&&0032
+  if (/^(\S. *)/) { # a person's name (no leading whitespace) =>&&0086
+ my $reference_to_skipper = \@skipper; =>&&0002
+   for my $destination (keys %{ $total_bytes{$source} }) { . . . .  =>&&00a4
+ for my $source (sort keys %total_bytes) { =>&&00a5
+        \@professor_with_name,  =>&&0023
+    shirt    => 'Blue',  =>&&0075
+  hat      => 'White',  =>&&005c
+ for my $source (keys %total_bytes) { . . .  =>&&00a2
+  @data2 = (  ); =>&&0042
+ my @skipper_with_name; =>&&0043
+  my @gilligan = qw(red_shirt hat lucky_socks water_bottle); =>&&002b
+    position => 'First Mate',  =>&&006a
+    hat      => 'Black',  =>&&0074
+    push @{ $provisions{$person} }, $1; =>&&008b
+ my %gilligan_info = ( =>&&005a
+  shirt    => 'Blue',  =>&&0062
+ my @crew = ( =>&&0070
+  push @data2, \@data1; =>&&003e
+  blue_shirt =>&&0078
+ $ref = undef; # not yet. . .  =>&&001a
+ push @data1, \@data2; =>&&003b
+    hat      => 'White',  =>&&0068
+       my @professor = qw(sunscreen water_bottle slide_rule batteries radio); =>&&0029
+  my %gilligan_info = ( =>&&0066
+ my %provisions; =>&&0083
+ my @gilligan_with_name  = ('Gilligan', \@gilligan); =>&&0020
+  },  =>&&0072
+  position => 'First Mate',  =>&&005e
+ for my $source (keys %total_bytes) { =>&&00a3
+  sunscreen =>&&007c
+ my $ref_to_skipper_provisions = =>&&0045
+ my @passengers = (\%passenger_1, \%passenger_2); =>&&00b5
+  } else { =>&&008c
+    \@professor_with_name,  =>&&002f
+  @data1 = (  ); =>&&0041
+ Professor =>&&007d
+        ); =>&&0025
+  preserver =>&&007b
+ $top->[2]->[4] = 'lee-lou'; =>&&0096
+   $total_bytes{$source}{$destination} += $bytes; =>&&00a0
+  @all_with_names = ( # set global =>&&002d
+ }; =>&&006d
+ { =>&&0010
+ ); =>&&004f
+  shirt    => 'Red',  =>&&005d
+  hat =>&&0079
+  } =>&&008e
+  ( qw(blue_shirt hat jacket preserver sunscreen) ); =>&&0049
+ print "$ref->[-1]\n"; # prints sextant\n =>&&0017
+  hat           => 'bonnet',  =>&&00b3
+ my %passenger_2 = { =>&&00b0
+ { # naked block . . .  =>&&000c
+ push @data2, \@data1; =>&&003a
+  [ qw(blue_shirt hat jacket preserver sunscreen) ] =>&&004e
+  my @gilligan_with_name = ('Gilligan', \@gilligan); =>&&002c
+ while (<>) { =>&&0085
+  return ( =>&&0035
+  name       => 'Ginger',  =>&&00ab
+    $provisions{$person} = [  ] unless exists $provisions{$person}; =>&&0088
+  age        => 22,  =>&&00ac
+    ['The Skipper', [qw(blue_shirt hat jacket preserver sunscreen)] ],  =>&&0054
+  @skipper_with_name = ('The Skipper', \@skipper); =>&&0044
+ my %skipper_info = ( =>&&005f
+  ); =>&&0031
+    $person = $1; =>&&0087
+     " $total_bytes{$source}{$destination} bytes\n"; =>&&00a8
+  lucky_socks =>&&0082
+ professor. hut lovey. howell. hut 910 =>&&0098
+ my $person; =>&&0084
+    die 'No person yet!' unless defined $person; =>&&008a
+ sub initialize_provisions_list { =>&&0027
+    name     => 'Gilligan',  =>&&0067
+ $total_bytes{'professor. hut'}{'gilligan. crew. hut'} += 1250; =>&&00a1
+  name     => 'Skipper',  =>&&0060
+  hat      => 'Black',  =>&&0061
+ my @skipper = qw(blue_shirt hat jacket preserver sunscreen); =>&&0001
+ my $not_yet;                # new undefined variable =>&&0091
+  age           => 19,  =>&&00b2
+  red_shirt =>&&0081
+ $reference_to_skipper = undef; =>&&000a
+ my @skipper =. . . ; =>&&000b
+ professor. hut laser3. copyroom. hut 2924 =>&&009b
+        \@skipper_with_name,  =>&&0022
+ my @all_with_names = get_provisions_list(  ); =>&&0036
+ my $gilligan_stuff = $all_with_names[2][1]; =>&&0037
+  # at the end: =>&&0040
+  real_age   => 35,  =>&&00ae
+ my $third_reference_to_skipper  = \@skipper; =>&&0004
+ my @professor = qw(sunscreen water_bottle slide_rule batteries radio); =>&&001d
+  my @skipper_with_name = ('The Skipper', \@skipper); =>&&0028
+  my @temporary_name = =>&&0048
+ ['Mrs. Howell',  =>&&0057
+ ginger. girl. hut professor. hut 1218 =>&&009c
+ my $ref = \@skipper; . . .  . . .  =>&&000d
+  favorite_food => 'corn',  =>&&00b4
+  $ref_to_skipper_provisions = \@temporary_name; =>&&004a
+  water_bottle =>&&007e
+ @$second_reference_to_skipper =>&&0007
+ check_provisions_list(\@skipper) =>&&0009
+  position => 'Captain',  =>&&0063
+ } =>&&0014
+  hat        => undef,  =>&&00af
+  name          => 'Mary Ann',  =>&&00b1
+  my @secret_variable = ('pineapple', 'papaya', 'mango'); =>&&0051
+ The Skipper =>&&0077
+  my @skipper = qw(blue_shirt hat jacket preserver sunscreen); =>&&0011
+ my @crew = (\%gilligan_info, \%skipper_info); =>&&0064
+ professor. hut lovey. howell. hut 450 =>&&009a
+ $copy_of_ref = undef; # poof! =>&&001b
+ my %passenger_1 = { =>&&00aa
+ my $copy_of_ref = \@$ref; =>&&0019
+    shirt    => 'Red',  =>&&0069
+ my %total_bytes; =>&&009e
+  { =>&&0071
+ @$reference_to_skipper =>&&0006
+ my @skipper_with_name   = ('The Skipper', \@skipper); =>&&001c
+ my @skipper_with_name = ('The Skipper', $ref_to_skipper_provisions); =>&&004b
+ my $fruits; =>&&0050
+ my $fruits = ['pineapple', 'papaya', 'mango']; =>&&0053
+ } # $ref goes out of scope at this point =>&&000e
+ my @data2 = qw(two too to); =>&&0039
+  print "\n"; =>&&00a9
+   my ($source, $destination, $bytes) = split; =>&&009f
+  slide_rule =>&&007f
+    ## $provisions{$person} = [  ] unless exists $provisions{$person}; =>&&008f
+  occupation => 'Movie Star',  =>&&00ad
+ thurston. howell. hut lovey. howell. hut 1250 =>&&0099
+ my @crew = ($ref_to_gilligan_info, $ref_to_skipper_info); =>&&006f
+ my $ref_to_gilligan_info = { =>&&006c
+    print "$source => $destination:",  =>&&00a7
+ open my $log_fh, '>>', 'castaways. log' =>&&0017
+        print "I found $file!\n"; =>&&0057
+ open $log_fh, '>> castaways. log' =>&&000a
+      print $OUT $line; =>&&0034
+        (my $out = $file) =~ s/\. input$/. output/; =>&&0023
+ use IO::Scalar; =>&&0037
+        } =>&&003e
+ open my $fh, "castaways. log" =>&&0014
+   my $fh = shift; =>&&0012
+ while (@handlepairs) { =>&&0028
+        print "Skipper, I found $file!\n"; =>&&0053
+ $temp_fh->close; =>&&001f
+        or die "Could not append to string! $!"; =>&&0040
+ # prints to $log_fh and $scalar_fh =>&&004f
+    defined($line = <IN>) and print $OUT $line; =>&&0036
+   print $fh @_, "\n"; =>&&0013
+ foreach my $file  ( readdir( $dh ) ) { =>&&0052
+ my $message = <$tee_fh>; =>&&004e
+ $tee_fh = IO::Tee->new( $log_fh, $scalar_fh ); =>&&004a
+ # reads from $read_fh =>&&004d
+    my ($IN, $OUT) = @$_; =>&&0032
+ my $append_fh = IO::File->new( 'castaways. log', O_WRONLY|O_APPEND ); =>&&001d
+ my @handlepairs; =>&&0021
+ use IO::Dir; =>&&0054
+        or die "Could not create filehandle: $!"; =>&&001a
+        next unless /Gilligan/; =>&&003c
+   @handlepairs = grep { =>&&0029
+ Skipper: 3 coconuts =>&&005c
+ $dir_fh->rewind; =>&&0059
+ print {$log_fh} "We have no bananas today!\n"; =>&&0010
+ while( <$scalar_fh> ) { =>&&003b
+ while( <$log_fh> ) {. . . } =>&&0016
+                (IO::File->new('<$file') || die),  =>&&0025
+ print $tee_fh $message; =>&&0050
+ use IO::File; =>&&0018
+    if (defined(my $line = <$IN>)) { =>&&0033
+        or die "Could not open castaways. log"; =>&&0042
+         or die "Could not open castaways. log: $!"; =>&&000c
+ my $write_fh = IO::File->new( 'castaways. log', 'w' ); =>&&001c
+        push @handlepairs, [ =>&&0024
+  @handlepairs = grep { =>&&0031
+ print $log_fh    $log_message; =>&&0045
+ my $scalar_fh = IO::Scalar->new( \$string_log ); =>&&0039
+        print "I can still find $file!\n"; =>&&005a
+ print $tee_fh "The radio works in the middle of the ocean!\n"; =>&&004b
+ opendir my $dh, '. ' or die "Could not open directory: $!"; =>&&0051
+  } @handlepairs; =>&&002f
+  print FH @_, "\n"; =>&&0007
+ while( <LOG_FH> ) {. . . } =>&&0015
+    } =>&&002e
+ print $scalar_fh "The Howells' private beach club is closed\n"; =>&&003a
+  local *FH = shift; =>&&0006
+ # time passes =>&&0058
+        ]; =>&&0027
+        print; =>&&003d
+    if (defined(my $line = $_->[0]->getline)) { =>&&002a
+                (IO::File->new('>$out') || die),  =>&&0026
+      0; =>&&002d
+ log_message( *LOG_FH, 'An astronaut passes overhead' ); =>&&0004
+ open( my $fh, '>>', \$string_log ) =>&&003f
+ my $read_fh  = IO::File->new( 'castaways. log', 'r' ); =>&&001b
+ Ginger: 2 papayas =>&&005e
+    my $line; =>&&0035
+ my $temp_fh = IO::File->new_tmpfile; =>&&001e
+ Gilligan: 1 coconut =>&&005b
+ my $log_message = "The Minnow is taking on water!\n" =>&&0044
+ while( defined( my $file = $dir_fh->read ) ) { =>&&0056
+ open my $scalar_fh, '>>', \$string; =>&&0043
+        or die "Could not open castaways. log: $!"; =>&&0002
+ $tee_fh = IO::Tee->new( $read_fh, $log_fh, $scalar_fh ); =>&&004c
+ my $fh = IO::File->new( '> castaways. log' ) =>&&0019
+ @handlepairs = grep { CONDITION } @handlepairs; =>&&0030
+ foreach my $file ( glob( '*. input' ) ) { =>&&0022
+ foreach my $fh ( $log_fh, $scalar_fh ) { =>&&0047
+ my $dir_fh = IO::Dir->new( '. ' ) || die "Could not open dirhandle! $!\n"; =>&&0055
+ open LOG_FH, '>> castaways. log' =>&&0001
+ MaryAnn: 2 papayas . . .  =>&&0060
+        print $fh $log_message; =>&&0048
+ } =>&&0008
+ my $log_fh; =>&&0009
+    } else { =>&&002c
+ Professor: 3 coconuts =>&&005f
+ my $log_fh = 5; =>&&000b
+ print $log_fh "We have no bananas today!\n"; =>&&000f
+ my $string_log = ''; =>&&0038
+      print { $_->[1] } $line; =>&&002b
+ print $scalar_fh $log_message; =>&&0046
+ log_message( $log_fh, 'My name is Mr. Ed' ); =>&&0011
+ sub log_message { =>&&0005
+ my $string = ''; =>&&0041
+ undef $append_fh; =>&&0020
+ Gilligan: 1 banana =>&&005d
+ open my $log_fh, '>> castaways. log' =>&&000e
+ log_message( *LOG_FH, 'The Globetrotters are stranded with us!' ); =>&&0003
+ use IO::Tee; =>&&0049
+ print $log_fh "We need more coconuts!\n";   # doesn't work =>&&000d
+ $ perl Makefile. PL PREFIX=/Users/home/Ginger =>&&0023
+ my $filespec = File::Spec->catfile( $homedir{gilligan},  =>&&0016
+ *** Please report bugs to <cpanplus-bugs@lists. sourceforge. net>.  =>&&003e
+ use File::Spec; =>&&0015
+ $ export PERL5LIB=/Users/home/Ginger =>&&0024
+         $dirname = dirname($fullname); =>&&000b
+ ReadLine support available (try 'install Bundle::CPAN') =>&&0038
+ my $dirname  = dirname(  $some_full_path ); =>&&000e
+ use Math::BigInt; =>&&0018
+ $ cpan CGI::Prototype HTTP::Cookies::Safari Test::Pod =>&&003b
+ unshift @INC, '/home/gilligan/lib';   # broken =>&&002e
+ $value->bpow(1000);               # take 2**1000 =>&&001a
+ $ wget http://www. cpan. org/. . . /HTTP-Cookies-Safari-1. 10. tar. gz =>&&001c
+ use lib qw(/Users/home/Ginger); =>&&0026
+ my $basename = basename( $some_full_path ); =>&&000d
+ $ perl Build =>&&0028
+ Can't locate Navigation/SeatofPants. pm in @INC (@INC contains:. . . ) =>&&002d
+ $ perl Build install =>&&002a
+ use constant LIB_DIR => '/home/gilligan/lib'; . . .  =>&&0034
+ cpan shell -- CPAN exploration and modules installation (v1. 7601) =>&&0037
+ my $dirname = File::Basename::dirname($some_path); =>&&0011
+ my $basename = File::Basename::basename($some_path); =>&&0012
+ $ make install =>&&0022
+ $ cd HTTP-Cookies-Safari-1. 10s =>&&001e
+ $ perldoc File::Basename =>&&0001
+ $ perl -MCPANPLUS -e shell =>&&003c
+ $ cpanp i CGI::Prototype HTTP::Cookies::Safari Test::Pod =>&&0043
+ CPAN Terminal> i CGI::Prototype =>&&0042
+ print $value->bstr(  ), "\n";     # print it out =>&&001b
+ use Navigation::SeatOfPants; =>&&002c
+       fileparse - split a pathname into pieces =>&&0003
+ #!/usr/bin/perl =>&&0025
+ $ make test =>&&0021
+ $ tar -xzf HTTP-Cookies-Safari-1. 10. tar. gz =>&&001d
+ *** Using CPANPLUS::Backend v0. 049.  =>&&003f
+         $basename = basename($fullname, @suffixlist); =>&&000a
+ $ perl Build test =>&&0029
+ use lib '/home/gilligan/lib'; =>&&0030
+ use File::Basename (  );              # no import =>&&0013
+         use File::Basename; =>&&0007
+ CPANPLUS::Shell::Default -- CPAN exploration and modules installation (v0. 03) =>&&003d
+ cpan> =>&&0039
+ $ perl -MCPAN -e shell =>&&0036
+ cpan> install CGI::Prototype =>&&003a
+ *** ReadLine support available (try 'i Term::ReadLine::Perl').  =>&&0040
+         ($name, $path, $suffix) = fileparse($fullname, @suffixlist) =>&&0008
+ SYNOPSIS =>&&0006
+ NAME =>&&0002
+ my $base = File::Basename::basename($some_path); =>&&0014
+ $ make =>&&0020
+         fileparse_set_fstype($os_string); =>&&0009
+ $ perl Makefile. PL =>&&001f
+ use File::Basename; =>&&000c
+ my $LIB_DIR = '/home/gilligan/lib'; . . .  =>&&0032
+ use lib '/home/gilligan/lib/Navigation/SeatOfPants. pm'; # WRONG =>&&0031
+ use File::Basename qw( fileparse basename ); =>&&0010
+ use lib $LIB_DIR;     # BROKEN =>&&0033
+       dirname - extract just the directory from a path =>&&0005
+ use File::Basename ('fileparse', 'basename'); =>&&000f
+ my $value = Math::BigInt->new(2); # start with 2 =>&&0019
+         'web_docs', 'photos', 'USS_Minnow. gif' ); =>&&0017
+ use lib LIB_DIR; =>&&0035
+       basename - extract just the filename from a path =>&&0004
+ $ perl Build. PL =>&&0027
+ BEGIN { unshift @INC, '/home/gilligan/lib'; } =>&&002f
+ CPAN Terminal> =>&&0041
+ $ perl Build. PL --install_base /Users/home/Ginger =>&&002b
+  if (@missing) { =>&&0038
+      print "$who is missing $item. \n"; =>&&0035
+ my $second_reference_to_skipper = $reference_to_skipper; =>&&001a
+     $crewmember->{'name'},  =>&&0071
+ my @keys = keys % gilligan_info; =>&&0057
+    print "Adding @missing to @$items for $who. \n"; =>&&0039
+ if ($reference_to_skipper =  = $second_reference_to_skipper) { =>&&001c
+ $root -> [2] -> [1] -> [0] =>&&004a
+   unless (grep $item eq $_, @skipper) { # not found in list? =>&&0004
+ @ { $hash_ref } { qw(name position) } =>&&0076
+ check_required_items('Professor', \@professor); =>&&002a
+   check_required_items($who, $provisions_reference); =>&&0046
+   name     => 'Gilligan',  =>&&005c
+  name     => 'Gilligan',  =>&&0050
+ my $name = $hash_ref->{'name'}; =>&&005b
+   my $provisions_reference = $$person[1]; =>&&0045
+  printf $format, @$crewmember{qw(name shirt hat position)}; =>&&0079
+ my $ref = $crew[0]; $$ref{'name'} =>&&0067
+ check_required_items('skipper', @skipper); =>&&0017
+ my $name = $ { $hash_ref } { 'name' }; =>&&0056
+  \@skipper_with_name,  =>&&003f
+ my @gilligan = qw(red_shirt hat lucky_socks water_bottle); =>&&0008
+   printf $format,  =>&&0070
+ my $name = $ gilligan_info { 'name' }; =>&&0055
+   my $items = shift; =>&&0021
+  for my $crewmember (@crew) { =>&&006f
+ my @all_with_names = ( =>&&003e
+ @ gilligan_info { qw(name position) } =>&&0075
+     unless (grep $item eq $_, @{$items}) { # not found in list? =>&&0028
+ my $reference_to_skipper = \@skipper; =>&&0019
+ $crew[0]->{'name'} =>&&0068
+ my @gilligan  =. . . gilligan items. . . ; =>&&007e
+ for my $item (@required) { =>&&0003
+ my @keys = keys %$hash_ref; =>&&005a
+  printf $format, qw(Name Shirt Hat Position); =>&&006e
+  hat      => 'White',  =>&&0051
+  \@professor_with_name,  =>&&0040
+   for my $item (@required) { =>&&0011
+  my $who   = shift; =>&&0032
+ my %gilligan_info = ( =>&&004f
+ my @skipper  = qw(blue_shirt hat jacket preserver sunscreen); =>&&0002
+ my $third_reference_to_skipper = \@skipper; =>&&001b
+ my @professor_with_name = ('Professor', \@professor); =>&&003c
+ Take $root.  =>&&004e
+ @ $hash_ref { qw(name position) } =>&&0077
+   hat      => 'White',  =>&&005d
+ my $name = $$hash_ref{'name'}; =>&&0059
+    unless (grep $item eq $_, @{$_[1]}) { # not found in list? =>&&002e
+  position => 'First Mate',  =>&&0053
+ $ginger->[2]->[1] =>&&007c
+   check_required_items(@$person); =>&&0047
+ ${ $items }[1] =>&&0026
+   unless (grep $item eq $_, @professor) { # not found in list? =>&&000c
+     $crewmember->{'hat'},  =>&&0073
+  my @required = qw(preserver sunscreen water_bottle jacket); =>&&002c
+  my $items = shift; =>&&0033
+   print "They are identical references. \n"; =>&&001d
+ for my $person (@all_with_names) { =>&&0043
+     $crewmember->{'shirt'},  =>&&0072
+     } =>&&0014
+   position => 'Captain',  =>&&0064
+ ${ $crew[0] } { 'name' } =>&&0066
+      print "$_[0] is missing $item. \n"; =>&&002f
+       print "$who is missing $item. \n"; =>&&0013
+   name     => 'Skipper',  =>&&0061
+  } =>&&0031
+ ); =>&&0042
+  shirt    => 'Red',  =>&&0052
+ ${${${$root}[2]}[1]}[0] =>&&004c
+ my @skipper   = qw(blue_shirt hat jacket preserver sunscreen); =>&&0016
+    push @$items, @missing; =>&&003a
+  \@gilligan_with_name,  =>&&0041
+   position => 'First Mate',  =>&&005f
+     print "professor is missing $item. \n"; =>&&000d
+    } =>&&0030
+   my $who   = shift; =>&&0027
+   my $who = shift; =>&&000f
+ sub check_required_items { =>&&000e
+   Professor => \@professor,  =>&&0084
+ my %skipper_info = ( =>&&0060
+ my $hash_ref = \%gilligan_info; =>&&0054
+   hat      => 'Black',  =>&&0062
+  ); =>&&006a
+ for my $crewmember (@crew) { =>&&0078
+ my @required = qw(preserver sunscreen water_bottle jacket); =>&&0001
+ @{ $items } =>&&0024
+     $crewmember->{'position'}; =>&&0074
+     print "skipper is missing $item. \n"; =>&&0005
+  my %skipper_info = ( =>&&006b
+ my @skipper = qw(blue_shirt hat jacket preserver sunscreen); =>&&001f
+ $ginger->[2][1] =>&&007a
+ check_required_items("The Skipper", \@skipper); =>&&0020
+ my @professor = qw(sunscreen water_bottle slide_rule batteries radio); =>&&000b
+     unless (grep $item eq $_, @_) { # not found in list? =>&&0012
+ check_required_items('gilligan', @gilligan); =>&&0015
+  my @crew = (\%gilligan_info, \%skipper_info); =>&&006c
+ my @skipper   =. . . skipper items. . . ; =>&&007f
+ @{$root->[2][1]} =>&&004d
+ $crew[0]{'name'} =>&&0069
+  my $format = "%-15s %-7s %-7s %-15s\n"; =>&&006d
+ my @professor =. . . professor items. . . ; =>&&0080
+ $  skipper [1] =>&&0025
+ ARRAY(0x1a2b3c) =>&&001e
+  my @missing = (  ); =>&&0036
+ check_required_items('The Skipper', \@skipper); =>&&0029
+  for my $item (@required) { =>&&002d
+   my @required = qw(preserver sunscreen water_bottle jacket); =>&&0010
+ } =>&&0007
+ check_required_items(@$_) for @all_with_names; =>&&0048
+ check_items_for_all(\%all); =>&&0085
+   my @required = qw(preserver sunscreen water_bottle jacket); . . .  =>&&0022
+ my @gilligan_with_name = ('Gilligan', \@gilligan); =>&&003d
+ my $root = \@all_with_names; =>&&0049
+ my @crew = (\%gilligan_info, \%skipper_info); =>&&0065
+    unless (grep $item eq $_, @$items) { # not found in list? =>&&0034
+ my @skipper_with_name = ('Skipper', \@skipper); =>&&003b
+ @  skipper =>&&0023
+   Skipper   => \@skipper,  =>&&0083
+      push @missing, $item; =>&&0037
+ my @keys = keys % { $hash_ref }; =>&&0058
+ my %all = ( =>&&0081
+ check_required_items('Gilligan', \@gilligan); =>&&002b
+   } =>&&0006
+   my $who = $$person[0]; =>&&0044
+ ${$ginger->[2]}[1] =>&&007d
+ ${$ginger[2]}[1] =>&&007b
+   shirt    => 'Red',  =>&&005e
+     print "gilligan is missing $item. \n"; =>&&000a
+   shirt    => 'Blue',  =>&&0063
+   unless (grep $item eq $_, @gilligan) { # not found in list? =>&&0009
+ check_required_items('professor', @professor); =>&&0018
+ $root -> [2][1][0] =>&&004b
+   Gilligan  => \@gilligan,  =>&&0082
+  0  HASH(0x297474) =>&&005c
+ $Data::Dumper::Purity = 1; =>&&00aa
+ my @data1 = qw(one won); =>&&007c
+    2  'thurston. howell. hut' =>&&0057
+ DB<8> x $source, $destination, $bytes =>&&003d
+  main::(bytecounts:8):        for my $source (sort keys %total_bytes) { =>&&0053
+          [  ] =>&&00b5
+ DB<9> s =>&&003f
+ my @bigger_indices = grep { =>&&00c4
+     'gilligan. crew. hut' => 1250 =>&&0024
+ DB<6> s =>&&0034
+ my @person_item_pairs = map { =>&&00db
+           'thurston. howell. hut' => { =>&&006e
+ my @bigger = @x[@bigger_indices]; =>&&00ca
+  main::(bytecounts:4):          my ($source, $destination, $bytes) = split; =>&&0026
+ 'professor. hut' => 1218 =>&&005e
+ professor. hut gilligan. crew. hut 1250 =>&&000c
+  2  199 =>&&004e
+ } 0. . $#input_numbers; =>&&00bd
+ myhost% perl bytecounts2 <bytecounts-in =>&&006c
+            'two',  =>&&0085
+ --- #YAML:1. 0 =>&&009e
+ Editor support available.  =>&&0014
+ main::(bytecounts:5):          $total_bytes{$source}{$destination} += $bytes; =>&&001a
+  main::(bytecounts:5):          $total_bytes{$source}{$destination} += $bytes; =>&&0027
+ } 0. . $#x; =>&&00c9
+              'too',  =>&&00b0
+        } =>&&009c
+          'one',  =>&&0082
+ print Dumper(\@data1, \@data2); =>&&0080
+ my ($arr1, $arr2) = @{ retrieve 'some_file' }; =>&&00b8
+  while (<>) { =>&&0002
+    0  ARRAY(0xf914) =>&&008e
+ my @bigger = map { =>&&00cc
+ 'maryann. girl. hut' => 199 =>&&005d
+  $_ > $#y or $x[$_] > $y[$_]; =>&&00cb
+   my @items = @{ $provisions{$person} }; =>&&00dd
+ DB<21> x $total_bytes{$source}{$destination} =>&&0066
+ 0  'professor. hut' =>&&001c
+ DB<4> x \%total_bytes =>&&002e
+            'too',  =>&&0086
+  lovey. howell. hut: 1360 =>&&00a4
+ DB<6> x $source, $destination, $bytes =>&&0035
+ ginger. girl. hut: =>&&009f
+          ] =>&&0089
+  DB<1> s =>&&0017
+ print Dump(\%total_bytes); =>&&009d
+    $x[$_]; =>&&00cd
+ 'thurston. howell. hut' => HASH(0x2f9538) =>&&003a
+    0  'two' =>&&0092
+  2  1250 =>&&0037
+  gilligan. crew. hut: 1250 =>&&00a3
+            'won',  =>&&00ad
+                                'lovey. howell. hut' => 1360 =>&&0077
+                                    },  =>&&0070
+ DB<3> s =>&&0025
+  professor. hut: 1218 =>&&00a1
+ use Data::Dumper; =>&&0068
+  DB<1> x $source, $destination, $bytes =>&&001b
+ my @packed_light = grep @{ $provisions{$_} } < 5, keys %provisions; =>&&00d4
+ my @remapped_list = map { =>&&00d9
+           'ginger. girl. hut' => { =>&&0071
+   [ $_ => $provisions{$_} ]; =>&&00da
+ DB<20> s =>&&0062
+  0  'professor. hut' =>&&0029
+    'lovey. howell. hut' => 910 =>&&0032
+ -> REUSED_ADDRESS =>&&0098
+  0  HASH(0x132dc) =>&&002f
+    'lovey. howell. hut' => 1360 =>&&0041
+  my $sum; =>&&00c0
+ DB<2> x \%total_bytes =>&&0021
+ store [\@data1, \@data2], 'some_file'; =>&&00a8
+ $VAR2 = $VAR1->[2]; =>&&008c
+ DB<18> x keys %{ $total_bytes{$source } } =>&&005f
+ my @input_numbers = (1, 2, 4, 8, 16, 32, 64); =>&&00bb
+            'one',  =>&&00ac
+              [  ] =>&&00b2
+   for my $destination (sort keys %{ $total_bytes{$source} }) { =>&&0007
+  2  910 =>&&002b
+ DB<7> x \%total_bytes =>&&0039
+ my @indices_of_odd_digit_sums = grep { =>&&00be
+ 'professor. hut' => HASH(0x37a34) =>&&0030
+            [  ] =>&&0088
+ push @data1, \@data2; =>&&007f
+ 1  'gilligan. crew. hut' =>&&001d
+  2  450 =>&&003e
+ DB<14> x sort keys %total_bytes =>&&0054
+ my @odd_digit_sums = @input_numbers[ @indices_of_odd_digit_sums ]; =>&&00c3
+ thurston. howell. hut: =>&&00a5
+  maryann. girl. hut: 199 =>&&00a0
+ my %provisions = ( =>&&00cf
+ DB<7> s =>&&0038
+        my ($source, $destination, $bytes) = split; =>&&009a
+ my @indices_of_odd_digit_sums = grep { . . .  =>&&00bc
+ myhost% =>&&007a
+          ],  =>&&00b4
+  'The Professor' => [qw(sunscreen water_bottle slide_rule radio)  ],  =>&&00d1
+  'professor. hut' => HASH(0x37a34) =>&&0023
+            [ =>&&00ae
+ myhost% perl -d bytecounts bytecounts-in =>&&0012
+  lovey. howell. hut: 1250 =>&&00a6
+      " $total_bytes{$source}{$destination} bytes\n"; =>&&0009
+  } else { =>&&00c7
+  2  1218 =>&&0046
+              'to',  =>&&00b1
+   $total_bytes{$source}{$destination} += $bytes; =>&&0004
+ 0  'one' =>&&008f
+  1  'professor. hut' =>&&0045
+                                },  =>&&0074
+  } =>&&0005
+ 'ginger. girl. hut' => HASH(0x297474) =>&&0049
+ ); =>&&00d3
+ main::(bytecounts:2):        my %total_bytes; =>&&0016
+ DB<2> s =>&&001f
+ print Dumper($result); =>&&00ab
+              'two',  =>&&00af
+           'professor. hut' => { =>&&0075
+                              } =>&&0078
+ $VAR1->[2][3] = $VAR1; =>&&008b
+    1  'too' =>&&0093
+  my $number = $input_numbers[$_]; =>&&00bf
+ push @data2, \@data1; =>&&007e
+ my @all_wet = grep { =>&&00d5
+ DB<8> s =>&&003c
+  main::(bytecounts:10):            print "$source => $destination:",  =>&&0063
+ $VAR1 = [ =>&&0081
+ 2  1250 =>&&001e
+                                  'professor. hut' => 1218 =>&&0073
+ my $result = retrieve 'some_file'; =>&&00a9
+ DB<11> s =>&&0047
+ 2  ARRAY(0x3122a8) =>&&0091
+ while (<>) { =>&&0069
+ use YAML; =>&&0099
+ DB<16> x $total_bytes{$source} =>&&005b
+ DB<10> x $source, $destination, $bytes =>&&0043
+        ]; =>&&008a
+    2  'to' =>&&0094
+ DB<12> x $source, $destination, $bytes =>&&004c
+ } keys %provisions; =>&&00d8
+    main::(bytecounts:9):     for my $destination (sort keys %{ $total_bytes{$source} }) { =>&&0059
+ DB<13> s =>&&004f
+                                      'lovey. howell. hut' => 1250 =>&&006f
+   map [$person => $_], @items; =>&&00de
+         }; =>&&0079
+ professor. hut lovey. howell. hut 910 =>&&000d
+ DB<12> s =>&&004b
+ DB<4> s =>&&002c
+  0  199 =>&&0067
+    3  ARRAY(0xf914) =>&&0095
+  $sum += $_ for split //, $number; =>&&00c1
+    1; # yes, select it =>&&00c6
+ DB<19> x sort keys %{ $total_bytes{$source } } =>&&0061
+  'Gilligan'      => [qw(red_shirt hat lucky_socks water_bottle)   ],  =>&&00d2
+ DB<15> x $source =>&&005a
+  my @items = @{ $provisions{$_} }; =>&&00d6
+ main::(bytecounts:3):        while (<>) { =>&&0018
+  main::(bytecounts:3):        while (<>) { =>&&002d
+ DB<10> s =>&&0042
+            'to',  =>&&0087
+ ginger. girl. hut maryann. girl. hut 199 =>&&0011
+        $total_bytes{$source}{$destination} += $bytes; =>&&009b
+ professor. hut: =>&&00a2
+ DB<9> x \%total_bytes =>&&0040
+    1  'professor. hut' =>&&0056
+            ] =>&&00b3
+  0  'maryann. girl. hut' =>&&0060
+  0  'ginger. girl. hut' =>&&0044
+ Enter h or 'h h' for help, or 'man perldebug' for more help.  =>&&0015
+    0  HASH(0x132dc) =>&&0022
+  1  'maryann. girl. hut' =>&&004d
+ $Data::Dumper::Purity = 1; # declare possibly self-referencing structures =>&&007b
+    0; # no, don't select it =>&&00c8
+  for my $source (sort keys %total_bytes) { =>&&0006
+ ginger. girl. hut professor. hut 1218 =>&&0010
+ DB<3> x $source, $destination, $bytes =>&&0028
+ print Dumper(\%total_bytes); =>&&006b
+    (  ); =>&&00ce
+  if ($_ > $#y or $x[$_] > $y[$_]) { =>&&00c5
+  'The Skipper'   => [qw(blue_shirt hat jacket preserver sunscreen)],  =>&&00d0
+                                  'maryann. girl. hut' => 199,  =>&&0072
+  0  'thurston. howell. hut' =>&&0036
+ DB<20> x $source, $destination =>&&0065
+ $VAR1->[1] = $VAR1->[0][2]; =>&&00b7
+ DB<15> s =>&&0058
+ DB<13> x \%total_bytes =>&&0050
+          [ =>&&0084
+ } =>&&006a
+                                'gilligan. crew. hut' => 1250,  =>&&0076
+ $VAR1->[0][2][3] = $VAR1->[0]; =>&&00b6
+   my $person = $_; =>&&00dc
+    0  'ginger. girl. hut' =>&&0055
+  grep $_ eq 'water_bottle', @items; =>&&00d7
+  $VAR1 = { =>&&006d
+ use Storable; =>&&00a7
+    1  ARRAY(0x3122a8) =>&&0097
+ DB<1> x \@data1, \@data2 =>&&008d
+ professor. hut lovey. howell. hut 450 =>&&000f
+   print "\n"; =>&&000b
+    'maryann. girl. hut' => 199 =>&&0051
+       -> REUSED_ADDRESS =>&&0096
+ my %total_bytes; =>&&0001
+          'won',  =>&&0083
+   } =>&&000a
+ main::(bytecounts:4):          my ($source, $destination, $bytes) = split; =>&&0019
+     print "$source => $destination:",  =>&&0008
+   main::(bytecounts:3):        while (<>) { =>&&0020
+  $sum % 2; =>&&00c2
+ DB<11> x \%total_bytes =>&&0048
+    'professor. hut' => 1218 =>&&004a
+ my @data2 = qw(two too to); =>&&007d
+    'gilligan. crew. hut' => 1250 =>&&0031
+  main::(bytecounts:11):              " $total_bytes{$source}{$destination} bytes\n"; =>&&0064
+ DB<5> s =>&&0033
+   my ($source, $destination, $bytes) = split; =>&&0003
+ print Dumper(@$result); =>&&00ba
+ Loading DB routines from perl5db. pl version 1. 19 =>&&0013
+  1  'lovey. howell. hut' =>&&002a
+ DB<14> s =>&&0052
+ print Dumper($arr1, $arr2); =>&&00b9
+ thurston. howell. hut lovey. howell. hut 1250 =>&&000e
+ 1  'won' =>&&0090
+    'lovey. howell. hut' => 1250 =>&&003b

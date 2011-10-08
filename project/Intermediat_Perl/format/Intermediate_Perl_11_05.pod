@@ -1,0 +1,40 @@
+=EN 11. 5. A Few Notes About @ISA
+=CN 11. 5. 有关@ISA的一些说明
+=EN This magical @ISA variable (pronounced "is a" not "ice-uh") declares that Cow "is a" Animal. [*] Note that it's an array, not a simple single value, because on rare occasions it makes sense to have more than one parent class searched for the missing methods. We'll show more about that later. 
+=CN 这个神奇的@ISA变量（发音是"is a"不是"ice-uh"）声明了Cow"是一个"动物. [*] 注意它是一个数组, 不是一个简单的标量值, 因为在罕有的情况下它可能有多重祖先, 我们将会在下面讨论这个问题. 
+=EN [*] ISA is actually a linguistic term. Once again, Larry Wall's background as a linguist has come back to influence Perl. 
+=CN [*] ISA 实际上是一个语言学上的术语. 再提醒一次, Larry Wall的语言学家的背景又在反过来影响了Perl. 
+=EN If Animal also had an @ISA, Perl would check there too. [] Typically, each @ISA has only one element (multiple elements means multiple inheritance and multiple headaches), so we get a nice tree of inheritance. 
+=CN 如果Animal同样也有一个@ISA数组, Perl也会再去查找. [+] 一般来说, 每个@ISA只有一个元素（多个元素意味着多重继承及多重"头痛"）, 这样我们就可以得到一个清楚的继承树. [+]
+=EN The search is recursive, depth-first, and left to right in each @ISA. 
+=CN [+] 查找是递归的, 在每个@ISA数组中是从上到下, 从左到右. 
+=EN There is also inheritance through UNIVERSAL and AUTOLOAD; see the perlobj manpage for the whole story. 
+=CN 同样可以从UNIVERSAL和AUTOLOAD继承;可以查看perlobj手册页来得到它的身世. 
+=EN When we turn on use strict, we'll get complaints on @ISA because it's not a variable containing an explicit package name, nor is it a lexical (my) variable. We can't make it a lexical variable, though: it has to belong to the package to be found by the inheritance mechanism. 
+=CN 当我们打开strict后, 我们会有关于@ISA的警告信息, 因为它既不是一个有明确包名的变量, 也不是一个词法（my声明)的变量. 我们不能把它定义为词法变量, 因为它属于它所继承的那个包. 
+=EN There are a couple of straightforward ways to handle the declaration and setting of @ISA. The easiest is to just spell out the package name:
+=CN 有两个简单方法来处理对@ISA的声明和设置. 最简单的方法是指出包名：
+@Cow::ISA = qw(Animal);
+=EN We can also allow it as an implicitly named package variable:
+=CN 我们也允许它作为一个隐含命名的包变量：
+package Cow;
+use vars qw(@ISA);
+@ISA = qw(Animal);
+=EN If you're on a recent-enough Perl (5. 6 or later), you can use the our declaration to shorten it to:
+=CN 如果你用的是比较新版本的Perl, 你可以用如下的简短形式：
+package Cow;
+our @ISA = qw(Animal);
+=EN However, if you think your code might be used by people stuck with Perl 5. 005 or earlier, it's best to avoid our. 
+=CN 当然, 如果你需要你的代码让那些执着于Perl 5. 005或更早的版本的人, 最好避免使用our. 
+=EN If we're bringing in the class from outside, via an object-oriented module, we can change:
+=CN 如果我们要用从外面(通过一个面对对象的模块)带进来的类, 我们可以改成：
+package Cow;
+use Animal;
+use vars qw(@ISA);
+@ISA = qw(Animal);
+=EN to just:
+=CN 或者：
+package Cow;
+use base qw(Animal);
+=EN That's pretty darn compact. Furthermore, use base has the advantage that it's performed at compile time, eliminating a few potential errors from setting @ISA at runtime, like some of the other solutions. 
+=CN 这是非常简短的形式了. 此外, use base有个优点是它是在编译时执行的, 这样消除了在运行时设置@ISA可能发生的潜在错误, 就像先前的一些解决方案那样. 

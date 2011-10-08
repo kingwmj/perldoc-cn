@@ -1,0 +1,8 @@
+=EN Chapter 7. Subroutine References
+=CN 第七章 对子程序的引用
+=EN So far, you have seen references to three main Perl data types: scalars, arrays, and hashes. We can also take a reference to a subroutine (sometimes called a coderef). 
+=CN 目前, 你已经看到了对Perl三种数据类型的引用：标量, 数组和散列. 同样, 我们也可以对一个子程序进行引用（有时候我们把它叫作代码引用）. 
+=EN Why would we want to do that? Well, in the same way that taking a reference to an array lets you have the same code work on different arrays at different times, taking a reference to a subroutine allows the same code to call different subroutines at different times. Also, references permit complex data structures. A reference to a subroutine allows a subroutine to effectively become part of that complex data structure. 
+=CN 但我们为什么要做那个呢？ 与我们用指向数组的引用来实现用同一代码块在不同时间处理不同数组相同, 我们也可以使用指向子程序的引用实现在不同时间调用不同的子程序. 一样, 引用充许复杂的数据结构. 一个指向子程序的引用使子程序成为复杂数据结构的一部份成为可能. 
+=EN Put another way, a variable or a complex data structure is a repository of values throughout the program. A reference to a subroutine can be thought of as a repository of behavior in a program. The examples in this section show how this works. 
+=CN 换一种说法, 一个变量或者一个复杂数据结构是一个程序中的数据的仓库. 一个对子程序的引用可以被想像成为一个程序动作（方法）的仓库. 本节中的例子可以向你揭示这一点. 

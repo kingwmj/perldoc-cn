@@ -21,7 +21,8 @@ my ($project_name) = @ARGV;
 $project_name ||= 'sample';
 my $project_dir = "../project/$project_name";
 # ------------------------------------
-my $input_dir = "$project_dir/03_split_pod";
+#my $input_dir = "$project_dir/03_split_pod";
+my $input_dir = "$project_dir/02_wrap_pod";
 my $encn_dir  = "$project_dir/04_encn_pod";
 my $tran_dir  = "$project_dir/05_tran_pod";
 
@@ -38,15 +39,17 @@ my $proj_sentence = "$project_dir/sentence.dict"; # 项目整句词典
 my %hash_dict_sentence = dict2hash($dict_sentence);
 my %hash_proj_sentence = dict2hash($proj_sentence);
 
-# 删除核心词典中已有的记录
+# 删除项目词典中已有的记录
 while (my ($en, $cn) = each %hash_dict_sentence) {
     if (exists $hash_proj_sentence{$en}) {
         say "Find an exists record in Core Sentence Dict";
         delete $hash_proj_sentence{$en};
         my $cn_proj = $hash_proj_sentence{$en};
-        say DEBUG "=EN $en\n=CN-CORE $cn\n=CN-PROJ $cn_proj\n";
     }
 }
+
+# 合并整句词典
+%hash_dict_sentence = (%hash_dict_sentence, %hash_proj_sentence);
 
 # 加载普通单词词典，直接替换
 my $dict_common = '../dict/common.dict';
@@ -63,7 +66,7 @@ sub bylength { length($b) <=> length($a) };
 foreach my $file ( @filelist ) {
     
     # 进度指示
-    say "Starting parse file $file ...";
+    say "Translate $file ...";
     my $text = read_file $file;
     
     # 输出翻译结果
@@ -73,15 +76,23 @@ foreach my $file ( @filelist ) {
     my @format_array = filter_format_str($file);
     my @ignore_array = filter_ignore_str($file);
     my %ignore_hash = array2hash([@ignore_array]);
+    my %format_hash = array2hash([@format_array]);
 
+    # 测试
+    while (my ($key, $value) = each %format_hash) {
+        say DEBUG "$key=>$value";
+    }
+    
     # 备份原始英文文档 $tran -> 全文翻译结果，保留格式
     my $tran = $text;
 
-    # 剔除 =head =item =over ... code 等格式化字符
+    # 隐藏 =head =item =over ... code 等格式化字符
     say "Replace head token and code string ...";
-    foreach my $string (sort bylength @format_array) {
+    foreach my $string (sort bylength keys %format_hash) {
         next if ($string eq '');
-        $text =~ s/^\Q$string//msg;
+        my $char = $format_hash{$string};
+        say "$string -> $char";
+        $text =~ s/^\s*\Q$string\E/$char/msg;
     }
 
     # 格式化 $text 去除空格
@@ -91,18 +102,27 @@ foreach my $file ( @filelist ) {
 
     # 备份中间结果
     my $no_format_en_text = $text;
-
+=pod
     # 开始全文段落短语替换
     say "Replace Sentence in dict ...";
     foreach my $en_sentence (sort bylength keys %hash_dict_sentence) {
         my $cn_sentence = $hash_dict_sentence{$en_sentence};
-        $tran =~ s/\Q$en_sentence\E/$cn_sentence/xmsg;
-        $text =~ s/\Q$en_sentence\E/$cn_sentence/xmsg;
+        # 忽略单词大小写的替换
+        $tran =~ s/\Q$en_sentence\E/$cn_sentence/ixmsg;
+        $text =~ s/\Q$en_sentence\E/$cn_sentence/ixmsg;
     }
-    
+
+    # 恢复隐藏字符
+    say "Recovery the format string ...";
+    foreach my $string (keys %format_hash) {
+        my $char = $format_hash{$string};
+        $text =~ s/$char/$string/g;
+    }
+=cut    
     # 输出翻译结果
     my $tran_file = "$tran_dir/$basename";
 	write_file($tran_file, {binmode => ':utf8'}, $tran);
+    next;
 
     # 释放已经不用的变量，清理内存
     undef $tran;
@@ -113,20 +133,20 @@ foreach my $file ( @filelist ) {
     foreach my $string (sort bylength keys %ignore_hash) {
         next if ($string eq '');
         my $char = $ignore_hash{$string};
-        $text =~ s/\Q$string/$char/g;
+        $text =~ s/\Q$string\E/$char/g;
     }
 
     # 普通单词替换
     say "Replace Word tips ....";
     foreach my $word (sort bylength keys %hash_dict_common) {
         my $char = $hash_dict_common{$word};
-        $text =~ s/\b$word\b/$char/g;
+        $text =~ s/\b$word\b/$char/ig;
     }
 
     # 简单单词替换
     say "Repalce Simple words with Ucfirst word ...";
     while (my ($word, $char) = each %hash_dict_simple) {
-        $text =~ s/\b$word\b/ucfirst($word)/ge;
+        $text =~ s/\b$word\b/ucfirst($word)/ige;
     }
     
     # 恢复隐藏字符
@@ -134,7 +154,6 @@ foreach my $file ( @filelist ) {
     foreach my $string (keys %ignore_hash) {
         my $char = $ignore_hash{$string};
         $text =~ s/$char/$string/g;
-        say DEBUG "$char=>$string";
     }
 
     # 输出对比结果

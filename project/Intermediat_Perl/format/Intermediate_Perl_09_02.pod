@@ -1,0 +1,43 @@
+=EN 9. 2. Sorting with Indices
+=CN 9. 2. 用索引排序
+=EN In the same way we used indices to solve a few problems with grep and map back in Chapter 2, we can also use indices with sort to get some interesting results. For example, let's sort the list of names from earlier:
+=CN 在之前的第二章, 我们用grep和map结合索引来解决了一些问题. 我们也可以用排序结合索引来得到一些有趣的结果. 比如说, 让我们对前面的名字列表排序：
+my @sorted = sort qw(Gilligan Skipper Professor Ginger Mary_Ann);
+print "@sorted\n";
+=EN which necessarily results in:
+=CN 我们所需的输出是：
+Gilligan Ginger Mary_Ann Professor Skipper
+=EN But what if we wanted to look at the original list and determine which element of the original list now appears as the first, second, third, and so on, element of the sorted list? For example, Ginger is the second element of the sorted list and was the fourth element of the original list. How do we determine that the second element of the final list was the fourth element of the original list?
+=CN 但是, 如果我们要看这排序后的列表中各元素在排序前的位置应该如何做呢？ 比如, Ginger排序后是在第二位, 而在原始列表中它是第四位元素. 我们如何确它排序后的第二位元素是排序前的第四位元素呢？
+=EN Well, we can apply a bit of indirection. Let's not sort the actual names but rather the indices of each name:
+=CN 好, 我们可以稍微间接的来做. 我们来为名字的索引排序, 而不是为实际的名字排序. 
+my @input = qw(Gilligan Skipper Professor Ginger Mary_Ann);
+my @sorted_positions = sort { $input[$a] cmp $input[$b] } 0. . $#input;
+print "@sorted_positions\n";
+=EN This time, $a and $b aren't the elements of the list, but the indices. So instead of comparing $a to $b, we use cmp to compare $input[$a] to $input[$b] as strings. The result of the sort are the indices, in an order defined by the corresponding elements of @input. This prints 0 3 4 2 1, which means that the first element of the sorted list is element 0 of the original list, Gilligan. The second element of the sorted list is element 3 of the original list, which is Ginger, and so on. Now we can rank information rather than just move the names around. 
+=CN 这次, $a和$b并非列表中的元素, 而是索引. 所以, 不是对$a和$b比较, 我们用cmp对$input[$a]和input[$b]所含的字串进行比较. 而排序的结果则是索引, 这索引是按数组@input中的相应的次序进行排列的. 输出是0 3 4 2 1, 这意思是：排序后的首位元素是原来列表的首位元素, Gilligan. 排序后的第二位元素是原始列表的第4个元素, 即Ginger, 以此类推. 现在我们可以不仅仅是把名字移来移去, 而可以做个分级排名的东西了. 
+=EN Actually, we have the inverse of the rank. We still don't know, for a given name in the original list, which position it occupies in the output list. But with a bit more magic, we can get there as well:
+=CN 事实上, 我们也有了倒过来的排名. 即, 给定原始的列表, 在排序后他们所占的位置是什么. 当然, 戏法也得上一层楼, 我们可以这样做：
+my @input = qw(Gilligan Skipper Professor Ginger Mary_Ann);
+my @sorted_positions = sort { $input[$a] cmp $input[$b] } 0. . $#input;
+my @ranks;
+@ranks[@sorted_positions] = (0. . $#sorted_positions);
+print "@ranks\n";
+=EN The code prints 0 4 3 1 2. This means that Gilligan is position 0 in the output list, Skipper is position 4, Professor is position 2, and so on. The positions here are 0-based, so add 1 to get "human" ordinal values. One way to cheat is to use 1. . @sorted_positions instead of 0. . $#sorted_positions, so a way to dump it all out looks like:
+=CN 这段代码输出是这样的：0 4 3 1 2. 这就是说Gilligan在输出列表中还是老大, Skipper是在输出列表中倒数第一, 教授是3, 以此类推. 这里的序数是以0为基数的, 所以我们可以加1, 让他看起来像人话. 一种骗术是用1. . @sorted_positions 代替 0. . $#sorted_positions, 所以写出来是这样的：
+my @input = qw(Gilligan Skipper Professor Ginger Mary_Ann);
+my @sorted_positions = sort { $input[$a] cmp $input[$b] } 0. . $#input;
+my @ranks;
+@ranks[@sorted_positions] = (1. . @sorted_positions);
+for (0. . $#ranks) {
+ print "$input[$_] sorts into position $ranks[$_]\n";
+}
+=EN This results in:
+=CN 其结果是：
+Gilligan sorts into position 1
+Skipper sorts into position 5
+Professor sorts into position 4
+Ginger sorts into position 2
+Mary_Ann sorts into position 3
+=EN This general technique can be convenient if we need to look at our data in more than one way. Perhaps we keep many records in order by a numeric code for efficiency reasons, but we occasionally want to view them in alphabetical order as well. Or maybe the data items themselves are impractical to sort, such as a month's worth of server logs. 
+=CN 这些一般的方法可以使方便地我们以不同的角度来看我们的数据. 可以我们以效率的原因使我们数据以数字顺序排, 但有时我们又要他们以字母顺序排. 或者, 可能这些数据项目自己本身顺序并没有多大意义, 比如一个月的服务器日志的价值. 

@@ -44,6 +44,7 @@ sub delete_cn_symbol {
         '”' => '"',
         '‘' => q{'},
         '’' => q{'},
+        '–' => q{-},
     };
     while (my ($cn, $en) = each %{$symbol}) {
         my $times = $text =~ s/$cn/$en/g;

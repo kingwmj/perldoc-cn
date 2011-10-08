@@ -1,0 +1,411 @@
+Chapter 17. Essential Testing
+
+As we briefly described in Chapter 16, a distribution contains a testing facility that we can invoke from make test. This allows us to write and run tests during development and maintenance, and it also lets our end user verify that the module works in her environment.
+
+Although we cover testing briefly here, you should check out Perl Testing: A Developer's Notebook (O'Reilly), which covers the subject in depth.
+
+17.1. More Tests Mean Better Code
+
+Why should we test during development? The short answer is that we find out about problems sooner and tests force us to program in much smaller chunks (since they are easier to test), which is generally good programming practice. Although we may think we have extra work to do, that's only short-term overhead. We win down the line when we spend less time debugging, both because we've fixed most of the problems before they were problems and because the tests usually point us right at the problem we need to fix.
+
+Along with that, we'll find that it's psychologically easier to modify code because the tests will tell us if we broke something. When we talk to our boss or coworkers, we'll also have the confidence in our code to answer their queries and questions. The tests tell us how healthy our code is.
+
+Different people have different ideas about testing. One school of thought, known as Test-Driven Development , says that we should write the tests before we write the code that is being tested. On the first go-around, the test fails. What good is the test if it doesn't fail when it should? Once we know it fails, we write the code to make it work. When that works, we write a test for another feature, repeat the process, and keep doing that until we're done. Along the way, we've verified the functionality and features.
+
+We're never really done, though. Even when the module ships, we shouldn't abandon the test suite! Unless we code the mythical "bug-free module," our users will send us bug reports. We can turn each report into a test case.[*] While fixing the bug, the remaining tests prevent our code from regressing to a less functional version of the codehence the name regression testing .
+
+[*] If we're reporting a bug in someone else's code, we can generally assume that they'll appreciate us sending them a test for the bug. They'll appreciate a patch even more!
+
+Then there are always the future releases to think about. When we want to add new features, we start by adding tests.[] Because the existing tests ensure our upward compatibility, we can be confident that our new release does everything the old release did, and then some.
+
+[] And writing the documentation at the same time, made easier by Test::Inline, as we'll see later.
+
+17.2. A Simple Test Script
+
+Before we go on, let's write some Perl code. We just told you about creating the tests before you write the code, so maybe we should follow our own advice. We'll get to the details later, but for now we start with the Test::More module,[] which comes with the standard Perl distribution.
+
+[] There is also a Test::Simple module, but most people use its successor, Test::More, so we'll stick to that.
+
+To start our testing, we write a simple Perl script. All of our tests are going to be scripts, so we can use the stuff you already know about Perl. We load Test::More and tell it how many tests we want to run. After that, we use the convenience functions from Test::More, which we'll go through later. In short, most of them compare their first argument, which is the result we got, to the second argument, which is what we expected.
+
+ #!/usr/bin/perl
+ 
+ use Test::More tests => 4;
+ 
+ ok( 1, '1 is true' );
+ 
+ is( 2 + 2, 4, 'The sum is 4' );
+ 
+ is( 2 * 3, 5, 'The product is 5' );
+ 
+ isnt( 2 ** 3, 6, "The result isn't 6" );
+ 
+ like( 'Alpaca Book', qr/alpaca/i, 'I found an alpaca!' );
+
+When we run this simple script, we get this output. When the received and expected values are the same, Test::More outputs a line starting with ok. When those values don't match, it outputs a line starting with not ok. It also outputs some diagnostic information that tells us what the test expected and what we actually gave it.
+
+ 1..4
+ ok 1 - 1 is true
+ ok 2 - The sum is 4
+ not ok 3 - The product is 5
+ #   Failed test 'The product is 5'
+ #   in /Users/brian/Desktop/test at line 9.
+ #          got: '6'
+ #     expected: '5'
+ # Looks like you planned 4 tests but ran 1 extra.
+ # Looks like you failed 1 test of 5 run.
+ ok 4 - The result isn't 6
+ ok 5 - I found an alpaca!
+
+Later on, we'll see how Perl takes all of this output to create a nice report for us. We won't have to look at a lot of output to find the important bits once Test::Harness goes through it for us.
+
+17.3. The Art of Testing
+
+Good tests also give small examples of what we meant in our documentation. It's another way to express the same thing, and some people may like one way over the other.[*] Good tests also give confidence to the user that your code (and all its dependencies) is portable enough to work on her system.
+
+[*] A few of the modules we've used from CPAN are easier to learn from test examples than by the actual POD. Of course, any really good example should be repeated in your module's POD documentation.
+
+Testing is an art. People have written and read dozens of how-to-test books (and then ignore them, it seems). Mostly, it's important to remember everything we have ever done wrong while programming (or heard other people do), and then test that we didn't do it again for this project.
+
+When you create tests, think like a person using a module, not like one writing a module. You know how you should use your module, because you invented it and had a specific need for it. Other people will probably have different uses for it and they'll try to use it in all sorts of different ways. You probably already know that given the chance, users will find every other way to use your code. You need to think like that when you test.
+
+Test things that should break as well as things that should work. Test the edges and the middle. Test one more or one less than the edge. Test things one at a time. Test many things at once. If something should throw an exception, make sure it doesn't also have bad side effects. Pass extra parameters. Pass insufficient parameters. Mess up the capitalization on named parameters. Throw far too much or too little data at it. Test what happens for unexpected values such as undef.
+
+Since we can't look at your module, let's suppose that we want to test Perl's sqrt function, which calculates square roots. It's obvious that we need to make sure it returns the right values when its parameter is 0, 1, 49, or 100. It's nearly as obvious to see that sqrt(0.25) should come out to be 0.5. We should also ensure that multiplying the value for sqrt(7) by itself gives something between 6.99999 and 7.00001.[*]
+
+[*] Remember, floating-point numbers aren't always exact; there's usually a little roundoff. The Test::Number::Delta module can handle those situations.
+
+Let's express that as code. We use the same stuff that we used for our first example. This script tests things that should work.
+
+ #!/usr/bin/perl
+ 
+ use Test::More tests => 6;
+ 
+ is( sqrt(  0),  0, 'The square root of 0   is  0' );
+ is( sqrt(  1),  1, 'The square root of 1   is  1' );
+ is( sqrt( 49),  7, 'The square root of 49  is  7' );
+ is( sqrt(100), 10, 'The square root of 100 is 10' );
+ 
+ is( sqrt(0.25), 0.5, 'The square root of 0.25 is 0.5' );
+ 
+ my $product = sqrt(7) * sqrt(7);
+ 
+ ok( $product > 6.999 && $product < 7.001,
+         "The product [$product] is around 7" );
+
+We should make sure that sqrt(-1) yields a fatal error and that sqrt(-100) does too. What happens when we request sqrt(&test_sub( )), and &test_sub returns a string of "10000"? What does sqrt(undef) do? How about sqrt( ) or sqrt(1,1)? Maybe we want to give our function a googol: sqrt( 10**100 ). Because this function is documented to work on $_ by default, we should ensure that it does so. Even a simple function such as sqrt should get a couple dozen tests; if our code does more complex tasks than sqrt does, expect it to need more tests, too. There are never too many tests.
+
+In this simple script, we tested a lot of odd conditions.[]
+
+[] And in writing this, we discovered that we can't write sqrt(-1) because eval doesn't trap that. Apparently, Perl catches it at compile time.
+
+ #!/usr/bin/perl
+ 
+ use Test::More tests => 9;
+ 
+ sub test_sub { '10000' }
+ 
+ is( $@, '', '$@ is not set at start' );
+ 
+ {
+ $n = -1;
+ eval { sqrt($n) };
+ ok( $@, '$@ is set after sqrt(-1)' );
+ }
+ 
+ eval { sqrt(1) };
+ is( $@, '', '$@ is not set after sqrt(1)' );
+ 
+ {
+ my $n = -100;
+ eval { sqrt($n) };
+ ok( $@, '$@ is set after sqrt(-100)' );
+ }
+ 
+ is( sqrt( test_sub(  ) ), 100, 'String value works in sqrt(  )' );
+ 
+ eval { sqrt(undef) };
+ is( $@, '', '$@ is not set after sqrt(undef)' );
+ 
+ is( sqrt, 0, 'sqrt(  ) works on $_ (undefined) by default' );
+ 
+ $_ = 100;
+ is( sqrt, 10, 'sqrt(  ) works on $_ by default' );
+ 
+ is( sqrt( 10**100 ), 10**50, 'sqrt(  ) can handle a googol' );
+
+If you write the code and not just the tests, think about how to get every line of your code exercised at least once for full code coverage. (Are you testing the else clause? Are you testing every elsif case?) If you aren't writing the code or aren't sure, use the code coverage facilities.[*]
+
+[*] Basic code coverage tools such as Devel::Cover are available in CPAN.
+
+Check out other test suites, too. There are literally tens of thousands of test files on CPAN, and some of them contain hundreds of tests. The Perl distribution itself comes with thousands of tests, designed to verify that Perl compiles correctly on our machine in every possible way. That should be enough examples for anyone. Michael Schwern earned the title of "Perl Test Master" for getting the Perl core completely tested and still constantly beats the drum for "test! test! test!" in the community.
+
+17.4. The Test Harness
+
+We usually invoke tests, either as the developer or the user, by using make test . The Makefile uses the Test::Harness module to run the tests, watch the output, and report the results.
+
+Tests live in files in the t directory at the top level of the distribution, and each test file ends in .t. The test harness invokes each file separately, so an exit or die terminates only the testing in that file, not the whole testing process.[*]
+
+[*] If we decide that we need to stop all testing, we can "bail out" of the process by printing "bail out" to standard output. This can be handy if we encounter an error that is going to cause a cascade of errors that we don't want to wait to encounter or sift through.
+
+The test file communicates with the test harness through simple messages on standard output.[] The three most important messages are the test count, a success message, and a failure message.
+
+[] The exact details are documented in the perldoc Test::Harness::TAP, if you're curious. Actually, they're there, even if you're not curious.
+
+An individual test file comprises one or more tests. These tests are numbered as counting numbers, starting with one. The first thing a test file must announce to the test harness (on STDOUT) is the expected number of tests, as a string that looks like a Perl range, 1..N. For example, if there are 17 tests, the first line of output should be:
+
+ 1..17
+
+followed by a newline. The test harness uses the upper number to verify that the test file hasn't just terminated early. If the test file is testing optional things and has no testing to do for this particular invocation, the string 1..0 suffices.
+
+We don't have to worry about printing that ourselves, though, because Test::More does it for us. When we load the module, we tell it the number of tests that we want to run, and the module outputs the test range for us. To get that 1..17, we tell Test::More we're running 17 tests.
+
+ use Test::More tests => 17;
+
+After we print the test range, we send to standard output one line per test. That line starts with ok if the test passed, or not ok if the test failed. If we wrote that by hand, a test to check that 1 plus 2 is 3 might look like this:
+
+ print +(1 + 2 =  = 3 ? '', 'not '), "ok 1\n";
+
+We could also print the not only if the test failed, with the ok as a separate step. But on some platforms, this may fail unnecessarily, due to some I/O-related oddity. For maximum portability, print the entire string of ok N or not ok N in one print step. Don't forget the space after not!
+
+ print 'not ' unless 2 * 4 =  = 8;
+ print "ok 2\n";
+
+We don't have to do that much work, though, and we don't have to count the tests ourselves. What if we wanted to add a test between the two previous tests? We'd have to give that new test the test number 2 and change the last test to test number 3. Not only that, we haven't output anything useful if the test fails, so we won't know what went wrong. We could do all that, but it's too much work! Luckily, we can use the convenience functions from Test::More.
+
+17.5. Writing Tests with Test::More
+
+The Test::More[*] module comes with the standard Perl distribution starting with Perl 5.8, and it's available on CPAN if we need to install it on earlier Perl versions. It works all the way back to perl5.6, at least. We rewrite the tests from the previous section (and throw in a couple more) in this test script, which uses the ok( ) function from Test::More.
+
+[*] The name plays off Test::Simple, which did some of the same stuff but with far fewer convenience functions.
+
+ use Test::More tests => 4;
+ 
+ ok(1 + 2 =  = 3, '1 + 2 =  = 3');
+ ok(2 * 4 =  = 8, '2 * 4 =  = 8');
+ my $divide = 5 / 3;
+ ok(abs($divide - 1.666667) < 0.001, '5 / 3 =  = (approx) 1.666667');
+ my $subtract = -3 + 3;
+ ok(($subtract eq '0' or $subtract eq '-0'), '-3 + 3 =  = 0');
+
+The ok( ) function prints "ok" if its first argument is true, and "not ok" otherwise. The optional second argument lets us name the test. After the initial output to indicate success, ok( ) adds a hyphen and then the name of the test. When we find a test that does not work, we can find it by the name that we gave it.
+
+ 1..4
+ ok 1 - 1 + 2 =  = 3
+ ok 2 - 2 * 4 =  = 8
+ ok 3 - 5 / 3 =  = (approx) 1.666667
+ ok 4 - -3 + 3 =  = 0
+
+Now Test::More does all of the hard work. We don't have to think about the output or the test numbering. But what about that nasty little 4 constant in the first line? That's fine once we're shipping the code, but while we're testing, retesting (retesting some more), and adding more tests, we don't want to keep updating that number to keep the test harness from complaining about too many or too few tests. We change that to no_plan so Test::More can figure it out later.
+
+ use Test::More "no_plan";        # during development
+ 
+ ok(1 + 2 =  = 3, '1 + 2 =  = 3');
+ ok(2 * 4 =  = 8, '2 * 4 =  = 8');
+ my $divide = 5 / 3;
+ ok(abs($divide - 1.666667) < 0.001, '5 / 3 =  = (approx) 1.666667');
+ my $subtract = -3 + 3;
+ ok(($subtract eq '0' or $subtract eq '-0'), '-3 + 3 =  = 0');
+
+The output from Test::More is a bit different, and the test range moves to the end. That's just the number of tests that we actually ran, which might not be the number we intended to run:
+
+ ok 1 - 1 + 2 =  = 3
+ ok 2 - 2 * 4 =  = 8
+ ok 3 - 5 / 3 =  = (approx) 1.666667
+ ok 4 - -3 + 3 =  = 0
+ 1..4
+
+The test harness knows that if it doesn't see a header, it's expecting a footer. If the number of tests disagree or there's no footer (and no header), it's a broken result. We can use this during development, but we have to remember to put the final number of tests in the script before we ship it as real code.
+
+But wait: there's more (to Test::More). Instead of a simple yes/no, we can ask if two values are the same. The is( ) function, as we showed earlier, compares its first argument, which is the result we got, with the second argument, which is what we expected. The optional third argument is the name we give the test, just as we did with the ok function earlier.
+
+ use Test::More 'no_plan';
+ 
+ is(1 + 2, 3, '1 + 2 is 3');
+ is(2 * 4, 8, '2 * 4 is 8');
+
+Note that we've gotten rid of numeric equality and instead asked if "this is that." On a successful test, this doesn't give much advantage, but on a failed test, we get much more interesting output.
+
+ use Test::More 'no_plan';
+ 
+ is(1 + 2, 3, '1 + 2 is 3');
+ is(2 * 4, 6, '2 * 4 is 6');
+
+This script yields much more useful output that tells us what is( ) was expecting and what it actually got.
+
+ ok 1 - 1 + 2 is 3
+ not ok 2 - 2 * 4 is 6
+ #     Failed test (1.t at line 4)
+ #          got: '8'
+ #     expected: '6'
+ 1..2
+ # Looks like you failed 1 tests of 2.
+
+Of course, this is an error in the test, but note that the output told us what happened: we got an 8 when we were expecting a 6.[*] This is far better than just "something went wrong" as before. There's also a corresponding isnt( ) when we want to compare for inequality rather than equality.
+
+[*] More precisely: we got an '8' but were expecting a '6'. Did you notice that these are strings? The is( ) test checks for string equality. If we don't want that, we just build an ok( ) test instead, or try cmp_ok, coming up in a moment.
+
+What about that third test, where we allowed the value to vary within some tolerance? Well, we can just use the cmp_ok routine instead.[*] The first and third arguments are the operands,[] and the intervening, second argument is the comparison operator (as a string!).
+
+[*] Although Test::Number::Delta can handle this for us.
+
+[] There's no joy for RPN fans.
+
+ use Test::More 'no_plan';
+ 
+ my $divide = 5 / 3;
+ cmp_ok(abs($divide - 1.666667), '<' , 0.001,
+       '5 / 3 should be (approx) 1.666667');
+
+If the test we give in the second argument fails between the first and third arguments, then we get a descriptive error message with both of the values and the comparison, rather than a simple pass or fail value as before.
+
+How about that last test? We wanted to see if the result was a 0 or minus 0 (on the rare systems that give back a minus 0). We can do that with the like( ) function:
+
+ use Test::More 'no_plan';
+ 
+ my $subtract = -3 + 3;
+ like($subtract, qr/^-?0$/, '-3 + 3 =  = 0');
+
+Here, we take the string form of the first argument and attempt to match it against the second argument. The second argument is typically a regular expression object (created here with qr), but we can also use a simple string, which like( ) will convert to a regular expression object. We can even write the string form as if it were (almost) a regular expression:
+
+ like($subtract, qr/^-?0$/, '-3 + 3 =  = 0');
+
+The string form is portable back to older Perls.[] If the match succeeds, it's a good test. If not, the original string and the regex are reported along with the test failure. We can change like to unlike if we expect the match to fail instead.
+
+[] The qr// form wasn't introduced until Perl 5.005.
+
+17.6. Testing Object-Oriented Features
+
+For object-oriented modules , we want to ensure that we get back an object when we call the constructor. For this, isa_ok( ) and can_ok( ) are good interface tests:
+
+ use Test::More 'no_plan';
+ 
+ use Horse;
+ my $trigger = Horse->named('Trigger');
+ isa_ok($trigger, 'Horse');
+ isa_ok($trigger, 'Animal');
+ can_ok($trigger, $_) for qw(eat color);
+
+These tests have default test names, so our test output looks like this:
+
+ ok 1 - The object isa Horse
+ ok 2 - The object isa Animal
+ ok 3 - Horse->can('eat')
+ ok 4 - Horse->can('color')
+ 1..4
+
+The output of this shows us that the unnamed Horse is not quite what we thought it was.
+
+ ok 1 - The object isa Horse
+ ok 2 - The object isa Horse
+ ok 3 - Trigger's name is correct
+ ok 4 - Mr. Ed's name is correct
+ not ok 5
+ #     Failed test (1.t at line 13)
+ #          got: 'an unnamed Horse'
+ #     expected: 'a generic Horse'
+ 1..5
+ # Looks like you failed 1 tests of 5.
+
+Oops! Look at that. We wrote a generic Horse, but the string really is an unnamed Horse. That's an error in our test, not in the module, so we should correct that test error and retry. Unless, of course, the module's specification actually called for 'a generic Horse.'[] You shouldn't be afraid to just write the tests and test the module. If you get either one wrong, the other will generally catch it.
+
+[] And, we'll find that the tests not only check the code, but they create the specification in code form.
+
+You can even test the use with Test::More when you want to ensure that the module loads correctly:
+
+ use Test::More 'no_plan';
+ 
+ BEGIN{ use_ok('Horse') }
+ 
+ my $trigger = Horse->named('Trigger');
+ isa_ok($trigger, 'Horse');
+ # .. other tests as before ..
+
+The difference between doing this as a test and doing it as a simple use is that the test won't completely abort if the use fails, although many other tests are likely to fail as well. It's also counted as one of the tests, so we get an "ok" for free even if all it does is compile properly to help pad our success numbers for the weekly status report.
+
+We put the use_ok inside a BEGIN block so any exported subroutines from the module are properly declared for the rest of the program, as recommended by the documentation. For most object-oriented modules, this won't matter because they don't export subroutines.
+
+17.7. A Testing To-Do List
+
+When we write tests before we write the code, the tests will initially fail. We might even add new features that temporarily fail while we are developing. There are several situations where we realize a test is going to fail, but we don't want to pay attention to its failure. The Test::More module realizes this and allows us to mark a test as TODO, meaning that we expect it to fail and we'll get to it later.
+
+In this example, we know that we want to add the talk( ) method to our Horses class, but we haven't actually done it. We wrote the test already, since it was part of our specification. We know the test is going to fail, and that's okay. Test::More won't really count it as a failure.
+
+ use Test::More 'no_plan';
+ 
+ use_ok('Horse');
+ my $tv_horse = Horse->named('Mr. Ed');
+ 
+ TODO: {
+   local $TODO = 'haven't taught Horses to talk yet';
+ 
+   can_ok($tv_horse, 'talk');  # he can talk!
+ }
+ 
+ is($tv_horse->name, 'Mr. Ed', 'I am Mr. Ed!');
+ 
+The naked block of code we labeled with TODO to mark the section of the tests that we expect to fail. Inside the block, we create a local version of $TODO, which holds as its value the reason we think the tests will fail. Test::More marks the test as a TODO test in the output, and the test harness[*] notices it and doesn't penalize us for the failure.[]
+
+[*] TODO tests require Test::Harness Version 2.0 or later, which comes with Perl 5.8, but in earlier releases, they have to be installed from CPAN.
+
+[] Although, if the test passes when we said it should fail, it warns us that the test unexpectedly passed. That might mean that the test doesn't fail when it should.
+
+ ok 1 - use Horse;
+ not ok 2 - Horse->can('talk') # TODO haven't taught Horses to talk yet
+ #     Failed (TODO) test (1.t at line 7)
+ #     Horse->can('talk') failed
+ ok 3 - I am Mr. Ed!
+ 1..3
+
+17.8. Skipping Tests
+
+In some cases, we want to skip tests. For instance, some of our features may only work for a particular version of Perl, a particular operating system, or only when optional modules are available. To skip tests, we do much the same thing we did for the TODO tests, but Test::More does something much different.
+
+In this example, we again use a naked block to create a section of code to skip, and we label it with SKIP. While testing, Test::More will not execute these tests, unlike the TODO block where it ran them anyway. At the start of the block, we call the skip( ) function to tell it why we want to skip the tests and how many tests we want to skip.
+
+In this example, we check if the Mac::Speech module is installed before we try to test the say_it_aloud( ) method. If it isn't, the eval( ) block returns false and we execute the skip( ) function.
+
+ SKIP: {
+         skip 'Mac::Speech is not available', 1
+                 unless eval { require 'Mac::Speech' };
+ 
+         ok( $tv_horse->say_it_aloud( 'I am Mr. Ed' );
+ }
+
+When Test::More skips tests, it outputs special ok messages to keep the test numbering right and to tell the test harness what happened. Later, the test harness can report how many tests we skipped.
+
+Don't skip tests because they aren't working right. Use the TODO block for that. We use SKIP when we want to make tests optional in certain circumstances.
+
+17.9. More Complex Tests (Multiple Test Scripts)
+
+Initially, the h2xs program[*] gave us a single testing file, t/1.t.[] We can stick all our tests into this file, but it generally makes more sense to break the tests into logical groups in separate files.
+
+[*] If you're using one of the other module creation tools from Chapter 16, you probably got other test files, and ones that are more complex.
+
+[] As of Perl 5.8, that is. Earlier versions create a test.pl file, which is still run from a test harness during make test, but the output isn't captured in the same way.
+
+The easiest way for us to add additional tests is to create t/2.t. That's itjust bump the 1 to a 2. We don't need to change anything in the Makefile.PL or in the test harness: the file is noticed and executed automatically.
+
+We can keep adding files until we get to 9.t, but once we add 10.t, we might notice that it gets executed between 1.t and 2.t. Why? Because the tests are always executed in sorted order. This is a good thing because it lets us ensure that the most fundamental tests are executed before the more exotic tests simply by controlling the names.
+
+Many people choose to rename the files to reflect a specific ordering and purpose by using names like 01-core.t, 02-basic.t, 03-advanced.t, 04-saving.t, and so on. The first two digits control the testing order, while the rest of the name gives a hint about the general area of testing.
+
+As we saw earlier in Chapter 16, different module creation tools do different things and create one or more default tests. By default, Test::Harness runs those tests in the same order we just described.
+
+Besides that, brian wrote Test::Manifest to get around this sort of naming scheme. Instead of letting the filenames dictate the order of tests, the file t/test_manifest does. Only the tests in that file run, and they run in the order we have them in the file. We name our test files after what they do rather than what order they should run. Later, when we want to insert new test files anywhere in the testing order, we just change the order in t/test_manifest.
+
+17.10. Exercise
+You can find the answer to this exercise in "Answer for Chapter 17" in the Appendix.
+
+17.10.1. Exercise [60 min]
+
+Write a module distribution, starting from the tests first.
+
+Your goal is to create a module My::List::Util that exports two routines on request: sum( ) and shuffle( ). The sum( ) routine takes a list of values and returns the numeric sum. The shuffle( ) routine takes a list of values and randomly shuffles the ordering, returning the list.
+
+Start with sum( ). Write the tests, and then add the code. You'll know you're done when the tests pass. Now include tests for shuffle, and then add the implementation for shuffle. You might peek in the perlfaq to find a shuffle( ) implementation.
+
+Be sure to update the documentation and MANIFEST file as you go along.
+
+If you can pair up with someone on this exercise, even better. One person writes the test for sum( ) and the implementation code for shuffle( ), and the other does the opposite. Swap the t/* files, and see if you can locate any errors!
+

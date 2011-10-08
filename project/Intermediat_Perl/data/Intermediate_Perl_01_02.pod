@@ -1,17 +1,10 @@
-=EN 1.2. What About All Those Footnotes?
-=CN 1.2. 那些脚注是怎么回事？
-
-=EN Like Learning Perl, this book relegates some of the more esoteric items out of the way for the first reading and places those items in footnotes[*].
-
-=CN 同《Learning Perl》这本书的做法一样，我们把那些深奥的概念移掉了，并把他们做为脚注[*].
-
+=EN 1. 2. What About All Those Footnotes?
+=CN 1. 2. 那些脚注是怎么回事？
+=EN Like Learning Perl, this book relegates some of the more esoteric items out of the way for the first reading and places those items in footnotes.
+=CN 同《Learning Perl》这本书的做法一样, 我们把那些深奥的概念移掉了, 并把他们做为脚注[*]. 
 =EN You should skip those the first time through and pick them up on a rereading. 
-
-=CN 在你第一次读本书的时候尽可以略过不看，在重读的时候可以把它们看看。
-
-=EN You will not find anything in a footnote that you’ll need to understand any of the material we present later.
-
-=CN 我们在以后提供给你的材料中不会涉及对这些脚注的理解。
-
-=EN    [*] Like this.
-=CN    [*] 喏，就像这样.
+=CN 在你第一次读本书的时候尽可以略过不看, 在重读的时候可以把它们看看. 
+=EN You will not find anything in a footnote that you'll need to understand any of the material we present later. 
+=CN 我们在以后提供给你的材料中不会涉及对这些脚注的理解. 
+=EN [*] Like this. 
+=CN [*] 喏, 就像这样. 

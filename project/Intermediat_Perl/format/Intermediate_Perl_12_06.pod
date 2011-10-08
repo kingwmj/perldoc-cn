@@ -1,0 +1,23 @@
+=EN 12. 6. Making a Method Work with Either Classes or Instances
+=CN 12. 6. 让一个方法在类和实例都可以使用
+=EN All we need to fix this is a way to detect whether the method is called on a class or an instance. The most straightforward way to find out is with the ref operator. This operator returns a string (the class name) when used on a blessed reference, and undef when used on a string (like a class name). We modify the name method first to notice the change:
+=CN 解决这个问题, 我们所要做的就是查这个方法的调用者是个类还是实例. 最直接的方法是用ref 操作符. 这个操作符在用在一个blessed引用上会返回一个字串（类名）, 而用在一个字串（如类名）时返回的是空值. 我们改下看看：
+sub name {
+ my $either = shift;
+ ref $either
+ ? $$either # it's an instance, return name
+ : "an unnamed $either"; # it's a class, return generic
+}
+=EN Here the ?: operator selects either the dereference or a derived string. Now we can use it with either an instance or a class. Note that we changed the first parameter holder to $either to show that it is intentional:
+=CN 这里?:操作符选择是否是还原或是类字串. 现在不管是实例或者是类我们都可以使用他们. 注意, 我们把第一个参数位改成$either来显示这是有意的：
+print Horse->name, "\n"; # prints "an unnamed Horse\n"
+my $tv_horse = Horse->named('Mr. Ed');
+print $tv_horse->name, "\n"; # prints "Mr. Ed. \n"
+=EN and now we'll fix speak to use this:
+=CN 我们将使用这个设置叫声
+sub speak {
+ my $either = shift;
+ print $either->name, ' goes ', $either->sound, "\n";
+}
+=EN Since sound already worked with either a class or an instance, we're done!
+=CN 因此sound方法既可以在类上也可以在实例上运行, 完成了！

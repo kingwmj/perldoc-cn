@@ -1,0 +1,19 @@
+=EN 11. 10. Where We Are So Far…
+=CN 11. 10. 我们已经到哪了…
+=EN So far, we've used the method arrow syntax:
+=CN 至此, 我们已经用了方法箭头这个语法：
+Class->method(@args);
+=EN or the equivalent:
+=CN 或者等价的：
+my $beast = 'Class';
+$beast->method(@args);
+=EN which constructs an argument list of:
+=CN 创建一个参数列表：
+('Class', @args)
+=EN and attempts to invoke:
+=CN 尝试调用：
+Class::method('Class', @args);
+=EN However, if Perl doesn't find Class::method, it examines @Class::ISA (recursively) to locate a package that does indeed contain method and then invokes that version instead. 
+=CN 然而, 如果Perl没有找到Class::method, 它会去查@Class::ISA(以递归的方式)来定位实际包含执行方法的包, 并调用. 
+=EN Chapter 12 shows how to distinguish the individual animals by giving them associated properties, called instance variables. 
+=CN 第12章展示如何给出相关的属性来区分不同的动物, 所谓实例变量. 

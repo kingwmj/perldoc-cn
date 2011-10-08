@@ -1,0 +1,693 @@
+Chapter 8.
+
+
+Filehandle References
+
+
+We've seen arrays, hashes, and subroutines passed around in references, permitting a level of indirection to solve certain types of problems.
+
+
+We can also store filehandles in references.
+
+
+Let's look at the old problems and the new solutions.
+
+
+8.
+
+
+1.
+
+
+The Old Way
+
+
+In the olden days, Perl used barewords for filehandle names.
+
+
+The filehandle is another Perl data type, although people don't talk about it too much since it doesn't get its own special sigil.
+
+
+You've probably already seen a lot of code that uses these bareword filehandles.
+
+
+ open LOG_FH, '>> castaways. log'
+
+
+        or die "Could not open castaways. log: $!";
+What happens if we want to pass around these filehandles so we could share them with other parts of our code, such as libraries?
+You've probably seen some tricky looking code that uses a typeglob or a reference to a typeglob.
+
+
+ log_message( *LOG_FH, 'The Globetrotters are stranded with us!' );
+
+
+ log_message( *LOG_FH, 'An astronaut passes overhead' );
+In the log_message( ) routine, we take the first element off of the argument list and store it in another typeglob.
+Without going into too many details, a typeglob stores pointers to all the package variables of that name.
+
+
+When we assign one typeglob to another, we create aliases to the same data.
+
+
+We can now access the data, including the details of the filehandle, from another name.
+
+
+Then, when we use that name as a filehandle, Perl knows to look for the filehandle portion of the typeglob.
+
+
+We'd have a much easier time if filehandles had sigils!
+
+
+ sub log_message {
+
+
+  local *FH = shift;
+  print FH @_, "\n";
+ }
+Notice the use of local there.
+A typeglob works with the symbol table, which means it's dealing with package variables.
+
+
+Package variables can't be lexical variables, so we can't use my.
+
+
+Since we don't want to stomp on anything else that might be named FH somewhere else in the script, we must use local to say that the name FH has a temporary value for the duration of the log_message subroutine and that when the subroutine finishes, Perl should restore any previous values to FH as if we were never there.
+
+
+If all of that makes you nervous and wish that none of this stuff existed, that's good.
+
+
+Don't do this anymore!
+
+
+We put it in a section called "The Old Way" because there is a much better way to do it now.
+
+
+Pretend this section never existed and move on to the next one.
+
+
+8.
+
+
+2.
+
+
+The Improved Way
+
+
+Starting with Perl 5.
+
+
+6, open can create a filehandle reference in a normal scalar variable.
+
+
+Instead of using a bareword for the filehandle name, we use a scalar variable whose value is undef.
+
+
+ my $log_fh;
+
+
+ open $log_fh, '>> castaways. log'
+If the scalar already has a value, this doesn't work because Perl won't stomp on our data.
+ my $log_fh = 5;
+
+
+         or die "Could not open castaways. log: $!";
+ print $log_fh "We need more coconuts!\n";   # doesn't work
+However, the Perl idiom is to do everything in one step.
+We can declare the variable right in the open statement.
+
+
+It looks funny at first, but after doing it a couple (okay, maybe several) times, you'll get used to it and like it better. '
+
+
+ open my $log_fh, '>> castaways. log'
+
+
+When we want to print to the filehandle, we use the scalar variable instead of a bareword.
+Notice that there is still no comma after the filehandle.
+
+
+ print $log_fh "We have no bananas today!\n";
+
+
+That syntax might look funny to you, though, and even if it doesn't look funny to you, it might look odd to the person who has to read your code later.
+In Perl Best Practices, Damian Conway recommends putting braces around the filehandle portion to explicitly state what you intend.
+
+
+This syntax makes it look more like grep and map with inline blocks.
+
+
+ print {$log_fh} "We have no bananas today!\n";
+
+
+Now we treat the filehandle reference just like any other scalar.
+We don't have to do any tricky magic to make it work.
+
+
+ log_message( $log_fh, 'My name is Mr. Ed' );
+
+
+   my $fh = shift;
+   print $fh @_, "\n";
+We can also create filehandle references from which we can read.
+We simply put the right thing in the second argument.
+
+
+ open my $fh, "castaways. log"
+
+
+Now we use the scalar variable in place of the bareword in the line input operator.
+Before, we would have seen the bareword between the angle brackets:
+
+
+ while( <LOG_FH> ) {. . . }
+
+
+And now we see the scalar variable in its place.
+ while( <$log_fh> ) {. . . }
+
+
+In general, where we've seen the bareword filehandle we can substitute the scalar variable filehandle reference.
+In any of these forms, when the scalar variable goes out of scope (or we assign another value to it), Perl closes the file.
+
+
+We don't have to explicitly close the file ourselves.
+
+
+8.
+
+
+3.
+
+
+The Even Better Way
+
+
+So far, our examples have shown the two-argument form of open, but that actually has a catch: the open mode and the filename both live in the second argument.
+
+
+That means that we have to store two different things in one string, and we have to trust Perl to be able to figure it out.
+
+
+To get around that, we break the second argument into two separate arguments.
+
+
+ open my $log_fh, '>>', 'castaways. log'
+
+
+This three-argument form has the added advantage of access to the Perl IO filters.
+We won't go into too much detail here. [*] The open function's entry in perlfunc is over 400 lines, even though it has its own perldoc tutorial, perlopentut.
+
+
+8.
+
+
+4.
+
+
+IO::Handle
+
+
+Behind the scenes, Perl is really using the IO::Handle module to work this magic, so our filehandle scalar is really an object. [*] The IO::Handle package is a base class for input-output things, so it handles a lot more than just files.
+
+
+[*] Have you ever wondered why there is no comma after the filehandle portion of the print?
+
+
+It is really the indirect object notation (which we have not mentioned yet, unless you have read the whole book before you read the footnotes, like we told you to do in the preface!).
+
+
+Unless you are creating new IO modules, you probably shouldn't use IO::Handle directly.
+
+
+Instead, use some of the handy modules built on top of it.
+
+
+We haven't told you about object-oriented programming (OOP) yet (it's in Chapter 11, so we almost have), but in this case, you just have to follow the example in its documentation.
+
+
+Some of these modules do some of the same things that we can already do with Perl's built-in open (depending on which version of Perl we have), but they can be handy when we want to decide as late as possible which module should handle input or output.
+
+
+Instead of using the built-in open, we use the module interface.
+
+
+To switch the behavior, we simply change the module name.
+
+
+Since we've set up our code to use a module interface, it's not that much work to switch modules.
+
+
+8.
+
+
+4.
+
+
+1.
+
+
+IO::File
+
+
+The IO::File module subclasses IO::Handle to work with files.
+
+
+It comes with the standard Perl distribution, so you should already have it.
+
+
+There are a variety of ways to create an IO::File object.
+
+
+We can create the filehandle reference with the one-argument form of the constructor.
+
+
+We check the result of the operation by looking for a defined value in the filehandle reference variable.
+
+
+ use IO::File;
+
+
+ my $fh = IO::File->new( '> castaways. log' )
+        or die "Could not create filehandle: $!";
+If you do not like that (for the same reasons as regular open), use one of the other calling conventions.
+The optional second argument is the filehandle mode. []
+
+
+[] These are the ANSI C fopen mode strings.
+
+
+You can also use these with the built-in open.
+
+
+Indeed, IO::File uses the built-in open behind the scenes.
+
+
+ my $read_fh  = IO::File->new( 'castaways. log', 'r' );
+
+
+ my $write_fh = IO::File->new( 'castaways. log', 'w' );
+Using a bit mask as the mode allows for more granular control.
+The IO::File module supplies the constants.
+
+
+ my $append_fh = IO::File->new( 'castaways. log', O_WRONLY|O_APPEND );
+
+
+Besides opening named files, we might want to open an anonymous temporary file.
+On systems that support this sort of thing, we simply create the new object to get a read-write filehandle.
+
+
+ my $temp_fh = IO::File->new_tmpfile;
+
+
+As before, Perl closes these files when the scalar variable goes out of scope, but if that is not enough, we do it ourselves explicitly.
+ $temp_fh->close;
+
+
+ undef $append_fh;
+8.
+4.
+
+
+2.
+
+
+Anonymous IO::File Objects
+
+
+If we don't put our IO::File object in a simple scalar variable, some operations require a slightly modified syntax to work.
+
+
+For example, we want to copy every file matched by the glob pattern of *. input to a corresponding file whose suffix is. output, but do it in parallel.
+
+
+First, we open all the files, both inputs and outputs:'
+
+
+ my @handlepairs;
+
+
+ foreach my $file ( glob( '*. input' ) ) {
+        (my $out = $file) =~ s/\. input$/. output/;
+        push @handlepairs, [
+                (IO::File->new('<$file') || die),
+                (IO::File->new('>$out') || die),
+        ];
+Now we have an array of references to arrays, each element of which is an IO::File object.
+Now, let us pump the data from the input files to the output files.
+
+
+ while (@handlepairs) {
+
+
+   @handlepairs = grep {
+    if (defined(my $line = $_->[0]->getline)) {
+      print { $_->[1] } $line;
+    } else {
+      0;
+    }
+  } @handlepairs;
+As long as we have pairs, we keep passing the list through the grep structure:
+ @handlepairs = grep { CONDITION } @handlepairs;
+
+
+On each pass, only the handle pairs that evaluate as true in the grep CONDITION survive.
+Inside, we take the first element of each pair and try to read from it.
+
+
+If that's successful, write that line to the second element of the pair (the corresponding output handle).
+
+
+If the print is successful, it returns true, which lets grep know that we want to keep that pair.
+
+
+If either the print fails or the getline returns undef, the grep sees the false value as an indication to discard that pair.
+
+
+Discarding the pair automatically closes both filehandles.
+
+
+Cool!
+
+
+Note that we can't use the more traditional filehandle read or filehandle print operations, because the reading and writing filehandles were not in a simple scalar variable.
+
+
+We can rewrite that loop to see if copying the handles is easier:
+
+
+  @handlepairs = grep {
+
+
+    my ($IN, $OUT) = @$_;
+    if (defined(my $line = <$IN>)) {
+      print $OUT $line;
+This scenario is arguably better.
+Most of the time, simply copying the complexly referenced value into a simple scalar is easier on the eyes.
+
+
+In fact, another way to write that loop is to get rid of the ugly if structure:
+
+
+    my $line;
+
+
+    defined($line = <IN>) and print $OUT $line;
+As long as someone understands that and is a partial evaluator and that print returns true when everything is okay, this is a fine replacement.
+Remember the Perl motto: "There's more than one way to do it" (although not all of them are equally nice or legitimate).
+
+
+8.
+
+
+4.
+
+
+3.
+
+
+IO::Scalar
+
+
+Sometimes we don't want to print to a file and would rather build up the output in a string.
+
+
+Some module interfaces don't give us that option, so we have to make it look like we are printing to a file by using a filehandle.
+
+
+We might also want to build up our content before we write it to a file so we can encrypt it, compress it, or send it as email directly from your program.
+
+
+The IO::Scalar module uses the magic of tie behind the scenes to give us a filehandle reference that appends to a scalar.
+
+
+This module doesn't come with the standard Perl distribution, so you'll have to install it yourself most likely.
+
+
+ use IO::Scalar;
+
+
+ my $string_log = '';
+ my $scalar_fh = IO::Scalar->new( \$string_log );
+ print $scalar_fh "The Howells' private beach club is closed\n";
+Now our log message ends up in the scalar variable $string_log instead of a file.
+What if we want to read from our logfile, though?
+
+
+We do the same thing.
+
+
+In this example, we create $scalar_fh just as we did before, then read from it with the line input operator.
+
+
+In our while loop, we'll extract the log messages that contain Gilligan (which is probably most of them, since he's always part of the mess):
+
+
+ while( <$scalar_fh> ) {
+
+
+        next unless /Gilligan/;
+        print;
+        }
+As of Perl version 5.
+8, we can do this directly in Perl without using IO::Scalar.
+
+
+ open( my $fh, '>>', \$string_log )
+
+
+        or die "Could not append to string! $!";
+8.
+4.
+
+
+4.
+
+
+IO::Tee
+
+
+What if we want to send output to more than one place at a time?
+
+
+What if we want to send it to a file and save it in a string at the same time?
+
+
+Using what we know already, we had have to do something like this:
+
+
+ my $string = '';
+
+
+        or die "Could not open castaways. log";
+ open my $scalar_fh, '>>', \$string;
+ my $log_message = "The Minnow is taking on water!\n"
+ print $log_fh    $log_message;
+ print $scalar_fh $log_message;
+Of course, we could shorten that a bit so we only have one print statement.
+We use the foreach control structure to iterate through the filehandle references, store each in $fh in turn, and print to each one.
+
+
+ foreach my $fh ( $log_fh, $scalar_fh ) {
+
+
+        print $fh $log_message;
+That's still a bit too much work.
+In the foreach, we had to decide which filehandles to include.
+
+
+What if we could just define a group of filehandles that answered to the same name?
+
+
+Well, that's what IO::Tee does for us.
+
+
+Imagine it like a tee connector on a bilge output pipe; when the water gets to the tee, it can flow it two different directions at the same time.
+
+
+When our output gets to IO::Tee, it can go to two (or more) different channels at the same time.
+
+
+That is, IO::Tee multiplexes output.
+
+
+In this example, the castaways log message goes to both the logfile and the scalar variable.
+
+
+ use IO::Tee;
+
+
+ $tee_fh = IO::Tee->new( $log_fh, $scalar_fh );
+ print $tee_fh "The radio works in the middle of the ocean!\n";
+That's not all, though.
+If the first argument to IO::Tee is an input filehandle (the succeeding arguments must be output filehandles), we can use the same teed filehandle to read from input and write to the output.
+
+
+The source and destination channels are different, but we get to treat them as a single filehandle. '
+
+
+ $tee_fh = IO::Tee->new( $read_fh, $log_fh, $scalar_fh );
+
+
+ # reads from $read_fh
+ my $message = <$tee_fh>;
+ # prints to $log_fh and $scalar_fh
+ print $tee_fh $message;
+The $read_fh doesn't have to be connected to a file, either.
+It might also be connected to a socket, a scalar variable, an external command's output, [*] or anything else we can dream up.
+
+
+8.
+
+
+5.
+
+
+Directory Handle References
+
+
+In the same way that we can create references to filehandles, we can create directory handle references.
+
+
+ opendir my $dh, '. ' or die "Could not open directory: $!";
+
+
+ foreach my $file  ( readdir( $dh ) ) {
+        print "Skipper, I found $file!\n";
+The directory handle reference obeys the same rules we laid out before.
+This only works if the scalar variable does not already have a value, and the handle automatically closes when the variable goes out of scope or we assign it a new value.
+
+
+8.
+
+
+5.
+
+
+1.
+
+
+IO::Dir
+
+
+We can use object-oriented interfaces for directory handles too.
+
+
+The IO::Dir module has been part of the standard Perl distribution since 5.
+
+
+6.
+
+
+It doesn't add interesting new features but wraps the Perl built-in functions. []'
+
+
+[] For each IO::Dir method name, append "dir" and look at the documentation in perlfunc.
+
+
+ use IO::Dir;
+
+
+ my $dir_fh = IO::Dir->new( '. ' ) || die "Could not open dirhandle! $!\n";
+ while( defined( my $file = $dir_fh->read ) ) {
+We don't have to create a new directory handle if we decide we want to go through the list again (perhaps later in the program).
+We can rewind the directory handle to start over:
+
+
+        print "I found $file!\n";
+
+
+ # time passes
+ $dir_fh->rewind;
+        print "I can still find $file!\n";
+8.
+6.
+
+
+Exercises
+
+
+You can find the answers to these exercises in "Answers for Chapter 8" in the Appendix.
+
+
+8.
+
+
+6.
+
+
+1.
+
+
+Exercise 1 [20 min]
+
+
+Write a program that prints the date and the day of the week, but allow the user to choose to send the output either to a file, a scalar, or both at the same time.
+
+
+No matter which output channels the user selects, send the output with a single print statement.
+
+
+If the user chooses to send the output to a scalar, at the end of the program print the scalar's value to standard output.
+
+
+8.
+
+
+6.
+
+
+2.
+
+
+Exercise 2 [30 min]
+
+
+The Professor has to read a logfile that looks like:
+
+
+ Gilligan: 1 coconut
+
+
+ Skipper: 3 coconuts
+ Gilligan: 1 banana
+ Ginger: 2 papayas
+ Professor: 3 coconuts
+ MaryAnn: 2 papayas . . .
+He wants to write a series of files, called gilligan. info, maryann. info, and so on.
+Each file should contain all the lines that begin with that name.
+
+
+(Names are always delimited by the trailing colon. )
+
+
+At the end, gilligan. info should start with:
+
+
+Now the logfile is large, and the coconut-powered computer is not very fast, so he wants to process the input file in one pass and write all output files in parallel.
+
+
+How does he do it?
+
+
+Hint: use a hash, keyed by the castaway name, holding IO::File objects for each output file.
+
+
+Create them as necessary.
+
+
+8.
+
+
+6.
+
+
+3.
+
+
+Exercise 3 [15 min]
+
+

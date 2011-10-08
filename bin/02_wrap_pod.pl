@@ -58,6 +58,8 @@ foreach my $podfile (@podlist) {
         $line =~ s/\s+$//;      # 去除尾部空格
         $line =~ s/(=\w+)\s+/$1$blank/; # 标记语言后保留一个空格
         $line =~ s/\t/$tab/g;     # 将所有制表符替换成四个空格
+        $line =~ s/\s*,\s*/,$blank/g; # 规范逗号
+        $line =~ s/\s*\.\s*/.$blank/g; # 规范句号
 
         # 提取标题后的单词
         say DEBUG $1 if ($line =~ /(\w+\(\w*\))/); # 测试正则匹配

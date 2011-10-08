@@ -1,0 +1,37 @@
+=EN 9. 8. Displaying Recursively Defined Data
+=CN 9. 8. 显示嵌套数据
+=EN The Dumper routine of Data::Dumper displays the output nicely, but what if we don't like the format being used? We can write a routine to display the data. Again, for recursively defined data, a recursive subroutine is usually the key. 
+=CN 用Data::Dumper模块的Dumper程序显示输出是不错, 但如果我们不喜欢它使用的格式怎么办呢？ 我们可以写一个程序来显示数据. 同样, 对于嵌套定义的数据, 我们用递归子程序是关键. 
+=EN To dump the data, we need to know the name of the directory at the top of the tree, because that's not stored within the structure:
+=CN 为了打印出数据, 我们必须知道顶层目录的名字, 因为它不会存储在嵌套结构中：
+sub dump_data_for_path {
+ my $path = shift;
+ my $data = shift;
+ if (not defined $data) { # plain file
+ print "$path\n";
+ return;
+ }
+ …
+ }
+=EN For a plain file, dump the pathname; for a directory, $data is a hash reference. Let's walk through the keys and dump the values:
+=CN 对于文件, 我们打印出路径名; 对于目录, 变量$data是一个散列引用. 我们则遍历所有的键, 输出对应的值：
+sub dump_data_for_path {
+ my $path = shift;
+ my $data = shift;
+ if (not defined $data) { # plain file
+ print "$path\n";
+ return;
+ }
+ my %directory = %$data;
+ for (sort keys %directory) {
+ dump_data_for_path("$path/$_", $directory{$_});
+ }
+}
+=EN For each element of the directory, we pass a path consisting of the incoming path followed by the current directory entry, and the data pointer is either undef for a file or a subdirectory hash reference for another directory. We can see the results by running:
+=CN 对于目录中的每个元素, 我们传一个包含下一项元素的当前路径, 以及一个散列值, 这个值要么是未定义, 表示是文件, 或下一个子目录的散列引用. 我们运行一下, 看下结果：
+dump_data_for_path('. ', data_for_path('. '));
+=EN Again, this is more interesting in a directory that has subdirectories, but the output should be similar to:
+=CN 同样, 如果散列数据有子目录的话, 效果更精彩. 不过输出结果同如下的脚本类似：
+find. -print
+=EN from the shell prompt. 
+=CN 取自于UNIX shell的提示. 

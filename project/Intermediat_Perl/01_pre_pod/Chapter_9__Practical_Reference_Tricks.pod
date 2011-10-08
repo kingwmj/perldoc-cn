@@ -1,0 +1,424 @@
+Chapter 9. Practical Reference Tricks
+
+This chapter looks at optimizing sorting and dealing with recursively defined data.
+
+9.1. Review of Sorting
+
+Perl's built-in sort operator sorts text strings in their natural text order, by default.[*] This is fine if we want to sort text strings:
+
+[*] My friends call that the "ASCIIbetical" ordering. Normally, modern Perl doesn't use ASCII; instead, it uses a default sort order, depending on the current locale and character set. See the perllocale (not perllocal!) manpage.
+
+ my @sorted = sort qw(Gilligan Skipper Professor Ginger Mary_Ann);
+
+but gets pretty messy when we want to sort numbers:
+
+ my @wrongly_sorted = sort 1, 2, 4, 8, 16, 32;
+
+The resulting list is 1, 16, 2, 32, 4, 8. Why didn't sort order these properly? It treats each item as a string and sorts them in string order. Any string that begins with 3 sorts before any string that begins with 4.
+
+If we don't want the default sorting order, we don't need to write an entire sorting algorithm, which is good news since Perl already has a good one of those. But no matter what sorting algorithm we use, at some point we have to look at item A and item B and decide which one comes first. That's the part we'll write: code to handle just two items. Perl will do the rest.
+
+By default, as Perl orders the items, it uses a string comparison. We can specify a new comparison using a sort block that we place between the sort keyword and the list of things to sort.[] Within the sort block, $a and $b stand in for two of the items sort will compare. If we're sorting numbers, then $a and $b will be two numbers from our list.
+
+[] We can also used a name subroutine that sort invokes for each comparison.
+
+The sort block must return a coded value to indicate the sort order. If $a comes before $b in our desired sorting order, it should return -1; it should return +1 if $b comes before $a; if the order doesn't matter, it should return 0. The order might not matter, for example, if it's a case-insensitive sort comparing "FRED" to "Fred", or if it's a numeric sort comparing 42 to 42.[*]
+
+[*] Actually, we can use any negative or positive number in place of -1 and +1, respectively. Recent Perl versions include a default sorting engine that is stable, so zero returns from the sort block cause the relative ordering of $a and $b to reflect their order in the original list. Older versions of Perl didn't guarantee such stability, and a future version might not use a stable sort, so don't rely on it.
+
+For example, to sort those numbers in their proper order, we can use a sort block comparing $a and $b, like so:
+
+ my @numerically_sorted = sort {
+   if ($a < $b)    { -1 }
+   elsif ($a > $b) { +1 }
+   else            {  0 }
+ } 1, 2, 4, 8, 16, 32;
+
+Now we have a proper numeric comparison, so we have a proper numeric sort. Of course, this is far too much typing, so we can use the spaceship operator instead:
+
+my @numerically_sorted = sort { $a <=> $b } 1, 2, 4, 8, 16, 32;
+
+The spaceship operator returns -1, 0, and +1, according to the rules we laid out. A descending sort is simple in Perl:[]
+
+[] As of version 5.8.6, Perl recognizes the reverse sort and does it without generating the temporary, intermediate list.
+
+ my @numerically_descending =
+    reverse sort { $a <=> $b } 1, 2, 4, 8, 16, 32;
+
+But there is more than one way to do it. The spaceship operator is nearsighted; and can't see which one of its parameters comes from $a and which from $b; it sees only which value is to its left and which is to its right. If we reverse the position of $a and $b, the spaceship will sort everything in the opposite order:
+
+ my @numerically_descending =
+    sort { $b <=> $a } 1, 2, 4, 8, 16, 32;
+
+In every place the previous sort expression returned -1, this expression returns +1, and vice versa. Thus, the sort is in the opposite order, and so it doesn't need a reverse. It's also easy to remember because if $a is to the left of $b, we get out the lower items first, just like a and b would be in the resulting list.
+
+Which way is better? When should we use a reverse sort, and when should we switch $a and $b? Well, in most cases it shouldn't matter much for efficiency, so it's probably best to optimize for clarity and use reverse. For a more complex comparison, however, a single reverse may not be up to the task.
+
+Like the spaceship operator, we can indicate a string sort with cmp, although this is rarely used alone because it is the default comparison. The cmp operator is most often used in more complex comparisons, as we'll show shortly.
+
+9.2. Sorting with Indices
+
+In the same way we used indices to solve a few problems with grep and map back in Chapter 2, we can also use indices with sort to get some interesting results. For example, let's sort the list of names from earlier:
+
+ my @sorted = sort qw(Gilligan Skipper Professor Ginger Mary_Ann);
+ print "@sorted\n";
+
+which necessarily results in:
+
+ Gilligan Ginger Mary_Ann Professor Skipper
+
+But what if we wanted to look at the original list and determine which element of the original list now appears as the first, second, third, and so on, element of the sorted list? For example, Ginger is the second element of the sorted list and was the fourth element of the original list. How do we determine that the second element of the final list was the fourth element of the original list?
+
+Well, we can apply a bit of indirection. Let's not sort the actual names but rather the indices of each name:
+
+ my @input = qw(Gilligan Skipper Professor Ginger Mary_Ann);
+ my @sorted_positions = sort { $input[$a] cmp $input[$b] } 0..$#input;
+ print "@sorted_positions\n";
+
+This time, $a and $b aren't the elements of the list, but the indices. So instead of comparing $a to $b, we use cmp to compare $input[$a] to $input[$b] as strings. The result of the sort are the indices, in an order defined by the corresponding elements of @input. This prints 0 3 4 2 1, which means that the first element of the sorted list is element 0 of the original list, Gilligan. The second element of the sorted list is element 3 of the original list, which is Ginger, and so on. Now we can rank information rather than just move the names around.
+
+Actually, we have the inverse of the rank. We still don't know, for a given name in the original list, which position it occupies in the output list. But with a bit more magic, we can get there as well:
+
+ my @input = qw(Gilligan Skipper Professor Ginger Mary_Ann);
+ my @sorted_positions = sort { $input[$a] cmp $input[$b] } 0..$#input;
+ my @ranks;
+ @ranks[@sorted_positions] = (0..$#sorted_positions);
+ print "@ranks\n";
+
+The code prints 0 4 3 1 2. This means that Gilligan is position 0 in the output list, Skipper is position 4, Professor is position 2, and so on. The positions here are 0-based, so add 1 to get "human" ordinal values. One way to cheat is to use 1..@sorted_positions instead of 0..$#sorted_positions, so a way to dump it all out looks like:
+
+ my @input = qw(Gilligan Skipper Professor Ginger Mary_Ann);
+ my @sorted_positions = sort { $input[$a] cmp $input[$b] } 0..$#input;
+ my @ranks;
+ @ranks[@sorted_positions] = (1..@sorted_positions);
+ for (0..$#ranks) {
+   print "$input[$_] sorts into position $ranks[$_]\n";
+ }
+
+This results in:
+
+ Gilligan sorts into position 1
+ Skipper sorts into position 5
+ Professor sorts into position 4
+ Ginger sorts into position 2
+ Mary_Ann sorts into position 3
+
+This general technique can be convenient if we need to look at our data in more than one way. Perhaps we keep many records in order by a numeric code for efficiency reasons, but we occasionally want to view them in alphabetical order as well. Or maybe the data items themselves are impractical to sort, such as a month's worth of server logs.
+
+9.3. Sorting Efficiently
+
+As the Professor tries to maintain the community computing facility (built entirely out of bamboo, coconuts, and pineapples, and powered by a certified Perl-hacking monkey), he continues to discover that people are leaving entirely too much data on the single monkey-powered filesystem and decides to print a list of offenders.
+
+The Professor has written a subroutine called ask_monkey_about( ), which, given a castaway's name, returns the number of pineapples of storage they use. We have to ask the monkey because he's in charge of the pineapples. An initial naive approach to find the offenders from greatest to least might be something like:
+
+ my @castaways =
+   qw(Gilligan Skipper Professor Ginger Mary_Ann Thurston Lovey);
+ my @wasters = sort {
+   ask_monkey_about($b) <=> ask_monkey_about($a)
+ } @castaways;
+
+In theory, this would be fine. For the first pair of names (Gilligan and Skipper), we ask the monkey "How many pineapples does Gilligan have?" and "How many pineapples does Skipper have?" We get back two values from the monkey and use them to order Gilligan and Skipper in the final list.
+
+However, at some point, we have to compare the number of pineapples that Gilligan has with another castaway as well. For example, suppose the pair is Ginger and Gilligan. We ask the monkey about Ginger, get a number back, and then ask the monkey about Gilligan...again. This will probably annoy the monkey a bit, since we already asked earlier. But we need to ask for each value two, three, or maybe even four times, just to put the seven values into order.
+
+This can be a problem because it irritates the monkey.
+
+How do we keep the number of monkey requests to a minimum? Well, we can build a table first. We use a map with seven inputs and seven outputs, turning each castaway item into a separate array reference, with each referenced array consisting of the castaway name and the pineapple count reported by the monkey:
+
+ my @names_and_pineapples = map {
+   [ $_, ask_monkey_about($_) ]
+ } @castaways;
+
+At this point, we asked the monkey seven questions in a row, but that's the last time we have to talk to the monkey! We now have everything we need to finish the task.
+
+For the next step, we sort the arrayrefs, ordering them by the monkey-returned value:
+
+ my @sorted_names_and_pineapples = sort {
+   $b->[1] <=> $a->[1];
+ } @names_and_pineapples;
+
+In this subroutine, $a and $b are still two elements from the list of things to be sorted. When we're sorting numbers, $a and $b are numbers; when we're sorting references, $a and $b are references. We dereference them to get to the corresponding array itself, and pick out item 1 from the array (the monkey's pineapple value). Because $b appears to the left of $a, it'll be a descending sort as well. (We want a descending sort because the Professor wants the first name on the list to be the person who uses the most pineapples.)
+
+We're almost done, but what if we just wanted the top names, rather than the names and pineapple counts? We merely need to perform another map to transform the references back to the original data:
+
+ my @names = map $_->[0], @sorted_names_and_pineapples;
+
+Each element of the list ends up in $_, so we'll dereference that to pick out the element 0 of that array, which is just the name.
+
+Now we have a list of names, ordered by their pineapple counts, and the monkey's off our backs, all in three easy steps.
+
+9.4. The Schwartzian Transform
+
+The intermediate variables between each of these steps were not necessary, except as input to the next step. We can save ourselves some brainpower by just stacking all the steps together:
+
+ my @names =
+   map $_->[0],
+   sort { $b->[1] <=> $a->[1] }
+   map [ $_, ask_monkey_about($_) ],
+   @castaways;
+ 
+Because the map and sort operators are right to left, we have to read this construct from the bottom up. Take a list of @castaways, create some arrayrefs by asking the monkey a simple question, sort the list of arrayrefs, and then extract the names from each arrayref. This gives us the list of names in the desired order.
+
+This construct is commonly called the Schwartzian Transform, which was named after Randal (but not by Randal), thanks to a Usenet posting he made many years ago. The Schwartzian Transform has since proven to be a very nice thing to have in our bag of sorting tricks.
+
+If this transform looks like it might be too complex to memorize or come up with from first principles, it might help to look at the flexible and constant parts:
+
+ my @output_data =
+   map $_->[0],
+   sort { SORT COMPARISON USING $a->[1] AND $b->[1] }
+   map [ $_, EXPENSIVE FUNCTION OF $_ ],
+   @input_data;
+
+The basic structure maps the original list into a list of arrayrefs, computing the expensive function only once for each; sorts those array refs, looking at the cached value of each expensive function invocation;[*] and then extracts the original values back out in the new order. All we have to do is plug in the proper two operations, and we're done. For example, to use the Schwartzian Transform to implement a case-insensitive sort, we could use code like this:[]
+
+[*] An expensive operation is one that takes a relatively long time or a relatively large amount of memory.
+
+[] This is an efficient way to do this only if the uppercasing operation is sufficiently expensive, which it might be if our strings tend to be very long or if we have a large enough number of them. For a small number of not-long strings, a simple my @output_data = sort { "\U$a" cmp "\U$b"} @input_data is probably more efficient. If in doubt, benchmark.
+
+ my @output_data =
+   map $_->[0],
+   sort { $a->[1] cmp $b->[1] }
+   map [ $_, "\U$_" ],
+   @input_data;
+
+9.5. Multi-Level Sort with the Schwartzian Transform
+
+If we need to sort on more than one criterion, the Schwartzian Transform is still up to the task.
+
+my @output_data =
+  map $_->[0],
+  sort { SORT COMPARISON USING $a->[1] AND $b->[1] or
+          ANOTHER USING $a->[2] AND $b->[2] or
+      YET ANOTHER USING $a->[3] AND $b->[3] }
+  map [ $_, SOME FUNCTION OF $_, ANOTHER, YET ANOTHER ],
+  @input_data;
+
+This code skeleton has a three-level sort comparison, using three computed values saved in the anonymous array (alongside the original data item to be sorted, which always comes first).
+
+9.6. Recursively Defined Data
+
+While the data we've processed with references up to this point has been rather fixed structure, sometimes we have to deal with hierarchical data, which is often defined recursively.
+
+For Example One, consider an HTML table that has rows containing cellsand some of those cells may also contain entire tables. Example Two could be a visual representation of a filesystem consisting of directories containing files and other directories. Example Three is a company organization chart, which has managers with direct reports, some of whom may be managers themselves. And Example Four is a more complex organization chart, which can contain instances of the HTML tables of Example One, the filesystem representations of Example Two, or even entire organization charts . . . .
+
+We can use references to acquire, store, and process such hierarchical information. Frequently, the routines to manage the data structures end up as recursive subroutines.
+
+Recursive algorithms deal with the unlimited complexity of their data by beginning with a base case and building upon that.[*] The base case considers what to do in the simplest case: when the leaf node has no branches, when the array is empty, when the counter is at zero. In fact, it's common to have more than one base case in various branches of a recursive algorithm. A recursive algorithm with no base case is an infinite loop.
+
+[*] Recursive functions should all have a base, or trivial case, where they don't need to recurse and that all other recursions can eventually reach. That is, unless we have a lot of time on our hands to let the function recurse forever.
+
+A recursive subroutine has a branch from which it calls itself to handle a portion of the task, and a branch that doesn't call itself to handle the base cases. In Example One above, the base case could be a table cell that is empty. There could also be base cases for empty tables and table rows. In Example Two, base cases would be needed for files, and perhaps for empty directories.
+
+For example, a recursive subroutine handling the factorial function , which is one of the simplest recursive functions, might look like:
+
+sub factorial {
+  my $n = shift;
+  if ($n <= 1) {
+    return 1;
+  } else {
+    return $n * factorial($n - 1);
+  }
+}
+
+Here we have a base case where $n is less than or equal to 1, which does not invoke the recursive instance, along with a recursive case for $n greater than 1, which calls the routine to handle a portion of the problem (i.e., compute the factorial of the next lower number).
+
+This task would probably be solved better using iteration rather than recursion, even though the classic definition of factorial is often given as a recursive operation.
+
+9.7. Building Recursively Defined Data
+
+Suppose we wanted to capture information about a filesystem, including the filenames and directory names, and their included contents. Represent a directory as a hash, in which the keys are the names of the entries within the directory, and values are undef for plain files. A sample /bin directory looks like:
+
+ my $bin_directory = {
+   cat  => undef,
+   cp   => undef,
+   date => undef,
+   ... and so on ...
+ };
+
+Similarly, the Skipper's home directory might also contain a personal bin directory (at something like ~skipper/bin) that contains personal tools:
+
+ my $skipper_bin = {
+   navigate            => undef,
+   discipline_gilligan => undef,
+   eat                 => undef,
+  };
+
+Nothing in either structure tells where the directory is located in the hierarchy. It just represents the contents of some directory.
+
+Go up one level to the Skipper's home directory, which is likely to contain a few files along with the personal bin directory:
+
+ my $skipper_home = {
+   '.cshrc'                        => undef,
+     'Please_rescue_us.pdf'        => undef,
+     'Things_I_should_have_packed' => undef,
+   bin                             => $skipper_bin,
+ };
+
+Ahh, notice that we have three files, but the fourth entry bin doesn't have undef for a value but rather the hash reference created earlier for the Skipper's personal bin directory. This is how we indicate subdirectories. If the value is undef, it's a plain file; if it's a hash reference, we have a subdirectory, with its own files and subdirectories. Of course, we can have combined these two initializations:
+
+ my $skipper_home = {
+   '.cshrc'                    => undef,
+   Please_rescue_us.pdf        => undef,
+   Things_I_should_have_packed => undef,
+
+   bin => {
+     navigate            => undef,
+     discipline_gilligan => undef,
+     eat                 => undef,
+   },
+ };
+
+Now the hierarchical nature of the data starts to come into play.
+
+Obviously, we don't want to create and maintain a data structure by changing literals in the program. We should fetch the data by using a subroutine. Write a subroutine that returns undef for a given pathname if the path is a file, or a hash reference of the directory contents if the path is a directory. The base case of looking at a file is the easiest, so let's write that:
+
+ sub data_for_path {
+   my $path = shift;
+   if (-f $path) {
+     return undef;
+   }
+   if (-d $path) {
+     ...
+   }
+   warn "$path is neither a file nor a directory\n";
+   return undef;
+ }
+
+If the Skipper calls this on .cshrc, he'll get back an undef value, indicating that a file was seen.
+
+Now for the directory part. We need a hash reference, which we declare as a named hash inside the subroutine. For each element of the hash, we call ourselves to populate the value of that hash element. It goes something like this:
+
+ sub data_for_path {
+   my $path = shift;
+   if (-f $path or -l $path) {        # files or symbolic links
+     return undef;
+   }
+   if (-d $path) {
+     my %directory;
+     opendir PATH, $path or die "Cannot opendir $path: $!";
+     my @names = readdir PATH;
+     closedir PATH;
+     for my $name (@names) {
+         next if $name eq '.' or $name eq '..';
+         $directory{$name} = data_for_path("$path/$name");
+     }
+     return \%directory;
+   }
+   warn "$path is neither a file nor a directory\n";
+   return undef;
+ }
+
+The base cases in this recursive algorithm are the files and symbolic links. This algorithm wouldn't correctly traverse the filesystem if it followed symbolic links to directories as if they were true (hard) links, since it could end up in a circular loop if the symlink pointed to a directory that contained the symlink.[*] It would also fail to correctly traverse a malformed filesystemthat is, one in which the directories form a ring rather than a tree structure, say. Although malformed filesystems may not often be an issue, recursive algorithms in general are vulnerable to errors in the structure of the recursive data.
+
+[*] Not that any of us have ever done that and wondered why the program took forever. The second time really wasn't our fault anyway, and the third time was just bad luck. That's our story and we're sticking to it.
+
+For each file within the directory being examined, the response from the recursive call to data_for_path is undef. This populates most elements of the hash. When the reference to the named hash is returned, the reference becomes a reference to an anonymous hash because the name immediately goes out of scope. (The data itself doesn't change, but the number of ways in which we can access the data changes.)
+
+If there is a subdirectory, the nested subroutine call uses readdir to extract the contents of that directory and returns a hash reference, which is inserted into the hash structure created by the caller.
+
+At first, it may look a bit mystifying, but if we walk through the code slowly, we'll see it's always doing the right thing. Test the results of this subroutine by calling it on . (the current directory) and inspecting the result:
+
+ use Data::Dumper;
+ print Dumper(data_for_path('.'));
+ 
+Obviously, this will be more interesting if our current directory contains subdirectories.
+
+9.8. Displaying Recursively Defined Datag
+
+The Dumper routine of Data::Dumper displays the output nicely, but what if we don't like the format being used? We can write a routine to display the data. Again, for recursively defined data, a recursive subroutine is usually the key.
+
+To dump the data, we need to know the name of the directory at the top of the tree, because that's not stored within the structure:
+
+ sub dump_data_for_path {
+             my $path = shift;
+             my $data = shift;
+ 
+             if (not defined $data) { # plain file
+                     print "$path\n";
+                     return;
+                     }
+             ...
+             }
+
+For a plain file, dump the pathname; for a directory, $data is a hash reference. Let's walk through the keys and dump the values:
+
+ sub dump_data_for_path {
+         my $path = shift;
+         my $data = shift;
+ 
+         if (not defined $data) { # plain file
+                 print "$path\n";
+                 return;
+         }
+
+         my %directory = %$data;
+ 
+         for (sort keys %directory) {
+                 dump_data_for_path("$path/$_", $directory{$_});
+         }
+ }
+
+For each element of the directory, we pass a path consisting of the incoming path followed by the current directory entry, and the data pointer is either undef for a file or a subdirectory hash reference for another directory. We can see the results by running:
+
+ dump_data_for_path('.', data_for_path('.'));
+ 
+Again, this is more interesting in a directory that has subdirectories, but the output should be similar to:
+
+ find . -print
+
+from the shell prompt.
+
+9.9. Exercises
+
+You can find the answers to these exercises in "Answers for Chapter 9" in the Appendix.
+
+9.9.1. Exercise 1 [15 min]
+
+Using the glob operator, a naive sort of every name in the /bin directory by their relative sizes might be written as:
+
+ my @sorted = sort { -s $a <=> -s $b } glob "/bin/*";
+
+Rewrite this using the Schwartzian Transform technique.
+
+If you don't have many files in the /bin directory, perhaps because you don't have a Unix machine, change the argument to glob as needed.
+
+9.9.2. Exercise 2 [15 min]
+
+Read up on the Benchmark module, included with Perl. Write a program that will answer the question "How much does using the Schwartzian Transform speed up the task of Exercise 1?"
+
+9.9.3. Exercise 3 [10 min]
+
+Using a Schwartzian Transform, read a list of words, and sort them in "dictionary order." Dictionary order ignores all capitalization and internal punctuation. Hint: the following transformation might be useful:
+
+ my $string = 'Mary-Ann';
+ $string =~ tr/A-Z/a-z/;       # force all lowercase
+ $string =~ tr/a-z//cd;        # strip all but a-z from the string
+ print $string;                # prints "maryann"
+
+Be sure you don't mangle the data! If the input includes the Professor and the skipper, the output should have them listed in that order, with that capitalization.
+
+9.9.4. Exercise 4 [20 min]
+
+Modify the recursive directory dumping routine so it shows the nested directories through indentation. An empty directory should show up as:
+
+ sandbar, an empty directory
+
+while a nonempty directory should appear with nested contents, indented two spaces:
+
+ uss_minnow, with contents:
+   anchor
+   broken_radio
+   galley, with contents:
+     captain_crunch_cereal
+     gallon_of_milk
+     tuna_fish_sandwich
+   life_preservers
+ 
+ sub navigation_turn_toward_port {
+   .. code here ..
+ }
+ 
+ 1;
+
+Yes, every scalar, array, hash, filehandle, or subroutine now has to have a navigation_ prefix in front of it to guarantee that the names won't collide with any potential users of the library. Obviously, for that old sailor, this ain't gonna float his boat. What do we do instead?
+

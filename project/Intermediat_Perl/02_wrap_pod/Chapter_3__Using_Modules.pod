@@ -1,0 +1,332 @@
+Chapter 3. Using Modules 
+
+Modules are the building blocks for our programs. They provide reusable subroutines, variables, and even object-oriented classes. On our way to building our own modules, we'll show you some of those you might be interested in. We'll also look at the basics of using modules that others have already written.  
+
+3. 1. The Standard Distribution 
+
+Perl comes with many of the popular modules already. Indeed, most of the 50+ MB of the most recent distribution are from modules. In October 1996, Perl 5. 003_07 had 98 modules. Today, at the beginning of 2006, Perl 5. 8. 8 has 359. [*] Indeed, this is one of the advantages of Perl: it already comes with a lot of stuff that you need to make useful and complex programs without doing a lot of work yourself.  
+
+[*] After you make it through this book, you should be able to use Module::CoreList to discover that count for yourself. That's what we did to get those numbers, after all.  
+
+Throughout this book, we'll try to identify which modules comes with Perl (and in most cases, with which version they started coming with Perl). We'll call these "core modules " or note that they're in "the standard distribution. " If you have Perl, you should have these modules. Since we're using Perl 5. 8. 7 as we write this, we'll assume that's the current version of Perl.  
+
+As you develop your code, you may want to consider if you want to use only core modules, so that you can be sure that anyone with Perl will have that module as long as they have at least the same version as you. [] We'll avoid that debate here, mostly because we love CPAN too much to do without it.  
+
+3. 2. Using Modules 
+
+Almost every Perl module comes with documentation, and even though we might not know how all of the behind-the-scenes magic works, we really don't have to worry about that stuff if we know how to use the interface. That's why the interface is there, after all: to hide the details.  
+
+On our local machine, we can read the module documentation with the perldoc command. We give it the module name we're interested in, and it prints out its documentation.  
+
+
+ $ perldoc File::Basename 
+
+
+ NAME 
+       fileparse - split a pathname into pieces 
+
+
+       basename - extract just the filename from a path 
+
+
+       dirname - extract just the directory from a path 
+
+
+ SYNOPSIS 
+         use File::Basename; 
+
+
+         ($name, $path, $suffix) = fileparse($fullname, @suffixlist) 
+         fileparse_set_fstype($os_string); 
+         $basename = basename($fullname, @suffixlist); 
+         $dirname = dirname($fullname); 
+
+We've included the top portion of the documentation to show you the most important section (at least, the most important when you're starting). Module documentation typically follows the old Unix manpage format, which starts with a NAME and SYNOPSIS section.  
+
+The synopsis gives us examples of the module's use, and if we can suspend understanding for a bit and follow the example, we can use the module. That is to say, it may be that you're not yet familiar with some of the Perl techniques and syntax in the synopsis, but you can generally just follow the example and make everything work.  
+
+Now, since Perl is a mix of procedural, functional, object-oriented, and other sorts of language types, Perl modules come in a variety of different interfaces. We'll employ these modules in slightly different fashions, but as long as we can check the documentation, we shouldn't have a problem.  
+
+3. 3. Functional Interfaces 
+
+To load a module, we use the Perl built-in use. We're not going to go into all of the details here, but we'll get to those in Chapters 10 and 15. At the moment, we just want to use the module. Let's start with File::Basename, that same module from the core distribution. To load it into our script, we say: 
+
+
+ use File::Basename; 
+
+When we do this, File::Basename introduces three subroutines, fileparse, basename, and dirname, [*] into our script. [] From this point forward, we can say: 
+
+[*] As well as a utility routine, fileparse_set_fstype.  
+
+[] Actually, it imports them into the current package, but we haven't told you about those yet.  
+
+
+ my $basename = basename( $some_full_path ); 
+ my $dirname  = dirname(  $some_full_path ); 
+
+as if we had written the basename and dirname subroutines ourselves, or (nearly) as if they were built-in Perl functions. These routines pick out the filename and the directory parts of a pathname. For example, if $some_full_path were D:\Projects\Island Rescue\plan7. rtf (presumably, the program is running on a Windows machine), then $basename would be plan 7. rtf and the $dirname would be D:\Projects\Island Rescue.  
+
+The File::Basename module knows what sort of system it's on, and thus its functions figure out how to correctly parse the strings for the different delimiters we might encounter.  
+
+However, suppose we already had a dirname subroutine. We've now overwritten it with the definition provided by File::Basename! If we had turned on warnings, we would have seen a message stating that; but otherwise, Perl really doesn't care.  
+
+3. 4. Selecting What to Import 
+
+Fortunately, we can tell the use operation to limit its actions by specifying a list of subroutine names following the module name, called the import list: 
+
+
+ use File::Basename ('fileparse', 'basename'); 
+
+Now the module only gives us those two subroutines and leaves our own dirname alone. Of course, this is awkward to type, so more often we'll see this written with the quotewords operator: 
+
+
+ use File::Basename qw( fileparse basename ); 
+
+In fact, even if there's only one item, we tend to write it with a qw( ) list for consistency and maintenance; often we'll go back to say "give me another one from here, " and it's simpler if it's already a qw( ) list.  
+
+We've protected the local dirname routine, but what if we still want the functionality provided by File::Basename's dirname? No problem. We just spell it out with its full package specification: 
+
+
+ my $dirname = File::Basename::dirname($some_path); 
+
+The list of names following use doesn't change which subroutines are defined in the module's package (in this case, File::Basename). We can always use the full name regardless of the import list, as in:[*] 
+
+[*] You don't need the ampersand in front of any of these subroutine invocations, because the subroutine name is already known to the compiler following use.  
+
+
+ my $basename = File::Basename::basename($some_path); 
+
+In an extreme (but extremely useful) case, we can specify an empty list for the import list, as in: 
+
+
+ use File::Basename (  );              # no import 
+ my $base = File::Basename::basename($some_path); 
+
+An empty list is different from an absent list. An empty list says "don't give me anything, " while an absent list says "give me the defaults. " If the module's author has done her job well, the default will probably be exactly what we want.  
+
+3. 5. Object-Oriented Interfaces 
+
+Contrast the subroutines imported by File::Basename with what another core module has by looking at File::Spec. The File::Spec module is designed to support operations commonly performed on file specifications. (A file specification is usually a file or directory name, but it may be a name of a file that doesn't existin which case, it's not really a filename, is it?) 
+
+Unlike the File::Basename module, the File::Spec module has a primarily objectoriented interface. We load the module with use, as we did before.  
+
+
+ use File::Spec; 
+
+However, since this module has an object-oriented interface, [] it doesn't import any subroutines. Instead, the interface tells us to access the functionality of the module using its class methods. The catfile method joins a list of strings with the appropriate directory separator: 
+
+[] We can use File::Spec::Functions if we want a functional interface.  
+
+
+ my $filespec = File::Spec->catfile( $homedir{gilligan},  
+         'web_docs', 'photos', 'USS_Minnow. gif' ); 
+
+This calls the class method catfile of the File::Spec class, which builds a path appropriate for the local operating system and returns a single string. [] This is similar in syntax to the nearly two dozen other operations provided by File::Spec.  
+
+[] That string might be something like /home/gilligan/web_docs/photos/USS_Minnow. gif on a Unix system. On a Windows system, it would typically use backslashes as directory separators. This module lets us write portable code easily, at least where file specs are concerned.  
+
+The File::Spec module provides several other methods for dealing with file paths in a portable manner. You can read more about portability issues in the perlport documentation.  
+
+3. 6. A More Typical Object-Oriented Module: Math::BigInt 
+
+So as not to get dismayed about how "un-OO" the File::Spec module seems since it doesn't have objects, let's look at yet another core module, Math::BigInt, which can handle integers beyond Perl's native reach. [*] 
+
+[*] Behind the scenes, Perl is limited by the architecture it's on. It's one of the few places where the hardware shows through.  
+
+
+ use Math::BigInt; 
+
+
+ my $value = Math::BigInt->new(2); # start with 2 
+
+
+ $value->bpow(1000);               # take 2**1000 
+
+
+ print $value->bstr(  ), "\n";     # print it out 
+
+As before, this module imports nothing. Its entire interface uses class methods, such as new, against the class name to create instances, and then calls instance methods, such as bpow and bstr, against those instances.  
+
+3. 7. The Comprehensive Perl Archive Network 
+
+CPAN is the result of many volunteers working together, many of whom were originally operating their own little (or big) Perl FTP sites back before that Web thing came along. They coordinated their efforts on the perl-packrats mailing list in late 1993 and decided that disk space was getting cheap enough that the same information should be replicated on all sites rather than having specialization on each site. The idea took about a year to ferment, and Jarkko Hietaniemi established the Finnish FTP site as the CPAN mothership from which all other mirrors could draw their daily or hourly updates.  
+
+Part of the work involved rearranging and organizing the separate archives. Places were established for Perl binaries for non-Unix architectures, scripts, and Perl's source code itself. However, the modules portion has come to be the largest and most interesting part of the CPAN.  
+
+The modules in CPAN are organized as a symbolic-link tree in hierarchical functional categories, pointing to author directories where the actual files are located. The modules area also contains indices that are generally in easy-to-parse-with-Perl formats, such as the Data::Dumper output for the detailed module index. Of course, these indices are all derived automatically from databases at the master server using other Perl programs. Often, the mirroring of the CPAN from one server to another is done with a now-ancient Perl program called mirror. pl.  
+
+From its small start of a few mirror machines, CPAN has now grown to over 200 public archives in all corners of the Net, all churning away, updating at least daily, sometimes as frequently as hourly. No matter where we are in the world, we can find a nearby CPAN mirror from which to pull the latest goodies.  
+
+The incredibly useful CPAN Search (http://search. cpan. org) will probably become your favorite interface. From that web site, you can search for modules, look at their documentation, browse through their distributions, inspect their CPAN Testers reports, and do many other things.  
+
+3. 8. Installing Modules from CPAN Installing a simple module from CPAN can be straightforward: we download the module distribution archive, unpack it, and change into its directory. We use wget here, but it doesn't matter which tool you use.  
+
+
+ $ wget http://www. cpan. org/. . . /HTTP-Cookies-Safari-1. 10. tar. gz 
+ $ tar -xzf HTTP-Cookies-Safari-1. 10. tar. gz 
+ $ cd HTTP-Cookies-Safari-1. 10s 
+
+From there we go one of two ways (which we'll explain in detail in Chapter 16). If we find a file named Makefile. PL, we run this series of commands to build, test, and finally install the source: 
+
+
+ $ perl Makefile. PL 
+ $ make 
+ $ make test 
+ $ make install 
+
+If we don't have permission to install modules in the system-wide directories, [*] we can tell Perl to install them under another path by using the PREFIX argument: 
+
+[*] These directories were set when the administrator installed Perl, and we can see them with perl -V.  
+
+
+ $ perl Makefile. PL PREFIX=/Users/home/Ginger 
+
+To make Perl look in that directory for modules, we can set the PERL5LIB environment variable. Perl adds those directories to its module directory search list.  
+
+
+ $ export PERL5LIB=/Users/home/Ginger 
+
+We can also use the lib pragma to add to the module search path, although this is not as friendly, since we have to change the code, but also because it might not be the same directory on other machines where we want to run the code.  
+
+
+ #!/usr/bin/perl 
+ use lib qw(/Users/home/Ginger); 
+
+Backing up for a minute, if we found a Build. PL file instead of a Makefile. PL, the process is the same. These distributions use Module::Build to build and install code. Since Module::Build is not a core Perl module, [*] we have to install it before we can install the distribution that needs it.  
+
+[*] At least not yet. It should be part of Perl 5. 10, though.  
+
+
+ $ perl Build. PL 
+ $ perl Build 
+ $ perl Build test 
+ $ perl Build install 
+
+To install into our private directories using Module::Build, we add the install_base parameter. We tell Perl how to find modules the same way we did before.  
+
+
+ $ perl Build. PL --install_base /Users/home/Ginger 
+
+Sometimes we find both Makefile. PL and Build. PL in a distribution. What do we do then? We can use either one. Play favorites, if you like.  
+
+3. 9. Setting the Path at the Right Time 
+
+Perl finds modules by looking through the directories in the special Perl array, @INC. The use statement executes at compile time, so it looks at the module search path, @INC, at compile time. That can break our program in hard-to-understand ways unless we take @INC into consideration.  
+
+For example, suppose we have our own directory under /home/gilligan/lib, and we place our own Navigation::SeatOfPants module in /home/gilligan/lib/Navigation/SeatOfPants. pm. When we load our module, Perl won't find it.  
+
+
+ use Navigation::SeatOfPants; 
+
+Perl complains to us that it can't find the module in @INC and shows us all of the directories it has in that array.  
+
+
+ Can't locate Navigation/SeatofPants. pm in @INC (@INC contains:. . . ) 
+
+You might think that we should just add our module directory to @INC before we call the use. However, even adding: 
+
+
+ unshift @INC, '/home/gilligan/lib';   # broken 
+ use Navigation::SeatOfPants; 
+
+doesn't work. Why? Because the unshift happens at runtime, long after the use was attempted at compile time. The two statements are lexically adjacent but not temporally adjacent. Just because we wrote them next to each other doesn't mean they execute in that order. We want to change @INC before the use executes. One way to fix this is to add a BEGIN block around the push: 
+
+
+ BEGIN { unshift @INC, '/home/gilligan/lib'; } 
+ use Navigation::SeatOfPants; 
+
+Now the BEGIN block compiles and executes at compile time, setting up the proper path for the following use.  
+
+However, this is noisy and prone to require far more explanation than you might be comfortable with, especially for the maintenance programmer who has to edit your code later. Let's replace all that clutter with that simple pragma we used before: 
+
+
+ use lib '/home/gilligan/lib'; 
+ use Navigation::SeatOfPants; 
+
+Here, the lib pragma takes one or more arguments and adds them at the beginning of the @INC array, just like unshift did before. [*] It works because it executes at compile time, not runtime. Hence, it's ready in time for the use immediately following.  
+
+[*] use lib also unshifts an architecture-dependent library below the requested library, making it more valuable than the explicit counterpart presented earlier.  
+
+Because a use lib pragma will pretty much always have a site-dependent pathname, it is traditional and we encourage you to put it near the top of the file. This makes it easier to find and update when we need to move the file to a new system or when the lib directory's name changes. (Of course, we can eliminate use lib entirely if we can install our modules in standard @INC locations, but that's not always practical. ) 
+
+Think of use lib as not "use this library" but rather "use this path to find my libraries (and modules). " Too often, we see code written like: 
+
+
+ use lib '/home/gilligan/lib/Navigation/SeatOfPants. pm'; # WRONG 
+
+and then the programmer wonders why it didn't pull in the definitions. Be aware that use lib indeed runs at compile time, so this also doesn't work: 
+
+
+ my $LIB_DIR = '/home/gilligan/lib'; . . .  
+ use lib $LIB_DIR;     # BROKEN 
+ use Navigation::SeatOfPants; 
+
+Certainly, Perl establishes the declaration of the $LIB_DIR variable at compile time (so we won't get an error with use strict, although the actual use lib should complain), but the actual assignment of the /home/gilligan/lib/ value doesn't happen until runtime. Oops, too late again! 
+
+At this point, we need to put something inside a BEGIN block or perhaps rely on yet another compile-time operation: setting a constant with use constant: 
+
+
+ use constant LIB_DIR => '/home/gilligan/lib'; . . .  
+ use lib LIB_DIR; 
+ use Navigation::SeatOfPants; 
+
+There. Fixed again. That is, until we need the library to depend on the result of a calculation. (Where will it all end? Somebody stop the madness!) This should handle about 99 percent of our needs.  
+
+3. 9. 1. Handling Module Dependencies 
+
+We just saw that if we try to install a module that uses Module::Build, we have to install Module::Build first. That's a mild case of the general dependency headache, and all the coconuts on our castaways' island aren't going to fix it. We might have to install several other modules too, each of which, in turn, depends on even more modules.  
+
+Fortunately, we have tools to help us. The CPAN. pm module has been part of the core distribution since Perl 5. 004. It gives us an interactive module installation shell.  
+
+
+ $ perl -MCPAN -e shell 
+ cpan shell -- CPAN exploration and modules installation (v1. 7601) 
+ ReadLine support available (try 'install Bundle::CPAN') 
+
+
+ cpan> 
+
+To install a module along with its dependencies, we issue the install command with the name of the module. Now, CPAN. pm handles all the work of downloading, unpacking, building, testing, and installing the module, and it does so recursively for all its dependencies.  
+
+
+ cpan> install CGI::Prototype 
+
+That's a bit too much work, though, so brian created the cpan script, which also comes with Perl. We simply list the modules we want to install, and it handles it for us.  
+
+
+ $ cpan CGI::Prototype HTTP::Cookies::Safari Test::Pod 
+
+Another tool, CPANPLUS, is a complete rewrite of CPAN. pm, but it isn't part of the core distribution as we write this.  
+
+
+ $ perl -MCPANPLUS -e shell 
+ CPANPLUS::Shell::Default -- CPAN exploration and modules installation (v0. 03) 
+ *** Please report bugs to <cpanplus-bugs@lists. sourceforge. net>.  
+ *** Using CPANPLUS::Backend v0. 049.  
+ *** ReadLine support available (try 'i Term::ReadLine::Perl').  
+
+
+ CPAN Terminal> 
+
+To install a module, we use the i command.  
+
+
+ CPAN Terminal> i CGI::Prototype 
+
+The CPANPLUS module also comes with a convenience script, called cpanp. If we give it the i switch and a list of modules, it installs them just like before.  
+
+
+ $ cpanp i CGI::Prototype HTTP::Cookies::Safari Test::Pod 
+
+3. 10. Exercises 
+
+You can find the answers to these exercises in "Answers for Chapter 3" in the Appendix.  
+
+3. 10. 1. Exercise 1 [25 min] 
+
+Read the list of files in the current directory and convert the names to their full path specification. Don't use the shell or an external program to get the current directory. The File::Spec and Cwd modules, both of which come with Perl, should help. Print each path with four spaces before it and a newline after it, just like you did for Exercise 1 of Chapter 2. Can you reuse part of that answer for this problem? 
+
+3. 10. 2. Exercise 2 [35 min] 
+
+Parse the International Standard Book Number from the back of this book (0596102062). Install the Business::ISBN module from CPAN and use it to extract the country code and the publisher code from the number.  
+

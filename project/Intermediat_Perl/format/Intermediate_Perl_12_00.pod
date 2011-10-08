@@ -1,0 +1,4 @@
+=EN Chapter 12. Objects with Data
+=CN Chapter 12. 带数据的对象
+=EN Using the simple syntax introduced in Chapter 11, we have class methods, (multiple) inheritance, overriding, and extending. We've been able to factor out common code and provide a way to reuse implementations with variations. This is at the core of what objects provide, but objects also provide instance data, which we haven't even begun to cover. 
+=CN 应用第11章介绍的简单的语法, 我们就可以创建类方法, （多重）继承、重载和扩展. 我们也可以把代码中共同的部份找出来并用变量代之以重用. 这是面向对象编程的核心概念, 而且对象也提供实例数据, 这点我们还没有开始了解. 

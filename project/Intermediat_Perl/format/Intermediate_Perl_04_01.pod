@@ -1,0 +1,62 @@
+=EN 4. 1. Performing the Same Task on Many Arrays
+=CN 4. 1. 用多个数组来完成一个简单任务
+=EN Before the Minnow can leave on an excursion (for example, a three-hour tour), we should check every passenger and crew member to ensure they have all the required trip items in their possession. Let's say that, for maritime safety, every person on-board the Minnow needs to have a life preserver, some sunscreen, a water bottle, and a rain jacket. 
+=CN 在Minnow开始一个旅程之前（比如一个三小时的远足）, 我们应该事先检查一下每个乘客和乘务人员的行李, 保证他们带了旅行所需要的东西. 比如说吧, 水上安全救生装备. 在Minnow船上的每个乘客要生命维持系统, 太阳镜和水瓶以及雨衣. 
+=EN We can write a bit of code to check for the Skipper's supplies:
+=CN 我们来写段代码来检查船长的装备. 
+ my @required = qw(preserver sunscreen water_bottle jacket);
+ my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+ for my $item (@required) {
+ unless (grep $item eq $_, @skipper) { # not found in list?
+ print "skipper is missing $item. \n";
+ }
+ }
+=EN The grep in a scalar context returns the number of times the expression $item eq $_ returns true, which is 1 if the item is in the list and 0 if not. [*] If the value is 0, it's false, and we print the message. 
+=CN grep在标量环境下返回表达式 $item eq $_ 为真时的元素的个数, 如果在列表里就是1否则是0. [*]如果值是0, 则为false, 我们打印出消息. 
+=EN [*] There are more efficient ways to check list membership for large lists, but for a few items, this is probably the easiest way to do so with just a few lines of code. 
+=CN [*]如果列表很大, 我们有更有效率的办法. 但是对于这样的小case, 现在了了数行的办法更简便. 
+=EN Of course, if we want to check on Gilligan and the Professor, we might write the following code:
+=CN 当然, 如果我们想查一个Gilligan和教授的, 我们可能要写如下的代码：
+ my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
+ for my $item (@required) {
+ unless (grep $item eq $_, @gilligan) { # not found in list?
+ print "gilligan is missing $item. \n";
+ }
+ }
+ my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
+ for my $item (@required) {
+ unless (grep $item eq $_, @professor) { # not found in list?
+ print "professor is missing $item. \n";
+ }
+ }
+=EN You may start to notice a lot of repeated code here and think that we should refactor that into a common subroutine that we can reuse (and you'd be right):
+=CN 你可能开始注意到有些重复代码, 开始想法把它重构一下, 整合到一个通用的子例程里以便重用（你做得对！）：
+ sub check_required_items {
+ my $who = shift;
+ my @required = qw(preserver sunscreen water_bottle jacket);
+ for my $item (@required) {
+ unless (grep $item eq $_, @_) { # not found in list?
+ print "$who is missing $item. \n";
+ }
+ }
+ }
+ my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
+ check_required_items('gilligan', @gilligan);
+=EN Perl gives the subroutine five items in its @_ array initially: the name gilligan and the four items belonging to Gilligan. After the shift, @_ only has the items. Thus, the grep checks each required item against the list. 
+=CN 一开始, Perl给子例程五个元素：一个gilligan名字以及另外属于数组Gilligan的四个元素. shift操作之后, @_仅包括四个元素, 因此, grep用每个出海必备装备来核对这个四个元素的列表. 
+=EN So far, so good. We can check the Skipper and the Professor with just a bit more code:
+=CN 到目前为止进展顺利. 我们可以检查船长和教授的装备, 只用如下一点代码：
+ my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+ my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
+ check_required_items('skipper', @skipper);
+ check_required_items('professor', @professor);
+=EN And for the other passengers, we repeat as needed. Although this code meets the initial requirements, we've got two problems to deal with:
+=CN 对于另外两个乘客, 我们可以如法泡制. 尽管以上代码符合最初的要求, 我们还是要有两个问题要解决：
+=EN To create @_, Perl copies the entire contents of the array to be scanned. This is fine for a few items, but if the array is large, it seems a bit wasteful to copy the data just to pass it into a subroutine. 
+=CN 为了建立数组@_, Perl会拷贝整个数据内容. 对于少量数据还可以, 但如果数组庞大, 这看上去多少有些浪费时间在拷贝数组到子例程. 
+=EN Suppose we want to modify the original array to force the provisions list to include the mandatory items. Because we have a copy in the subroutine ("pass by value"), any changes we make to @_ aren't reflected automatically in the corresponding provisions array. [*]
+=CN 假定我们要修改原始数组来强制供应单里加上些硬性规定的物品. 因为我们是拷贝到子例程的（传值）, 任何对数组的改变都不会自动反映到相应的供应单中. [*]
+=EN [*] Actually, assigning new scalars to elements of @_ after the shift modifies the corresponding variable being passed, but that still wouldn't let us extend the array with additional mandatory provisions. 
+=CN [*] 实际上, 用shift修改传过来的数组, 把新的标量赋值给数组@_的一个元素是可以的. 但这任不能改变原来的供应单. 
+=EN To solve either or both of these problems, we need pass by reference rather than pass by value. And that's just what the doctor (or Professor) ordered. 
+=CN 要解决这些问题, 我们需要传引用而不是传值给子例程. 这就是医生（或教授）要求的. 

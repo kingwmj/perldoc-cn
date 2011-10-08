@@ -1,0 +1,22 @@
+=EN 4. 4. Getting Our Braces Off
+=CN 4. 4. 把大括号去掉
+=EN Most of the time, the array reference we want to dereference is a simple scalar variable, such as @{$items} or ${$items}[1]. In those cases, we can drop the curly braces, unambiguously forming @$items or $$items[1]. 
+=CN 一般来说, 还原对数组的引用大多是一个简单的标量变量, 比如：@{$items} 或者 ${$items}[1]. 在那些情况下, 我们可以把大括号去掉, @$items或$$items[1]这样的形式并不会引起歧义. 
+=EN However, we cannot drop the braces if the value within the braces is not a simple scalar variable. For example, for @{$_[1]} from that last subroutine rewrite, we can't remove the braces. That's a single element access to an array, not a scalar variable. 
+=CN 但是, 有一点, 如果大括号里的内容不是简单的标量变量的话, 我们就不能把大括号去掉. 比如, 对于前面最后一个改写过的子例程中的@{$_[1]}, 我们不能把大括号去掉. 因为那是个正访问数组的元素, 而不是一个简单的标量变量. 
+=EN This rule also means that it's easy to see where the "missing" braces need to go. When we see $$items[1], a pretty noisy piece of syntax, we can tell that the curly braces must belong around the simple scalar variable, $items. Therefore, $items must be a reference to an array. 
+=CN 这个规则也方便我们知道哪里丢了大括号. 比如我们看到$$items[1]的时候, 知道这会有些语法上的麻烦, 我们会意识到必须在简单标量变量$items周围加上大括号. 如此, $items必须是一个指向数组的引用. 
+=EN Thus, an easier-on-the-eyes version of that subroutine might be:
+=CN 因此, 看上去比较顺眼的写法应该是：
+sub check_required_items {
+ my $who = shift;
+ my $items = shift;
+ my @required = qw(preserver sunscreen water_bottle jacket);
+ for my $item (@required) {
+ unless (grep $item eq $_, @$items) { # not found in list?
+ print "$who is missing $item. \n";
+ }
+ }
+}
+=EN The only difference here is that we removed the braces around @$items. 
+=CN 与前例惟一的区别就是去掉了大括号：@$items. 

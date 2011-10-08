@@ -71,6 +71,7 @@ sub dict2hash {
             $line =~ s/\r//;
             if ($line =~ /\|\|/) {
                 my ($key, $value) = split /\|\|/, $line;
+                $key = lc $key; # 全部以小写形式保存字典
                 $dict_hash{$key} = $value;
             }
         }
@@ -140,7 +141,7 @@ sub filter_format_str {
     # 替换掉注释
     foreach my $element (@code) {
         # 前面必须有空格
-        $element =~ s/\s#.*//;
+#        $element =~ s/\s#.*//;
     }
 
    my @return_array = (@head, @code);
@@ -155,6 +156,7 @@ sub filter_ignore_str {
     # 获取 =head =over =item 等结构数组
     my @var   = $text =~ /\b[\$@%]\w+/g;
     my @email = $text =~ /\w+@[a-zA-Z0-9_\-.]+/xmsg;
+#    my @email = $text =~ /$RE{Email}{Address}/xmsg;
     my @func =  $text =~ /\w+\(\w*\)/g;
     my @http =  $text =~ /$RE{URI}{HTTP}/xmsg;
     my @ftp  =  $text =~ /$RE{URI}{FTP}/xmsg;
@@ -188,6 +190,7 @@ sub filter_ignore_str {
        s/\n/ /g;
    }
    my @return_array = (@var, @email, @http, @ftp, @func, @file, @format);
+#   my @return_array = (@email);
    return (wantarray ? @return_array : [@return_array]);
 }
 

@@ -1,0 +1,23 @@
+=EN 10. 8. Scope of a Package Directive
+=CN 10. 8. 包指示字的范围
+=EN All files start as if we had said package main;. [*] Any package directive remains in effect until the next package directive, unless that package directive is inside a curly-braced scope. In that case, Perl remembers the prior package and restores it when that scope ends. Here's an example:
+=CN 所有的文件都好像以main程序包开始;[*] 所有的包指示字的范围在其声明处开始到下一个包指示字声明的地方结束, 除非那个包指示字在一个大括号范围之内. 在那种情况下, Perl会记住前面的包, 并在其范围结束时恢复它. 这里是个例子. 
+package Navigation;
+{ # start scope block
+ package main; # now in package main
+ sub turn_toward_heading { # main::turn_toward_heading
+. . code here. . 
+ }
+} # end scope block
+# back to package Navigation
+sub turn_toward_port { # Navigation::turn_toward_port
+. . code here. . 
+}
+=EN [*] Perl doesn't make us create an explicit main( ) loop like C. Perl knows that every script needs one, so it gives it to us for free. 
+=CN [*] Perl 不会让我们像C那样创建一个显式的main( )循环. Perl清楚每个脚本都需要它, 所以它自动为我们做了这项工作. 
+=EN The current package is lexically scoped, similar to the scope of my variables, narrowed to the innermost-enclosing brace pair or file in which we introduced the package. 
+=CN 当前的包是词法范围的, 像my声明的变量一样, 范围限制在大括号的最里层或我们引入包的文件范围之内. 
+=EN Most libraries have only one package declaration at the top of the file. Most programs leave the package as the default main package. However it's nice to know that we can temporarily have a different current package.
+=CN 大多数的库只在一个文件里放一个包, 并且在文件开始的地方声明包名. 大多数的程序就把缺省的main作为包名. 不过知道我们可以临时有个不同的当前包名是不错的. [+]
+=EN Some names are always in package main regardless of the current package: ARGV, ARGVOUT, ENV, INC, SIG, STDERR, STDIN, and STDOUT. We can always refer to @INC and be assured of getting @main::INC. The punctuation mark variables, such as $_, $2, and $!, are either all lexicals or forced into package main, so when we write $. , we never get $Navigation::. by mistake. 
+=CN [+] 有些名字总是在main包里, 而不论当前的包是什么： ARGV, ARGVOUT, ENV, INC, SIG, STDERR, STDIN和STDOUT. 我们可以总是引用@INC而得到@main::INC. 那些标点符号标记的变量名, 如$_, $2, 及$!, 也是要么是词法变量或者强制属于main包, 所以当我们写$. , 我们不必加上$Navigation::而导致错误. 

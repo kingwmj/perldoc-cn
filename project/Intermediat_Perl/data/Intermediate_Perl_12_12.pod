@@ -3,9 +3,9 @@
 =EN Because we’re going to play nice and always call the getters and setters instead of reaching into the data structure, getters and setters are called frequently. To save a teeny-tiny bit of time, we might see these getters and setters written as:
 =CN 因为我们打算总以比较良好的方式调用取值器和设置器，而不直接改变数据结构，设置器和取值器会被调用得很频繁。　为了节约调用时间，我们可以看到他们被写成这样：
 
-## in Animal
-sub color     { $_[0]->{Color} }
-sub set_color { $_[0]->{Color} = $_[1] }
+ ## in Animal
+ sub color     { $_[0]->{Color} }
+ sub set_color { $_[0]->{Color} = $_[1] }
 
 =EN We save a bit of typing when we do this, and the code is slightly faster, although probably not enough for us to notice it with everything else that’s going on in our program. The $_[0] is just the single element access to the @_ array. Instead of using shift to put the argument into another variable, we can simply use it directly.
 =CN 写这些代码的时候我们省了点儿时间，　代码执行也快了点儿，　尽管对于这些代码在我们的程序里具体发挥什么作用可能也不太了解。　变量$_[0]是访问@_数组的第一个元素。　相比于把数组的变量放到另一个变量中的作法，我们简单的直接引用它。

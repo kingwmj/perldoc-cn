@@ -1,0 +1,14 @@
+=EN 11. 11. Exercises
+=CN 11. 11. 练习
+=EN You can find the answers to these exercises in "Answers for Chapter 11" in the Appendix. 
+=CN 答案附录找. 
+=EN 11. 11. 1. Exercise 1 [20 min]
+=CN 11. 11. 1. 练习 1[20 分钟]
+=EN Type in the Animal, Cow, Horse, Sheep, and Mouse class definitions. Make it work with use strict. Use our if you're using a recent enough version of Perl. Your program should ask the user to enter the names of one or more barnyard animals. Create a barnyard with those animals, and have each animal speak once. 
+=CN 输入Animal, Cow, Horse, Sheep, 和Mouse类的定义. 在use strict下可以工作. 如果你的Perl版本很新, 那么你可以用our关键字. 你的程序要问用户输入一个或多个农场动物的名字. 然后以这些动物创建整个农场, 每个动物都有自己的叫声. 
+=EN 11. 11. 2. Exercise 2 [40 min]
+=CN 11. 11. 2. 练习 2 [40分钟]
+=EN Add a Person class at the same level as Animal, and have both of them inherit from a new class called LivingCreature. Also make the speak method take a parameter of what to say, falling back to the sound (humming for a Person) if no parameter is given. Since this isn't Dr. Dolittle, make sure the animals can't talk. (That is, don't let speak have any parameters for an animal. ) Try not to duplicate any code, but be sure to catch likely errors of usage, such as forgetting to define a sound for an animal. 
+=CN 在Aniaml同一层加上Person类, 而且他们两个都继承自一个新类：LivingCreature. 写一个speak方法, 它取一个参数作为说话内容, 如果没有给参数, 则使用sound（对于Person类来说是humming）. 因为这不是怪医杜立德, 所以要保证动物们不能对话. （就是说speak对于动物来说没有任何参数）不要写重复代码, 但是要保证捕获到相似的错误, 如忘了为某个动物定义叫声. 
+=EN Demonstrate the Person class by invoking a person with nothing to say, and then demonstrate it a second time by invoking a person with something to say. 
+=CN 用调用Person类, 然后再调用Person类, 并让他说些话. 

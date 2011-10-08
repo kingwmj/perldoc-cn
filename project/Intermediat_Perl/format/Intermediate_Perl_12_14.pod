@@ -1,0 +1,19 @@
+=EN 12. 14. Restricting a Method to Class-Only or Instance-Only
+=CN 12. 14. 将方法限制成类的或对象实例的
+=EN Setting the name of an unnameable generic Horse is probably not a good idea; neither is calling named on an instance. Nothing in the Perl method definition says "this is a class method" or "this is an instance method. " Fortunately, the ref operator lets us throw an exception when called incorrectly. As an example of instance- or class-only methods, consider the following, where we check the argument to see what to do:
+=CN 给一个无法命名的抽象的"马"起名字多半不是个好主意; 对实例也是一样. 在Perl语言中没有一种方法定义"这是一个类的方法" 或"这是一个对象实例的方法". 好在ref操作符让我们可以在调用出错的时候抛出一个异常. 考虑下面一个仅仅是"实例"或"类"方法的例子, 我们用参数来决定下面一步是什么：
+use Carp qw(croak);
+sub instance_only {
+ ref(my $self = shift) or croak "instance variable needed";
+ … use $self as the instance …
+}
+sub class_only {
+ ref(my $class = shift) and croak "class name needed";
+ … use $class as the class …
+}
+=EN The ref function returns true for an instance, which is just a blessed reference, or false for a class, which is just a string. If it returns an undesired value, we use the croak function from the Carp module (which comes in the standard distribution). The croak function places the blame on the caller by making the error message look like it came from the spot where we called the method instead of the spot where we issued the error. The caller will get an error message like this, giving the line number in their code where the wrong method was called:
+=CN ref函数对于实例会返回true, 对于被"祝福"的引用也是一样, 如果是类就返回false, 就是个字串. 如果它返回一个我们不要的值, 我们可以用Carp模块（在标准发行版）中的croak函数. croak函数把出错信息看上去好像是调用者发出的一样, 而不是被调用的函数发出. 这样调用者会得到如下的出错信息, 并显示调用者的行号：
+instance variable needed at their_code line 1234
+
+=EN Just as croak is provided as the alternate form of die, Carp also provides carp as a replacement for warn. Each tells the user which line of code called the code that caused the problem. Instead of using die or warn in your modules, use the Carp functions instead. Your users will thank you for it. 
+=CN croak提供了die函数的替代方案, Carp模块同样提供carp来替代warn的方案. 它们都指出出问题的调用函数所在的行号. 我们可以在代码中用die和warn一样用Carp模块中的函数. 你的用户会因此感谢你的. 

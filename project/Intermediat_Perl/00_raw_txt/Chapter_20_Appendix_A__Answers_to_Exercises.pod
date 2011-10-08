@@ -1,0 +1,1077 @@
+Appendix A. Answers to Exercises
+
+This appendix contains the answers to the exercises presented throughout the book.
+
+A.1. Answers for Chapter 2
+
+A.1.1. Exercise 1
+
+Here's one way to do it. The command-line arguments show up in the special array @ARGV, so we use that for our input list. The file test operator -s works on $_ by default, and that's just the current element that grep tests. All of the files with a byte -size smaller than 1,000 bytes end up in @smaller_than_1000. That array becomes the input for the map, which takes each element and returns it with spaces tacked on the front and a newline on the end.
+
+ #!/usr/bin/perl
+ 
+ my @smaller_than_1000 = grep { -s < 1000 } @ARGV;
+ 
+ print map { "    $_\n" } @smaller_than_1000;
+ 
+ Typically we'll do that without the intermediate array, though.
+ 
+ print map { "    $_\n" } grep { -s < 1000 } @ARGV;
+
+A.1.2. Exercise 2
+
+We chose to use our home directory as the hardcoded directory. When we call chdir without an argument, it goes to our home directory (so this is one of the few places where Perl doesn't use $_ as the default).
+
+After that, an infinite while loop keeps our code running, at least until we can't satisfy the condition to last that breaks us out of the loop. Look at the condition carefully: we don't just test for truth. What would happen if we wanted to find all the files with a 0 in them? We look for defined values with a nonzero length, so undef (end of input) and the empty string (simply hitting enter) stop the loop.
+
+Once we have our regular expression, we do that same thing we did in the previous answer. This time we use the result of glob as the input list and a pattern match inside the grep. We wrap an eval { } around the pattern match in case the pattern doesn't compile (for instance, it has an unmatched parenthesis or square bracket).
+
+ #!/usr/bin/perl
+ 
+ chdir; # go to our home directory
+ 
+ while( 1 )
+         {
+         print "Please enter a regular expression> ";
+         chomp( my $regex = <STDIN> );
+         last unless( defined $regex && length $regex );
+ 
+         print map { "    $_\n" } grep { eval{ /$regex/ } }
+                 glob( ".* *" );
+         }
+
+A.2. Answers for Chapter 3
+
+A.2.1. Exercise 1
+
+The trick in this exercise is to let the modules do all of the hard work. It's a good thing we've shown you how to use modules! The Cwd module (cwd is an acronym for "current working directory") automatically imports the getcwd function. We don't have to worry about how it does its magic, but we can be confident that it does it correctly for most major platforms.
+
+Once we have the current path in $cwd, we can use that as the first argument to the catfile method from the File::Spec function. The second argument comes from the input list to our map and shows up in $_.
+
+ #!/usr/bin/perl
+ 
+ use Cwd;
+ use File::Spec;
+ 
+ my $cwd = getcwd;
+ 
+ print map { "    " . File::Spec->catfile( $cwd, $_ ) . "\n" }
+                 glob( ".* *" );
+
+A.2.2. Exercise 2
+
+We can't give you much help installing the module, although if you run into problems, you might want to ask brian about them since he wrote the module, as well as the cpan program you can use to install it.
+
+Once we have the module, we just have to follow the example in the documentation. Our program takes the ISBN from the command line and creates the new ISBN object, which we store in $isbn. Once we have the object, we simply follow the examples in the documentation.
+
+ #!/usr/bin/perl
+ 
+ use Business::ISBN;
+ 
+ my $isbn = Business::ISBN->new( $ARGV[0] );
+ 
+ print "ISBN is " . $isbn->as_string . "\n";
+ print "Country code:   " . $isbn->country_code . "\n";
+ print "Publisher code: " . $isbn->publisher_code . "\n";
+
+A.3. Answers for Chapter 4
+
+A.3.1. Exercise 1
+
+They're all referring to the same thing, except for the second one, ${$ginger[2]}[1]. That one is the same as $ginger[2][1], whose base is the array @ginger, rather than the scalar $ginger.
+
+A.3.2. Exercise 2
+
+First, we construct the hash structure:
+
+ my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
+ my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
+ my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+ my %all = (
+   "Gilligan" => \@gilligan,
+   "Skipper" => \@skipper,
+   "Professor" => \@professor,
+ );
+
+Then we pass it to the first subroutine:
+
+ check_items_for_all(\%all);
+
+In the subroutine, the first parameter is a hashref, so we dereference it to get the keys and the corresponding values:
+
+ sub check_items_for_all {
+   my $all = shift;
+   for my $person (sort keys %$all) {
+     check_required_items($person, $all->{$person});
+   }
+ }
+
+From there, we call the original subroutine:
+
+ sub check_required_items {
+   my $who = shift;
+   my $items = shift;
+   my @required = qw(preserver sunscreen water_bottle jacket);
+   my @missing = (  );
+   for my $item (@required) {
+     unless (grep $item eq $_, @$items) { # not found in list?
+       print "$who is missing $item.\n";
+       push @missing, $item;
+     }
+   }
+   if (@missing) {
+     print "Adding @missing to @$items for $who.\n";
+     push @$items, @missing;
+   }
+ }
+
+A.4. Answers for Chapter 5
+
+A.4.1. Exercise 1
+
+The curly braces of the anonymous hash constructor make a reference to a hash. That's a scalar (as are all references), so it's not suitable to use alone as the value of a hash. Perhaps this code's author intended to assign to scalar variables (like $passenger_1 and $passenger_2) instead of hashes. But you can fix the problem simply by changing the two pairs of curly braces to parentheses.
+
+If you tried running this, Perl may have given you a helpful diagnostic message as a warning. If you didn't get the warning, perhaps you didn't have warnings turned on, either with the -w switch or with the use warnings pragma. Even if you don't usually use Perl's warnings, you should enable them during debugging. (How long would it take you to debug this without Perl's warnings to help you? How long would it take to enable Perl's warnings? 'Nuff said.)
+
+What if you got the warning message but couldn't tell what it meant? That's what the perldiag manpage is for. Warning texts need to be concise because they're compiled into the perl binary (the program that runs your Perl code). But perldiag should list all the messages you should ever get from Perl, along with a longer explanation of what each one means, why it's a problem, and how to fix it.
+
+If you want to be ultimately lazy, you can add use diagnostics; at the beginning of your program, and any error message will look itself up in the documentation and display the entire detailed message. Don't leave this in production code, however, unless you like burning a lot of CPU cycles every time your program starts, whether or not an error occurs.
+
+A.4.2. Exercise 2
+
+You will be keeping count of how much data has been sent to all machines, so at the start, set the variable $all to a name that will stand in for all of them. It should be a name that will never be used for any real machine, of course. Storing it in a variable is convenient for writing the program and makes it easy to change later.
+
+ my $all = "**all machines**";
+
+The input loop is nearly the same as given in the chapter, but it skips comment lines. Also, it keeps a second running total, filed under $all.
+
+ my %total_bytes;
+ while (<>) {
+   next if /^#/;
+   my ($source, $destination, $bytes) = split;
+   $total_bytes{$source}{$destination} += $bytes;
+   $total_bytes{$source}{$all} += $bytes;
+ }
+
+Next, make a sorted list. This holds the names of the source machines in descending order of total transferred bytes. This list is used for the outer for loop. (Rather than using a temporary array, @sources, you might have put the sort directly into the parens of the for loop.)
+
+ my @sources =
+   sort { $total_bytes{$b}{$all} <=> $total_bytes{$a}{$all} }
+   keys %total_bytes;
+ 
+ for my $source (@sources) {
+   my @destinations =
+     sort { $total_bytes{$source}{$b} <=> $total_bytes{$source}{$a} }
+     keys %{ $total_bytes{$source} };
+   print "$source: $total_bytes{$source}{$all} total bytes sent\n";
+   for my $destination (@destinations) {
+     next if $destination eq $all;
+     print "  $source => $destination:",
+       " $total_bytes{$source}{$destination} bytes\n";
+   }
+   print "\n";
+ }
+
+Inside the loop, print out the total number of bytes sent from that source machine, and then make a sorted list of the destination files (similar to the list in @sources). As you step through that list, use next to skip over the dummy $all item. Because that item will be at the head of the sorted list, why wasn't shift used to discard it, since that would avoid checking repeatedly for $all inside the inner loop? The answer is in this footnote.[*] You can simplify this program, perhaps. The subexpression $total_bytes{$source} is used many times in the large output for loop (and twice in the input loop as well). That can be replaced by a simple scalar, initialized at the top of the loop:
+
+[*] Even though the dummy item will sort to the head of the sorted list, it won't necessarily be the first item in the list. If a machine sent data to just one other, that destination machine's total will be equal to the source machine's total output, so that list could sort in either order.
+
+ for my $source (@sources) {
+   my $tb = $total_bytes{$source};
+   my @destinations = sort { $tb->{$b} <=> $tb->{$a} } keys %$tb;
+   print "$source: $tb->{$all} total bytes sent\n";
+   for my $destination (@destinations) {
+     next if $destination eq $all;
+     print "  $source => $destination: $tb->{$destination} bytes\n";
+   }
+   print "\n";
+ }
+
+This makes the code shorter and (likely) a bit faster as well. Give yourself extra credit if you thought to do this. Also give yourself extra credit if you thought that it might be too confusing and decided not to make the change.
+
+A.5. Answers for Chapter 6
+
+A.5.1. Exercise 1
+
+This is similar to what you saw in Chapter 5, but now it uses Storable.
+
+ use Storable;
+ 
+ my $all       = "**all machines**";
+ my $data_file = "total_bytes.data";
+ 
+ my %total_bytes;
+ if (-e $data_file) {
+   my $data = retrieve $data_file;
+   %total_bytes = %$data;
+ }
+ 
+ while (<>) {
+   next if /^#/;
+   my ($source, $destination, $bytes)   = split;
+ 
+   $total_bytes{$source}{$destination} += $bytes;
+   $total_bytes{$source}{$all}         += $bytes;
+ }
+ 
+ store \%total_bytes, $data_file;
+ 
+ ### remainder of program is unchanged
+
+Near the top, put the filename into a variable. You can then retrieve the data but only if the datafile already exists.
+
+After reading the data, use Storable again to write it back out to the same disk file.
+
+If you chose to write the hash's data to a file the hard way, by writing your own code and your own file format, you're working too hard. More to the point, unless you're extraordinarily talented or spend way too long on this exercise, you almost certainly have bugs in your serialization routines, or at least flaws in your file format.
+
+A.5.2. Exercise 2
+
+There should probably be some checks to ensure that Storable was successful. It will catch some errors (and die), but it will simply return undef for some. See the documentation for Storable. (Of course, if you checked the return values from store and retrieve, you should give yourself extra credit on the previous exercise.)
+
+The program should save the old datafile (if any) under a backup filename so that it's easy to revert the latest additions. In fact, it could even keep several backups, such as the last week's worth.
+
+It might also be nice to be able to print the output without having any new input data. As it's written, this can be done by giving an empty file (such as /dev/null) as the input. However, there should be an easier way. The output functionality could be separated entirely from the updating, in fact.
+
+A.6. Answer for Chapter 7
+
+A.6.1. Exercise
+
+ sub gather_mtime_between {
+   my($begin, $end) = @_;
+   my @files;
+   my $gatherer = sub {
+     my $timestamp = (stat $_)[9];
+     unless (defined $timestamp) {
+       warn "Can't stat $File::Find::name: $!, skipping\n";
+       return;
+     }
+     push @files, $File::Find::name if
+       $timestamp >= $begin and $timestamp <= $end;
+   };
+   my $fetcher = sub { @files };
+   ($gatherer, $fetcher);
+ }
+
+This code is pretty straightforward. The main challenge is getting the item names correct. When using stat inside the callback, the filename is $_, but when returning the filename (or reporting it to the user), the name is $File::Find::name.
+
+If the stat fails for some reason, the timestamp will be undef. (That can happen, for example, if it finds a dangling symbolic link.) In that case, the callback simply warns the user and returns early. If you omit that check, you can get warnings of an undefined value during the comparison with $begin and $end.
+
+When you run the completed program with this subroutine, your output should show only file modification dates on the previous Monday (unless you changed the code to use a different day of the week, of course).
+
+A.7. Answers for Chapter 8
+
+A.7.1. Exercise 1
+
+In this exercise, we have to use three different output methods: to a file, which you're already familiar with; to a scalar (and you'll need Perl 5.8 for this); or to both at the same time. The trick is to store the output channels in the same variable that you'll use for the print statement. When the filehandle is a variable, we can put anything we like in it and decide what to put in it at runtime.
+
+ #!/usr/bin/perl
+ use strict;
+ 
+ use IO::Tee;
+ 
+ my $fh;
+ my $scalar;
+ 
+ print "Enter type of output [Scalar/File/Tee]> ";
+ my $type = <STDIN>;
+ 
+ if( $type =~ /^s/i ) {
+         open $fh, ">", \$scalar;
+         }
+ elsif( $type =~ /^f/i ) {
+         open $fh, ">", "$0.out";
+         }
+ elsif( $type =~ /^t/i ) {
+         open my $file_fh,   ">", "$0.out";
+         open my $scalar_fh, ">", \$scalar;
+         $fh = IO::Tee->new( $file_fh, $scalar_fh );
+         }
+ 
+ my $date        = localtime;
+ my $day_of_week = (localtime)[6];
+ 
+ print $fh <<"HERE";
+ This is run $$
+ The date is $date
+ The day of the week is $day_of_week
+ HERE
+ 
+ print STDOUT <<"HERE" if $type =~ m/^[st]/i;
+ Scalar contains:
+ $scalar
+ HERE
+
+In this program, we prompt the user for the type of output, and we want her to type either "scalar", "file", or "tee". Once we read the input, we detect which one she typed by matching on the first character (using a case-insensitive match for more flexibility).
+
+If the user chose "scalar", we open $fh to a scalar reference. If she chose "file", we open $fh to a file, as you know from before. We name the file after the program name, stored in $0, and append .out to it. If the user chose "tee", we create filehandles for a file and a scalar, then combine both of those in an IO::Tee object that we store in $fh. No matter which method the user chose, the output channels, whether sole or multiple, end up in the same variable.
+
+From there it's just a matter of programming, and it doesn't matter much what we actually print. For this exercise, we get the date string by using localtime in scalar context, then get the day of the week with a literal list slice.
+
+In the string we print to $fh, we include the process ID (contained in the special variable $$), so we can tell the difference between separate runs of our program, and then the date and the day of the week.
+
+Finally, if we choose to send the output to a scalar (either alone or with a file), we print the scalar value to STDOUT to ensure the right thing ended up there.
+
+A.7.2. Exercise 2
+
+ use IO::File;
+ my %output_handles;
+ while (<>) {
+   unless (/^(\S+):/) {
+     warn "ignoring the line with missing name: $_";
+     next;
+   }
+   my $name = lc $1;
+   my $handle = $output_handles{$name} ||=
+     IO::File->open(">$name.info") || die "Cannot create $name.info: $!";
+   print $handle $_;
+ }
+
+At the beginning of the while loop, use a pattern to extract the person's name from the data line, issuing a warning if that's not found.
+
+Once you have the name, force it to lowercase so that an entry for "Maryann" will get filed in the same place as one for "MaryAnn." This is also handy for naming the files, as the next statement shows.
+
+The first time through the loop, the filehandle must be created. Let's see how to do that. The || operator has a higher precedence than the assignment, so it is evaluated first; the program will die if the file can't be created. The ||= operator assigns the filehandle to the hash, and the = operator passes it to $handle as well.
+
+The next time you have the same name in $name, the ||= operator kicks in. Remember that $gilligan ||= $anything is effectively like $gilligan = $gilligan || $anything. If the variable on the left is a false value (such as undef), it's replaced by the value on the right, but if it's true (such as a filehandle), the value on the right won't even be evaluated. Thus, since the hash already has a value for that person's name, the hash's value is used and assigned directly to $handle without having to (re)create the file.
+
+It wasn't necessary to code the castaways' names into this program, because they will be read in as data. This is good because any additional castaway won't require having to rewrite the program. If someone's name is accidentally misspelled, however, it puts some of their data into a new file under the wrong name.
+
+A.7.3. Exercise 3
+
+Here's one way to do it. First, we go through the arguments in @ARGV to find out which ones don't represent directories, then print error messages for each of those.
+
+After that, we go through @ARGV again to find the elements that are valid directories. We take the list that comes out of that grep and send it into map, where we turn each string into an IO::Dir object (ignoring error handling for the moment). The file output list ends up in @dir_hs, which we go through with the foreach loop and send to print_contents.
+
+There is nothing fancy about print_contents, though. It simply takes its first argument and stores it in $dh, which it then uses to walk through the directory.
+
+ #!/usr/bin/perl -w
+ use strict;
+ 
+ use IO::Dir;
+ 
+ my @not_dirs = grep { ! -d } @ARGV;
+ foreach my $not_dir ( @not_dirs ) {
+         print "$not_dir is not a directory!\n";
+         }
+ 
+ my @dirs = grep { -d } @ARGV;
+ 
+ my @dir_hs = map { IO::Dir->new( $_ ) } grep { -d } @ARGV;
+ 
+ foreach my $dh ( @dir_hs ) { print_contents( $dh ) };
+ 
+ sub print_contents {
+         my $dh = shift;
+ 
+         while( my $file = $dh->read ) {
+                 next if( $file eq '.' or $file eq '..');
+                 print "$file\n";
+                 }
+         };
+ 
+A.8. Answers for Chapter 9
+
+A.8.1. Exercise 1
+
+ my @sorted =
+   map $_->[0],
+   sort { $a->[1] <=> $b->[1] }
+   map [$_, -s $_],
+   glob "/bin/*";
+
+Using the -s operator to determine the file's size is an expensive operation; by caching its value, you can save some time. How much? Let's see in the next exercise's answer.
+
+A.8.2. Exercise 2
+
+ use Benchmark qw(timethese);
+ 
+ my @files = glob "/bin/*";
+ 
+ timethese( -2, {
+   Ordinary => q{
+     my @results = sort { -s $a <=> -s $b } @files;
+   },
+   Schwartzian => q{
+     my @sorted =
+       map $_->[0],
+       sort { $a->[1] <=> $b->[1] }
+       map [$_, -s $_],
+       @files;
+   },
+ });
+
+On the 33-element /bin on his laptop, Randal was seeing 260 iterations per second of the Ordinary implementation and roughly 500 per second of the Schwartzian implementation, so writing the complex code saved about half of the execution time. On a 74-element /etc, the Schwartzian Transform was nearly three times as fast. In general, the more items sorted, the more expensive the computed function, and the better you can expect the Schwartzian Transform to perform. That doesn't even count the burden on the monkeyer, we mean the operating system.
+
+In the previous edition of this book, we had a slight design error in this code that made the Schwartzian transform seem a lot slower. brian noticed this one day while he was teaching this exercise, then sat down to go over it in way too much detail. You can read the lengthy analysis on Perl Monks : http://www.perlmonks.com/?node_id=393128.
+
+A.8.3. Exercise 3
+
+ my @dictionary_sorted =
+   map $_->[0],
+   sort { $a->[1] cmp $b->[1] }
+   map {
+     my $string = $_;
+     $string =~ tr/A-Z/a-z/;
+     $string =~ tr/a-z//cd;
+     [ $_, $string ];
+   } @input_list;
+ 
+Inside the second map, which executes first, make a copy of $_. (If you don't, you'll mangle the data.)
+
+A.8.4. Exercise 4
+
+ sub data_for_path {
+   my $path = shift;
+   if (-f $path or -l $path) {
+     return undef;
+   }
+   if (-d $path) {
+     my %directory;
+     opendir PATH, $path or die "Cannot opendir $path: $!";
+     my @names = readdir PATH;
+     closedir PATH;
+     for my $name (@names) {
+       next if $name eq "." or $name eq "..";
+       $directory{$name} = data_for_path("$path/$name");
+     }
+     return \%directory;
+   }
+   warn "$path is neither a file nor a directory\n";
+   return undef;
+ }
+ 
+ sub dump_data_for_path {
+   my $path = shift;
+   my $data = shift;
+   my $prefix = shift || "";
+   print "$prefix$path";
+   if (not defined $data) { # plain file
+     print "\n";
+     return;
+   }
+   my %directory = %$data;
+   if (%directory) {
+     print ", with contents of:\n";
+     for (sort keys %directory) {
+       dump_data_for_path($_, $directory{$_}, "$prefix  ");
+     }
+   } else {
+     print ", an empty directory\n";
+   }
+ }
+ dump_data_for_path(".", data_for_path("."));
+
+By adding a third (prefix) parameter to the dumping subroutine, you can ask it to indent its output. By default, the prefix is empty, of course.
+
+When the subroutine calls itself, it adds two spaces to the end of the prefix. Why the end and not the beginning? Because it's comprised of spaces, either end will work. By using trailing spaces, you can call the subroutine like this:
+
+ dump_data_for_path(".", data_for_path("."), ">  ");
+
+This invocation quotes the entire output by prefixing each line with the given string. You can (in some hypothetical future version of this program) use such quoting to denote NFS-mounted directories or other special items.
+
+A.9. Answers for Chapter 10
+
+A.9.1. Exercise 1
+
+Here's one way to do it. First, start with the package directive and use strict:
+
+ package Oogaboogoo::date;
+ use strict;
+
+Then define the constant arrays to hold the mappings for day-of-week and month names:
+
+ my @day = qw(ark dip wap sen pop sep kir);
+ my @mon = qw(diz pod bod rod sip wax lin sen kun fiz nap dep);
+
+Next, define the subroutine for day-of-week number to name. Note that this subroutine will be accessible as Ooogaboogoo::date::day:
+
+ sub day {
+   my $num = shift @_;
+   die "$num is not a valid day number"
+     unless $num >= 0 and $num <= 6;
+   $day[$num];
+ }
+
+Similarly, you have the subroutine for the month-of-year number to name:
+
+ sub mon {
+   my $num = shift @_;
+   die "$num is not a valid month number"
+     unless $num >= 0 and $num <= 11;
+   $mon[$num];
+ }
+
+Finally, the mandatory true value at the end of the package:
+
+ 1;
+
+Name this file date.pm within a directory of Oogaboogoo in one of the directories given in your @INC variable, such as the current directory.
+
+A.9.2. Exercise 2
+
+Here's one way to do it. Pull in the .pm file from a place in your @INC path:
+
+ use strict;
+ require 'Oogaboogoo/date.pm';
+ 
+Then get the information for the current time:
+
+ my($sec, $min, $hour, $mday, $mon, $year, $wday) = localtime;
+
+Then use the newly defined subroutines for the conversions:
+
+ my $day_name = Oogaboogoo::date::day($wday);
+ my $mon_name = Oogaboogoo::date::mon($mon);
+
+The year number is offset by 1900 for historical purposes, so you need to fix that:
+
+ $year += 1900;
+
+Finally, it's time for the output:
+
+ print "Today is $day_name, $mon_name $mday, $year.\n";
+
+A.10. Answers for Chapter 11
+
+A.10.1. Exercise 1
+
+Here's one way to do it. First define the Animal class with a single method:
+
+ use strict;
+ { package Animal;
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+
+Now define each subclass with a specific sound:
+
+ { package Cow;
+   our @ISA = qw(Animal);
+   sub sound { "moooo" }
+ }
+ { package Horse;
+   our @ISA = qw(Animal);
+   sub sound { "neigh" }
+ }
+ { package Sheep;
+   our @ISA = qw(Animal);
+   sub sound { "baaaah" }
+ }
+
+The Mouse package is slightly different because of the extra quietness:
+
+ { package Mouse;
+   our @ISA = qw(Animal);
+   sub sound { "squeak" }
+   sub speak {
+     my $class = shift;
+     $class->SUPER::speak;
+     print "[but you can barely hear it!]\n";
+   }
+ }
+
+Now, enter the interactive part of the program:
+
+ my @barnyard = (  );
+ {
+   print "enter an animal (empty to finish): ";
+   chomp(my $animal = <STDIN>);
+   $animal = ucfirst lc $animal;                # canonicalize
+   last unless $animal =~ /^(Cow|Horse|Sheep|Mouse)$/;
+   push @barnyard, $animal;
+   redo;
+ }
+ 
+ foreach my $beast (@barnyard) {
+   $beast->speak;
+ }
+
+This code uses a simple check, via a pattern match, to ensure that the user doesn't enter Alpaca or another unavailable animal, because doing so will crash the program. In Chapter 14, you'll learn about the isa method, which lets you check more simply whether something is an available animal, even allowing for the possibility that it is an animal that was added to the program after the check was written.
+
+A.10.2. Exercise 2
+
+Here's one way to do it. First, create the base class of LivingCreature with a single speak method:
+
+ use strict;
+ { package LivingCreature;
+   sub speak {
+     my $class = shift;
+     if (@_) {                # something to say
+       print "a $class goes '@_'\n";
+     } else {
+       print "a $class goes ", $class->sound, "\n";
+     }
+   }
+ }
+
+A person is a living creature, so define the derived class here:
+
+ { package Person;
+   our @ISA = qw(LivingCreature);
+   sub sound { "hmmmm" }
+ }
+
+The Animal class comes next, making appropriate sounds but unable to talk (except to Dr. Dolittle):
+
+ { package Animal;
+   our @ISA = qw(LivingCreature);
+   sub sound { die "all Animals should define a sound" }
+   sub speak {
+     my $class = shift;
+     die "animals can't talk!" if @_;
+     $class->SUPER::speak;
+   }
+ }
+ { package Cow;
+   our @ISA = qw(Animal);
+   sub sound { "moooo" }
+ }
+ { package Horse;
+   our @ISA = qw(Animal);
+   sub sound { "neigh" }
+ }
+ { package Sheep;
+   our @ISA = qw(Animal);
+   sub sound { "baaaah" }
+ }
+ { package Mouse;
+   our @ISA = qw(Animal);
+   sub sound { "squeak" }
+   sub speak {
+     my $class = shift;
+     $class->SUPER::speak;
+     print "[but you can barely hear it!]\n";
+   }
+ }
+
+Finally, have the person speak:
+
+ Person->speak;                # just hmms
+ Person->speak("Hello, world!");
+
+Notice that the main speak routine has now moved into the LivingCreature class, which means you don't need to write it again to use it in Person. In Animal, though, you need to check that to ensure an Animal won't try to speak before calling SUPER::speak.
+
+Although it's not the way the assignment was written, you can get a similar result if you choose to make Person a subclass of Animal. (In that case, LivingCreature would presumably be needed as a parent class for an eventual Plant class.) Of course, since an Animal can't speak, how can a Person? The answer is that Person::speak would have to handle its parameters, if any, before or after (or instead of) calling SUPER::speak.
+
+Which would be the better way to implement this? It all depends upon what classes you'll need in the future and how you'll use them. If you expect to add features to Animal that would be needed for Person, it makes sense for Person to inherit from Animal. If the two are nearly completely distinct, and nearly anything that a Person has in common with an Animal is common to all LivingCreatures, it's probably better to avoid the extra inheritance step. The ability to design a suitable inheritance structure is a crucial talent for any OOP programmer.
+
+In fact, you may find that after developing the code one way, you'll want to "refactor" the code a different way. This is common with OOP. However, it's very important to have enough testing in place to ensure that you don't break things while you're moving them around.
+
+A.11. Answer for Chapter 12
+
+A.11.1. Exercise
+
+First, start the Animal package:
+
+ use strict;
+ { package Animal;
+   use Carp qw(croak);
+
+And now for the constructor:
+
+ ## constructors
+ sub named {
+   ref(my $class = shift) and croak "class name needed";
+   my $name = shift;
+   my $self = { Name => $name, Color => $class->default_color };
+   bless $self, $class;
+ }
+
+Now, for virtual methods: the methods that should be overridden in a subclass. Perl doesn't require virtual methods to be declared in the base class, but they're nice as a documentation item.
+
+ ## backstops (should be overridden)
+ sub default_color { "brown" }
+ sub sound { croak "subclass must define a sound" }
+
+Next comes the methods that work with either a class or an instance:
+
+ ## class/instance methods
+ sub speak {
+   my $either = shift;
+   print $either->name, " goes ", $either->sound, "\n";
+ }
+ sub name {
+   my $either = shift;
+   ref $either
+     ? $either->{Name}
+     : "an unnamed $either";
+ }
+ sub color {
+   my $either = shift;
+   ref $either
+     ? $either->{Color}
+     : $either->default_color;
+ }
+
+Finally, the methods that work only for the particular instance:
+
+ ## instance-only methods
+ sub set_name {
+   ref(my $self = shift) or croak "instance variable needed";
+   $self->{Name} = shift;
+ }
+ sub set_color {
+   ref(my $self = shift) or croak "instance variable needed";
+   $self->{Color} = shift;
+ }
+ }
+
+Now that you have your abstract base class, define some concrete classes that can have instances:
+
+ { package Horse;
+   our @ISA = qw(Animal);
+   sub sound { "neigh" }
+ }
+ { package Sheep;
+   our @ISA = qw(Animal);
+   sub color { "white" }    # override the default color
+   sub sound { "baaaah" }   # no Silence of the Lambs
+ }
+
+Finally, a few lines of code to test your classes:
+
+ my $tv_horse = Horse->named("Mr. Ed");
+ $tv_horse->set_name("Mister Ed");
+ $tv_horse->set_color("grey");
+ print $tv_horse->name, " is ", $tv_horse->color, "\n";
+ print Sheep->name, " colored ", Sheep->color, " goes ", Sheep->sound, "\n";
+
+A.12. Answer for Chapter 13
+
+A.12.1. Exercise
+
+First, start the class:
+
+ { package RaceHorse;
+   our @ISA = qw(Horse);
+
+Next, use a simple dbmopen to associate %STANDINGS with permanent storage:
+
+ dbmopen (our %STANDINGS, "standings", 0666)
+   or die "Cannot access standings dbm: $!";
+
+When a new RaceHorse is named, either pull the existing standings from the database or invent zeros for everything:
+
+ sub named { # class method
+   my $self = shift->SUPER::named(@_);
+   my $name = $self->name;
+   my @standings = split ' ', $STANDINGS{$name} || "0 0 0 0";
+   @$self{qw(wins places shows losses)} = @standings;
+   $self;
+ }
+
+When the RaceHorse is destroyed, the standings are updated:
+
+ sub DESTROY { # instance method, automatically invoked
+   my $self = shift;
+   $STANDINGS{$self->name} = "@$self{qw(wins places shows losses)}";
+   $self->SUPER::DESTROY;
+ }
+
+Finally, the instance methods are defined:
+
+ ## instance methods:
+ sub won { shift->{wins}++; }
+ sub placed { shift->{places}++; }
+ sub showed { shift->{shows}++; }
+ sub lost { shift->{losses}++; }
+ sub standings {
+   my $self = shift;
+   join ", ", map "$self->{$_} $_", qw(wins places shows losses);
+ }
+
+A.13. Answers for Chapter 14
+
+A.13.1. Exercise 1
+
+There a couple of ways to tackle this problem. In our solution, we created a MyDate package in the same file as the script. The naked block defines the scope of the package MyDate statement. Later, in our script, we can't use the module because Perl won't find a file for it. We'll have to remember to call the import method to get the symbols into our main namespace.
+
+To make the AUTOLOAD subroutine work only for the right subroutines, we defined %Allowed_methods to hold the names of the methods that will work. Their values are their offsets in the list we get back from localtime. That almost solves it, but localtime uses 0-based numbers for the month and year. In the @Offsets array, we store the number to add to the corresponding entry in the localtime list. It seems like a lot of work now since only two values have offsets, but doing it this way eliminates two special cases.
+
+We need a new method (or some constructor) to give us an object. In this example, it doesn't really matter what the object actually looks like. We just use an empty, anonymous hash blessed into the current package (that's the first thing in the argument list, so it's $_[0]). We also know that we'll need a DESTROY method, since Perl will automatically look for it when it tries to clean up the object. If we don't have it, our AUTOLOAD will complain about an unknown method when it tries to handle DESTROY on its own (comment out the DESTROY to see what happens).
+
+Inside the AUTOLOAD, we store the method name in $method so we can change it. We want to strip off the package information and get just the method name. That's everything after the last ::, so we use the substitution operator to get rid of everything up to that point. Once we have the method name, we look for its key in %Allowed_methods. If it's not there, we print an error with carp. TRy calling an unknown method. For which line does Perl report the error?
+
+If we find the method name in %Allowed_methods, we get the value, which is the position of the value in the localtime list. We store that in $slice_index and use it to get the value from localtime as well as the offset for that value. We add those two values together and return the result.
+
+That sounds like a lot of work, but how much work would we have to do to add new methods for the hour and minute? We simply add those names to %Allowed_methods. Everything else already works.
+
+ #!/usr/bin/perl -w
+ use strict;
+ 
+ {
+ package MyDate;
+ use vars qw($AUTOLOAD);
+ 
+ use Carp;
+ 
+ my %Allowed_methods = qw( date 3 month 4 year 5 );
+ my @Offsets         = qw(0 0 0 0 1 1900 0 0 0);
+ 
+ sub new      { bless {  }, $_[0] }
+ sub DESTROY  {  }
+ 
+ sub AUTOLOAD {
+         my $method = $AUTOLOAD;
+         $method =~ s/.*:://;
+ 
+         unless( exists $Allowed_methods{ $method } ) {
+                 carp "Unknown method: $AUTOLOAD";
+                 return;
+                 }
+ 
+         my $slice_index = $Allowed_methods{ $method };
+ 
+         return (localtime)[$slice_index] + $Offsets[$slice_index];
+         }
+ }
+ 
+ MyDate->import;         # we don't use it
+ my $date = MyDate->new(  );
+ 
+ print "The date is "  . $date->date  . "\n";
+ print "The month is " . $date->month . "\n";
+ print "The year is "  . $date->year  . "\n";
+
+A.13.2. Exercise 2
+
+Our script looks the same as the previous answer with the addition of the UNIVERSAL::debug routine. At the end of our script, we call the debug method on our $date object. It works without changing the MyDate module.
+
+ MyDate->import;         # we don't use it
+ my $date = MyDate->new(  );
+ 
+ sub UNIVERSAL::debug {
+         my $self = shift;
+         print '[' . localtime . '] ' . join '|', @_
+         }
+ 
+ print "The date is "  . $date->date  . "\n";
+ print "The month is " . $date->month . "\n";
+ print "The year is "  . $date->year  . "\n";
+ 
+ $date->debug( "I'm all done" );
+
+How did that get past the AUTOLOAD? Remember that Perl searches through all of @ISA and UNIVERSAL before it starts looking in any AUTOLOAD method. So, Perl finds UNIVERSAL::debug before it has to use our AUTOLOAD magic.
+
+A.14. Answers for Chapter 15
+
+A.14.1. Exercise 1
+
+The module Oogaboogoo/date.pm looks like this:
+
+ package Oogaboogoo::date;
+ use strict;
+ use Exporter;
+ our @ISA = qw(Exporter);
+ our @EXPORT = qw(day mon);
+ 
+ my @day = qw(ark dip wap sen pop sep kir);
+ my @mon = qw(diz pod bod rod sip wax lin sen kun fiz nap dep);
+ 
+ sub day {
+   my $num = shift @_;
+   die "$num is not a valid day number"
+     unless $num >= 0 and $num <= 6;
+   $day[$num];
+ }
+ 
+ sub mon {
+   my $num = shift @_;
+   die "$num is not a valid month number"
+     unless $num >= 0 and $num <= 11;
+   $mon[$num];
+ }
+ 
+ 1;
+
+The main program now looks like this:
+
+ use strict;
+ use Oogaboogoo::date qw(day mon);
+ 
+ my($sec, $min, $hour, $mday, $mon, $year, $wday) = localtime;
+ my $day_name = day($wday);
+ my $mon_name = mon($mon);
+ $year += 1900;
+ print "Today is $day_name, $mon_name $mday, $year.\n";
+
+A.14.2. Exercise 2
+Most of this answer is the same as the previous answer. We just need to add the parts for the export tag all.
+
+ our @EXPORT = qw(day mon);
+ our %EXPORT_TAGS = ( all => \@EXPORT );
+ 
+Everything that we put in %EXPORT_TAGS has to also be in either @EXPORT or @EXPORT_OK. For the all tag, we use a reference to @EXPORT directly. If we don't like that, we can make a fresh copy so the two do not reference each other.
+
+ our @EXPORT = qw(day mon);
+ our %EXPORT_TAGS = ( all => [ @EXPORT ] );
+
+Modify the program from the previous exercise to use the import tag by prefacing it with a colon in the import list.
+
+The main program now starts off like this:
+
+ use strict;
+ use Oogaboogoo::date qw(:all);
+
+A.15. Answer for Chapter 16
+
+A.15.1. Exercise
+
+We don't have code to show you: it's just the stuff in Chapter 12. Lift that code and put it into a distribution. Most of the work is just typing.
+
+There are a few different approaches, though. Once you have the distribution built with your favorite tool, you can split up the classes into separate module files. You can have an Animal.pm, Horse.pm, and so on. Put all the files in the same place as the original .pm that the module tool created. You also need to change the Makefile.PL or Build.PL to tell it about the new module files. Just follow the example of what is already there. Finally, make sure all the right files show up in MANIFEST.
+
+Once you have all of the code in place, run the Makefile.PL, which you'll need to do every time you change that file. When you change the module files, you'll need to run make again too, although that happens when you run make test or make dist.
+
+When you're ready, run make dist. You should find a new archive file in the current directory. You can also call make zipdist if you want a ZIP archive. Move that archive to another directory and unpack it. When you run Makefile.PL, you shouldn't get any errors or warnings if you did everything right. If you get a warning, fix that (it's probably a missing file, if anything) and try again.
+
+A.16. Answer for Chapter 17
+A.16.1. Exercise
+Let's start with the test file. We write this first, and as we write the code (which we can't run until we write the module), we get an idea of the interface that we want.
+
+In the BEGIN block, we first test if we can use My::List::Util. This will obviously fail, since we haven't written the module yet. We'll worry about that later.
+
+Next, we check if we've defined the sum subroutine. Once we implement the My::List::Util minimal module, the use_ok will pass but this will fail. That's Test Driven Development. You define what you want, ensure that the test fails when the infrastructure is missing, then make it pass. Getting tests to pass can be easy if we don't care if they fail when they should.
+
+After we check for the sum routine, we test a series of sums, using different numbers of arguments and different values. We don't have to identify every special case at this point (we can always add tests later), but we want to ensure that we test several different ways to call the subroutine. We even throw in a test where we pass it a non-number and a number, then a test where we pass it two non-numbers.
+
+We do something different for shuffle. We ensure the subroutine is defined, then define $array as a starting point, but immediately copy it to $shuffled so we don't disturb the original. Before we've written the code, we've decided to pass an array reference, and that will allow our routine to affect the data that we pass to it (rather than creating a copy).
+
+To test this, we do something really simple. We compare the original array to the shuffled one and use cmp_ok to test that at least two positions are different. That wouldn't be a very good shuffle, but we're going to punt to you for the rest of the tests.
+
+ BEGIN{ use_ok( 'My::List::Util' ) }
+ 
+ use Test::More 'no_plan';
+ 
+ # # # # # # sum
+ ok( defined &sum, 'The sum(  ) routine exists');
+ is( sum( 2, 2    ), 4, '2 + 2 = 4'     );
+ is( sum( 2, 2, 3 ), 7, '2 + 2 + 3 = 7' );
+ is( sum( ),         0, 'null sum is 0' );
+ is( sum( -1 ),     -1, '-1 = -1'       );
+ is( sum( -1, 1 ),   0, '-1 + 1 = 0'    );
+ is( sum( 'Ginger', 5 ),
+         5, 'A string + 5 = 5' );
+ is( sum( qw(Ginger Mary-Ann) ),
+         0, 'Two strings give 0' );
+ 
+ # # # # # # shuffle
+ ok( defined &shuffle, "The shuffle(  ) routine exists");
+ my $array = [qw( a b c d e f )];
+
+ my $shuffled = $array;
+ shuffle( $shuffled );
+ 
+ my $same_count = 0;
+ 
+ foreach my $index ( 0 .. $#$array ) {
+         $same_count++ if $shuffle->[$index] eq $array->[$index];
+         }
+ 
+ cmp_ok( $same_count, '<', $#$array - 2,
+         'At least two positions are different');
+
+Now that we have the tests, we write the code. As we write the code, we run the tests. At first, most of the tests will fail, but as we add more code (and possibly debug the code that's already there), more and more tests pass. Here's our finished module:
+
+ package My::List::Util;
+ use strict;
+ 
+ use base qw(Exporter);
+ use vars qw(@EXPORT $VERSION);
+ 
+ use Exporter;
+ 
+ $VERSION = '0.10';
+ @EXPORT  = qw(sum shuffle);
+ 
+ sub shuffle {          # Fisher-Yates shuffle from perlfaq4
+         my $deck = shift;  # $deck is a reference to an array
+         my $i = @$deck;
+         while ($i--) {
+                 my $j = int rand ($i+1);
+                 @$deck[$i,$j] = @$deck[$j,$i];
+                 }
+         }
+ 
+ sub sum {
+         my @array = @_;
+ 
+         my $sum = 0;
+ 
+         foreach my $element ( @array ) {
+                 $sum += $element;
+                 }
+ 
+         $sum;
+         }
+ 
+ 1;
+
+A.17. Answers for Chapter 18
+
+A.17.1. Exercise 1
+
+Since you're starting with your distribution from the last chapter, we don't have much code to show you. To add a POD test, create a t/pod.t file (or whatever you want to call it). In there, put the code you lift for Test::Pod:
+
+ use Test::More;
+ eval "use Test::Pod 1.00";
+ plan skip_all => "Test::Pod 1.00 required for testing POD" if $@;
+ all_pod_files_ok(  );
+
+This code is clever: it only runs tests if the user has installed Test::Pod, and doesn't cause any problems if she hasn't.
+
+If you are especially motivated, you can do the same thing with Test::Pod::Coverage. Create a t/pod_coverage.t file and lift the code directly from the module documentation.
+
+Depending on which module creation tool you used, you might already have these files, too.
+
+A.17.2. Exercise 2
+
+You could create a new distribution for your test module, but you don't have to. You can include it with the distribution that you already made. You just have to put the module file in the right place and ensure that Makefile.PL or Build.PL knows about it.
+
+We'll just show you the code, though. This is a long way to go to test $n = = $m, but we wanted to make it as uncomplicated as possible so you could focus on the Test::Builder part. You can lift most of the code directly from the example in the chapter and then write the sum_ok function.
+
+ package Test::My::List::Util;
+ use strict;
+ 
+ use base qw(Exporter);
+ use vars qw(@EXPORT $VERSION);
+ 
+ use Exporter;
+ use Test::Builder;
+ 
+ my $Test = Test::Builder->new(  );
+ 
+ $VERSION = '0.10';
+ @EXPORT  = qw(sum_ok);
+ 
+ sub sum_ok {
+         my( $actual, $expected ) = @_;
+ 
+         if( $actual =  = $expected ) {
+                 $Test->ok( 1 )
+                 }
+         else {
+                 $Test->diag(
+                         "The sum is not right\n",
+                         "\tGot:      $actual\n",
+                         "\tExpected: $expected\n"
+                         );
+ 
+                 $Test->ok( 0 )
+                 }
+         }
+ 
+ 1;
+
+A.18. Answer for Chapter 19
+
+A.18.1. Exercise
+
+Were you able to solve the halting problem? We didn't really expect you to solve this problem since, in 1936, Alan Turing proved you couldn't create a general solution. You can read about the halting problem at Wikipedia: http://en.wikipedia.org/wiki/Halting_problem.
+
+There's not much we can show you as an answer to an exercise about distributions. You know about testing now, so as long as your tests pass, you know you're doing the right thing (or the tests don't work!).
+
+We're kicking you out into the real world now. We don't have anything left to tell you in this book. Go back and read the footnotes now. Good luck!
+

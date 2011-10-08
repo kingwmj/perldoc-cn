@@ -1,0 +1,250 @@
+Chapter 2. Intermediate Foundations 
+
+Before we get started on the meat of the book, we want to introduce some intermediate-level Perl idioms that we use throughout the book. These are the things that typically set apart the beginning and intermediate Perl programmers. Along the way, we'll also introduce you to the cast of characters that we'll use in the examples throughout the book.  
+
+2. 1. List Operators 
+
+You already know about several list operators in Perl, but you may not have thought of them as working with lists. The most common list operator is probably print. We give it one or more arguments, and it puts them together for us.  
+
+
+ print 'Two castaways are ', 'Gilligan', ' and ', 'Skipper', "\n"; 
+
+There are several other list operators that you already know about from Learning Perl. The sort operator puts its input list in order. In their theme song, the castaways don't come in alphabetical order, but sort can fix that for us.  
+
+
+ my @castaways = sort qw(Gilligan Skipper Ginger Professor Mary-Ann); 
+
+The reverse operator returns a list in the opposite order.  
+
+
+ my @castaways = reverse qw(Gilligan Skipper Ginger Professor Mary-Ann); 
+
+Perl has many other operators that work with lists, and, once you get used to them, you'll find yourself typing less and expressing your intent more clearly.  
+
+2. 1. 1. List Filtering with grep 
+
+The grep operator takes a list of values and a "testing expression. " It takes one item after another in the list and places it into the $_ variable. It then evaluates the testing expression in a scalar context. If the expression evaluates to a true value, grep passes $_ on to the output list.  
+
+
+ my @lunch_choices = grep &is_edible($_), @gilligans_posessions.  
+
+In a list context, the grep operator returns a list of all such selected items. In a scalar context, grep returns the number of selected items.  
+
+
+ my @results = grep EXPR, @input_list; 
+ my $count   = grep EXPR, @input_list; 
+
+Here, EXPR stands in for any scalar expression that should refer to $_ (explicitly or implicitly). For example, to find all the numbers greater than 10, in our grep expression we check if $_ is greater than 10.  
+
+
+ my @input_numbers = (1, 2, 4, 8, 16, 32, 64); 
+ my @bigger_than_10 = grep $_ > 10, @input_numbers; 
+
+The result is just 16, 32, and 64. This uses an explicit reference to $_. Here's an example of an implicit reference to $_ from the pattern match operator: 
+
+
+ my @end_in_4 = grep /4$/, @input_numbers; 
+
+And now we get just 4 and 64.  
+
+While the grep is running, it shadows any existing value in $_, which is to say that grep borrows the use of this variable but puts the original value back when it's done. The variable $_ isn't a mere copy of the data item, though; it is an alias for the actual data element, similar to the control variable in a foreach loop.  
+
+If the testing expression is complex, we can hide it in a subroutine: 
+
+
+ my @odd_digit_sum = grep digit_sum_is_odd($_), @input_numbers; 
+
+
+ sub digit_sum_is_odd { 
+        my $input = shift; 
+        my @digits = split //, $input;  # Assume no nondigit characters 
+        my $sum; 
+        $sum += $_ for @digits; 
+        return $sum % 2; 
+ } 
+
+Now we get back the list of 1, 16, and 32. These numbers have a digit sum with a remainder of "1" in the last line of the subroutine, which counts as true.  
+
+The syntax comes in two forms, though: we just showed you the expression form, and now here's the block form. Rather than define an explicit subroutine that we'd use for only a single test, we can put the body of a subroutine directly in line in the grep operator, using the block forms:[*] 
+
+[*] In the block form of grep, there's no comma between the block and the input list. In the expression form of grep, there must be a comma between the expression and the list.  
+
+
+ my @results = grep { 
+   block; 
+   of; 
+   code; 
+ } @input_list; 
+
+
+ my $count = grep { 
+   block; 
+   of; 
+   code; 
+ } @input_list; 
+
+Just like the expression form, grep temporarily places each element of the input list into $_. Next, it evaluates the entire block of code. The last evaluated expression in the block is the testing expression. (And like all testing expressions, it's evaluated in a scalar context. ) Because it's a full block, we can introduce variables that are scoped to the block. Let's rewrite that last example to use the block form: 
+
+
+ my @odd_digit_sum = grep { 
+   my $input = $_; 
+   my @digits = split //, $input;   # Assume no nondigit characters 
+   my $sum; 
+   $sum += $_ for @digits; 
+   $sum % 2; 
+ } @input_numbers; 
+
+Note the two changes: the input value comes in via $_ rather than an argument list, and we removed the keyword return. In fact, we would have been wrong to keep the return because we're no longer in a separate subroutine: just a block of code. [*] Of course, we can optimize a few things out of that routine since we don't need the intermediate variables: 
+
+[*] The return would have exited the subroutine that contains this entire section of code. And yes, some of us have been bitten by that mistake in real, live coding on the first draft.  
+
+
+ my @odd_digit_sum = grep { 
+   my $sum; 
+   $sum += $_ for split //; 
+   $sum % 2; 
+  } @input_numbers; 
+
+Feel free to crank up the explicitness if it helps you and your coworkers understand and maintain the code. That's the main thing that matters.  
+
+2. 1. 2. Transforming Lists with map 
+
+The map operator has a very similar syntax to the grep operator and shares a lot of the same operational steps. For example, it temporarily places items from a list into $_ one at a time, and the syntax allows both the expression block forms.  
+
+However, the testing expression becomes a mapping expression. The map operator evaluates the expression in a list context (not a scalar context like grep). Each evaluation of the expression gives a portion of the many results. The overall result is the list concatenation of all individual results. In a scalar context, map returns the number of elements that are returned in a list context. But map should rarely, if ever, be used in anything but a list context. ) 
+
+Let's start with a simple example: 
+
+
+ my @input_numbers = (1, 2, 4, 8, 16, 32, 64); 
+ my @result = map $_ + 100, @input_numbers; 
+
+For each of the seven items map places into $_, we get a single output result: the number that is 100 greater than the input number. So the value of @result is 101, 102, 104, 108, 116, 132, and 164.  
+
+But we're not limited to having only one output for each input. Let's see what happens when each input produces two output items: 
+
+
+ my @result = map { $_, 3 * $_ } @input_numbers; 
+
+Now there are two items for each input item: 1, 3, 2, 6, 4, 12, 8, 24, 16, 48, 32, 96, 64, and 192. We can store those pairs in a hash, if we need a hash showing what number is three times a small power of two: 
+
+
+ my %hash = @result; 
+
+Or, without using the intermediate array from the map: 
+
+
+ my %hash = map { $_, 3 * $_ } @input_numbers; 
+
+You can see that map is pretty versatile; we can produce any number of output items for each input item. And we don't always need to produce the same number of output items. Let's see what happens when we break apart the digits: 
+
+
+ my @result = map { split //, $_ } @input_numbers; 
+
+The inline block of code splits each number into its individual digits. For 1, 2, 4, and 8, we get a single result. For 16, 32, and 64, we get two results per number. When map concatenates the results lists, we end up with 1, 2, 4, 8, 1, 6, 3, 2, 6, and 4.  
+
+If a particular invocation results in an empty list, map concatenates that empty result into the larger list, contributing nothing to the list. We can use this feature to select and reject items. For example, suppose we want only the split digits of numbers ending in 4: 
+
+
+ my @result = map { 
+        my @digits = split //, $_; 
+        if ($digits[-1] =  = 4) { 
+          @digits; 
+        } else { 
+          (  ); 
+        } 
+ } @input_numbers; 
+
+If the last digit is 4, we return the digits themselves by evaluating @digits (which is in list context). If the last digit is not 4, we return an empty list, effectively removing results for that particular item. Thus, we can always use a map in place of a grep, but not vice versa.  
+
+Of course, everything we can do with map and grep, we can also do with explicit foreach loops. But then again, we can also code in assembler or by toggling bits into a front panel. [*] The point is that proper application of grep and map can help reduce the complexity of the program, allowing us to concentrate on high-level issues rather than details.  
+
+2. 2. Trapping Errors with eval 
+
+Many lines of ordinary code have the potential to terminate a program prematurely if something goes wrong.  
+
+
+ my $average = $total / $count;                # divide by zero? 
+ print "okay\n" unless /$match/;                # illegal pattern? 
+
+
+ open MINNOW, '>ship. txt' 
+ or die "Can't create 'ship. txt': $!";        # user-defined die? 
+
+
+ &implement($_) foreach @rescue_scheme;        # die inside sub? 
+
+But just because something has gone wrong with one part of our code, that doesn't mean that we want everything to crash. Perl uses the eval operator as its error-trapping mechanism.  
+
+
+ eval { $average = $total / $count } ; 
+
+If an error happens while running code inside an eval block, the block is done executing. But even though the code inside the block is finished, Perl continues running the code just after the eval. It's most common after an eval to immediately check $@, which will either be empty (meaning that there was no error) or the dying words Perl had from the code that failed, perhaps something like "divide by zero" or a longer error message.  
+
+
+ eval { $average = $total / $count } ; 
+ print "Continuing after error: $@" if $@; 
+
+
+ eval { &rescue_scheme_42 } ; 
+ print "Continuing after error: $@" if $@; 
+
+The semicolon is needed after the eval block because eval is a function (not a control structure, such as if or while). But the block is a true block and may include lexical variables ("my" variables) and any other arbitrary statements. As a function, eval has a return value much like a subroutine's (the last expression evaluated, or a value returned early by the return keyword). Of course, if the code in the block fails, no value is returned; this gives undef in a scalar context, or an empty list in a list context. Thus, another way to calculate an average safely looks like this: 
+
+
+ my $average = eval { $total / $count } ; 
+
+Now $average is either the quotient or undef, depending upon whether the operation completed successfully or not.  
+
+Perl even supports nested eval blocks. The power of an eval block to trap errors extends for as long as it's executing, so it catches errors deep within nested subroutine calls. eval can't trap the most serious of errors, though: the ones in which Perl itself stops running. These include things such as an uncaught signal, running out of memory, and other catastrophes. eval doesn't catch syntax errors, either; because Perl compiles the eval block with the rest of the code, it catches syntax errors at compile time, not at runtime. It doesn't catch warnings either (although Perl does provide a way to intercept warning messages; see $SIG{_ _WARN_ _}).  
+
+2. 3. Dynamic Code with eval 
+
+There's also a second form of eval, whose parameter is a string expression instead of a block. It compiles and executes code from a string at runtime. While this is useful and supported, it is also dangerous if any untrustworthy data has gotten into the string. With a few notable exceptions, we recommend you avoid eval on a string. We'll use it a bit later, and you might see it in other people's code, so we'll show you how it works anyway.  
+
+
+ eval '$sum = 2 + 2'; 
+ print "The sum is $sum\n"; 
+
+Perl executes that code in the lexical context of the code around it, meaning that it's virtually as if we had typed that code right there. The result of the eval is the last evaluated expression, so we really don't need the entire statement inside the eval.  
+
+
+ #!/usr/bin/perl 
+
+
+ foreach my $operator ( qw(+ - * /) ) { 
+        my $result = eval "2 $operator 2"; 
+        print "2 $operator 2 is $result\n"; 
+        } 
+
+Here, we go through the operators + - * / and use each of those inside our eval code. In the string we give to eval, we interpolate the value of $operator into the string. The eval executes the code that the string represents and returns the last evaluated expression, which we assign it to $result.  
+
+If eval can't properly compile and run the Perl code we hand it, it sets $@ just like in its block form. In this example, we want to trap any divide-by-zero errors, but we don't divide by anything (another sort of error).  
+
+
+ print 'The quotient is ', eval '5 /', "\n"; 
+ warn $@ if $@; 
+
+The eval catches the syntax error and puts the message in $@, which we check immediately after calling eval.  
+
+The quotient is 
+
+
+ syntax error at (eval 1) line 2, at EOF 
+
+Later, in Chapters 10, 17, and 18, we'll use this to optionally load modules. If we can't load the module, Perl normally would stop the program. We'll catch the error and recover on our own when this happens.  
+
+In case you didn't catch our warning before, we'll say it again: be very careful with this form of eval. If you can find another way to do what you need, try that first. We'll use it later, in Chapter 10 to load code from an external file, but then we'll also show you a much better way to do that too.  
+
+2. 4. Exercises 
+
+You can find the answers to these exercises in "Answers for Chapter 2" in the Appendix.  
+
+2. 4. 1. Exercise 1 [15 min] 
+
+Write a program that takes a list of filenames on the command line and uses grep to select the ones whose size in bytes is less than 1000. Use map to transform the strings in this list, putting four space characters in front of each and a newline character after. Print the resulting list.  
+
+2. 4. 2. Exercise 2 [25 min] 
+
+Write a program that asks the user to enter a pattern (regular expression). Read this as data from the keyboard; don't get it from the command-line arguments. Report a list of files in some hardcoded directory (such as "/etc" or 'C:\\Windows') whose names match the pattern. Repeat this until the user enters an empty string instead of a pattern. The user should not type the forward slashes that are traditionally used to delimit pattern matches in Perl; the input pattern is delimited by the trailing newline. Ensure that a faulty pattern, such as one with unbalanced parentheses, doesn't crash the program 
+

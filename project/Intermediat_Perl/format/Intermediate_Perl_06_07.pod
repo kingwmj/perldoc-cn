@@ -1,0 +1,42 @@
+=EN 6. 7. Selecting and Altering Complex Data
+=CN 6. 7. 拣选和修改复杂数据
+=EN We can use these operators on more complex data. Taking the provisions list from Chapter 5:
+=CN 我们可以用这些操作符在更复杂的数据结构中. 我们拿第五章的装备清单来看看：
+my %provisions = (
+ 'The Skipper' => [qw(blue_shirt hat jacket preserver sunscreen)], 
+ 'The Professor' => [qw(sunscreen water_bottle slide_rule radio) ], 
+ 'Gilligan' => [qw(red_shirt hat lucky_socks water_bottle) ], 
+);
+=EN In this case, $provisions{"The Professor"} gives an array reference of the provisions brought by the Professor, and $provisions{"Gilligan"}[-1] gives the last item Gilligan thought to bring. 
+=CN 在本例中, $provisions{"The Professor"}给出一个指向数组的引用, 表示教授买的装备清单, 而$provisions{"Gilligan"}[-1]指向Gilligan要带的最后一项东西. 
+=EN We run a few queries against this data. Who brought fewer than five items?
+=CN 我们做一个查询：谁只带了不多于五件装备在身？
+my @packed_light = grep @{ $provisions{$_} } < 5, keys %provisions;
+=EN In this case, $_ is the name of a person. We take that name, look up the array reference of the provisions for that person, dereference that in a scalar context to get the count of provisions, and then compare it to 5. And wouldn't you know it; the only name is Gilligan. 
+=CN 在此例中, $_变量是乘客的名字. 我们用那人名, 在放装备的数组引用中查那个人, 然后在标量环境下还原那数组, 得出装备数量, 再以此与5比较. 而且你不知道, 这个乘客就是Gilligan. (译者注：奇怪, 明明有两个符合条件：Gilligan和Professor)
+=EN Here's a trickier one. Who brought a water bottle?
+=CN 这里有个更搞的, 谁带了水瓶？
+my @all_wet = grep {
+ my @items = @{ $provisions{$_} };
+ grep $_ eq 'water_bottle', @items;
+} keys %provisions;
+=EN Starting with the list of names again (keys %provisions), we pull up all the packed items first and then use that list in an inner grep to count the number of those items that equal water_bottle. If the count is 0, there's no bottle, so the result is false for the outer grep. If the count is nonzero, we have a bottle, so the result is true for the outer grep. Now we see that the Skipper will be a bit thirsty later, without any relief. 
+=CN 同先前一样, 我们首先取乘客名字（keys %provisions）, 然后取那个乘客所带的所有装备列表, 之后, 在一个内部的grep中计数有多少元素是water_bottle. 如果计数是0, 则表示没有, 所以返回false 给外部grep. 如果计数非零, 表示我们有一个水瓶, 所以返回真给外部grep. 现在我们可以看到Skipper以后会是比较渴的那位, 以后没有任何缓解余地. 
+=EN We can also perform transformations. For example, turn this hash into a list of array references, with each array containing two items. The first is the original person's name; the second is a reference to an array of the provisions for that person:
+=CN 我们还可以把数据转换成其它格式. 比如, 将散列转换成一个对数组的引用, 其中每个数组含有两个元素. 第一个元素为乘客名字, 第二个元素则是对这个乘客的装备列表的引用：
+my @remapped_list = map {
+ [ $_ => $provisions{$_} ];
+} keys %provisions;
+=EN The keys of %provisions are names of the people. For each name, we construct a two-element list of the name and the corresponding provisions array reference. This list is inside an anonymous array constructor, so we get back a reference to a newly created array for each person. Three names in; three references out. [*] Or, let's go a different way. Turn the input hash into a series of references to arrays. Each array will have a person's name and one of the items they brought:
+=CN 散列%provisions的键是乘客的人名. 对于每个人名, 我们构键一个两个元素的列表, 其中有名字和对应的对装备清单列表的引用. 这个列表是由匿名数组构建的, 这样我们就获得每个乘客新创建数组的引用. 三个名字进去, 三个引用出来, [*] 或者, 让我们变换一种方法. 把输入的散列转换成一系列对数组的引用. 每个数组将有一个乘客的名字和一个由他身带的装备：
+=EN [*] If we had left the inner brackets off, we'd end up with six items out. That's not very useful, unless we're creating a different hash from them. 
+=CN [*]如果我们把内层的括号去掉, 我们会最后会得出六个单品. 那不是很常用, 除非为什么建立不同的散列. 
+my @person_item_pairs = map {
+ my $person = $_;
+ my @items = @{ $provisions{$person} };
+ map [$person => $_], @items;
+} keys %provisions;
+=EN Yes, a map within a map. The outer map selects one person at a time. We save this name in $person, and then we extract the item list from the hash. The inner map walks over this item list, executing the expression to construct an anonymous array reference for each item. The anonymous array contains the person's name and the provision item. 
+=CN 是的, 一个map套一个map. 外圈的map一次拣选一个乘客名字. 我们把这个名字放在变量$person中, 然后我们从散列中抽取装备列表. 而内层的map遍历装备清单, 执行一个表达式来为每个装备构建一个匿名数组引用. 每个匿名数组含有乘客的名字和他所带的装备名. 
+=EN We had to use $person here to hold the outer $_ temporarily. Otherwise, we can't refer to both temporary values for the outer map and the inner map. 
+=CN 这里, 我们已经使用$person来保存外圈的$_临时变量. 除此以外, 我们不能同时引用外圈和内圈map的临时变量. 
