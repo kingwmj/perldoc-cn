@@ -1,4 +1,4 @@
-Chapter 11. Introduction to Objects 
+=head2 Chapter 11. Introduction to Objects 
 
 Object-oriented programming (OOP) helps programmers run code sooner and maintain it easier by organizing the code into things that we can name. We need a little more infrastructure to get going with objects, but in the long run, it's worth it.  
 
@@ -8,7 +8,7 @@ Like references, Perl's object architecture was grafted on after a substantial a
 
 The Perl object architecture relies heavily on packages, subroutines, and references, so if you're skipping around in this book, please go back to the beginning. Ready? Here we go.  
 
-11. 1. If We Could Talk to the Animals. . .  
+=head2 11. 1. If We Could Talk to the Animals. . .  
 
 Obviously, the castaways can't survive on coconuts and pineapples alone. Luckily for them, a barge carrying random farm animals crashed on the island not long after they arrived, and the castaways began farming and raising animals.  
 
@@ -71,7 +71,7 @@ Wow. That symbolic coderef dereferencing there in the body of the loop is pretty
 
 Or is it? 
 
-11. 2. Introducing the Method Invocation Arrow 
+=head2 11. 2. Introducing the Method Invocation Arrow 
 
 A class is a group of things with similar behaviors and traits. For now, let's say that Class->method invokes subroutine method in package Class. A method is the object-oriented version of the subroutine, so we'll say "method" from now on. [*] That's not completely accurate, but we'll go on one step at a time. Let's use it like so: 
 
@@ -133,7 +133,7 @@ But look at all that common code. Each speak method has a similar structure: a p
 
 Now that we know more about what the method invocation arrow actually does, we've got an easier way to do the same thing.  
 
-11. 3. The Extra Parameter of Method Invocation 
+=head2 11. 3. The Extra Parameter of Method Invocation 
 
 The invocation of: 
 
@@ -167,7 +167,7 @@ The other two animals come out similarly:
 
 In each case, $class gets the value appropriate for that method. But once again, we have a lot of similar structure. Can we factor out that commonality even further? Yesby calling another method in the same class.  
 
-11. 4. Calling a Second Method to Simplify Things 
+=head2 11. 4. Calling a Second Method to Simplify Things 
 
 We can call out from speak to a helper method called sound. This method provides the constant text for the sound itself: 
 
@@ -233,7 +233,7 @@ Inside the Animal::speak method, $class becomes Cow as the first argument is shi
 
 and we get our desired output.  
 
-11. 5. A Few Notes About @ISA 
+=head2 11. 5. A Few Notes About @ISA 
 
 This magical @ISA variable (pronounced "is a" not "ice-uh") declares that Cow "is a" Animal. [*] Note that it's an array, not a simple single value, because on rare occasions it makes sense to have more than one parent class searched for the missing methods. We'll show more about that later.  
 
@@ -283,7 +283,7 @@ to just:
 
 That's pretty darn compact. Furthermore, use base has the advantage that it's performed at compile time, eliminating a few potential errors from setting @ISA at runtime, like some of the other solutions.  
 
-11. 6. Overriding the Methods 
+=head2 11. 6. Overriding the Methods 
 
 Let's add a mouse that can barely be heard: 
 
@@ -363,7 +363,7 @@ Because we no longer use the method arrow, we get one and only one chance to hit
 
 The Animal class name is now hardwired into the method selection. This is a mess if someone maintains the code, changing @ISA for Mouse, and doesn't notice Animal there in speak. Thus, this is probably not the right way to go.  
 
-11. 7. Starting the Search from a Different Place 
+=head2 11. 7. Starting the Search from a Different Place 
 
 A better solution is to tell Perl to search from a different place in the inheritance chain: 
 
@@ -390,7 +390,7 @@ This isn't the best solution, however. We still have to keep the @ISA and the in
 
 So, is there an even better way? 
 
-11. 8. The SUPER Way of Doing Things 
+=head2 11. 8. The SUPER Way of Doing Things 
 
 By changing the Animal class to the SUPER class in that invocation, we get a search of all our superclasses (classes listed in @ISA) automatically: 
 
@@ -413,7 +413,7 @@ By changing the Animal class to the SUPER class in that invocation, we get a sea
 
 Thus, SUPER::speak means to look in the current package's @ISA for speak, invoking the first one found if there's more than one. In this case, we look in the one and only base class, Animal, find Animal::speak, and pass it Mouse as its only parameter.  
 
-11. 9. What to Do with @_ 
+=head2 11. 9. What to Do with @_ 
 
 In that last example, had there been any additional parameters to the speak method (like how many times, or in what pitch for singing, for example), the parameters would be ignored by the Mouse::speak method. If we want them to be passed uninterpreted to the parent class, we can add it as a parameter: 
 
@@ -424,7 +424,7 @@ This invokes the speak method of the parent class, including all the parameters 
 
 Which one is correct? It depends. If we are writing a class that simply adds to the parent class behavior, it's best to simply pass along arguments we haven't dealt with. However, if we want precise control over the parent class's behavior, we should determine the argument list explicitly and pass it.  
 
-11. 10. Where We Are So Far. . .  
+=head2 11. 10. Where We Are So Far. . .  
 
 So far, we've used the method arrow syntax: 
 
@@ -451,15 +451,15 @@ However, if Perl doesn't find Class::method, it examines @Class::ISA (recursivel
 
 Chapter 12 shows how to distinguish the individual animals by giving them associated properties, called instance variables.  
 
-11. 11. Exercises 
+=head2 11. 11. Exercises 
 
 You can find the answers to these exercises in "Answers for Chapter 11" in the Appendix.  
 
-11. 11. 1. Exercise 1 [20 min] 
+=head2 11. 11. 1. Exercise 1 [20 min] 
 
 Type in the Animal, Cow, Horse, Sheep, and Mouse class definitions. Make it work with use strict. Use our if you're using a recent enough version of Perl. Your program should ask the user to enter the names of one or more barnyard animals. Create a barnyard with those animals, and have each animal speak once.  
 
-11. 11. 2. Exercise 2 [40 min] 
+=head2 11. 11. 2. Exercise 2 [40 min] 
 
 Add a Person class at the same level as Animal, and have both of them inherit from a new class called LivingCreature. Also make the speak method take a parameter of what to say, falling back to the sound (humming for a Person) if no parameter is given. Since this isn't Dr. Dolittle, make sure the animals can't talk. (That is, don't let speak have any parameters for an animal. ) Try not to duplicate any code, but be sure to catch likely errors of usage, such as forgetting to define a sound for an animal.  
 

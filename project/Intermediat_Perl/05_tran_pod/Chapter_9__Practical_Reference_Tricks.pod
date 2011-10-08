@@ -1,34 +1,34 @@
-Chapter 9. Practical Reference Tricks 
+=head2 第九章 实用引用技巧
 
-This chapter looks at optimizing sorting and dealing with recursively defined data.  
+这一章我们来看看如何优化排序并且如何处理嵌套数据结构. 
 
-9. 1. Review of Sorting 
+=head2 9. 1. 再来看一下排序
 
-Perl's built-in sort operator sorts text strings in their natural text order, by default. [*] This is fine if we want to sort text strings: 
+Perl内建的sort排序操作符缺省情况下将文本字串以他们的字符顺序进行排序. [*] 这在我们进行字符排序时没有任何问题：
 
-[*] My friends call that the "ASCIIbetical" ordering. Normally, modern Perl doesn't use ASCII; instead, it uses a default sort order, depending on the current locale and character set. See the perllocale (not perllocal!) manpage.  
+[*] 我朋友把这叫做"按美国信息交换标准码表顺序"排序. 通常来说, 当前的Perl已经不用美国信息交换标准码字符表了; 它依照当前的缺省字符集的排序顺序来进行排序. 具体可以查看perllocale(不是perllocal!)文档页. 
 
 
  my @sorted = sort qw(Gilligan Skipper Professor Ginger Mary_Ann); 
 
-but gets pretty messy when we want to sort numbers: 
+可是, 当我们对数字进行排序的时候却是一团糟：
 
 
  my @wrongly_sorted = sort 1, 2, 4, 8, 16, 32; 
 
-The resulting list is 1, 16, 2, 32, 4, 8. Why didn't sort order these properly? It treats each item as a string and sorts them in string order. Any string that begins with 3 sorts before any string that begins with 4.  
+排序的结果是：1, 16, 2, 32, 4, 8. 为什么不能按正确的顺序排序呢？ 是因为是把它们按字串对待, 以字串的顺序进行排序. 任何以3开头的训是排在以4开头的字串之前. 
 
-If we don't want the default sorting order, we don't need to write an entire sorting algorithm, which is good news since Perl already has a good one of those. But no matter what sorting algorithm we use, at some point we have to look at item A and item B and decide which one comes first. That's the part we'll write: code to handle just two items. Perl will do the rest.  
+如果我们不想按缺省的排序顺序, 我们不必重写整个排序算法, 好消息是Perl已经有好的方法了来处理这件事情了. 因为不管我们采用什么算法, 从某种程序上说, 这本质是个Ａ和Ｂ谁靠前的问题. 这就是我们要写的那部分代码：处理两个元素的代码. 然后Perl来处理余下的事情. 
 
-By default, as Perl orders the items, it uses a string comparison. We can specify a new comparison using a sort block that we place between the sort keyword and the list of things to sort. [] Within the sort block, $a and $b stand in for two of the items sort will compare. If we're sorting numbers, then $a and $b will be two numbers from our list.  
+在缺省时, 当Perl对元素进行排序的时候, 它采用的是字符比较. 我们可以用一个放在sort关键字与要排序的元素列表中间的代码块来指定排序算法. ［＋］ 在排序代码块中, $a和$b代表要比较的两个元素. 如果我们要对数字进行排序, 那么$a和$b会是来自于我们列表中的两个元素. 
 
-[] We can also used a name subroutine that sort invokes for each comparison.  
+[] 我们同样也可以用命名子程序来每个比较. 
 
-The sort block must return a coded value to indicate the sort order. If $a comes before $b in our desired sorting order, it should return -1; it should return +1 if $b comes before $a; if the order doesn't matter, it should return 0. The order might not matter, for example, if it's a case-insensitive sort comparing "FRED" to "Fred", or if it's a numeric sort comparing 42 to 42. [*] 
+排序代码块必须返回一个代码值来指明排序的次序. 如果我们希望$a在$b前, 我们应该返回-1;反之, $b排在$a前, 它应该返回+1;如果次序并不重要, 则应该返回0. 所谓次序不重要的意思是, 比如, 如果是大小写不敏感的排序, "FRED"和"Fred", 或者如果数值比较的话, 42和42. [*]
 
-[*] Actually, we can use any negative or positive number in place of -1 and +1, respectively. Recent Perl versions include a default sorting engine that is stable, so zero returns from the sort block cause the relative ordering of $a and $b to reflect their order in the original list. Older versions of Perl didn't guarantee such stability, and a future version might not use a stable sort, so don't rely on it.  
+［＊］实际上, 我们可以用任一个负值或正值来代替-1和+1. 新近的Perl版本的缺省排序引引擎很稳定, 所以, 如果返回0, 则会使用$a和$b在原来列表里的相对次序. 旧版本的Perl不能保证如此的稳定, 而未来的版本可能不用这种稳定的排序, 所以不能依赖于此. 
 
-For example, to sort those numbers in their proper order, we can use a sort block comparing $a and $b, like so: 
+举个例子, 以正常的次序对数字进行排序, 我们可以用个排序代码块比较$a和$b, 像这样：
 
 
  my @numerically_sorted = sort { 
@@ -37,55 +37,55 @@ For example, to sort those numbers in their proper order, we can use a sort bloc
    else            {  0 } 
  } 1, 2, 4, 8, 16, 32; 
 
-Now we have a proper numeric comparison, so we have a proper numeric sort. Of course, this is far too much typing, so we can use the spaceship operator instead: 
+目前, 我们对数字进行了合适的比较方法, 所以有了正常的数字排序. 当然, 如此的排序方法还是繁琐, 所以我们可以用一个飞船操作符来代替：
 
 my @numerically_sorted = sort { $a <=> $b } 1, 2, 4, 8, 16, 32; 
 
-The spaceship operator returns -1, 0, and +1, according to the rules we laid out. A descending sort is simple in Perl:[] 
+飞船操作符按我们前面的算法返回-1, 0或+1. 如果是降序, 在Perl中也很简单 ：［＋］[]
 
-[] As of version 5. 8. 6, Perl recognizes the reverse sort and does it without generating the temporary, intermediate list.  
+[] ［＋］在5. 8. 6版本中, Perl 识别反向排序, 而且并不产生临时, 中间列表. 
 
 
  my @numerically_descending = 
     reverse sort { $a <=> $b } 1, 2, 4, 8, 16, 32; 
 
-But there is more than one way to do it. The spaceship operator is nearsighted; and can't see which one of its parameters comes from $a and which from $b; it sees only which value is to its left and which is to its right. If we reverse the position of $a and $b, the spaceship will sort everything in the opposite order: 
+但是, 所谓殊途同归. 飞船是近视的; 它不能看到参数中哪个来自$a, 哪个来自$b;它只看哪个值在它的左边, 哪个在右边. 如果$a和$b换了位置, 则飞船操作符则会将其反序排列：
 
 
  my @numerically_descending = 
     sort { $b <=> $a } 1, 2, 4, 8, 16, 32; 
 
-In every place the previous sort expression returned -1, this expression returns +1, and vice versa. Thus, the sort is in the opposite order, and so it doesn't need a reverse. It's also easy to remember because if $a is to the left of $b, we get out the lower items first, just like a and b would be in the resulting list.  
+在前例中, 表达式原来返回－1的, 现在返回＋1, 相反也是一样. 所以, 排序出来的结果是反向排序, 所以也不要reverse关键字了. 这样也容易记得, 因为如果$a是在$b左边, 我们得到从小到大的排序, 就像a和b在结果列表中一样. 
 
-Which way is better? When should we use a reverse sort, and when should we switch $a and $b? Well, in most cases it shouldn't matter much for efficiency, so it's probably best to optimize for clarity and use reverse. For a more complex comparison, however, a single reverse may not be up to the task.  
+哪种方法更好？ 什么时间我们用reverse来反向排序, 什么时候用交换 $a和$b位置来排序呢？ 好, 大多数情况下, 他们对性能上没有什么差异. 所以可能为了表达清楚, 我们用reverse. 然而, 为了更复杂的的比较, 单个reverse又可能不是最好. 
 
-Like the spaceship operator, we can indicate a string sort with cmp, although this is rarely used alone because it is the default comparison. The cmp operator is most often used in more complex comparisons, as we'll show shortly.  
+类似于飞船操作符, 我们可以为字串排序用cmp, 尽管其很少单独使用, 因为它是排序方法. 我们以后马上就会讲到, cmp操作符在复杂比较中非常常用. 
 
-9. 2. Sorting with Indices 
+=head2 9. 2. 用索引排序
 
-In the same way we used indices to solve a few problems with grep and map back in Chapter 2, we can also use indices with sort to get some interesting results. For example, let's sort the list of names from earlier: 
+在之前的第二章, 我们用grep和map结合索引来解决了一些问题. 我们也可以用排序结合索引来得到一些有趣的结果. 比如说, 让我们对前面的名字列表排序：
 
 
  my @sorted = sort qw(Gilligan Skipper Professor Ginger Mary_Ann); 
  print "@sorted\n"; 
 
-which necessarily results in: 
+我们所需的输出是：
 
 
  Gilligan Ginger Mary_Ann Professor Skipper 
 
-But what if we wanted to look at the original list and determine which element of the original list now appears as the first, second, third, and so on, element of the sorted list? For example, Ginger is the second element of the sorted list and was the fourth element of the original list. How do we determine that the second element of the final list was the fourth element of the original list? 
+但是, 如果我们要看这排序后的列表中各元素在排序前的位置应该如何做呢？ 比如, Ginger排序后是在第二位, 而在原始列表中它是第四位元素. 我们如何确它排序后的第二位元素是排序前的第四位元素呢？
 
-Well, we can apply a bit of indirection. Let's not sort the actual names but rather the indices of each name: 
+好, 我们可以稍微间接的来做. 我们来为名字的索引排序, 而不是为实际的名字排序. 
 
 
  my @input = qw(Gilligan Skipper Professor Ginger Mary_Ann); 
  my @sorted_positions = sort { $input[$a] cmp $input[$b] } 0. . $#input; 
  print "@sorted_positions\n"; 
 
-This time, $a and $b aren't the elements of the list, but the indices. So instead of comparing $a to $b, we use cmp to compare $input[$a] to $input[$b] as strings. The result of the sort are the indices, in an order defined by the corresponding elements of @input. This prints 0 3 4 2 1, which means that the first element of the sorted list is element 0 of the original list, Gilligan. The second element of the sorted list is element 3 of the original list, which is Ginger, and so on. Now we can rank information rather than just move the names around.  
+这次, $a和$b并非列表中的元素, 而是索引. 所以, 不是对$a和$b比较, 我们用cmp对$input[$a]和input[$b]所含的字串进行比较. 而排序的结果则是索引, 这索引是按数组@input中的相应的次序进行排列的. 输出是0 3 4 2 1, 这意思是：排序后的首位元素是原来列表的首位元素, Gilligan. 排序后的第二位元素是原始列表的第4个元素, 即Ginger, 以此类推. 现在我们可以不仅仅是把名字移来移去, 而可以做个分级排名的东西了. 
 
-Actually, we have the inverse of the rank. We still don't know, for a given name in the original list, which position it occupies in the output list. But with a bit more magic, we can get there as well: 
+事实上, 我们也有了倒过来的排名. 即, 给定原始的列表, 在排序后他们所占的位置是什么. 当然, 戏法也得上一层楼, 我们可以这样做：
 
 
  my @input = qw(Gilligan Skipper Professor Ginger Mary_Ann); 
@@ -94,7 +94,7 @@ Actually, we have the inverse of the rank. We still don't know, for a given name
  @ranks[@sorted_positions] = (0. . $#sorted_positions); 
  print "@ranks\n"; 
 
-The code prints 0 4 3 1 2. This means that Gilligan is position 0 in the output list, Skipper is position 4, Professor is position 2, and so on. The positions here are 0-based, so add 1 to get "human" ordinal values. One way to cheat is to use 1. . @sorted_positions instead of 0. . $#sorted_positions, so a way to dump it all out looks like: 
+这段代码输出是这样的：0 4 3 1 2. 这就是说Gilligan在输出列表中还是老大, Skipper是在输出列表中倒数第一, 教授是3, 以此类推. 这里的序数是以0为基数的, 所以我们可以加1, 让他看起来像人话. 一种骗术是用1. . @sorted_positions 代替 0. . $#sorted_positions, 所以写出来是这样的：
 
 
  my @input = qw(Gilligan Skipper Professor Ginger Mary_Ann); 
@@ -105,7 +105,7 @@ The code prints 0 4 3 1 2. This means that Gilligan is position 0 in the output 
    print "$input[$_] sorts into position $ranks[$_]\n"; 
  } 
 
-This results in: 
+其输出结果如下：
 
 
  Gilligan sorts into position 1 
@@ -114,13 +114,13 @@ This results in:
  Ginger sorts into position 2 
  Mary_Ann sorts into position 3 
 
-This general technique can be convenient if we need to look at our data in more than one way. Perhaps we keep many records in order by a numeric code for efficiency reasons, but we occasionally want to view them in alphabetical order as well. Or maybe the data items themselves are impractical to sort, such as a month's worth of server logs.  
+这些一般的方法可以使方便地我们以不同的角度来看我们的数据. 可以我们以效率的原因使我们数据以数字顺序排, 但有时我们又要他们以字母顺序排. 或者, 可能这些数据项目自己本身顺序并没有多大意义, 比如一个月的服务器日志的价值. 
 
-9. 3. Sorting Efficiently 
+=head2 9. 3. 更有效率的排序
 
-As the Professor tries to maintain the community computing facility (built entirely out of bamboo, coconuts, and pineapples, and powered by a certified Perl-hacking monkey), he continues to discover that people are leaving entirely too much data on the single monkey-powered filesystem and decides to print a list of offenders.  
+因为教授要维护社区的计算设备（全都由竹子, 椰子, 菠萝, 并由一个经过Perl黑客级别认证的猴子来提供支援）, 然后他发现有些人把太多数据给猴子来处理, 所以决定打印出一份罪犯名单. 
 
-The Professor has written a subroutine called ask_monkey_about( ), which, given a castaway's name, returns the number of pineapples of storage they use. We have to ask the monkey because he's in charge of the pineapples. An initial naive approach to find the offenders from greatest to least might be something like: 
+教授写了一个子程序ask_monkey_about(), 这个程序接受一个castaway成员的名字, 然后返回他们用了菠萝总储量中的多少. 我们问猴子是因为他管这事儿. 最初的找出罪犯的程序可以如下的样子：
 
 
  my @castaways = 
@@ -129,42 +129,42 @@ The Professor has written a subroutine called ask_monkey_about( ), which, given 
    ask_monkey_about($b) <=> ask_monkey_about($a) 
  } @castaways; 
 
-In theory, this would be fine. For the first pair of names (Gilligan and Skipper), we ask the monkey "How many pineapples does Gilligan have?" and "How many pineapples does Skipper have?" We get back two values from the monkey and use them to order Gilligan and Skipper in the final list.  
+按理, 这个程序不错. 对于第一对名字（Gilligan和Skipper), 我们问下猴子："Gilligan有多少菠萝？" 和"Skipper手里有多少菠萝？" 我们从猴子那里得到这个值后, 并以此来将Gilligan和Skipper在最终的列表中排座次. 
 
-However, at some point, we have to compare the number of pineapples that Gilligan has with another castaway as well. For example, suppose the pair is Ginger and Gilligan. We ask the monkey about Ginger, get a number back, and then ask the monkey about Gilligan. . . again. This will probably annoy the monkey a bit, since we already asked earlier. But we need to ask for each value two, three, or maybe even four times, just to put the seven values into order.  
+However, at some point, we have to compare the number of pineapples that Gilligan has with another castaway as well. For example, suppose the pair is Ginger and Gilligan. We ask the monkey about Ginger, get a number back, and then ask the monkey about Gilligan. . . again. This will probably annoy the monkey a bit, since we already asked earlier. But we need to ask for each value two, three, or maybe even four times, just to put the seven values into order.
 
-This can be a problem because it irritates the monkey.  
+这可能会成为一个问题, 这太刺激猴子了. 
 
-How do we keep the number of monkey requests to a minimum? Well, we can build a table first. We use a map with seven inputs and seven outputs, turning each castaway item into a separate array reference, with each referenced array consisting of the castaway name and the pineapple count reported by the monkey: 
+那我们怎么能将询问猴子的次数降为最低呢？ 这样, 我们先建一张表. 我们用一个map和七个输入输出项, 将每个castaway元素做成一个数组引用, 每个数组引用包含两个元素, 一个是成员名字, 一个猴子报告的其所持菠萝的数目：
 
 
  my @names_and_pineapples = map { 
    [ $_, ask_monkey_about($_) ] 
  } @castaways; 
 
-At this point, we asked the monkey seven questions in a row, but that's the last time we have to talk to the monkey! We now have everything we need to finish the task.  
+这次, 我们在一次把把七个问题向猴子问完了, 但这也是最后一次！ 我们现在已经有了要完成任务所有的东西了. 
 
-For the next step, we sort the arrayrefs, ordering them by the monkey-returned value: 
+为了下一步, 我们把数组引用排序, 以猴子报告的数值为序：
 
 
  my @sorted_names_and_pineapples = sort { 
    $b->[1] <=> $a->[1]; 
  } @names_and_pineapples; 
 
-In this subroutine, $a and $b are still two elements from the list of things to be sorted. When we're sorting numbers, $a and $b are numbers; when we're sorting references, $a and $b are references. We dereference them to get to the corresponding array itself, and pick out item 1 from the array (the monkey's pineapple value). Because $b appears to the left of $a, it'll be a descending sort as well. (We want a descending sort because the Professor wants the first name on the list to be the person who uses the most pineapples. ) 
+在这个子程序中, $a和$b列表中要排序的两个元素. 当我们对数字进行排序的时候, $a和$b是数字. 当我们对引用进行排序时, $a和$b就是引用. 我们将他们还原成相应的数组, 并且将他们的第二个元素取出来（猴子报告的菠萝数目）. 因为$b排在$a之前, 所以, 它是一个由大到小的降序排列. （我们需要降底是因为教授要有菠萝持有最多的那个人）
 
-We're almost done, but what if we just wanted the top names, rather than the names and pineapple counts? We merely need to perform another map to transform the references back to the original data: 
+我们差不多要完成了, 但如果我们仅仅要名字, 而不要名字和菠萝数呢？ 我们只要做一下另一个map, 把引用变换成原来的数据就可以了：
 
 
  my @names = map $_->[0], @sorted_names_and_pineapples; 
 
-Each element of the list ends up in $_, so we'll dereference that to pick out the element 0 of that array, which is just the name.  
+列表中每个元素都是$_, 所以, 我们还原它, 并取出第一个元素, 就是名字. 
 
-Now we have a list of names, ordered by their pineapple counts, and the monkey's off our backs, all in three easy steps.  
+这样我们就有一个名字的列表, 并以他们所持菠萝的数目由大到小排列, 仅仅用三步, 也可以把猴子轻松放下. 
 
-9. 4. The Schwartzian Transform 
+9. 4. 施瓦茨变换
 
-The intermediate variables between each of these steps were not necessary, except as input to the next step. We can save ourselves some brainpower by just stacking all the steps together: 
+每一步当中的中间变量, 除了作为下一步的入, 实际上并不需要他们. 我们可以把这些步骤全都堆在一块儿, 这也节省点力气. 
 
 
  my @names = 
@@ -173,11 +173,11 @@ The intermediate variables between each of these steps were not necessary, excep
    map [ $_, ask_monkey_about($_) ],  
    @castaways; 
 
-Because the map and sort operators are right to left, we have to read this construct from the bottom up. Take a list of @castaways, create some arrayrefs by asking the monkey a simple question, sort the list of arrayrefs, and then extract the names from each arrayref. This gives us the list of names in the desired order.  
+因为map和sort操作是从右到左分析的, 我们读这些结构时应该由下而上的读. 所以顺序是这样的：先取数组 @castaways, 问下小猴一些问题后, 创建一个数组引用, 将数组引用列表排序, 并抽出数组引用中的名字. 这样我们就将名字列表以希望的顺序排序. 
 
-This construct is commonly called the Schwartzian Transform, which was named after Randal (but not by Randal), thanks to a Usenet posting he made many years ago. The Schwartzian Transform has since proven to be a very nice thing to have in our bag of sorting tricks.  
+这个结构一般叫做施瓦茨变换, 它以兰德命名（并不是他本人起的）, 感谢新闻组张贴他的程序使他成名多年.  施瓦茨变换已经被证明是我们的排序技巧的武器库中非常有效的利器. 
 
-If this transform looks like it might be too complex to memorize or come up with from first principles, it might help to look at the flexible and constant parts: 
+如果你觉得这个技巧太复杂而难以记忆或提供一种简明的办法, 下面这种简化成常量的表达可能更灵活一点：
 
 
  my @output_data = 
@@ -186,11 +186,11 @@ If this transform looks like it might be too complex to memorize or come up with
    map [ $_, EXPENSIVE FUNCTION OF $_ ],  
    @input_data; 
 
-The basic structure maps the original list into a list of arrayrefs, computing the expensive function only once for each; sorts those array refs, looking at the cached value of each expensive function invocation;[*] and then extracts the original values back out in the new order. All we have to do is plug in the proper two operations, and we're done. For example, to use the Schwartzian Transform to implement a case-insensitive sort, we could use code like this:[] 
+基本的结构将原始的列表变成一个数组引用的列表, 为每个成员只计算一次昂贵的计算; 将数组引用排序以缓存中通过前面昂贵的计算得到的结果进行排序［＊］, 然后抽出原始的值, 以前的次序排. 我们所要做的全部工作就是将两个操作合适发安排, 然后事儿就这样成了. 比如, 按照施瓦茨变换来实现一个不区分大小写的排序, 我们可以这样编码：［＋］
 
-[*] An expensive operation is one that takes a relatively long time or a relatively large amount of memory.  
+[*] 一个昂贵的操作是花相对时间长的操作, 或者相对使用大量内存的操作. 
 
-[] This is an efficient way to do this only if the uppercasing operation is sufficiently expensive, which it might be if our strings tend to be very long or if we have a large enough number of them. For a small number of not-long strings, a simple my @output_data = sort { "\U$a" cmp "\U$b"} @input_data is probably more efficient. If in doubt, benchmark.  
+[] This is an efficient way to do this only if the uppercasing operation is sufficiently expensive, which it might be if our strings tend to be very long or if we have a large enough number of them. For a small number of not-long strings, a simple my @output_data = sort { "\U$a" cmp "\U$b"} @input_data is probably more efficient. If in doubt, benchmark.
 
 
  my @output_data = 
@@ -199,11 +199,11 @@ The basic structure maps the original list into a list of arrayrefs, computing t
    map [ $_, "\U$_" ],  
    @input_data; 
 
-9. 5. Multi-Level Sort with the Schwartzian Transform 
+=head2 9. 5. 用施瓦茨变换作多层排序
 
-If we need to sort on more than one criterion, the Schwartzian Transform is still up to the task.  
+如果我们需要用多个测试条件进行排序, 施瓦茨变换照样可以处理这样的任务. 
 
-my @output_data = 
+my @output_data =
   map $_->[0],  
   sort { SORT COMPARISON USING $a->[1] AND $b->[1] or 
           ANOTHER USING $a->[2] AND $b->[2] or 
@@ -211,25 +211,25 @@ my @output_data =
   map [ $_, SOME FUNCTION OF $_, ANOTHER, YET ANOTHER ],  
   @input_data; 
 
-This code skeleton has a three-level sort comparison, using three computed values saved in the anonymous array (alongside the original data item to be sorted, which always comes first).  
+这个代码结构是三层的排序条件, 把三个计算过的值放到一个匿名数组里（还有把原始值放在排过序的列表中第一个位置. ）
 
-9. 6. Recursively Defined Data 
+=head2 9. 6. 数据的嵌套定义
 
-While the data we've processed with references up to this point has been rather fixed structure, sometimes we have to deal with hierarchical data, which is often defined recursively.  
+我们到现在为止处理的引用都是固定结构的, 可有时候我们要处理一般同递归来定义的层次结构的数据. 
 
-For Example One, consider an HTML table that has rows containing cellsand some of those cells may also contain entire tables. Example Two could be a visual representation of a filesystem consisting of directories containing files and other directories. Example Three is a company organization chart, which has managers with direct reports, some of whom may be managers themselves. And Example Four is a more complex organization chart, which can contain instances of the HTML tables of Example One, the filesystem representations of Example Two, or even entire organization charts. . . .  
+举个例子来说, 考虑一下一个含有表行表列的HTML表, 而表里的单位格可能还有其它的表. 例二是个虚拟的文件系统的例子, 一个文件系统中有一些目录, 而在目录中有文件或其它目录. 例子三是公司的组织结构图, 各部经理向他们的上司报告, 而其中有的经理向自己报告. 例子四是更加复杂的组织结构图, 可以包括上述例一的HTML表、例二的文件系统, 或者整个公司的组织结构图表… …
 
-We can use references to acquire, store, and process such hierarchical information. Frequently, the routines to manage the data structures end up as recursive subroutines.  
+我们可以用引用的办法来获得, 存储以及处理这些层次结构的信息. 一般来说, 处理这些层次结构的子程序最终都是递归程序. 
 
-Recursive algorithms deal with the unlimited complexity of their data by beginning with a base case and building upon that. [*] The base case considers what to do in the simplest case: when the leaf node has no branches, when the array is empty, when the counter is at zero. In fact, it's common to have more than one base case in various branches of a recursive algorithm. A recursive algorithm with no base case is an infinite loop.  
+递归算法用处理起始的一个基础例子并由此建立的程序来处理无限复杂的数据. [*] 所谓基础例子是指在一个最最简单的情况下如何处理：没有分支的叶子节点, 当数组还是空的情况, 当计数器是零时. 实际上, 在递归算法的不同分支中一般有多个基础例子. 如果递归算法没有基础例子, 程序就会导致无限循环. 
 
-[*] Recursive functions should all have a base, or trivial case, where they don't need to recurse and that all other recursions can eventually reach. That is, unless we have a lot of time on our hands to let the function recurse forever.  
+[*] 递归程序应该都有一个基础的, 或最简的例子, 这种例子无须再用递归处理了, 而且其它递归可以在此结束. 就是说, 除非我们手上有的是时间让它永无止境地运行下去. 
 
-A recursive subroutine has a branch from which it calls itself to handle a portion of the task, and a branch that doesn't call itself to handle the base cases. In Example One above, the base case could be a table cell that is empty. There could also be base cases for empty tables and table rows. In Example Two, base cases would be needed for files, and perhaps for empty directories.  
+递归子程序有一个分支来调用自己来处理部份任务, 有一个分支处理基础例子. 在上面第一个例子中, 基础例子就是当表格单元空的时候. 同样空行或空表也是基础例子. 在第二人例子中, 基础例子是文件或者空的目录. 
 
-For example, a recursive subroutine handling the factorial function, which is one of the simplest recursive functions, might look like: 
+比如, 下面的一个处理阶乘的递归子程序, 是最简单的递归应用：
 
-sub factorial { 
+sub factorial {
   my $n = shift; 
   if ($n <= 1) { 
     return 1; 
@@ -237,13 +237,13 @@ sub factorial {
     return $n * factorial($n - 1); 
   } } 
 
-Here we have a base case where $n is less than or equal to 1, which does not invoke the recursive instance, along with a recursive case for $n greater than 1, which calls the routine to handle a portion of the problem (i. e. , compute the factorial of the next lower number).  
+这里的基础例子是变量$n小于或等一1时, 这时就不会调用递归子程序, 而在$n大于1时, 就会调用子程序来处理这部分问题（如, 为下一个更小的数处理阶乘）
 
-This task would probably be solved better using iteration rather than recursion, even though the classic definition of factorial is often given as a recursive operation.  
+这个任务可能用迭代来做比用递归更好, 即使阶乘的经典定义是常常被作为一个递归操作. 
 
-9. 7. Building Recursively Defined Data 
+=head2 9. 7. 构建嵌套定义的数据
 
-Suppose we wanted to capture information about a filesystem, including the filenames and directory names, and their included contents. Represent a directory as a hash, in which the keys are the names of the entries within the directory, and values are undef for plain files. A sample /bin directory looks like: 
+我们可能要收集一个文件系统的信息, 包括文件名和目录名, 以及他们的内容. 用一个散列代表目录, 在其中, 键代表条目名字, 其值如果是未定义则代表是一般的文件. 以/bin目录为例：
 
 
  my $bin_directory = { 
@@ -252,7 +252,7 @@ Suppose we wanted to capture information about a filesystem, including the filen
    date => undef,  . . . and so on. . .  
  }; 
 
-Similarly, the Skipper's home directory might also contain a personal bin directory (at something like ~skipper/bin) that contains personal tools: 
+类似的, Skipper的主目录同样包括一个属于他自己的bin目录（多少象~/skipper/bin）, 其中有些他个人的工具：
 
 
  my $skipper_bin = { 
@@ -261,9 +261,9 @@ Similarly, the Skipper's home directory might also contain a personal bin direct
    eat                 => undef,  
   }; 
 
-Nothing in either structure tells where the directory is located in the hierarchy. It just represents the contents of some directory.  
+上面两个例子没有说目录是否是在一个层次结构里面. 它仅仅表示了一个目录里的一些内容. 
 
-Go up one level to the Skipper's home directory, which is likely to contain a few files along with the personal bin directory: 
+我们往上跑一级, 到Skipper的主目录, 里面有些文件, 并且有他自己的一个bin目录：
 
 
  my $skipper_home = { 
@@ -273,7 +273,7 @@ Go up one level to the Skipper's home directory, which is likely to contain a fe
    bin                             => $skipper_bin,  
  }; 
 
-Ahh, notice that we have three files, but the fourth entry bin doesn't have undef for a value but rather the hash reference created earlier for the Skipper's personal bin directory. This is how we indicate subdirectories. If the value is undef, it's a plain file; if it's a hash reference, we have a subdirectory, with its own files and subdirectories. Of course, we can have combined these two initializations: 
+哈, 注意, 我们现在有三个文件, 但是第四个条目bin没有含有未定义值, 而是一个散列引用, 这个引用是先前建立的指向Skipper的个人的bin目录. 这就是我们标识子目录的方法. 如果值不是未定义, 则它是一个文件; 如果是个散列引用, 我们就是指向一个子目录, 其拥有自己的文件和其它子目录. 当然, 我们可以把两者合在一起：
 
 
  my $skipper_home = { 
@@ -289,9 +289,9 @@ Ahh, notice that we have three files, but the fourth entry bin doesn't have unde
    },  
  }; 
 
-Now the hierarchical nature of the data starts to come into play.  
+Now the hierarchical nature of the data starts to come into play.
 
-Obviously, we don't want to create and maintain a data structure by changing literals in the program. We should fetch the data by using a subroutine. Write a subroutine that returns undef for a given pathname if the path is a file, or a hash reference of the directory contents if the path is a directory. The base case of looking at a file is the easiest, so let's write that: 
+显然, 我们不必在程序里用硬编码的形式来构建和维护这个结构. 我们可以用子程序来获取这些数据. 写个子程序, 如果找到的是文件, 则返回未定义值, 如果是目录的话, 则返回一个散列引用. 最基本的查看文件的例子是最简单的, 所以我们可以这样写：
 
 
  sub data_for_path { 
@@ -305,9 +305,9 @@ Obviously, we don't want to create and maintain a data structure by changing lit
    return undef; 
  } 
 
-If the Skipper calls this on. cshrc, he'll get back an undef value, indicating that a file was seen.  
+如果Skipper调用这个时找到. cshrc, 我们返回未定义值, 表示看到一个文件. 
 
-Now for the directory part. We need a hash reference, which we declare as a named hash inside the subroutine. For each element of the hash, we call ourselves to populate the value of that hash element. It goes something like this: 
+现在要对付目录部份了. 我们需要一个散列引用, 我们声明一个命名散列放在子程序中. 为散列中每个元素, 我们调用自己来发布元素值. 程序如下：
 
 
  sub data_for_path { 
@@ -330,27 +330,27 @@ Now for the directory part. We need a hash reference, which we declare as a name
    return undef; 
  } 
 
-The base cases in this recursive algorithm are the files and symbolic links. This algorithm wouldn't correctly traverse the filesystem if it followed symbolic links to directories as if they were true (hard) links, since it could end up in a circular loop if the symlink pointed to a directory that contained the symlink. [*] It would also fail to correctly traverse a malformed filesystemthat is, one in which the directories form a ring rather than a tree structure, say. Although malformed filesystems may not often be an issue, recursive algorithms in general are vulnerable to errors in the structure of the recursive data.  
+The base cases in this recursive algorithm are the 文件 and symbolic links. This algorithm wouldn't correctly traverse the 文件ystem if it followed symbolic links to directories as if they were true (hard) links, since it could end up in a circular loop if the symlink pointed to a directory that contained the symlink. [*] It would also fail to correctly traverse a malformed 文件ystemthat is, one in which the directories form a ring rather than a tree structure, say. Although malformed 文件ystems may not often be an issue, recursive algorithms in general are vulnerable to 错误 in the structure of the recursive data.
 
-[*] Not that any of us have ever done that and wondered why the program took forever. The second time really wasn't our fault anyway, and the third time was just bad luck. That's our story and we're sticking to it.  
+[*] 这并不是说我们任何人都没有碰到过, 并奇怪为什么程序一直运行. 第二次确实不是我们的错, 第三次只是运气不好. 这就是我们的故事而且挥之不去. 
 
-For each file within the directory being examined, the response from the recursive call to data_for_path is undef. This populates most elements of the hash. When the reference to the named hash is returned, the reference becomes a reference to an anonymous hash because the name immediately goes out of scope. (The data itself doesn't change, but the number of ways in which we can access the data changes. ) 
+对于目录中的每个文件都会查一下, 从递归调用data_for_path得到的结果就是未定义值. 这就生成了散列中大部份的值. 当一个命名引用返回时, 引用立即跑出程序范围, 所以成为对一个匿名散列的引用. （数据本身并没有改变, 但是我们可以有多种方法来访问数据变化. ）
 
-If there is a subdirectory, the nested subroutine call uses readdir to extract the contents of that directory and returns a hash reference, which is inserted into the hash structure created by the caller.  
+如果这其中是个子目录, 则嵌套子程序调用使用readdir抽出目录内容, 并返回一个散列引用, 并由调用者放到散列结构中. 
 
-At first, it may look a bit mystifying, but if we walk through the code slowly, we'll see it's always doing the right thing. Test the results of this subroutine by calling it on. (the current directory) and inspecting the result: 
+一开始, 这看上去好像很搞, 但是, 只要我们慢慢读完这个程序, 我们会发现它总能完成任务. 调用它一下, 看看结果如何. （在当前目录中）检查一下结果：
 
 
  use Data::Dumper; 
  print Dumper(data_for_path('. ')); 
 
-Obviously, this will be more interesting if our current directory contains subdirectories.  
+显然, 如果我们自己的目录里有子目录的话, 那看上去就有趣多了. 
 
-9. 8. Displaying Recursively Defined Datag 
+=head2 9. 8. Displaying 数据的嵌套定义g
 
-The Dumper routine of Data::Dumper displays the output nicely, but what if we don't like the format being used? We can write a routine to display the data. Again, for recursively defined data, a recursive subroutine is usually the key.  
+用Data::Dumper模块的Dumper程序显示输出是不错, 但如果我们不喜欢它使用的格式怎么办呢？ 我们可以写一个程序来显示数据. 同样, 对于嵌套定义的数据, 我们用递归子程序是关键. 
 
-To dump the data, we need to know the name of the directory at the top of the tree, because that's not stored within the structure: 
+为了打印出数据, 我们必须知道顶层目录的名字, 因为它不会存储在嵌套结构中：
 
 
  sub dump_data_for_path { 
@@ -364,7 +364,7 @@ To dump the data, we need to know the name of the directory at the top of the tr
                      } . . .  
              } 
 
-For a plain file, dump the pathname; for a directory, $data is a hash reference. Let's walk through the keys and dump the values: 
+对于文件, 我们打印出路径名; 对于目录, 变量$data是一个散列引用. 我们则遍历所有的键, 输出对应的值：
 
 
  sub dump_data_for_path { 
@@ -386,40 +386,40 @@ For a plain file, dump the pathname; for a directory, $data is a hash reference.
          } 
  } 
 
-For each element of the directory, we pass a path consisting of the incoming path followed by the current directory entry, and the data pointer is either undef for a file or a subdirectory hash reference for another directory. We can see the results by running: 
+对于目录中的每个元素, 我们传一个包含下一项元素的当前路径, 以及一个散列值, 这个值要么是未定义, 表示是文件, 或下一个子目录的散列引用. 我们运行一下, 看下结果：
 
 
  dump_data_for_path('. ', data_for_path('. ')); 
 
-Again, this is more interesting in a directory that has subdirectories, but the output should be similar to: 
+同样, 如果散列数据有子目录的话, 效果更精彩. 不过输出结果同如下的脚本类似：
 
 
  find. -print 
 
-from the shell prompt.  
+取自于UNIX shell的提示. 
 
-9. 9. Exercises 
+=head2 9. 9. 习题
 
-You can find the answers to these exercises in "Answers for Chapter 9" in the Appendix.  
+答案附录找. 
 
-9. 9. 1. Exercise 1 [15 min] 
+=head2 9. 9. 1. 习题 1 [15 分钟]
 
-Using the glob operator, a naive sort of every name in the /bin directory by their relative sizes might be written as: 
+用glob操作符, 把/bin目录中所有的文件, 以他们的文件大小为序排序, 可能的代码如下：
 
 
  my @sorted = sort { -s $a <=> -s $b } glob "/bin/*"; 
 
-Rewrite this using the Schwartzian Transform technique.  
+用施瓦茨变换重写这个程序. 
 
-If you don't have many files in the /bin directory, perhaps because you don't have a Unix machine, change the argument to glob as needed.  
+如果你发现在/bin中没有文件, 可能是因为你用的不是UNIX系统, 所以可以按需改一下glob的参数. 
 
-9. 9. 2. Exercise 2 [15 min] 
+=head2 9. 9. 2. 练习2 [15分钟]
 
-Read up on the Benchmark module, included with Perl. Write a program that will answer the question "How much does using the Schwartzian Transform speed up the task of Exercise 1?" 
+读一下Perl里的Benchmark模块. 写个程序解决一个问题："用了施瓦茨变换使练习1的任务快了多少？"
 
-9. 9. 3. Exercise 3 [10 min] 
+=head2 9. 9. 3. 练习 3 [10 min]
 
-Using a Schwartzian Transform, read a list of words, and sort them in "dictionary order. " Dictionary order ignores all capitalization and internal punctuation. Hint: the following transformation might be useful: 
+用施瓦茨变换, 读一列表词, 以"字典顺序"对他们进行排序. 所谓字典顺序忽略大小写和和音节符. 暗示：下列转换可能有用：
 
 
  my $string = 'Mary-Ann'; 
@@ -427,16 +427,16 @@ Using a Schwartzian Transform, read a list of words, and sort them in "dictionar
  $string =~ tr/a-z//cd;        # strip all but a-z from the string 
  print $string;                # prints "maryann" 
 
-Be sure you don't mangle the data! If the input includes the Professor and the skipper, the output should have them listed in that order, with that capitalization.  
+注意, 不要把数据搞乱了！ 如果输入是Professor和skipper, 那么输出也应该是这个次序, 同样的大小写. 
 
-9. 9. 4. Exercise 4 [20 min] 
+=head2 9. 9. 4. 练习 4 [20 min]
 
-Modify the recursive directory dumping routine so it shows the nested directories through indentation. An empty directory should show up as: 
+修改一下递归目录打印程序, 让它以缩进的形式显示嵌套子目录. 一个空的目录应该如下显示：
 
 
  sandbar, an empty directory 
 
-while a nonempty directory should appear with nested contents, indented two spaces: 
+非空的子目录应该用缩进两人空格的方法显示嵌套内容：
 
 
  uss_minnow, with contents: 
@@ -455,5 +455,5 @@ while a nonempty directory should appear with nested contents, indented two spac
 
  1; 
 
-Yes, every scalar, array, hash, filehandle, or subroutine now has to have a navigation_ prefix in front of it to guarantee that the names won't collide with any potential users of the library. Obviously, for that old sailor, this ain't gonna float his boat. What do we do instead? 
+是的, 每个标量, 数组名, 散列, 文件句柄或者子程序现在都必须加上一个navigation_ 前缀, 这样才能保证不与其它的库里潜在的用户发生冲突. 显然, 对于老水手来说, 他是不会干这种事的. 我们能用什么替代方案呢？
 

@@ -1,5 +1,5 @@
-=EN 12. 10. Getting Our Deposit Back
-=CN 12. 10. 取回存储
+=EN Getting Our Deposit Back
+=CN 取回存储
 =EN Because of the way the code is written, the setter also returns the updated value. Think about this (and document it) when we write a setter. What does the setter return? Here are some common variations:
 =CN 根据代码的写法, 设置方法也可以返回更新的值. 当我们写设值代码时我们要考虑, 或者要写下来. 设置代码应该返回什么？下面是一般的答案：
 =EN The updated parameter (same as what was passed in)
@@ -17,48 +17,14 @@ $tv_horse->set_color( $eating->set_color( color_from_user( ) ));
 =CN 上面的例子返回新更新的值. 一般来说, 这样写代码是容易, 执行起来也最快. 
 =EN If we return the previous parameter, we can easily create "set this value temporarily to that" functions:
 =CN 如果我们返回更改前的值, 我们可以容易地写临时处理程序：
-{
- my $old_color = $tv_horse->set_color('orange');
- … do things with $tv_horse …
- $tv_horse->set_color($old_color);
-}
 =EN This is implemented as:
 =CN 实现结果是：
-sub set_color {
- my $self = shift;
- my $old = $self->{Color};
- $self->{Color} = shift;
- $old;
-}
 =EN For more efficiency, we can avoid stashing the previous value when in a void context using the wantarray function:
 =CN 为了效率, 我们可以用wantarray函数在没有返回值的情况下不存以前的值：
-sub set_color {
- my $self = shift;
- if (defined wantarray) {
- # this method call is not in void context, so
- # the return value matters
- my $old = $self->{Color};
- $self->{Color} = shift;
- $old;
- } else {
- # this method call is in void context
- $self->{Color} = shift;
- }
-}
 =EN If we return the object itself, we can chain settings:
 =CN 如果想返回对象自身, 我们可以链式设置：
-my $tv_horse =
- Horse->named('Mr. Ed')
- ->set_color('grey')
- ->set_age(4)
- ->set_height('17 hands');
 =EN This works because the output of each setter is the original object, becoming the object for the next method call. Implementing this is, again, relatively easy:
 =CN 这样的代码是可行的, 因为每个设置方法都是原始对象, 成为下个方法调用对象. 还可以这样：
-sub set_color {
- my $self = shift;
- $self->{Color} = shift;
- $self;
-}
 =EN The void context trick can be used here too, although with questionable value because we've already established $self. 
 =CN 避免无返回值的方法这里也可以使用, 尽管我们已经建立了$self变量. 
 =EN Finally, returning a success status is useful if it's fairly common for an update to fail, rather than an exceptional event. The other variations would have to indicate failure by throwing an exception with die. 

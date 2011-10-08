@@ -1,29 +1,16 @@
-=EN 4. 9. Exercises
-=CN 4. 9. 练习
+=EN Exercises
+=CN 练习
 =EN You can find the answers to these exercises in "Answers for Chapter 4" in the Appendix. 
 =CN 在附录中"第四章的答案"中找答案
-=EN 4. 9. 1. Exercise 1 [5 min]
-=CN 4. 9. 1. 练习 1 [5 分钟]
+=EN Exercise 1 [5 min]
+=CN 练习 1 [5 分钟]
 =EN How many different things do these expressions refer to?
 =CN 下列表达式各表示什么不同的含义：
-$ginger->[2][1]
-${$ginger[2]}[1]
-$ginger->[2]->[1]
-${$ginger->[2]}[1]
-=EN 4. 9. 2. Exercise 2 [30 min]
-=CN 4. 9. 2. 练习 2 [30 分钟]
+=EN Exercise 2 [30 min]
+=CN 练习 2 [30 分钟]
 =EN Using the final version of check_required_items, write a subroutine check_items_for_all that takes a hash reference as its only parameter, pointing at a hash whose keys are the people aboard the Minnow and whose corresponding values are array references of the things they intend to bring onboard. 
 =CN 运用书中最后那个版本的check_required_items, 写一个子程序check_items_for_all, 把一个散列引用作为惟一参数. 这个散列引用的键是在Minnow船上的所有乘客, 其对应的值是他们各自想带上船的东西. 
 =EN For example, the hash reference might be constructed like so:
 =CN 比如, 这个散列引用可以是这样的：
-my @gilligan = … gilligan items …;
-my @skipper = … skipper items …;
-my @professor = … professor items …;
-my %all = (
- Gilligan => \@gilligan, 
- Skipper => \@skipper, 
- Professor => \@professor, 
-);
-check_items_for_all(\%all);
 =EN The newly constructed subroutine should call check_required_items for each person in the hash, updating their provisions list to include the required items. 
 =CN 我们新建的那个子程序要调用check_required_items来为散列中每个人更新其必需的装备清单. 

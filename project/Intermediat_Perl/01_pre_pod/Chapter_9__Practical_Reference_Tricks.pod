@@ -1,8 +1,8 @@
-Chapter 9. Practical Reference Tricks
+=head2 Chapter 9. Practical Reference Tricks
 
 This chapter looks at optimizing sorting and dealing with recursively defined data.
 
-9.1. Review of Sorting
+=head2 9.1. Review of Sorting
 
 Perl's built-in sort operator sorts text strings in their natural text order, by default.[*] This is fine if we want to sort text strings:
 
@@ -56,7 +56,7 @@ Which way is better? When should we use a reverse sort, and when should we switc
 
 Like the spaceship operator, we can indicate a string sort with cmp, although this is rarely used alone because it is the default comparison. The cmp operator is most often used in more complex comparisons, as we'll show shortly.
 
-9.2. Sorting with Indices
+=head2 9.2. Sorting with Indices
 
 In the same way we used indices to solve a few problems with grep and map back in Chapter 2, we can also use indices with sort to get some interesting results. For example, let's sort the list of names from earlier:
 
@@ -105,7 +105,7 @@ This results in:
 
 This general technique can be convenient if we need to look at our data in more than one way. Perhaps we keep many records in order by a numeric code for efficiency reasons, but we occasionally want to view them in alphabetical order as well. Or maybe the data items themselves are impractical to sort, such as a month's worth of server logs.
 
-9.3. Sorting Efficiently
+=head2 9.3. Sorting Efficiently
 
 As the Professor tries to maintain the community computing facility (built entirely out of bamboo, coconuts, and pineapples, and powered by a certified Perl-hacking monkey), he continues to discover that people are leaving entirely too much data on the single monkey-powered filesystem and decides to print a list of offenders.
 
@@ -181,7 +181,7 @@ The basic structure maps the original list into a list of arrayrefs, computing t
    map [ $_, "\U$_" ],
    @input_data;
 
-9.5. Multi-Level Sort with the Schwartzian Transform
+=head2 9.5. Multi-Level Sort with the Schwartzian Transform
 
 If we need to sort on more than one criterion, the Schwartzian Transform is still up to the task.
 
@@ -195,7 +195,7 @@ my @output_data =
 
 This code skeleton has a three-level sort comparison, using three computed values saved in the anonymous array (alongside the original data item to be sorted, which always comes first).
 
-9.6. Recursively Defined Data
+=head2 9.6. Recursively Defined Data
 
 While the data we've processed with references up to this point has been rather fixed structure, sometimes we have to deal with hierarchical data, which is often defined recursively.
 
@@ -224,7 +224,7 @@ Here we have a base case where $n is less than or equal to 1, which does not inv
 
 This task would probably be solved better using iteration rather than recursion, even though the classic definition of factorial is often given as a recursive operation.
 
-9.7. Building Recursively Defined Data
+=head2 9.7. Building Recursively Defined Data
 
 Suppose we wanted to capture information about a filesystem, including the filenames and directory names, and their included contents. Represent a directory as a hash, in which the keys are the names of the entries within the directory, and values are undef for plain files. A sample /bin directory looks like:
 
@@ -323,7 +323,7 @@ At first, it may look a bit mystifying, but if we walk through the code slowly, 
  
 Obviously, this will be more interesting if our current directory contains subdirectories.
 
-9.8. Displaying Recursively Defined Datag
+=head2 9.8. Displaying Recursively Defined Datag
 
 The Dumper routine of Data::Dumper displays the output nicely, but what if we don't like the format being used? We can write a routine to display the data. Again, for recursively defined data, a recursive subroutine is usually the key.
 
@@ -368,11 +368,11 @@ Again, this is more interesting in a directory that has subdirectories, but the 
 
 from the shell prompt.
 
-9.9. Exercises
+=head2 9.9. Exercises
 
 You can find the answers to these exercises in "Answers for Chapter 9" in the Appendix.
 
-9.9.1. Exercise 1 [15 min]
+=head2 9.9.1. Exercise 1 [15 min]
 
 Using the glob operator, a naive sort of every name in the /bin directory by their relative sizes might be written as:
 
@@ -382,11 +382,11 @@ Rewrite this using the Schwartzian Transform technique.
 
 If you don't have many files in the /bin directory, perhaps because you don't have a Unix machine, change the argument to glob as needed.
 
-9.9.2. Exercise 2 [15 min]
+=head2 9.9.2. Exercise 2 [15 min]
 
 Read up on the Benchmark module, included with Perl. Write a program that will answer the question "How much does using the Schwartzian Transform speed up the task of Exercise 1?"
 
-9.9.3. Exercise 3 [10 min]
+=head2 9.9.3. Exercise 3 [10 min]
 
 Using a Schwartzian Transform, read a list of words, and sort them in "dictionary order." Dictionary order ignores all capitalization and internal punctuation. Hint: the following transformation might be useful:
 
@@ -397,7 +397,7 @@ Using a Schwartzian Transform, read a list of words, and sort them in "dictionar
 
 Be sure you don't mangle the data! If the input includes the Professor and the skipper, the output should have them listed in that order, with that capitalization.
 
-9.9.4. Exercise 4 [20 min]
+=head2 9.9.4. Exercise 4 [20 min]
 
 Modify the recursive directory dumping routine so it shows the nested directories through indentation. An empty directory should show up as:
 

@@ -1,5 +1,5 @@
-=EN 9. 2. Sorting with Indices
-=CN 9. 2. 用索引排序
+=EN Sorting with Indices
+=CN 用索引排序
 =EN In the same way we used indices to solve a few problems with grep and map back in Chapter 2, we can also use indices with sort to get some interesting results. For example, let's sort the list of names from earlier:
 =CN 在之前的第二章, 我们用grep和map结合索引来解决了一些问题. 我们也可以用排序结合索引来得到一些有趣的结果. 比如说, 让我们对前面的名字列表排序：
 my @sorted = sort qw(Gilligan Skipper Professor Ginger Mary_Ann);

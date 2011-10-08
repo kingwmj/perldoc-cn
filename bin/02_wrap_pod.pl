@@ -36,10 +36,11 @@ my $tab = $blank x 4;
 # 以流格式打开所有POD文件进行预处理
 my $in_dir  = "$project_dir/01_pre_pod";
 my $out_dir = "$project_dir/02_wrap_pod";
-my @podlist = findlist($in_dir,  qr/\.pod$/);
+# my @podlist = findlist($in_dir,  qr/\.pod$/);
+my @podlist = glob("$in_dir/*.pod");
 my @outlist = findlist($out_dir, qr/\.pod$/);
 # 清理输出目录
-clean_dir($out_dir) or warn "could not clean $out_dir";
+#clean_dir($out_dir) or warn "could not clean $out_dir";
 
 # 遍历文件
 foreach my $podfile (@podlist) {

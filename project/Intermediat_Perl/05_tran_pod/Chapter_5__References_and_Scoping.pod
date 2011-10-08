@@ -1,22 +1,22 @@
-Chapter 5. References and Scoping 
+=head2 第五章 引用和范围
 
-We can copy and pass around references like any other scalar. At any given time, Perl knows the number of references to a particular data item. Perl can also create references to anonymous data structures (structures that do not have explicit names) and create references automatically as needed to fulfill certain kinds of operations. Let's look at copying references and how it affects scoping and memory usage.  
+我们可以像任何其它标量变量那样拷贝和传递引用. 在任何给定的时间, Perl会知道有多少引用指向一个特定的数据项. Perl也会为匿名数据结构（所谓没有名字的数据结构）创建引用, 以及在为了满足一定的操作自动的创建引用. 让我们来看一下引用的拷贝以及其对范围和内存使用方面的影响. 
 
-5. 1. More Than One Reference to Data 
+=head2 5. 1. 更多有关对数据进行引用的故事
 
-Chapter 4 explored how to take a reference to an array @skipper and place it into a new scalar variable: 
+Chapter 4 explored how to take a reference to an array @skipper and place it into a new scalar variable:
 
 
  my @skipper = qw(blue_shirt hat jacket preserver sunscreen); 
  my $reference_to_skipper = \@skipper; 
 
-We can then copy the reference or take additional references, and they'll all refer to the same thing and are interchangeable: 
+我们现在就可以拷贝这个引用或把它传给另外一些引用, 并且, 它们全都指向同一数据, 并且是互相可替换的：
 
 
  my $second_reference_to_skipper = $reference_to_skipper; 
  my $third_reference_to_skipper  = \@skipper; 
 
-At this point, we have four different ways to access the data contained in @skipper: 
+现在, 我们有四种途径来访问保存在@skipper中的数据：
 
 
  @skipper 
@@ -24,21 +24,21 @@ At this point, we have four different ways to access the data contained in @skip
  @$second_reference_to_skipper 
  @$third_reference_to_skipper 
 
-Perl tracks how many ways it can access the data through a mechanism called reference counting. The original name counts as one, and each additional reference that we create (including copies of references) also counts as one. The total number of references to the array of provisions is now four.  
+Perl跟踪有多少途径在访问数据的机制叫做"引用计数". 原来的名字计数为1, 其它我们创建的每一个引用（包括对引用的拷贝）同样被计数. 就目前的例子, 装备清单数组的目前引用数是4. 
 
-We can add and remove references as we wish, and as long as the reference count doesn't hit zero, Perl maintains the array in memory and it is still accessible via any of the other access paths. For example, we might have a temporary reference: 
+我们可以任意添加和删除引用, 并且, 只要引用计算不减到0, Perl就会在内存中保留这个数组, 并且能通过任何其它的途径来访问这个数组. 比如, 我们可能有一个临时引用：
 
 
  check_provisions_list(\@skipper) 
 
-When this subroutine executes, Perl creates a fifth reference to the data and copies it into @_ for the subroutine. The subroutine is free to create additional copies of that reference, which Perl notes as needed. Typically, when the subroutine returns, Perl discards all such references automatically, and you're back to four references again.  
+当这个子程序执行的时候, Perl会创建指向这个数组的第五个引用, 并将其拷贝到这个子程序的特殊变量@_中. 子程序可以很自由的为那个引用创建更多的拷贝, 而Perl则会适时的关注. 一般来说, 当子程序返回的时候, Perl会自动扔掉所有这些子程序创建的引用, 这样你又回到了4个引用. 
 
-We can kill off each reference by using the variable for something other than a reference to the value of @skipper. For example, we can assign undef to the variable: 
+我们用给引用赋任何一个与指向@skipper引用无关的其它的变量就可以切断引用关系了. 比如, 我们可以给变量分配一个undef给变量：
 
 
  $reference_to_skipper = undef; 
 
-Or, maybe we just let the variable go out of scope: 
+或者, 我们可以仅仅让变量跑出范围就可以了：
 
 
  my @skipper =. . . ; 
@@ -48,17 +48,17 @@ Or, maybe we just let the variable go out of scope:
  my $ref = \@skipper; . . .  . . .  
  } # $ref goes out of scope at this point 
 
-In particular, a reference held in a subroutine's private (lexical) variable goes away at the end of the subroutine.  
+要指出的是, 在一个子程序的私有（词法）变量保存的一个引用, 会在子程序结束时被释放. 
 
-Whether we change the value, or the variable itself goes away, Perl notes it as an appropriate reduction in the number of references to the data.  
+不管是我们改变变量的值, 或者变量跑出范围, Perl会注意到这些, 并且适当的减少对数据的引用计数. 
 
-Perl recycles the memory for the array only when all references (including the name of the array) go away. In this case, Perl only reclaims memory when @skipper and all the references we created to it disappear.  
+Perl recycles the memory for the array only when all references (including the name of the array) go away. In this case, Perl only reclaims memory when @skipper and all the references we created to it disappear.
 
-Such memory is available to Perl for other data later in this program invocation, and generally Perl doesn't give it back to the operating system.  
+这些被释放的内存会被Perl安排用在程序中之后的其它数据的调用, 一般来说Perl不会把这些内存还给操作系统. 
 
-5. 2. What If That Was the Name? 
+=head2 5. 2. 假若它曾经有一个名字
 
-Typically, all references to a variable are gone before the variable itself. But what if one of the references outlives the variable name? For example, consider this code: 
+一般来说, 引用总是比其指向的变量之前被释放. 但是如果引用比其指向的变量活得长会发生什么情况？比如, 考虑下面的情况：
 
 
  my $ref; 
@@ -75,35 +75,35 @@ Typically, all references to a variable are gone before the variable itself. But
 
  print "$ref->[2]\n"; # still prints jacket\n 
 
-Immediately after we declare the @skipper array, we have one reference to the five-element list. After $ref is initialized, we'll have two, down to the end of the block. When the block ends, the @skipper name disappears. However, this was only one of the two ways to access the data! Thus, the five-element list is still in memory, and $ref still points to that data.  
+Immediately after we declare the @skipper array, we have one reference to the five-element list. After $ref is initialized, we'll have two, down to the end of the 块. When the 块 ends, the @skipper name disappears. However, this was only one of the two ways to access the data! Thus, the five-element list is still in memory, and $ref still points to that data.
 
-At this point, the five-element list is in an anonymous array, which is a fancy term for an array without a name.  
+这个时候, 这个五个元素的列表是个匿名数组－－为没有名字的数组起的一个漂亮名字. 
 
-Until the value of $ref changes, or $ref itself disappears, we can still use all the dereferencing strategies we used prior to when the name of the array disappeared. In fact, it's still a fully functional array that we can shrink or grow just as we do any other Perl array: 
+直到$ref的值改变, 或者$ref自己消失, 我们依旧可以使用任何我们在前面学到的还原方法, 尽管数组的名字已经不存在了. 实际上, 它仍然是一个不折不扣的数组, 我们可以像对待其它任何Perl数组那样把它拉长和缩小：
 
 
  push @$ref, 'sextant'; # add a new provision 
  print "$ref->[-1]\n"; # prints sextant\n 
 
-We can even increase the reference count at this point: 
+此时我们甚至还可以增加引用计数：
 
 
  my $copy_of_ref = $ref; 
 
-or equivalently: 
+下面也一样：
 
 
  my $copy_of_ref = \@$ref; 
 
-The data stays alive until we destroy the last reference: 
+数据一直会存在, 直到我们销毀最后一个引用：
 
 
  $ref = undef; # not yet. . .  
  $copy_of_ref = undef; # poof! 
 
-5. 3. Reference Counting and Nested Data Structures 
+=head2 5. 3. 引用计数和数据结构嵌套
 
-The data remains alive until we destroy the last reference, even if that reference lives within a larger active data structure. Suppose an array element is itself a reference. Recall the example from Chapter 4: 
+只要最后一个引用没有被销毁, 数据就一直存在. 甚至引用包含在一个大的数据结构时也是如此. 有可能数组本身的一个元素就是一个引用. 我们回想一下第四章见到过的例子：
 
 
  my @skipper = qw(blue_shirt hat jacket preserver sunscreen); 
@@ -124,7 +124,7 @@ The data remains alive until we destroy the last reference, even if that referen
         \@gilligan_with_name,  
         ); 
 
-Imagine for a moment that the intermediate variables are all part of a subroutine: 
+想像一下中间变量全是子程序一部份的情况：
 
 
  my @all_with_names; 
@@ -153,9 +153,9 @@ Imagine for a moment that the intermediate variables are all part of a subroutin
 
  initialize_provisions_list(  ); 
 
-We set the value of @all_with_names to contain three references. Inside the subroutine we have named arrays with references to arrays first placed into other named arrays. Eventually, the values end up in the global @all_with_names. However, as the subroutine returns, the names for the six arrays disappear. Each array has had one other reference taken to it, making the reference count temporarily two, and then back to one as the name disappears. Because the reference count is not yet zero, the data continues to live on, although it is now referenced only by elements of @all_with_names.  
+我们用数组@all_with_names的值来放三个引用. 在子程序里, 我们命名了一些数组, 而这些数组指向了事先命名的另外的数组.  最终, 这些值最后放到一个全局的数组@all_with_names中. 然而, 当子程序返回时, 这些六个数组的名字被锁毁.  正因为每个数组都有另外一个引用指向它, 所以导致引用计数临时是2, 但当数组名字销毁后, 计数又回到1.  因为引用计数没有回到零, 数据仍然在, 尽管它向在仅仅被当做数组@all_with_names的元素. 
 
-Rather than assign the global variable, we can rewrite this without @all_with_names and return the list directly: 
+与分配一个全局变量不同, 我们还可以重写这个程序, 去掉全局变量@all_with_names, 直接从程序中返回列表：
 
 
  sub get_provisions_list { 
@@ -181,22 +181,22 @@ Rather than assign the global variable, we can rewrite this without @all_with_na
 
  my @all_with_names = get_provisions_list(  ); 
 
-Here, we create the value that we'll eventually store in @all_with_names as the last expression evaluated in the subroutine. The subroutine returns a three-element list. As long as the named arrays within the subroutine have had at least one reference taken of them, and it is still part of the return value, the data remains alive. [*] If we alter or discard the references in @all_with_names, Perl reduces the reference count for the corresponding arrays. If that means the reference count has become zero (as in this example), Perl also eliminates the arrays themselves. Because the arrays inside @all_with_names also contain a reference (such as the reference to @skipper), Perl reduces that reference count by one. Again, that reduces the reference count to zero, freeing that memory as well, in a cascading effect.  
+上例中, 我们创建的那个最终保存在@all_with_names中的值是用子程序的最后一个表达式求值得到的. 子程序返回一个三个元素的列表. 只要子程序中的命名数组曾经至少有一个引用指向他们, 他们就仍旧是返回值的一部份, 数据仍旧存在. [*] 如果我们改变或者丢弃@all_with_names中的引用, Perl会减少相应的数组的引用计数. 如果那意味着引用计数降为零（在例中）, Perl一样会把数组销毁. 因为@all_with_names数组中包含的其它数组同样包含一个引用（如对@skipper的引用）, Perl会把那个引用的计数降为1. 一样, 一旦引用计数降为零, Perl会连锁地释放内存. 
 
-[*] Compare this with having to return an array from a C function. We must either return a pointer to a static memory space, making the subroutine nonreentrant, or we must malloc new memory space, requiring the caller to know to free the data. Perl just does the right thing.  
+[*] 比较一下这与C函数中必须返回一个数组. 我们要么返回一个指向静态内存区域的指针, 使子程序非重入, 或者我们必需分配新内存, 需要调用程序知道释放内存. Perl正好做了对的事情. 
 
-Removing the top of a tree of data generally removes all the data contained within. The exception is when we make additional copies of the references of the nested data. For example, if we copy Gilligan's provisions: 
+一般来说, 如果删除了一个复杂数据结构的根数据, 会把其包含的子数据全删除. 一个例外就是当我们对其嵌套数据进行了引用. 比如说, 如果我们拷贝了Gilligan的装备：
 
 
  my $gilligan_stuff = $all_with_names[2][1]; 
 
-then when we remove @all_with_names, we still have one live reference to what was formerly @gilligan, and the data from there downward remain alive.  
+然后我们删除了@all_with_names, 我们有一个活的引用指向之前的@gilligan, 其下的数据也依然在. 
 
-The bottom line is simply: Perl does the right thing. If we still have a reference to data, we still have the data.  
+底线很清楚：Perl总是做对的事情. 如果我们依然有指向数据的引用, 我们就仍旧拿着数据. 
 
-5. 4. When Reference Counting Goes Bad 
+=head2 5. 4. 当引用计数出问题了
 
-Reference counting as a way to manage memory has been around for a long time. A really long time. The downside of reference counting is that it breaks when the data structure is not a directed graph that is, when some parts of the structure point back in to other parts in a looping way. For example, suppose each of two data structures contains a reference to the other (see Figure 5-1): 
+用引用计数的办法来管理内存长久以来一直很受欢迎. 的确使用了很长一段时间. 引用计数有一个缺点, 就是在数据结构不是单向引用的时候, 它会有问题. 所谓非单向引用的数据结构就是：这个数据结构中的一些部份引用与其指向的数据存在循环引用. 比如：这两块数据结构中都有互相指向对方的引用（参考图5-1)：
 
 
  my @data1 = qw(one won); 
@@ -206,19 +206,19 @@ Reference counting as a way to manage memory has been around for a long time. A 
  push @data2, \@data1; 
  push @data1, \@data2; 
 
-Figure 5-1. When the references in a data structure form a loop, Perl's reference-counting system may not be able to recognize and recycle the no-longer-needed memory space 
+图 5-1. 当一个数据结构中的引用出现循环调用的时候, Perl的引用计数系统可能不能识别出来, 从而不能回收不再需要的内存空间
 
-At this point, we have two names for the data in @data1: @data1 itself and @{$data2[3]}, and two names for the data in @data2: @data2 itself and @{$data1[2]}. We've created a loop. In fact, we can access won with an infinite number of names, such as $data1[2][3][2][3][2][3][1].  
+像这种情况, 我们会有两个名字为@data1中的数据块命名：@data1自身和@{$data2[3]}, 另外有两个名字为@data2中的数据块命名：@data2自身和@{$data1[2]}. 我们创建了一个循环. 实际上我们可以用可怕多的下标来访问这块数据： $data1[2][3][2][3][2][3][1]. 
 
-What happens when these two array names go out of scope? Well, the reference count for the two arrays goes down from two to one, but not zero. And because it's not zero, Perl thinks there might still be a way to get to the data, even though there isn't! Thus, we've created a memory leak. A memory leak in a program causes the program to consume more and more memory over time. Ugh.  
+那这两个数组跑出范围会发生什么事？ 噢, 这两个数组的引用计数会从2降为1, 但不是0. 正因为没有归到零, Perl会认为仍有引用会指向这些数据, 尽管已经没有了. 所以, 我们已经创建了一个内存泄漏. 一个程序有内存泄漏会导致消耗越来越多的内存, 噢！
 
-At this point, you're right to think that example is contrived. Of course we would never make a looped data structure in a real program! Actually, programmers often make these loops as part of doubly linked lists, linked rings, or a number of other data structures. The key is that Perl programmers rarely do so because the most important reasons to use those data structures don't apply in Perl. Most of that deals with managing memory and connecting discontiguous memory blocks, which Perl does for us. If you've used other languages, you may have noticed programming tasks that are comparatively easy in Perl. For example, it's easy to sort a list of items or to add or remove items, even in the middle of the list. Those tasks are difficult in some other languages, and using a looped data structure is a common way to get around the language's limitations.  
+现在, 你会想例子总是有意设计出来的. 当然, 我们不会在真实的程序中有意设计一个引用循环. 而实际上, 程序员经常在用双向链表、循环列表或其它一些数据结构时创建这些引用循环. 问题是Perl的程序员罕有犯这种错误的, 重要的原因是Perl不太会用到这些数据结构. 大多数处理内存操作及连接内存碎片的操作已经被Perl自动处理了. 如果你曾使用过其它的语言, 你可能会注意到在Perl中的编程相对比较容易. 比如, 对列表中的元素排序或（甚至在列表中间）添加、删除元素都很方便. 同样的任务在其它语言中会很困难, 而用循环数据结构是绕开这些语言限制的常用方法. 
 
-Why mention it here? Well, even Perl programmers sometimes copy an algorithm from another programming language. There's nothing inherently wrong with doing this, although it would be better to decide why the original author used a "loopy" data structure and then recode the algorithm to use Perl's strengths. Perhaps you should use a hash instead, or perhaps the data should go into an array that will be sorted later.  
+那为什么要在这儿提这些呢？ 是这样的, 因为有些Perl程序员有时也会从其它程序语言中把算法拷贝过来. 这样做当然不会继承错误, 尽管考虑一下原来作者用"循环"数据结构是为什么, 然后用Perl的强项来处理这什算法. 可能你要用个散列, 或用数组, 然后以后进行排序. 
 
-Some upcoming version of Perl is likely to use garbage collection in addition to, or instead of, referencing counting. [*] Until then, we must be careful not to create circular references or, if we do, break the circle before the variables go out of scope. For example, the following code doesn't leak: 
+另外, 经后的Perl可能会使用垃圾收集器来代替计数引用. [*] 不过到现在, 我们必须注意不要建立循环引用, 或者, 如果我们做的话, 在变量跑出范围时, 要去掉循环引用. 比如, 下面的代码不会造成内存泄漏：
 
-[*] Just don't ask us about it. We wrote this book a long time before you got a chance to read it, so we didn't exactly know the details back then.  
+[*] 不要问我们为什么, 在你有机会读到此书时, 相对我们写书的时间已经是很长久了. 所以我能不能肯定. 
 
 
  { 
@@ -231,15 +231,15 @@ Some upcoming version of Perl is likely to use garbage collection in addition to
   @data2 = (  ); 
  } 
 
-We eliminated the reference to @data2 from within @data1, and vice versa. Now the data have only one reference each, which all go to zero references at the end of the block. In fact, we can clear out either one and not the other, and it still works nicely. Chapter 13 shows how to create weak references, which can help with many of these problems.  
+我们在@data1中对@data2的引用, 相反也一样. 现在两块数据只有一个引用, 在跑出块范围的时候, 引用计数会归零. 实际上, 我们清除任何一个引用就可以了, 程序一样工作得很好. 第13章会展示如何建立弱引用, 可以对这些问题有些帮助. 
 
-5. 5. Creating an Anonymous Array Directly 
+=head2 5. 5. 直接建立匿名数组
 
-In the get_provisions_list routine earlier, we created a half dozen array names that we used only so that we could take a reference to them immediately afterward. When the subroutine exited, the array names all went away, but the references remained.  
+在早前的get_provisions_list子程序中（参考5. 3节）, 我们建立了半打数组, 而且创建的目的仅仅是为了后面马上要给他们建立引用. 当子程序退出的时候, 所有数组名将销毁, 但引用还留着. 
 
-While creating temporarily named arrays would work in the simplest cases, creating such names becomes more complicated as the data structures become more detailed. We'd have to keep thinking of names of arrays just so we could forget them shortly thereafter.  
+临时命名的数组, 在简单环境中还可以工作, 但这些名字在数据结构开始越来越复杂的情况下会变得比较繁琐. 我们应该想到, 正确地处理这些数组的名字, 这样我们可以很快就忘掉它. 
 
-We can reduce the namespace clutter by narrowing down the scope of the various array names. Rather than declaring them within the scope of the subroutine, we can create a temporary block: 
+我们可以用缩小不同数组名的范围的方法来降低命名空间的繁杂性. 代替在子程序范围内声明变量, 我们可以建立一个临时块：
 
 
  my @skipper_with_name; 
@@ -248,15 +248,15 @@ We can reduce the namespace clutter by narrowing down the scope of the various a
   @skipper_with_name = ('The Skipper', \@skipper); 
  } 
 
-At this point, the second element of @skipper_with_name is a reference to the array formerly known as @skipper. However, that name is no longer relevant.  
+上例中, @skipper_with_name第二个元素是个指向先前命令的数组@skipper. 然而, 那个名字现在与程序不再有关系了. 
 
-This is a lot of typing to simply say "the second element should be a reference to an array containing these elements. " We can create such a value directly using the anonymous array constructor, which is yet another use for square brackets: 
+为了仅仅说明"第二个元素应该是个指向一个包括这些元素的引用", 而编上例中这些代码, 好像太麻烦了. 我们可以创建一个直接使用匿名数组的结构, 即方括号的另一种用法：
 
 
  my $ref_to_skipper_provisions = 
   [ qw(blue_shirt hat jacket preserver sunscreen) ]; 
 
-The square brackets take the value within (evaluated in a list context); establish a new, anonymous array initialized to those values; and (here's the important part) return a reference to that array. It's as if we had said: 
+方括号把内中（相当一在一个列表环境）元素取出来;为这些元素建立一个新的, 匿名的数组;并且（这里很重要）返回一个对这个匿名数组的引用. 就好像我们说过的：
 
 
  my $ref_to_skipper_provisions; 
@@ -266,16 +266,16 @@ The square brackets take the value within (evaluated in a list context); establi
   $ref_to_skipper_provisions = \@temporary_name; 
  } 
 
-Here we don't need to come up with a temporary name, and we don't need the extra noise of the temporary block. The result of a square-bracketed anonymous array constructor is an array reference, which fits wherever a scalar variable fits.  
+这里, 我们不必需要提供临时变量名字, 也不要讨厌的临时代码块. 用方括号返回的匿名数组结构就是一个对数组的引用, 并且用在任何标量环境中都合适. 
 
-Now we can use it to construct the larger list: 
+现在, 我们可以用它来构建一个更大的列表：
 
 
  my $ref_to_skipper_provisions = 
   [ qw(blue_shirt hat jacket preserver sunscreen) ]; 
  my @skipper_with_name = ('The Skipper', $ref_to_skipper_provisions); 
 
-Of course, we didn't actually need that scalar temporary, either. We can put a scalar reference to an array as part of a larger list: 
+甚至, 我们也根本不要那个临时标量. 我们可以直接把临时标量替换成数组引用, 作为一个更大列表的一部份：
 
 
  my @skipper_with_name = ( 
@@ -283,11 +283,11 @@ Of course, we didn't actually need that scalar temporary, either. We can put a s
   [ qw(blue_shirt hat jacket preserver sunscreen) ] 
  ); 
 
-Now let's walk through this. We've declared @skipper_with_name, the first element of which is the Skipper's name string, and the second element is an array reference, obtained by placing the five provisions into an array and taking a reference to it. So @skipper_with_name is only two elements long, just as before.  
+来, 我们回顾一下. 我们已经声明了@skipper_with_name, 它的第一个元素是Skipper的名字字串, 第二个元素是一个对数组的引用, 它是由把五个元素放到一个数组, 并且取其引用得到的. 所以, @skipper_with_name数组仅有两个元素长. 
 
-Don't confuse the square brackets with the parentheses here. They each have their distinct purpose. If we replace the square brackets with parentheses, we end up with a six-element list. If we replace the outer parentheses (on the first and last lines) with square brackets, we construct an anonymous array that's two elements long and then take the reference to that array as the only element of the ultimate @skipper_with_name array. [*] So, in summary, if we have this syntax: 
+别把这里的方括号和小括号搞混了. 它们各有不同的目的. 如果我们用小括号代替方括号, 我们结果会得到一个六个元素的列表. 如果我们将外圈的（第一行和最后一行）的小括号用方括号代替, 我们就构建了一个两个元素长的匿名数组的引用, 并将其返回给@skipper_with_name数组. [*] 这样, 总之, 如果我们有以下的代码：
 
-[*] In classrooms, we've seen that too much indirection (or not enough indirection) tends to contribute to the most common mistakes made when working with references.  
+[*] 在教学中, 我们经常会看到在使用引用时犯的直接（或不那么直接）的错误. 
 
 
  my $fruits; 
@@ -296,12 +296,12 @@ Don't confuse the square brackets with the parentheses here. They each have thei
   $fruits = \@secret_variable; 
  } 
 
-we can replace it with: 
+我们可以以此代替：
 
 
  my $fruits = ['pineapple', 'papaya', 'mango']; 
 
-Does this work for more complicated structures? Yes! Anytime we need an element of a list to be a reference to an array, we can create that reference with an anonymous array constructor. In fact, we can also nest them in our provisions list: 
+那么在更复杂的结构中, 这个原则还工作吗？当然！只要是需要一个指向数组的引用, 我们就可以创建指向匿名数组的引用. 实际上, 我们还可以嵌套使用：
 
 
  sub get_provisions_list { 
@@ -315,22 +315,22 @@ Does this work for more complicated structures? Yes! Anytime we need an element 
 
  my @all_with_names = get_provisions_list(  ); 
 
-Walking through this from the outside in, we have a return value of three elements. Each element is an array reference, pointing to an anonymous two-element array. The first element of each array is a name string, while the second element is a reference to an anonymous array of varying lengths naming the provisions all without having to come up with temporary names for any of the intermediate layers.  
+我们由外而内地看一下上面的代码, 我们返回了三个元素. 每个元素是一个数组引用, 并且是指向有两个元素的匿名数组的引用. 内中每个数组第一个元素是名字字串, 而第一个元素又是一个变长的匿名数组的引用. 而且变长数组包括了所有的装备清单, 并且我们不必再提供临时名字作为中间变量. 
 
-To the caller of this subroutine, the return value is identical to the previous version. However, from a maintenance point of view, the reduced clutter of not having all the intermediate names saves screen and brain space.  
+对于调用它的子程序来说, 现在的返回值对于前一个版本是一样的. 然而, 从代码维护的角度来看, 去掉那些中间名字, 这样降低了复杂性也节省了代码占用屏幕空间. 
 
-We can show a reference to an empty anonymous array using an empty anonymous array constructor. For example, if we add one "Mrs. Howell" to that travel list, as someone who has packed rather light, we'd simply insert: 
+我们也可以将引用指现空的匿名数组. 比如, 如果我们加一个Mrs. Howell到一个遊客列表, 并且它没带多少装备, 我们可以简单的这样写：
 
 
  ['Mrs. Howell',  
    [  ] 
  ],  
 
-This is a single element of the larger list. This item is a reference to an array with two elements, the first of which is the name string, and the second of which is itself a reference to an empty anonymous array. The array is empty because Mrs. Howell hasn't packed anything for this trip.  
+这是一个只有一个元素的大列表. 这是一个指向一个具有两个元素的数组的引用, 第一个元素是名字字串, 第二个元素自身是个指向空的匿名数组的引用. 这个数组是空的, 因为Howell先生为他的旅程什么也没有带. 
 
-5. 6. Creating an Anonymous Hash 
+=head2 5. 6. 创建匿名散列
 
-Similar to creating an anonymous array, you can also create an anonymous hash. Consider the crew roster from Chapter 4: 
+同创建匿名数组类似, 你也可以建立一个匿名散列. 考虑一下第四章的船员注册程序：
 
 
  my %gilligan_info = ( 
@@ -351,7 +351,7 @@ Similar to creating an anonymous array, you can also create an anonymous hash. C
 
  my @crew = (\%gilligan_info, \%skipper_info); 
 
-The variables %gilligan_info and %skipper_info are just temporaries we needed to create the hashes for the final data structure. We can construct the reference directly with the anonymous hash constructor, which is yet another meaning for curly braces, as we'll see. We can replace this: 
+散列变量%gilligan_info和%skipper_info是为了最终数据结构而建立的临时变量. 下面我们就构造一个对匿名散列的直接引用, 正像我们看到的, 花括号的另一项功能. 替代代码如下：
 
 
  my $ref_to_gilligan_info; 
@@ -367,7 +367,7 @@ The variables %gilligan_info and %skipper_info are just temporaries we needed to
   $ref_to_gilligan_info = \%gilligan_info; 
  } 
 
-with the anonymous hash constructor: 
+如果用匿名散列的话：
 
 
  my $ref_to_gilligan_info = { 
@@ -377,7 +377,7 @@ with the anonymous hash constructor:
   position => 'First Mate',  
  }; 
 
-The value between the open and closing curly braces is an eight-element list. The eight-element list becomes a four-element anonymous hash (four key/value pairs). Perl takes a reference to this hash and returns as a single scalar value, which we assign to the scalar variable. Thus, we can rewrite the roster creation as: 
+被花括号括起来的是八个元素的列表. 八个元素的列表也就变成了四个元素的匿名数组（四个键／值对）. Perl会取这个散列的引用, 并返回一个标量值, 并送给一个标量变量. 所以我们可以改写程序如下：
 
 
  my $ref_to_gilligan_info = { 
@@ -398,7 +398,7 @@ The value between the open and closing curly braces is an eight-element list. Th
 
  my @crew = ($ref_to_gilligan_info, $ref_to_skipper_info); 
 
-As before, we can now avoid the temporary variables and insert the values directly into the top-level list: 
+同前面一样, 我们还是可以避免使用临时变量, 把散列值直接放到列表里：
 
 
  my @crew = ( 
@@ -418,15 +418,17 @@ As before, we can now avoid the temporary variables and insert the values direct
   },  
  ); 
 
-Note we use trailing commas on the lists when the element is not immediately next to the closing brace, bracket, or parenthesis. This is a nice style element to adopt because it allows for easy maintenance. We can add or rearrange lines quickly, or comment out lines without destroying the integrity of our list.  
+注意列表结束时的元素并非马上连着关闭的花括号, 方括号或小括号, 而是以逗号结尾. 这是很好的编程风格, 因为这样做有利于代码维护. 我们可以很方便的添加或重排行, 或者不破坏列表完整性的情况下注释掉代码. 
 
-Now @crew is identical to the value it had before, but we no longer need to invent names for the intermediate data structures. As before, the @crew variable contains two elements, each of which is a reference to a hash containing keyword-based information about a particular crew member.  
+现在@crew里所包含的值同先前是一样的, 但不再需要为中间数据结构起名字了. 就像上一个版本一样, @crew包含两个元素, 每个元素都是一个指向一个包含以键为基础的散列, 表示了船上成员的特殊信息. 
 
-The anonymous hash constructor always evaluates its contents in a list context and then constructs a hash from key/value pairs, just as if we had assigned that list to a named hash. Perl returns a reference to that hash as a single value that fits wherever a scalar fits.  
+匿名散列构造器总是把内容放在列表环境, 并把他们以键／值对的形式输出, 就像我们分配那个列表给命名散列一样. Perl返回一个那个散列的引用, 并将其作为标量值, 并适合任何标量合适的地方. 
 
-Now, a word from our parser: because blocks and anonymous hash constructors both use curly braces in roughly the same places in the syntax tree, the compiler has to make ad hoc determinations about which of the two you mean. If the compiler ever decides incorrectly, you might need to provide a hint to get what you want. To show the compiler that you want an anonymous hash constructor, put a plus sign before the opening curly brace: +{. . . }. To be sure to get a block of code, just put a semicolon (representing an empty statement) at the beginning of the block: {;. . . }.  
+Now, a word from our parser: because 块s and anonymous hash 构造ors both use curly braces in roughly the same places in the syntax tree, the compiler has to make ad hoc determinations about which of the two you mean. If the compiler ever decides incorrectly, you might need to provide a hint to get what you want. To show the compiler that you want an anonymous hash 构造or, put a plus sign before the opening curly brace: +{. . . }. To be sure to get a 块 of code, just put a semicolon (representing an empty statement) at the beginning of the 块: {;. . . }.
 
-5. 7. Autovivification Let's look again at the provisions list. Suppose we were reading the data from a file, in this format: 
+=head2 5. 7. 自生成
+
+我们重顾一下装备清单. 假定我们从一个文件中读取这些数据, 格式如下：
 
 
  The Skipper 
@@ -445,9 +447,9 @@ Now, a word from our parser: because blocks and anonymous hash constructors both
   lucky_socks 
   water_bottle 
 
-We indent provisions with some whitespace, following a non-indented line with the person's name. Let's construct a hash of provisions. The keys of the hash will be the person's name, and the value will be an array reference to an array containing a list of provisions.  
+我们把装备用空格缩进表示, 没有缩进的行是旅客名字. 我们来建立一个装备清单. 索引键是旅客名字, 其值是一个指向装备列表的引用. 
 
-Initially, we might gather the data using a simple loop: 
+起先, 我们用一个简单的循环收集数据：
 
 
  my %provisions; 
@@ -466,13 +468,13 @@ Initially, we might gather the data using a simple loop:
   } 
  } 
 
-First, we declare the variables for the resulting hash of provisions and the current person. For each line that we read, we determine if it's a person or a provision. If it's a person, we remember the name and create the hash element for that person. The unless exists test ensures that we won't delete someone's provision list if his list is split in two places in the datafile.  
+首先, 我们定义一个变量来保存结果散列中的乘客及他们的清单. 对于读出的每一行, 我们先判断它是乘客还是装备. 如果是乘客, 我们记下姓名并为那个乘客创建散列元素. unless exists测试来保证在一个乘客的装备在文件中分两块地方放的时候, 我们不会把他的装备清单删掉. 
 
-For example, suppose that "The Skipper" and "sextant" (note the leading whitespace) are at the end of the datafile in order to list an additional data item.  
+例如, 假定"The skipper"和"sextant"(注意前导空格) 放在文件末尾, 作为增补的项目. 
 
-The key is the person's name, and the value is initially a reference to an empty anonymous array. If the line is a provision, push it to the end of the correct array, using the array reference.  
+如果把乘客的名字作为键, 值是指向一个空数组的引用. 如果读入的行是装备, 则使用引用数组, 把它推入当前的数组. 
 
-This code works fine, but it actually says more than it needs to. Why? Because we can leave out the line that initializes the hash element's value to a reference to an empty array: 
+这样的代码运行得很好, 但实际上它不需要写那么多. 为什么？ 因为我们可以把初始化指向数据的散列引用的地方去掉：
 
 
  my %provisions; 
@@ -491,45 +493,45 @@ This code works fine, but it actually says more than it needs to. Why? Because w
   } 
  } 
 
-What happens when we try to store that blue shirt for the Skipper? While looking at the second line of input, we'll end up with this effect: 
+那现在, 我们要把蓝衬衣放到Skipper的装备清单时会发生什么呢？ 当查看第二项输入时, 我们结果可以看到如下的效果：
 
 
  push @{ $provisions{'The Skipper'} }, "blue_shirt"; 
 
-At this point, $provisions{"The Skipper"} doesn't exist, but we're trying to use it as an array reference. To resolve the situation, Perl automatically inserts a reference to a new empty anonymous array into the variable and continues the operation. In this case, the reference to the newly created empty array is dereferenced, and we push the blue shirt to the provisions list.  
+在这时候, $provisions{"The Skipper"}并不存在, 但我们正在把它作为一个数组引用来处理. 为了解决这种情况, Perl自动为我们创建一个指向家的匿名数组的引用来继续操作. 在此例中, 新的指向空数组的引用被创建, 并被还原, 我们再把蓝衬衫放进去, 生成了一个装备清单. 
 
-This process is called autovivification. Any nonexistent variable, or a variable containing undef, which we dereference while looking for a variable location (technically called an lvalue context), is automatically stuffed with the appropriate reference to an empty item, and Perl allows the operation to proceed.  
+这样的处理叫做：自生成. 任何一个不存在的变量, 或个存有undef的变量, 当被用来查找一个变量的时候（技术上被称为左值环境）, 会自动被适当的生成空项引用, Perl然后再让处理继续. 
 
-This is actually the same behavior we've probably been using in Perl all along. Perl creates new variables as needed. Before that statement, $provisions{"The Skipper"} didn't exist, so Perl created it. Then @{ $provisions{"The Skipper"} } didn't exist, so Perl created it as well.  
+This is actually the same behavior we've probably been using in Perl all along. Perl creates new variables as needed. Before that statement, $provisions{"The Skipper"} didn't exist, so Perl created it. Then @{ $provisions{"The Skipper"} } didn't exist, so Perl created it as well.
 
-For example, this works: 
+比如, 下面在代码是工作的：
 
 
  my $not_yet;                # new undefined variable 
  @$not_yet = (1, 2, 3); 
 
-Here, we dereference the value $not_yet as if it were an array reference. But since it's initially undef, Perl acts as if we had said: 
+这儿, 我们还原了$not_yet这个值, 好像它原先是一个指向数组的引用一样. 但因为它初始化是undef, Perl的行为好像我们说过的：
 
 
  my $not_yet; 
  $not_yet = [  ]; # inserted through autovivification 
  @$not_yet = (1, 2, 3); 
 
-In other words, an initially empty array becomes an array of three elements.  
+换句话说, 一个初始化的空的数组成为一个有三个元素的数组. 
 
-This autovivification also works for multiple levels of assignment: 
+在多层赋值时, 自生成也起作用：
 
 
  my $top; 
  $top->[2]->[4] = 'lee-lou'; 
 
-Initially, $top contains undef, but because we dereference it as if it were an array reference, Perl inserts a reference to an empty anonymous array into $top. Perl then accesses the third element (index value 2), which causes Perl to grow the array to be three elements long. That element is also undef, so Perl stuffs it with a reference to another empty anonymous array. We then spin out along that newly created array, setting the fifth element to lee-lou.  
+初始时, $top含有一个undef, 但因为我们还原它, 就像它是一个数组引用一样, Perl往里插了一个空的匿名数组的引用. Perl然后访问第三个元素(索引为2), 这导致Perl撑大数组到三个元素长. 那个元素同样是undef, 所以Perl用另外一个指向空的匿名数组的引用放进去. 我们然后分拆那个新建的数组, 把第五个元素放lee-lou这个字串. 
 
-5. 8. Autovivification and Hashes 
+=head2 5. 8. 自生成功能与散列
 
-Autovivification also works for hash references. If we dereference a variable containing undef as if it were a hash reference, a reference to an empty anonymous hash is inserted, and the operation continues.  
+在散列引用中, 自生成功能也起作用. 如果我们还原一个含有undef的变量, 就好像它是一个散列引用一样, 那么一个指向空的匿名散列的引用就会被插入, 让操作继续下去. 
 
-One place this comes in very handy is in a typical data reduction task. For example, let's say the Professor gets an island-area network up and running (perhaps using Coco-Net or maybe Vines) and now wants to track the traffic from host to host. He begins logging the number of bytes transferred to a log file, giving the source host, the destination host, and the number of transferred bytes: 
+One place this comes in very handy is in a typical data reduction task. For example, let's say the Professor gets an island-area network up and running (perhaps using Coco-Net or maybe Vines) and now wants to track the traffic from host to host. He begins logging the number of bytes transferred to a log file, giving the source host, the destination host, and the number of transferred bytes:
 
 
  professor. hut gilligan. crew. hut 1250 
@@ -540,7 +542,7 @@ One place this comes in very handy is in a typical data reduction task. For exam
  ginger. girl. hut professor. hut 1218 
  ginger. girl. hut maryann. girl. hut 199 . . .  
 
-Now the Professor wants to produce a summary of the source host, the destination host, and the total number of transferred bytes for the day. Tabulating the data is as simple as: 
+Now the Professor wants to produce a summary of the source host, the destination host, and the total number of transferred bytes for the day. Tabulating the data is as simple as:
 
 
  my %total_bytes; 
@@ -549,27 +551,27 @@ Now the Professor wants to produce a summary of the source host, the destination
    $total_bytes{$source}{$destination} += $bytes; 
  } 
 
-Let's see how this works on the first line of data. We'll be executing: 
+让我们看第一行如何生成的：
 
 
  $total_bytes{'professor. hut'}{'gilligan. crew. hut'} += 1250; 
 
-Because %total_bytes is initially empty, Perl doesn't find the first key of professor. hut, but it establishes an undef value for the dereferencing as a hash reference. (Keep in mind that an implicit arrow is between the two sets of curly braces here. ) Perl sticks a reference to an empty anonymous hash in that element, which it then immediately extends to include the element with a key of gilligan. crew. hut. Its initial value is undef, which acts like a zero when you add 1250 to it, and the result of 1250 is inserted back into the hash.  
+因为散列%total_bytes初始时是空的, Perl没有找到第一个以professor. hut命名的键, 但它会为了还原而建立一个未定义值作为散列引用. （记住, 这里在花括号间有隐含的箭头. ）Perl会在那个元素里放个指向空值的匿名散列, 这样它可以立即扩展数组, 将把gilligan. crew. hut作为一个元素放入. 它的初始值是未定义值, 与零等同, 而当你把1250与它相加的时候, 其相加的结果1250也放回散列. 
 
-Any later data line that contains this same source host and destination host will re-use that same value, adding more bytes to the running total. But each new destination host extends a hash to include a new initially undef byte count, and each new source host uses autovivification to create a destination host hash. In other words, Perl does the right thing, as always.  
+任何后来的数据行, 如果有相同的源主机和目标主机, 都会重用原来的值, 并加上新读入的值, 再计算出总数. 但是新的目标主机会扩展散列来包括一个新的初始未定义值, 重新计数, 每个新的源主机会用自生成功能建立目标主机散列. 换句话说, Perl 总是做对的事情, 就像它一直表现的那样. 
 
-Once we've processed the file, it's time to display the summary. First, we determine all the sources: 
+一旦我们处理完文件, 应该是显示总计的时候了. 首先, 我们取源主机：
 
 
  for my $source (keys %total_bytes) { . . .  
 
-Now, we should get all destinations. The syntax for this is a bit tricky. We want all keys of the hash, resulting from dereferencing the value of the hash element, in the first structure: 
+好, 现在我们取所有的目标主机. 这里的语法有些"搞". 我们用散列元素还原出来的值作为键来取目标主机, 比如：
 
 
  for my $source (keys %total_bytes) { 
    for my $destination (keys %{ $total_bytes{$source} }) { . . . .  
 
-For good measure, we should probably sort both lists to be consistent: 
+为了好的效率, 我们应该对列表进行排序, 以保持一致性：
 
 
  for my $source (sort keys %total_bytes) { 
@@ -580,15 +582,15 @@ For good measure, we should probably sort both lists to be consistent:
   print "\n"; 
  } 
 
-This is a typical data-reduction report generation strategy. [*] Simply create a hash-of-hashrefs (perhaps nested even deeper, as you'll see later), using autovivification to fill in the gaps in the upper data structures as needed, and then walk through the resulting data structure to display the results.  
+这是一个典型的"消防水带"式的报表生成策略. ［＊］简单地建立一个散列引用的散列（还可以嵌套更深, 后面你就可以看到）, 运用自生成功能, 根据需要填充数据结构, 然后遍历结果数据, 打印输出结果. 
 
-5. 9. Exercises 
+=head2 5. 9. 习题
 
-You can find the answers to these exercises in "Answers for Chapter 5" in the Appendix.  
+附录部份可以找到答案
 
-5. 9. 1. Exercise 1 [5 min] 
+=head2 5. 9. 1. 练习1 ［5分钟］
 
-Without running it, can you see what's wrong with this piece of a program? If you can't see the problem after a minute or two, see whether trying to run it will give you a hint of how to fix it.  
+先不要运行程序, 看看你能否判断出这程序的哪部份出了问题？如果你看不出来, 就可以运行一相程序, 得到些暗示, 来看是否能修改好：
 
 
  my %passenger_1 = { 
@@ -610,11 +612,11 @@ Without running it, can you see what's wrong with this piece of a program? If yo
 
  my @passengers = (\%passenger_1, \%passenger_2); 
 
-5. 9. 2. Exercise 2 [40 min] 
+=head2 5. 9. 2. 练习2 ［40分钟］
 
-The Professor's datafile (mentioned earlier in this chapter) is available as coconet. dat in the files you can download from the O'Reilly web site. There may be comment lines (beginning with a pound sign); be sure to skip them. (That is, your program should skip them. You might find a helpful hint if you read them!) 
+教授的数据文件（注意早先这章提到的）叫coconet. dat, 保存在O'Reilly的网站上, 你可以下载. 有些行可能被注释了一些行（用前导＃号）;跳过这些行. （就是说, 你的程序可以跳过他们, 不过你阅读这些行还有很有益的！）
 
-Modify the code from this chapter so that each source machine's portion of the output shows the total number of bytes from that machine. List the source machines in order from most to least data transferred. Within each group, list the destination machines in order from most to least data transferred to that target from the source machine.  
+修改一下这章的那段程序, 使每个源主机显示所有从它那里输出的字节数. 以字节数从大到小排. 对于每一组中, 以所有目标主机, 也以传输到此目标主机的字节数以大到小排. 
 
-The result should be that the machine that sent the most data will be the first source machine in the list, and the first destination should be the machine to which it sent the most data. The Professor can use this printout to reconfigure the network for efficiency.  
+The result should be that the machine that sent the most data will be the first source machine in the list, and the first destination should be the machine to which it sent the most data. The Professor can use this printout to reconfigure the network for efficiency.
 

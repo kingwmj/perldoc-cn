@@ -1,5 +1,5 @@
-=EN 8. 3. The Even Better Way
-=CN 8. 3. 更上一层楼
+=EN The Even Better Way
+=CN 更上一层楼
 =EN So far, our examples have shown the two-argument form of open, but that actually has a catch: the open mode and the filename both live in the second argument. That means that we have to store two different things in one string, and we have to trust Perl to be able to figure it out. 
 =CN 到目前为此, 我们的例子展示的open都是两个参数的形式, 但实际上有个隐含之处：文件的打开方式是和文件名都放在第二个参数的位置上的. 这意味着我们在一个字串里表达了两种不同的意义, 而且我们不得不相信Perl一定会很好的区分. 
 =EN To get around that, we break the second argument into two separate arguments. 
@@ -8,5 +8,5 @@ open my $log_fh, '>>', 'castaways. log'
  or die "Could not open castaways. log: $!";
 =EN This three-argument form has the added advantage of access to the Perl IO filters. We won't go into too much detail here. [*] The open function's entry in perlfunc is over 400 lines, even though it has its own perldoc tutorial, perlopentut. 
 =CN 这种三参数的形式有可以利用Perl的IO过滤器的优点. 这里我们不涉及太多. [*] 在perlfunc中open函数的条目有400行之多, 尽管在它自己的perldoc教材和perlopentut中也有说明. 
-=EN [*] Although brian does in "Get More Out of Open, " The Perl Journal, October 31, 2005, http://www. tpj. com/documents/s=9923/tpj1130955178261/bdf_open. htm. 
-=CN [*] 尽管brian在他的一篇文章《详述Perl的Open函数》有涉及, 发表在2005年10月31号的<Perl Journal>, url:http://www. tpj. com/documents/s=9923/tpj1130955178261/bdf_open. htm
+=EN Although brian does in "Get More Out of Open, " The Perl Journal, October 31, 2005, http://www. tpj. com/documents/s=9923/tpj1130955178261/bdf_open. htm. 
+=CN 尽管brian在他的一篇文章《详述Perl的Open函数》有涉及, 发表在2005年10月31号的<Perl Journal>, url:http://www. tpj. com/documents/s=9923/tpj1130955178261/bdf_open. htm

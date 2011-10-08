@@ -1,5 +1,5 @@
-=EN 9. 6. Recursively Defined Data
-=CN 9. 6. 数据的嵌套定义
+=EN Recursively Defined Data
+=CN 数据的嵌套定义
 =EN While the data we've processed with references up to this point has been rather fixed structure, sometimes we have to deal with hierarchical data, which is often defined recursively. 
 =CN 我们到现在为止处理的引用都是固定结构的, 可有时候我们要处理一般同递归来定义的层次结构的数据. 
 =EN For Example One, consider an HTML table that has rows containing cellsand some of those cells may also contain entire tables. Example Two could be a visual representation of a filesystem consisting of directories containing files and other directories. Example Three is a company organization chart, which has managers with direct reports, some of whom may be managers themselves. And Example Four is a more complex organization chart, which can contain instances of the HTML tables of Example One, the filesystem representations of Example Two, or even entire organization charts. . . . 
@@ -8,8 +8,8 @@
 =CN 我们可以用引用的办法来获得, 存储以及处理这些层次结构的信息. 一般来说, 处理这些层次结构的子程序最终都是递归程序. 
 =EN Recursive algorithms deal with the unlimited complexity of their data by beginning with a base case and building upon that. [*] The base case considers what to do in the simplest case: when the leaf node has no branches, when the array is empty, when the counter is at zero. In fact, it's common to have more than one base case in various branches of a recursive algorithm. A recursive algorithm with no base case is an infinite loop. 
 =CN 递归算法用处理起始的一个基础例子并由此建立的程序来处理无限复杂的数据. [*] 所谓基础例子是指在一个最最简单的情况下如何处理：没有分支的叶子节点, 当数组还是空的情况, 当计数器是零时. 实际上, 在递归算法的不同分支中一般有多个基础例子. 如果递归算法没有基础例子, 程序就会导致无限循环. 
-=EN [*] Recursive functions should all have a base, or trivial case, where they don't need to recurse and that all other recursions can eventually reach. That is, unless we have a lot of time on our hands to let the function recurse forever. 
-=CN [*] 递归程序应该都有一个基础的, 或最简的例子, 这种例子无须再用递归处理了, 而且其它递归可以在此结束. 就是说, 除非我们手上有的是时间让它永无止境地运行下去. 
+=EN Recursive functions should all have a base, or trivial case, where they don't need to recurse and that all other recursions can eventually reach. That is, unless we have a lot of time on our hands to let the function recurse forever. 
+=CN 递归程序应该都有一个基础的, 或最简的例子, 这种例子无须再用递归处理了, 而且其它递归可以在此结束. 就是说, 除非我们手上有的是时间让它永无止境地运行下去. 
 =EN A recursive subroutine has a branch from which it calls itself to handle a portion of the task, and a branch that doesn't call itself to handle the base cases. In Example One above, the base case could be a table cell that is empty. There could also be base cases for empty tables and table rows. In Example Two, base cases would be needed for files, and perhaps for empty directories. 
 =CN 递归子程序有一个分支来调用自己来处理部份任务, 有一个分支处理基础例子. 在上面第一个例子中, 基础例子就是当表格单元空的时候. 同样空行或空表也是基础例子. 在第二人例子中, 基础例子是文件或者空的目录. 
 =EN For example, a recursive subroutine handling the factorial function, which is one of the simplest recursive functions, might look like:

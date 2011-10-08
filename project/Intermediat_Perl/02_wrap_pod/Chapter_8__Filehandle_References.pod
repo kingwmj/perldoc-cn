@@ -1,8 +1,8 @@
-Chapter 8. Filehandle References 
+=head2 Chapter 8. Filehandle References 
 
 We've seen arrays, hashes, and subroutines passed around in references, permitting a level of indirection to solve certain types of problems. We can also store filehandles in references. Let's look at the old problems and the new solutions.  
 
-8. 1. The Old Way 
+=head2 8. 1. The Old Way 
 
 In the olden days, Perl used barewords for filehandle names. The filehandle is another Perl data type, although people don't talk about it too much since it doesn't get its own special sigil. You've probably already seen a lot of code that uses these bareword filehandles.  
 
@@ -32,7 +32,7 @@ Notice the use of local there. A typeglob works with the symbol table, which mea
 
 If all of that makes you nervous and wish that none of this stuff existed, that's good. Don't do this anymore! We put it in a section called "The Old Way" because there is a much better way to do it now. Pretend this section never existed and move on to the next one.  
 
-8. 2. The Improved Way 
+=head2 8. 2. The Improved Way 
 
 Starting with Perl 5. 6, open can create a filehandle reference in a normal scalar variable. Instead of using a bareword for the filehandle name, we use a scalar variable whose value is undef.  
 
@@ -96,7 +96,7 @@ In general, where we've seen the bareword filehandle we can substitute the scala
 
 In any of these forms, when the scalar variable goes out of scope (or we assign another value to it), Perl closes the file. We don't have to explicitly close the file ourselves.  
 
-8. 3. The Even Better Way 
+=head2 8. 3. The Even Better Way 
 
 So far, our examples have shown the two-argument form of open, but that actually has a catch: the open mode and the filename both live in the second argument. That means that we have to store two different things in one string, and we have to trust Perl to be able to figure it out.  
 
@@ -108,7 +108,7 @@ To get around that, we break the second argument into two separate arguments.
 
 This three-argument form has the added advantage of access to the Perl IO filters. We won't go into too much detail here. [*] The open function's entry in perlfunc is over 400 lines, even though it has its own perldoc tutorial, perlopentut.  
 
-8. 4. IO::Handle 
+=head2 8. 4. IO::Handle 
 
 Behind the scenes, Perl is really using the IO::Handle module to work this magic, so our filehandle scalar is really an object. [*] The IO::Handle package is a base class for input-output things, so it handles a lot more than just files.  
 
@@ -118,7 +118,7 @@ Unless you are creating new IO modules, you probably shouldn't use IO::Handle di
 
 Some of these modules do some of the same things that we can already do with Perl's built-in open (depending on which version of Perl we have), but they can be handy when we want to decide as late as possible which module should handle input or output. Instead of using the built-in open, we use the module interface. To switch the behavior, we simply change the module name. Since we've set up our code to use a module interface, it's not that much work to switch modules.  
 
-8. 4. 1. IO::File 
+=head2 8. 4. 1. IO::File 
 
 The IO::File module subclasses IO::Handle to work with files. It comes with the standard Perl distribution, so you should already have it. There are a variety of ways to create an IO::File object.  
 
@@ -157,7 +157,7 @@ As before, Perl closes these files when the scalar variable goes out of scope, b
 
  undef $append_fh; 
 
-8. 4. 2. Anonymous IO::File Objects 
+=head2 8. 4. 2. Anonymous IO::File Objects 
 
 If we don't put our IO::File object in a simple scalar variable, some operations require a slightly modified syntax to work. For example, we want to copy every file matched by the glob pattern of *. input to a corresponding file whose suffix is. output, but do it in parallel. First, we open all the files, both inputs and outputs:' 
 
@@ -220,7 +220,7 @@ This scenario is arguably better. Most of the time, simply copying the complexly
 
 As long as someone understands that and is a partial evaluator and that print returns true when everything is okay, this is a fine replacement. Remember the Perl motto: "There's more than one way to do it" (although not all of them are equally nice or legitimate).  
 
-8. 4. 3. IO::Scalar 
+=head2 8. 4. 3. IO::Scalar 
 
 Sometimes we don't want to print to a file and would rather build up the output in a string. Some module interfaces don't give us that option, so we have to make it look like we are printing to a file by using a filehandle. We might also want to build up our content before we write it to a file so we can encrypt it, compress it, or send it as email directly from your program.  
 
@@ -257,7 +257,7 @@ As of Perl version 5. 8, we can do this directly in Perl without using IO::Scala
  open( my $fh, '>>', \$string_log ) 
         or die "Could not append to string! $!"; 
 
-8. 4. 4. IO::Tee 
+=head2 8. 4. 4. IO::Tee 
 
 What if we want to send output to more than one place at a time? What if we want to send it to a file and save it in a string at the same time? Using what we know already, we had have to do something like this: 
 
@@ -310,7 +310,7 @@ That's not all, though. If the first argument to IO::Tee is an input filehandle 
 
 The $read_fh doesn't have to be connected to a file, either. It might also be connected to a socket, a scalar variable, an external command's output, [*] or anything else we can dream up.  
 
-8. 5. Directory Handle References 
+=head2 8. 5. Directory Handle References 
 
 In the same way that we can create references to filehandles, we can create directory handle references.  
 
@@ -324,7 +324,7 @@ In the same way that we can create references to filehandles, we can create dire
 
 The directory handle reference obeys the same rules we laid out before. This only works if the scalar variable does not already have a value, and the handle automatically closes when the variable goes out of scope or we assign it a new value.  
 
-8. 5. 1. IO::Dir 
+=head2 8. 5. 1. IO::Dir 
 
 We can use object-oriented interfaces for directory handles too. The IO::Dir module has been part of the standard Perl distribution since 5. 6. It doesn't add interesting new features but wraps the Perl built-in functions. []' 
 
@@ -357,15 +357,15 @@ We don't have to create a new directory handle if we decide we want to go throug
         print "I can still find $file!\n"; 
  } 
 
-8. 6. Exercises 
+=head2 8. 6. Exercises 
 
 You can find the answers to these exercises in "Answers for Chapter 8" in the Appendix.  
 
-8. 6. 1. Exercise 1 [20 min] 
+=head2 8. 6. 1. Exercise 1 [20 min] 
 
 Write a program that prints the date and the day of the week, but allow the user to choose to send the output either to a file, a scalar, or both at the same time. No matter which output channels the user selects, send the output with a single print statement. If the user chooses to send the output to a scalar, at the end of the program print the scalar's value to standard output.  
 
-8. 6. 2. Exercise 2 [30 min] 
+=head2 8. 6. 2. Exercise 2 [30 min] 
 
 The Professor has to read a logfile that looks like: 
 
@@ -387,5 +387,5 @@ Now the logfile is large, and the coconut-powered computer is not very fast, so 
 
 Hint: use a hash, keyed by the castaway name, holding IO::File objects for each output file. Create them as necessary.  
 
-8. 6. 3. Exercise 3 [15 min] 
+=head2 8. 6. 3. Exercise 3 [15 min] 
 

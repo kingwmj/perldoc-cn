@@ -1,4 +1,4 @@
-Chapter 1. Introduction 
+=head2 Chapter 1. Introduction 
 
 Welcome to the next step in your understanding of Perl. You're probably here either because you want to learn to write programs that are more than 100 lines long or because your boss has told you to do so.  
 
@@ -16,7 +16,7 @@ An important aspect of working in teams is having a release cycle and tests for 
 
 And, just as was promised and delivered in Learning Perl, we'll entertain you along the way with interesting examples and bad puns. (We've sent Fred, Barney, Betty, and Wilma home, though. A new cast of characters will take the starring roles. ) 
 
-1. 1. What Should You Know Already? 
+=head2 1. 1. What Should You Know Already? 
 
 We'll presume that you've already read Learning Perl, or at least pretend you have, and that you've played enough with Perl to already have those basics down. For example, you won't see an explanation in this book that shows how to access the elements of an array or return a value from a subroutine.  
 
@@ -36,11 +36,11 @@ File manipulation such as open, file reading, and -X (file tests)
 
 You might pick up deeper insight into these topics in this book, but we're going to presume you know the basics.  
 
-1. 2. What About All Those Footnotes? 
+=head2 1. 2. What About All Those Footnotes? 
 
 Like Learning Perl, this book relegates some of the more esoteric items out of the way for the first reading and places those items in footnotes. [*] You should skip those the first time through and pick them up on a rereading. You will not find anything in a footnote that you'll need to understand any of the material we present later.  
 
-1. 3. What's with the Exercises? 
+=head2 1. 3. What's with the Exercises? 
 
 Hands-on training gets the job done better. The best way to provide this training is with a series of exercises after every half-hour to hour of presentation. Of course, if you're a speed reader, the end of the chapter may come a bit sooner than a half hour. Slow down, take a breather, and do the exercises! 
 
@@ -48,7 +48,7 @@ Each exercise has a "minutes to complete" rating. We intend for this rating to h
 
 Every exercise has its answer in the Appendix. Again, try not to peek; you'll ruin the value of the exercise.  
 
-1. 4. What If I'm a Perl Course Instructor? 
+=head2 1. 4. What If I'm a Perl Course Instructor? 
 
 If you're a Perl instructor who has decided to use this as your textbook, you should know that each set of exercises is short enough for most students to complete in 45 minutes to an hour, with a little time left over for a break. Some chapters' exercises should be quicker, and some may take longer. That's because once all those little numbers in square brackets were written, we discovered that we didn't know how to add.  
 

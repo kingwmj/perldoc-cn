@@ -1,4 +1,0 @@
-=EN Chapter 10. Building Larger Programs
-=CN 第十章 构建更大的程序
-=EN This chapter looks at how to break up a program into pieces and includes some of the concerns that arise when we put those pieces back together again, or when many people work together on the same program.
-=CN 这一章我们来看看如何把程序分成一些小的部份， 并且包括那些把小程序组合成一个整体时会发生的问题。 以及多个人协同完成一个项目时分发生的问题。

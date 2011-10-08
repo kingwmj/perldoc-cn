@@ -1,5 +1,5 @@
-=EN 7. 7. Closure Variables as Static Local Variables
-=CN 7. 7. 闭包变量用作静态局部变量
+=EN Closure Variables as Static Local Variables
+=CN 闭包变量用作静态局部变量
 =EN A subroutine does not have to be an anonymous subroutine to be a closure. If a named subroutine accesses lexical variables, and those variables go out of scope, the named subroutine retains a reference to the lexicals, just as you saw with anonymous subroutines. For example, consider two routines that count coconuts for Gilligan:
 =CN 要做成一个闭包, 并不一定非要搞成匿名子程序. 如果一个命名子程序访问那些跑出范围的词法变量, 其作用就如同你用匿名子程序一样. 比如, 考虑一下两个为Gilligan计算椰子的子程序
 {

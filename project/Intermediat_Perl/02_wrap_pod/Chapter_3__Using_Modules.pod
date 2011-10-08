@@ -1,8 +1,8 @@
-Chapter 3. Using Modules 
+=head2 Chapter 3. Using Modules 
 
 Modules are the building blocks for our programs. They provide reusable subroutines, variables, and even object-oriented classes. On our way to building our own modules, we'll show you some of those you might be interested in. We'll also look at the basics of using modules that others have already written.  
 
-3. 1. The Standard Distribution 
+=head2 3. 1. The Standard Distribution 
 
 Perl comes with many of the popular modules already. Indeed, most of the 50+ MB of the most recent distribution are from modules. In October 1996, Perl 5. 003_07 had 98 modules. Today, at the beginning of 2006, Perl 5. 8. 8 has 359. [*] Indeed, this is one of the advantages of Perl: it already comes with a lot of stuff that you need to make useful and complex programs without doing a lot of work yourself.  
 
@@ -12,7 +12,7 @@ Throughout this book, we'll try to identify which modules comes with Perl (and i
 
 As you develop your code, you may want to consider if you want to use only core modules, so that you can be sure that anyone with Perl will have that module as long as they have at least the same version as you. [] We'll avoid that debate here, mostly because we love CPAN too much to do without it.  
 
-3. 2. Using Modules 
+=head2 3. 2. Using Modules 
 
 Almost every Perl module comes with documentation, and even though we might not know how all of the behind-the-scenes magic works, we really don't have to worry about that stuff if we know how to use the interface. That's why the interface is there, after all: to hide the details.  
 
@@ -47,7 +47,7 @@ The synopsis gives us examples of the module's use, and if we can suspend unders
 
 Now, since Perl is a mix of procedural, functional, object-oriented, and other sorts of language types, Perl modules come in a variety of different interfaces. We'll employ these modules in slightly different fashions, but as long as we can check the documentation, we shouldn't have a problem.  
 
-3. 3. Functional Interfaces 
+=head2 3. 3. Functional Interfaces 
 
 To load a module, we use the Perl built-in use. We're not going to go into all of the details here, but we'll get to those in Chapters 10 and 15. At the moment, we just want to use the module. Let's start with File::Basename, that same module from the core distribution. To load it into our script, we say: 
 
@@ -70,7 +70,7 @@ The File::Basename module knows what sort of system it's on, and thus its functi
 
 However, suppose we already had a dirname subroutine. We've now overwritten it with the definition provided by File::Basename! If we had turned on warnings, we would have seen a message stating that; but otherwise, Perl really doesn't care.  
 
-3. 4. Selecting What to Import 
+=head2 3. 4. Selecting What to Import 
 
 Fortunately, we can tell the use operation to limit its actions by specifying a list of subroutine names following the module name, called the import list: 
 
@@ -104,7 +104,7 @@ In an extreme (but extremely useful) case, we can specify an empty list for the 
 
 An empty list is different from an absent list. An empty list says "don't give me anything, " while an absent list says "give me the defaults. " If the module's author has done her job well, the default will probably be exactly what we want.  
 
-3. 5. Object-Oriented Interfaces 
+=head2 3. 5. Object-Oriented Interfaces 
 
 Contrast the subroutines imported by File::Basename with what another core module has by looking at File::Spec. The File::Spec module is designed to support operations commonly performed on file specifications. (A file specification is usually a file or directory name, but it may be a name of a file that doesn't existin which case, it's not really a filename, is it?) 
 
@@ -127,7 +127,7 @@ This calls the class method catfile of the File::Spec class, which builds a path
 
 The File::Spec module provides several other methods for dealing with file paths in a portable manner. You can read more about portability issues in the perlport documentation.  
 
-3. 6. A More Typical Object-Oriented Module: Math::BigInt 
+=head2 3. 6. A More Typical Object-Oriented Module: Math::BigInt 
 
 So as not to get dismayed about how "un-OO" the File::Spec module seems since it doesn't have objects, let's look at yet another core module, Math::BigInt, which can handle integers beyond Perl's native reach. [*] 
 
@@ -147,7 +147,7 @@ So as not to get dismayed about how "un-OO" the File::Spec module seems since it
 
 As before, this module imports nothing. Its entire interface uses class methods, such as new, against the class name to create instances, and then calls instance methods, such as bpow and bstr, against those instances.  
 
-3. 7. The Comprehensive Perl Archive Network 
+=head2 3. 7. The Comprehensive Perl Archive Network 
 
 CPAN is the result of many volunteers working together, many of whom were originally operating their own little (or big) Perl FTP sites back before that Web thing came along. They coordinated their efforts on the perl-packrats mailing list in late 1993 and decided that disk space was getting cheap enough that the same information should be replicated on all sites rather than having specialization on each site. The idea took about a year to ferment, and Jarkko Hietaniemi established the Finnish FTP site as the CPAN mothership from which all other mirrors could draw their daily or hourly updates.  
 
@@ -159,7 +159,9 @@ From its small start of a few mirror machines, CPAN has now grown to over 200 pu
 
 The incredibly useful CPAN Search (http://search. cpan. org) will probably become your favorite interface. From that web site, you can search for modules, look at their documentation, browse through their distributions, inspect their CPAN Testers reports, and do many other things.  
 
-3. 8. Installing Modules from CPAN Installing a simple module from CPAN can be straightforward: we download the module distribution archive, unpack it, and change into its directory. We use wget here, but it doesn't matter which tool you use.  
+=head2 3. 8. Installing Modules from CPAN 
+
+Installing a simple module from CPAN can be straightforward: we download the module distribution archive, unpack it, and change into its directory. We use wget here, but it doesn't matter which tool you use.  
 
 
  $ wget http://www. cpan. org/. . . /HTTP-Cookies-Safari-1. 10. tar. gz 
@@ -209,7 +211,7 @@ To install into our private directories using Module::Build, we add the install_
 
 Sometimes we find both Makefile. PL and Build. PL in a distribution. What do we do then? We can use either one. Play favorites, if you like.  
 
-3. 9. Setting the Path at the Right Time 
+=head2 3. 9. Setting the Path at the Right Time 
 
 Perl finds modules by looking through the directories in the special Perl array, @INC. The use statement executes at compile time, so it looks at the module search path, @INC, at compile time. That can break our program in hard-to-understand ways unless we take @INC into consideration.  
 
@@ -272,7 +274,7 @@ At this point, we need to put something inside a BEGIN block or perhaps rely on 
 
 There. Fixed again. That is, until we need the library to depend on the result of a calculation. (Where will it all end? Somebody stop the madness!) This should handle about 99 percent of our needs.  
 
-3. 9. 1. Handling Module Dependencies 
+=head2 3. 9. 1. Handling Module Dependencies 
 
 We just saw that if we try to install a module that uses Module::Build, we have to install Module::Build first. That's a mild case of the general dependency headache, and all the coconuts on our castaways' island aren't going to fix it. We might have to install several other modules too, each of which, in turn, depends on even more modules.  
 
@@ -318,15 +320,15 @@ The CPANPLUS module also comes with a convenience script, called cpanp. If we gi
 
  $ cpanp i CGI::Prototype HTTP::Cookies::Safari Test::Pod 
 
-3. 10. Exercises 
+=head2 3. 10. Exercises 
 
 You can find the answers to these exercises in "Answers for Chapter 3" in the Appendix.  
 
-3. 10. 1. Exercise 1 [25 min] 
+=head2 3. 10. 1. Exercise 1 [25 min] 
 
 Read the list of files in the current directory and convert the names to their full path specification. Don't use the shell or an external program to get the current directory. The File::Spec and Cwd modules, both of which come with Perl, should help. Print each path with four spaces before it and a newline after it, just like you did for Exercise 1 of Chapter 2. Can you reuse part of that answer for this problem? 
 
-3. 10. 2. Exercise 2 [35 min] 
+=head2 3. 10. 2. Exercise 2 [35 min] 
 
 Parse the International Standard Book Number from the back of this book (0596102062). Install the Business::ISBN module from CPAN and use it to extract the country code and the publisher code from the number.  
 

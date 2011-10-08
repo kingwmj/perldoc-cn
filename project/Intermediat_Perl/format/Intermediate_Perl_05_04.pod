@@ -1,11 +1,7 @@
-=EN 5. 4. When Reference Counting Goes Bad
-=CN 5. 4. 当引用计数出问题了
+=EN When Reference Counting Goes Bad
+=CN 当引用计数出问题了
 =EN Reference counting as a way to manage memory has been around for a long time. A really long time. The downside of reference counting is that it breaks when the data structure is not a directed graph that is, when some parts of the structure point back in to other parts in a looping way. For example, suppose each of two data structures contains a reference to the other (see Figure 5-1):
 =CN 用引用计数的办法来管理内存长久以来一直很受欢迎. 的确使用了很长一段时间. 引用计数有一个缺点, 就是在数据结构不是单向引用的时候, 它会有问题. 所谓非单向引用的数据结构就是：这个数据结构中的一些部份引用与其指向的数据存在循环引用. 比如：这两块数据结构中都有互相指向对方的引用（参考图5-1)：
-my @data1 = qw(one won);
-my @data2 = qw(two too to);
-push @data2, \@data1;
-push @data1, \@data2;
 =EN Figure 5-1. When the references in a data structure form a loop, Perl's reference-counting system may not be able to recognize and recycle the no-longer-needed memory space
 =CN 图 5-1. 当一个数据结构中的引用出现循环调用的时候, Perl的引用计数系统可能不能识别出来, 从而不能回收不再需要的内存空间
 =EN At this point, we have two names for the data in @data1: @data1 itself and @{$data2[3]}, and two names for the data in @data2: @data2 itself and @{$data1[2]}. We've created a loop. In fact, we can access won with an infinite number of names, such as $data1[2][3][2][3][2][3][1]. 
@@ -18,17 +14,7 @@ push @data1, \@data2;
 =CN 那为什么要在这儿提这些呢？ 是这样的, 因为有些Perl程序员有时也会从其它程序语言中把算法拷贝过来. 这样做当然不会继承错误, 尽管考虑一下原来作者用"循环"数据结构是为什么, 然后用Perl的强项来处理这什算法. 可能你要用个散列, 或用数组, 然后以后进行排序. 
 =EN Some upcoming version of Perl is likely to use garbage collection in addition to, or instead of, referencing counting. [*] Until then, we must be careful not to create circular references or, if we do, break the circle before the variables go out of scope. For example, the following code doesn't leak:
 =CN 另外, 经后的Perl可能会使用垃圾收集器来代替计数引用. [*] 不过到现在, 我们必须注意不要建立循环引用, 或者, 如果我们做的话, 在变量跑出范围时, 要去掉循环引用. 比如, 下面的代码不会造成内存泄漏：
-=EN [*] Just don't ask us about it. We wrote this book a long time before you got a chance to read it, so we didn't exactly know the details back then. 
-=CN [*] 不要问我们为什么, 在你有机会读到此书时, 相对我们写书的时间已经是很长久了. 所以我能不能肯定. 
-{
- my @data1 = qw(one won);
- my @data2 = qw(two too to);
- push @data2, \@data1;
- push @data1, \@data2;
- … use @data1, @data2 …
- # at the end:
- @data1 = ( );
- @data2 = ( );
-}
+=EN Just don't ask us about it. We wrote this book a long time before you got a chance to read it, so we didn't exactly know the details back then. 
+=CN 不要问我们为什么, 在你有机会读到此书时, 相对我们写书的时间已经是很长久了. 所以我能不能肯定. 
 =EN We eliminated the reference to @data2 from within @data1, and vice versa. Now the data have only one reference each, which all go to zero references at the end of the block. In fact, we can clear out either one and not the other, and it still works nicely. Chapter 13 shows how to create weak references, which can help with many of these problems. 
 =CN 我们在@data1中对@data2的引用, 相反也一样. 现在两块数据只有一个引用, 在跑出块范围的时候, 引用计数会归零. 实际上, 我们清除任何一个引用就可以了, 程序一样工作得很好. 第13章会展示如何建立弱引用, 可以对这些问题有些帮助. 

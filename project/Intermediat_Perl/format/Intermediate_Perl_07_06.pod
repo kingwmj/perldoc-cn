@@ -1,5 +1,5 @@
-=EN 7. 6. Closure Variables as Inputs
-=CN 7. 6. 作为输入参数的闭包变量
+=EN Closure Variables as Inputs
+=CN 作为输入参数的闭包变量
 =EN While the previous examples showed closure variables being modified, closure variables are also useful to provide initial or lasting input to the subroutine. For example, let us write a subroutine to create a File::Find callback that prints files exceeding a certain size:
 =CN 上一章的例子展示了闭包中变量如何被修改的, 而闭包变量还可以被用来初始化变量或给匿名子程序提供参数输入（类似静态局部变量）. 比如, 我们来写一个子程序来创建File::Find回调, 打印出所有超过一定大小的文件名：
 use File::Find;

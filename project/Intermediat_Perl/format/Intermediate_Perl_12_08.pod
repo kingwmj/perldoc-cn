@@ -1,38 +1,32 @@
-=EN 12. 8. More Interesting Instances
-=CN 12. 8. 更有趣的实例
-=EN What if an instance needs more data? Most interesting instances are made of many items, each of which can, in turn, be a reference or another object. The easiest way to store these items is often in a hash. The keys of the hash serve as the names of parts of the object (also called instance or member variables), and the corresponding values are, well, the values. 
-=CN 如果一个实例需要更多的数据如何？大多数有用的实例是由许多成员组成, 而其中每个成员可以是一个引用或另一个对象. 保存这些成员最简单的办法就是把它们放在一个散列中. 这个散列的键是对象的名字（也被叫作实例或成员变量）, 而且相应的值就是, 值. 
-=EN How do we turn the horse into a hash?[*] Recall that an object is any blessed reference. We can just as easily make it a blessed hash reference as a blessed scalar reference, as long as everything that looks at the reference is changed accordingly. 
-=CN 我们把horse变成一个散列如何？[*] 回想一下, 所谓对象实际上是被"祝福"的引用. 我们可以像"祝福"一个标量引用一样容易的"祝福"一个散列引用, 只要把它们看作引用就可以了. 
-=EN [*] Other than calling on a butcher, that is. 
-=CN [*] 就是说不要叫屠夫来就可以了. 
+=EN More Interesting Instances
+=CN 更有趣的实例
+=EN What if an instance needs more data? Most interesting instances are made of many items, each of which can, in turn, be a reference or another object. 
+=CN 如果一个实例需要更多的数据如何？大多数有用的实例是由许多成员组成, 而其中每个成员可以是一个引用或另一个对象. 
+=EN The easiest way to store these items is often in a hash.
+=CN 保存这些成员最简单的办法就是把它们放在一个散列中. 
+=EN The keys of the hash serve as the names of parts of the object (also called instance or member variables), and the corresponding values are, well, the values. 
+=CN 这个散列的键是对象的名字（也被叫作实例或成员变量）, 而且相应的值就是, 值. 
+=EN How do we turn the horse into a hash
+=CN 我们把horse变成一个散列如何
+=EN Recall that an object is any blessed reference.
+=CN 回想一下, 所谓对象实际上是被"祝福"的引用.
+=EN We can just as easily make it a blessed hash reference as a blessed scalar reference, as long as everything that looks at the reference is changed accordingly. 
+=CN 我们可以像"祝福"一个标量引用一样容易的"祝福"一个散列引用, 只要把它们看作引用就可以了. 
+=EN Other than calling on a butcher, that is. 
+=CN 就是说不要叫屠夫来就可以了. 
 =EN Let's make a sheep that has a name and a color:
 =CN 让我们做一个有名有色的绵羊：
-my $lost = bless { Name => 'Bo', Color => 'white' }, Sheep;
 =EN $lost->{Name} has Bo, and $lost->{Color} has white. But we want to make $lost->name access the name, and that's now messed up because it's expecting a scalar reference. Not to worry, because it's pretty easy to fix:
 =CN $lost->{Name}里存的是"Bo", $lost->{Color}里放的是white. 但我们要用$lost->name访问name变量, 但是因为要用标量引用, 所以会造成混乱. 别急, 这很容易解决：
-sub name {
- my $either = shift;
- ref $either
- ? $either->{Name}
- : "an unnamed $either";
-}
 =EN named still builds a scalar sheep, so let's fix that as well:
 =CN named方法创建标量的sheep对象, 所以让我们来修改一下：
-## in Animal
-sub named {
- my $class = shift;
- my $name = shift;
- my $self = { Name => $name, Color => $class->default_color };
- bless $self, $class;
-}
 =EN What's this default_color? If named has only the name, we still need to set a color, so we'll have a class-specific initial color. For a sheep, we might define it as white:
 =CN 那么缺省毛色呢？
 =EN Then, to keep from having to define one for each additional class, define a backstop method, which serves as the "default default, " directly in Animal:
 =CN 然后, 为了不用在每个类都作定义, 我们直接在Animal中定义一个缺省的方法. 
-## in Animal
-sub default_color { 'brown' }
 =EN Thus, all animals are brown (muddy, perhaps), unless a specific animal class gives a specific override to this method. 
 =CN 这样, 所有的动物都是棕色（土色, 也许吧）, 除非个别动物特别指定了毛色, 对这个方法进行了重载. 
-=EN Now, because name and named were the only methods that referenced the structure of the object, the remaining methods can stay the same, so speak still works as before. This supports another basic rule of OOP: if only the object accesses its internal data, there's less code to change when it's time to modify that structure. 
-=CN 现在, 因为name和named是引用这个对象仅有的方法, 所以其它方法可以不变, 这样speak仍然可以像以前那样使用. 这就支持了面向对象编程的一条基本法则：如果要访问对象内部数据, 那修改结构的时候应该用最少的代码修改. 
+=EN Now, because name and named were the only methods that referenced the structure of the object, the remaining methods can stay the same, so speak still works as before.
+=CN 现在, 因为name和named是引用这个对象仅有的方法, 所以其它方法可以不变, 这样speak仍然可以像以前那样使用.
+=EN This supports another basic rule of OOP: if only the object accesses its internal data, there's less code to change when it's time to modify that structure. 
+=CN 这就支持了面向对象编程的一条基本法则：如果要访问对象内部数据, 那修改结构的时候应该用最少的代码修改. 

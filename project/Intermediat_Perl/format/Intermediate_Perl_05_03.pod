@@ -1,57 +1,27 @@
-=EN 5. 3. Reference Counting and Nested Data Structures
-=CN 5. 3. 引用计数和数据结构嵌套
+=EN Reference Counting and Nested Data Structures
+=CN 引用计数和数据结构嵌套
 =EN The data remains alive until we destroy the last reference, even if that reference lives within a larger active data structure. Suppose an array element is itself a reference. Recall the example from Chapter 4:
 =CN 只要最后一个引用没有被销毁, 数据就一直存在. 甚至引用包含在一个大的数据结构时也是如此. 有可能数组本身的一个元素就是一个引用. 我们回想一下第四章见到过的例子：
-my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
-my @skipper_with_name = ('The Skipper', \@skipper);
-my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
-my @professor_with_name = ('The Professor', \@professor);
-my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
-my @gilligan_with_name = ('Gilligan', \@gilligan);
-my @all_with_names = (
- \@skipper_with_name, 
- \@professor_with_name, 
- \@gilligan_with_name, 
- );
 =EN Imagine for a moment that the intermediate variables are all part of a subroutine:
 =CN 想像一下中间变量全是子程序一部份的情况：
-my @all_with_names;
-sub initialize_provisions_list {
- my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
- my @skipper_with_name = ('The Skipper', \@skipper);
- my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
- my @professor_with_name = ('The Professor', \@professor);
- my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
- my @gilligan_with_name = ('Gilligan', \@gilligan);
- @all_with_names = ( # set global
- \@skipper_with_name, 
- \@professor_with_name, 
- \@gilligan_with_name, 
- );
-}
-initialize_provisions_list( );
-=EN We set the value of @all_with_names to contain three references. Inside the subroutine we have named arrays with references to arrays first placed into other named arrays. Eventually, the values end up in the global @all_with_names. However, as the subroutine returns, the names for the six arrays disappear. Each array has had one other reference taken to it, making the reference count temporarily two, and then back to one as the name disappears. Because the reference count is not yet zero, the data continues to live on, although it is now referenced only by elements of @all_with_names. 
-=CN 我们用数组@all_with_names的值来放三个引用. 在子程序里, 我们命名了一些数组, 而这些数组指向了事先命名的另外的数组. 最终, 这些值最后放到一个全局的数组@all_with_names中. 然而, 当子程序返回时, 这些六个数组的名字被锁毁. 正因为每个数组都有另外一个引用指向它, 所以导致引用计数临时是2, 但当数组名字销毁后, 计数又回到1. 因为引用计数没有回到零, 数据仍然在, 尽管它向在仅仅被当做数组@all_with_names的元素. 
+=EN We set the value of @all_with_names to contain three references. 
+=CN 我们用数组@all_with_names的值来放三个引用.
+=EN Inside the subroutine we have named arrays with references to arrays first placed into other named arrays.
+=CN 在子程序里, 我们命名了一些数组, 而这些数组指向了事先命名的另外的数组. 
+=EN Eventually, the values end up in the global @all_with_names. However, as the subroutine returns, the names for the six arrays disappear. 
+=CN 最终, 这些值最后放到一个全局的数组@all_with_names中. 然而, 当子程序返回时, 这些六个数组的名字被锁毁. 
+=EN Each array has had one other reference taken to it, making the reference count temporarily two, and then back to one as the name disappears. 
+=CN 正因为每个数组都有另外一个引用指向它, 所以导致引用计数临时是2, 但当数组名字销毁后, 计数又回到1. 
+=EN Because the reference count is not yet zero, the data continues to live on, although it is now referenced only by elements of @all_with_names. 
+=CN 因为引用计数没有回到零, 数据仍然在, 尽管它向在仅仅被当做数组@all_with_names的元素. 
 =EN Rather than assign the global variable, we can rewrite this without @all_with_names and return the list directly:
 =CN 与分配一个全局变量不同, 我们还可以重写这个程序, 去掉全局变量@all_with_names, 直接从程序中返回列表：
-sub get_provisions_list {
- my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
- my @skipper_with_name = ('The Skipper', \@skipper);
- my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
- my @professor_with_name = ('The Professor', \@professor);
- my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
- my @gilligan_with_name = ('Gilligan', \@gilligan);
- return (
- \@skipper_with_name, 
- \@professor_with_name, 
- \@gilligan_with_name, 
- );
-}
-my @all_with_names = get_provisions_list( );
-=EN Here, we create the value that we'll eventually store in @all_with_names as the last expression evaluated in the subroutine. The subroutine returns a three-element list. As long as the named arrays within the subroutine have had at least one reference taken of them, and it is still part of the return value, the data remains alive. [*] If we alter or discard the references in @all_with_names, Perl reduces the reference count for the corresponding arrays. If that means the reference count has become zero (as in this example), Perl also eliminates the arrays themselves. Because the arrays inside @all_with_names also contain a reference (such as the reference to @skipper), Perl reduces that reference count by one. Again, that reduces the reference count to zero, freeing that memory as well, in a cascading effect. 
-=CN 上例中, 我们创建的那个最终保存在@all_with_names中的值是用子程序的最后一个表达式求值得到的. 子程序返回一个三个元素的列表. 只要子程序中的命名数组曾经至少有一个引用指向他们, 他们就仍旧是返回值的一部份, 数据仍旧存在. [*] 如果我们改变或者丢弃@all_with_names中的引用, Perl会减少相应的数组的引用计数. 如果那意味着引用计数降为零（在例中）, Perl一样会把数组销毁. 因为@all_with_names数组中包含的其它数组同样包含一个引用（如对@skipper的引用）, Perl会把那个引用的计数降为1. 一样, 一旦引用计数降为零, Perl会连锁地释放内存. 
-=EN [*] Compare this with having to return an array from a C function. We must either return a pointer to a static memory space, making the subroutine nonreentrant, or we must malloc new memory space, requiring the caller to know to free the data. Perl just does the right thing. 
-=CN [*] 比较一下这与C函数中必须返回一个数组. 我们要么返回一个指向静态内存区域的指针, 使子程序非重入, 或者我们必需分配新内存, 需要调用程序知道释放内存. Perl正好做了对的事情. 
+=EN Here, we create the value that we'll eventually store in @all_with_names as the last expression evaluated in the subroutine. The subroutine returns a three-element list. As long as the named arrays within the subroutine have had at least one reference taken of them, and it is still part of the return value, the data remains alive. 
+=CN 上例中, 我们创建的那个最终保存在@all_with_names中的值是用子程序的最后一个表达式求值得到的. 子程序返回一个三个元素的列表. 只要子程序中的命名数组曾经至少有一个引用指向他们, 他们就仍旧是返回值的一部份, 数据仍旧存在.
+=EN If we alter or discard the references in @all_with_names, Perl reduces the reference count for the corresponding arrays. If that means the reference count has become zero (as in this example), Perl also eliminates the arrays themselves. Because the arrays inside @all_with_names also contain a reference (such as the reference to @skipper), Perl reduces that reference count by one. Again, that reduces the reference count to zero, freeing that memory as well, in a cascading effect. 
+=CN 如果我们改变或者丢弃@all_with_names中的引用, Perl会减少相应的数组的引用计数. 如果那意味着引用计数降为零（在例中）, Perl一样会把数组销毁. 因为@all_with_names数组中包含的其它数组同样包含一个引用（如对@skipper的引用）, Perl会把那个引用的计数降为1. 一样, 一旦引用计数降为零, Perl会连锁地释放内存. 
+=EN Compare this with having to return an array from a C function. We must either return a pointer to a static memory space, making the subroutine nonreentrant, or we must malloc new memory space, requiring the caller to know to free the data. Perl just does the right thing. 
+=CN 比较一下这与C函数中必须返回一个数组. 我们要么返回一个指向静态内存区域的指针, 使子程序非重入, 或者我们必需分配新内存, 需要调用程序知道释放内存. Perl正好做了对的事情. 
 =EN Removing the top of a tree of data generally removes all the data contained within. The exception is when we make additional copies of the references of the nested data. For example, if we copy Gilligan's provisions:
 =CN 一般来说, 如果删除了一个复杂数据结构的根数据, 会把其包含的子数据全删除. 一个例外就是当我们对其嵌套数据进行了引用. 比如说, 如果我们拷贝了Gilligan的装备：
 my $gilligan_stuff = $all_with_names[2][1];

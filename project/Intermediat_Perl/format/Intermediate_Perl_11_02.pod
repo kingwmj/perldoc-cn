@@ -1,9 +1,9 @@
-=EN 11. 2. Introducing the Method Invocation Arrow
-=CN 11. 2. 介绍方法调用符
+=EN Introducing the Method Invocation Arrow
+=CN 介绍方法调用符
 =EN A class is a group of things with similar behaviors and traits. For now, let's say that Class->method invokes subroutine method in package Class. A method is the object-oriented version of the subroutine, so we'll say "method" from now on. [*] That's not completely accurate, but we'll go on one step at a time. Let's use it like so:
 =CN 一个类是一组具有相同很行为性状的事物的集合. 对于Perl, 我们就认为类->方法就是Class包调用method子程序. 一个方法就是面向对象版本的子程序, 所以从现在开始, 我们会说"方法"[*] 这不是特别准确, 但是第一步. 让我们像下面那样使用：
-=EN [*] In Perl, there really isn't a difference between a subroutine and a method. They both get an argument list in @_, and we have to make sure we do the right thing. 
-=CN [*] 在Perl, 实际上子程序和方法没什么差别. 他们都以@_作参数, 我们来决定什么是对的. 
+=EN In Perl, there really isn't a difference between a subroutine and a method. They both get an argument list in @_, and we have to make sure we do the right thing. 
+=CN 在Perl, 实际上子程序和方法没什么差别. 他们都以@_作参数, 我们来决定什么是对的. 
 sub Cow::speak {
  print "a Cow goes moooo!\n";
 }

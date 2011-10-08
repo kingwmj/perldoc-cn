@@ -1,5 +1,5 @@
-=EN 8. 1. The Old Way
-=CN 8. 1. 旧的方法
+=EN The Old Way
+=CN 旧的方法
 =EN In the olden days, Perl used barewords for filehandle names. The filehandle is another Perl data type, although people don't talk about it too much since it doesn't get its own special sigil. You've probably already seen a lot of code that uses these bareword filehandles. 
 =CN 在以往的日子里, Perl用裸字来代表文件句柄. 文件句柄是另一种Perl的数据类型, 尽管人们对此讨论不多, 因为它也没有专门的符号标注. 你大概已经许多用裸字文件句柄的代码, 如：
 open LOG_FH, '>> castaways. log'

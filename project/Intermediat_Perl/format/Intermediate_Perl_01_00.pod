@@ -1,5 +1,5 @@
-=EN Chapter 1. Introduction
-=CN 第一章 引言
+=EN Introduction
+=CN 引言
 =EN Welcome to the next step in your understanding of Perl. 
 =CN 欢迎来到认识 Perl 的下一台阶. 
 =EN You're probably here either because you want to learn to write programs that are more than 100 lines long or because your boss has told you to do so. 
@@ -32,5 +32,5 @@
 =CN 在本书中你会学到把你的代码如何打包成一个发布版本, 并对其在开发环境中进行单元测试或在最终运行环境进行代码验证. 
 =EN And, just as was promised and delivered in Learning Perl, we'll entertain you along the way with interesting examples and bad puns. 
 =CN 另外, 就像我们在已经出版的《Learning Perl》中保证, 我们会在整个学习过程中用一些有趣的例子和没治的双关语让你的学习旅程充满乐趣. 
-=EN (We've sent Fred, Barney, Betty, and Wilma home, though. A new cast of characters will take the starring roles. )
-=CN （尽管我们把Fred, Barney, Betty和wilma送回家了, 但我们让一些新的明星来担纲表演. ）
+=EN We've sent Fred, Barney, Betty, and Wilma home, though. A new cast of characters will take the starring roles. 
+=CN 尽管我们把Fred, Barney, Betty和wilma送回家了, 但我们让一些新的明星来担纲表演.

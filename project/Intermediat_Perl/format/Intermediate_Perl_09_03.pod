@@ -1,5 +1,5 @@
-=EN 9. 3. Sorting Efficiently
-=CN 9. 3. 更有效率的排序
+=EN Sorting Efficiently
+=CN 更有效率的排序
 =EN As the Professor tries to maintain the community computing facility (built entirely out of bamboo, coconuts, and pineapples, and powered by a certified Perl-hacking monkey), he continues to discover that people are leaving entirely too much data on the single monkey-powered filesystem and decides to print a list of offenders. 
 =CN 因为教授要维护社区的计算设备（全都由竹子, 椰子, 菠萝, 并由一个经过Perl黑客级别认证的猴子来提供支援）, 然后他发现有些人把太多数据给猴子来处理, 所以决定打印出一份罪犯名单. 
 =EN The Professor has written a subroutine called ask_monkey_about( ), which, given a castaway's name, returns the number of pineapples of storage they use. We have to ask the monkey because he's in charge of the pineapples. An initial naive approach to find the offenders from greatest to least might be something like:

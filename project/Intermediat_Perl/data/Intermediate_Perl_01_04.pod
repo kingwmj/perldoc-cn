@@ -1,6 +1,0 @@
-=EN 1. 4. What If I'm a Perl Course Instructor?
-=CN 1. 4. 如果我是讲授Perl课程的指导老师
-=EN If you're a Perl instructor who has decided to use this as your textbook, you should know that each set of exercises is short enough for most students to complete in 45 minutes to an hour, with a little time left over for a break. Some chapters' exercises should be quicker, and some may take longer. That's because once all those little numbers in square brackets were written, we discovered that we didn't know how to add. 
-=CN 如果你是讲授Perl课程的指导老师, 并且决定用此书作为课程讲义, 你应该知道, 对于大多数学生来说, 每组练习45分钟到一小时就足够完成了, 余下留点时间作课间休息. 一些章节可能快些, 有的章节可能要慢些. 标在方框内的限时是死的, 所以一切按实际情况决定. 
-=EN So let's get started. Class begins after you turn the page. . . . 
-=CN 好吧, 开始喽. 翻过此页, 我们的课就马上开始… …

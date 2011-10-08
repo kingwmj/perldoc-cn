@@ -1,5 +1,5 @@
-=EN 7. 5. Returning a Subroutine from a Subroutine
-=CN 7. 5. 从子程序中返回一个子程序
+=EN Returning a Subroutine from a Subroutine
+=CN 从子程序中返回一个子程序
 =EN Although a naked block worked nicely to define the callback, having a subroutine return that subroutine reference instead might be more useful:
 =CN 尽管定义回调时用裸块的话, 会工作得很好, 但是如果让子程序返回一个对子程序的引用的做法更加有用：
 use File::Find;

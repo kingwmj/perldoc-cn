@@ -1,8 +1,8 @@
-Chapter 10. Building Larger Programs 
+=head2 Chapter 10. Building Larger Programs 
 
 This chapter looks at how to break up a program into pieces and includes some of the concerns that arise when we put those pieces back together again, or when many people work together on the same program.  
 
-10. 1. The Cure for the Common Code 
+=head2 10. 1. The Cure for the Common Code 
 
 The Skipper writes many Perl programs to provide navigation for all the common ports of call for the Minnow. He finds himself cutting and pasting a very common routine into each program: 
 
@@ -61,7 +61,7 @@ Great. The new subroutine works nicely in the current navigation program. Howeve
 
 The Skipper needs a way to write the code in one place and then share it among many programs. And, like most things in Perl, there's more than one way to do it.  
 
-10. 2. Inserting Code with eval 
+=head2 10. 2. Inserting Code with eval 
 
 The Skipper can save disk space (and brain space) by bringing the definition for turn_toward_heading out into a separate file. For example, suppose the Skipper figures out a half-dozen common subroutines related to navigating the Minnow that he seems to use in most or all of the programs he's writing for the task. He can put them in a separate file called navigation. pm, which consists only of the needed subroutines.  
 
@@ -85,7 +85,7 @@ Now, instead of a few dozen lines of common subroutines to place in each file, w
 
 But that's not very nice, especially if we need to keep doing this kind of task repeatedly. Luckily, Perl has several ways to help us out.  
 
-10. 3. Using do 
+=head2 10. 3. Using do 
 
 The Skipper placed a few common navigation subroutines into navigation. pm. If the Skipper merely inserts: 
 
@@ -130,7 +130,7 @@ Going back to that drop_anchor. pm library for a second, what if the Skipper wro
 
 That works fine and dandy. The subroutines defined in both libraries are available to this program.  
 
-10. 4. Using require 
+=head2 10. 4. Using require 
 
 Suppose navigation. pm itself also pulls in drop_anchor. pm for some common navigation task. Perl reads the file once directly and then again while processing the navigation package. This needlessly redefines drop_anchor( ). Worse than that, if we have warnings enabled, [*] we'll get a warning from Perl that we've redefined the subroutine, even if it's the same definition.  
 
@@ -158,7 +158,7 @@ Because of the second point, most files evaluated for require have a cryptic 1; 
 
 Originally, the mandatory true value was intended as a way for an included file to signal to the invoker that the code was processed successfully and that no error condition existed. However, nearly everyone has adopted the die if. . . strategy instead, deeming the "last expression evaluated is false" strategy a mere historic annoyance.  
 
-10. 5. require and @INC 
+=head2 10. 5. require and @INC 
 
 So far, the examples have glossed over how we've set up the directory structure of where the main code and the included files are located. That's because it "just works" for the simplest case where we have a program and its libraries in the same directory and we run the program from that directory.  
 
@@ -173,7 +173,7 @@ The search path is a list of elements in the special @INC array, as we briefly d
 
 Except for. in that list, we probably won't be able to write to any of the other directories unless we're the person responsible for maintaining Perl on our machine, in which case, we should be able to write to all of them. The remaining directories are where Perl searches for system-wide libraries and modules, as we'll see later.  
 
-10. 5. 1. Extending @INC 
+=head2 10. 5. 1. Extending @INC 
 
 We may run into some cases where we can't install modules in the pre-configured directories in @INC. We can change @INC itself before the require, so Perl searches our directories too. The @INC array is an ordinary array, so have the Skipper add a directory below his home directory to the mix: 
 
@@ -213,7 +213,7 @@ If we have the libraries in a directory close to the script directory, we put th
 
 So, if we know the relative path from the script directory, we don't have to hardcode the whole path. This makes the script more portable.  
 
-10. 5. 2. Extending @INC with PERL5LIB 
+=head2 10. 5. 2. Extending @INC with PERL5LIB 
 
 The Skipper must edit each program that uses his private libraries to include those lines from the previous section. If that seems like too much editing, he can instead set the PERL5LIB environment variable to the directory name. For example, in the C shell, he'd use the line: 
 
@@ -231,7 +231,7 @@ The PERL5LIB variable can include multiple directories separated by colons. Perl
 
 While a system administrator might add a setting of PERL5LIB to a system-wide startup script, most people frown on that. The purpose of PERL5LIB is to enable non-administrators to extend Perl to recognize additional directories. If a system administrator wants additional directories, he merely needs to recompile and reinstall Perl.  
 
-10. 5. 3. Extending @INC with -I 
+=head2 10. 5. 3. Extending @INC with -I 
 
 If Gilligan recognizes that one of the Skipper's programs is missing the proper directive, Gilligan can either add the proper PERL5LIB variable or invoke Perl directly with one or more -I options. For example, to invoke the Skipper's get_us_home program, the command line might be something like: 
 
@@ -242,7 +242,7 @@ Obviously, it's easier for Gilligan if the program itself defines the extra libr
 
 [*] Extending @INC with either PERL5LIB orI also automatically adds the versionand architecture-specific subdirectories of the specified directories. Adding these directories automatically simplifies the task of installing Perl modules that include architecture- or version-sensitive components, such as compiled C code.  
 
-10. 6. The Problem of Namespace Collisions 
+=head2 10. 6. The Problem of Namespace Collisions 
 
 Sometimes the Skipper runs a ship into an island, but sometimes the collision involved is just a couple of names in a Perl program. Suppose that the Skipper has added all his cool and useful routines to navigation. pm and that Gilligan has incorporated the library into his own navigation package, head_toward_island: 
 
@@ -296,7 +296,7 @@ Clearly, the navigation_turn_toward_heading comes from the navigation. pm file. 
  sub navigation_turn_toward_heading { . . code here. .  
  } 
 
-10. 7. Packages as Namespace Separators 
+=head2 10. 7. Packages as Namespace Separators 
 
 If the name prefix of the last example didn't have to be spelled out on every use, things would work much better. We can improve the situation by using a package: 
 
@@ -379,7 +379,7 @@ Now the subroutine is defined in the main package, not the Navigation package. T
 
 This is what the modules in Chapter 3 were doing when they imported symbols into our scripts, but we didn't tell you the whole story then. Those modules imported the subroutines and variables into the current package (again, that's main in our scripts, usually). That is, those symbols are only available in that package unless we use the full package specification. We'll get more into how this works later.  
 
-10. 8. Scope of a Package Directive 
+=head2 10. 8. Scope of a Package Directive 
 
 All files start as if we had said package main;. [*] Any package directive remains in effect until the next package directive, unless that package directive is inside a curly-braced scope. In that case, Perl remembers the prior package and restores it when that scope ends. Here's an example: 
 
@@ -412,7 +412,7 @@ Most libraries have only one package declaration at the top of the file. Most pr
 
 [] Some names are always in package main regardless of the current package: ARGV, ARGVOUT, ENV, INC, SIG, STDERR, STDIN, and STDOUT. We can always refer to @INC and be assured of getting @main::INC. The punctuation mark variables, such as $_, $2, and $!, are either all lexicals or forced into package main, so when we write $. , we never get $Navigation::. by mistake.  
 
-10. 9. Packages and Lexicals 
+=head2 10. 9. Packages and Lexicals 
 
 A lexical variable (a variable introduced with my) isn't prefixed by the current package because package variables are always global: we can always reference a package variable if we know its full name. A lexical variable is usually temporary and accessible for only a portion of the program. If we declare a lexical variable, then using that name without a package prefix gets the lexical variable. A package prefix ensures that we are accessing a package variable and never a lexical variable.  
 
@@ -435,11 +435,11 @@ For example, suppose a subroutine within navigation. pm declares a lexical @home
 
 Obviously, this can lead to confusing code, so we shouldn't introduce such duplication needlessly. The results are completely predictable, though.  
 
-10. 10. Exercises 
+=head2 10. 10. Exercises 
 
 You can find the answers to these exercises in "Answers for Chapter 10" in the Appendix.  
 
-10. 10. 1. Exercise 1 [25 min] 
+=head2 10. 10. 1. Exercise 1 [25 min] 
 
 The Oogaboogoo natives on the island have unusual names for the days and months. Here is some simple but not very well-written code from Gilligan. Fix it up, add a conversion function for the month names, and make the whole thing into a library. For extra credit, add suitable error checking and consider what should be in the documentation.  
 
@@ -448,7 +448,7 @@ The Oogaboogoo natives on the island have unusual names for the days and months.
  sub number_to_day_name { my $num = shift @_; $day[$num]; } 
  @month = qw(diz pod bod rod sip wax lin sen kun fiz nap dep); 
 
-10. 10. 2. Exercise 2 [15 min] 
+=head2 10. 10. 2. Exercise 2 [15 min] 
 
 Make a program that uses your library and the following code to print out a message, such as Today is dip, sen 15, 2011, meaning that today is a Monday in August. (Hint: the year and month numbers returned by localtime may not be what you'd expect, so you need to check the documentation. ) 
 

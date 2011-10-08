@@ -1,4 +1,8 @@
-=EN Chapter 5. References and Scoping
-=CN 第五章 引用和范围
-=EN We can copy and pass around references like any other scalar. At any given time, Perl knows the number of references to a particular data item. Perl can also create references to anonymous data structures (structures that do not have explicit names) and create references automatically as needed to fulfill certain kinds of operations. Let's look at copying references and how it affects scoping and memory usage. 
-=CN 我们可以像任何其它标量变量那样拷贝和传递引用. 在任何给定的时间, Perl会知道有多少引用指向一个特定的数据项. Perl也会为匿名数据结构（所谓没有名字的数据结构）创建引用, 以及在为了满足一定的操作自动的创建引用. 让我们来看一下引用的拷贝以及其对范围和内存使用方面的影响. 
+=EN References and Scoping
+=CN 引用和范围
+=EN We can copy and pass around references like any other scalar. At any given time, Perl knows the number of references to a particular data item.
+=CN 我们可以像任何其它标量变量那样拷贝和传递引用. 在任何给定的时间, Perl会知道有多少引用指向一个特定的数据项. 
+=EN Perl can also create references to anonymous data structures (structures that do not have explicit names) and create references automatically as needed to fulfill certain kinds of operations.
+=CN Perl也会为匿名数据结构（所谓没有名字的数据结构）创建引用, 以及在为了满足一定的操作自动的创建引用. 
+=EN Let's look at copying references and how it affects scoping and memory usage. 
+=CN 让我们来看一下引用的拷贝以及其对范围和内存使用方面的影响. 

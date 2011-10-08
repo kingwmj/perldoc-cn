@@ -1,5 +1,5 @@
-=EN 3. 9. Setting the Path at the Right Time
-=CN 3. 9. 适时地打开路径
+=EN Setting the Path at the Right Time
+=CN 适时地打开路径
 =EN Perl finds modules by looking through the directories in the special Perl array, @INC. The use statement executes at compile time, so it looks at the module search path, @INC, at compile time. That can break our program in hard-to-understand ways unless we take @INC into consideration. 
 =CN Perl会从一个专门的Perl数组:@INC中包含的目录条目中查找程序调用的模块. use语句会在编译时执行, 所以它会在编译时在@INC数组所包含的路径中查找模块. 所以, 除非我们把@INC的因素考虑进去, 否则我们就很难理解有时我们的程序会莫明其妙地中断. 
 =EN For example, suppose we have our own directory under /home/gilligan/lib, and we place our own Navigation::SeatOfPants module in /home/gilligan/lib/Navigation/SeatOfPants. pm. When we load our module, Perl won't find it. 
@@ -15,9 +15,9 @@
 =EN However, this is noisy and prone to require far more explanation than you might be comfortable with, especially for the maintenance programmer who has to edit your code later. Let's replace all that clutter with that simple pragma we used before:
 =CN 不过, 这样做看上去很烦琐, 不容易去解释, 特别是以后向那些维护你代码的同事去解释. 这样, 我们用一个简洁的编译提示来换掉原来用的那些乱七八糟的东西. 
 =EN Here, the lib pragma takes one or more arguments and adds them at the beginning of the @INC array, just like unshift did before. [*] It works because it executes at compile time, not runtime. Hence, it's ready in time for the use immediately following. 
-=CN [*]这样, lib编译提示取一个或多个参数, 并且把他们加入数组@INC开头, 就像前面所说的用unshift的效果一样. 
-=EN [*] use lib also unshifts an architecture-dependent library below the requested library, making it more valuable than the explicit counterpart presented earlier. 
-=CN [*]之所以有效是因为它在编译期间执行而不是在运行时执行. 接下来正是时候立即用use了. 
+=CN 这样, lib编译提示取一个或多个参数, 并且把他们加入数组@INC开头, 就像前面所说的用unshift的效果一样. 
+=EN use lib also unshifts an architecture-dependent library below the requested library, making it more valuable than the explicit counterpart presented earlier. 
+=CN 之所以有效是因为它在编译期间执行而不是在运行时执行. 接下来正是时候立即用use了. 
 =EN Because a use lib pragma will pretty much always have a site-dependent pathname, it is traditional and we encourage you to put it near the top of the file. This makes it easier to find and update when we need to move the file to a new system or when the lib directory's name changes. (Of course, we can eliminate use lib entirely if we can install our modules in standard @INC locations, but that's not always practical. )
 =CN 因为use lib编译提示总是包含站点相关的路径名, 所以一般来说我们推荐你把它写在文件的开头. 这样当你需要为新系统移动文件, 或库目录名字变化时比较容易更新. （当然, 还有一种办法, 我们压根去掉use lib编译提示, 如果我们可以把我们的模块直接安装在@INC包括的标准路径下, 但这不是总是可行的. ）
 =EN Think of use lib as not "use this library" but rather "use this path to find my libraries (and modules). " Too often, we see code written like:
@@ -30,8 +30,8 @@
 =CN 这个时候, 你就需要把它放在BEGIN块中, 或依赖另一个编译期操作：设置一个常量：
 =EN There. Fixed again. That is, until we need the library to depend on the result of a calculation. (Where will it all end? Somebody stop the madness!) This should handle about 99 percent of our needs. 
 =CN 好, 又解决问题了. 就是说, 直到我们需要的库取决于计算的结果. (要到哪里算是个头啊？停下来吧！)我们99％的需求可以满足了. 
-=EN 3. 9. 1. Handling Module Dependencies
-=CN 3. 9. 1. 处理模块依赖
+=EN Handling Module Dependencies
+=CN 处理模块依赖
 =EN We just saw that if we try to install a module that uses Module::Build, we have to install Module::Build first. That's a mild case of the general dependency headache, and all the coconuts on our castaways' island aren't going to fix it. We might have to install several other modules too, each of which, in turn, depends on even more modules. 
 =CN 我们刚才看到如果我们要安装一个模块, 并且这个模块要引用Module::Build模块的话, 我们要事先装好Module::Build模块. 这就是个稍稍让人头痛的有关一般模块依赖性的例子. 那我们的castaways岛的所有的椰子应该如何处理呢？我们要安装另一些模块, 而这些模块各自又依赖更多的其它不同的模块. 
 =EN Fortunately, we have tools to help us. The CPAN. pm module has been part of the core distribution since Perl 5. 004. It gives us an interactive module installation shell. 

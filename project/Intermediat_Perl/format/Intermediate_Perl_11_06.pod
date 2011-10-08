@@ -1,23 +1,7 @@
-=EN 11. 6. Overriding the Methods
-=CN 11. 6. 重载方法
+=EN Overriding the Methods
+=CN 重载方法
 =EN Let's add a mouse that can barely be heard:
 =CN 让我们来加一种少有耳闻的老鼠：
-{ package Animal;
- sub speak {
- my $class = shift;
- print "a $class goes ", $class->sound, "!\n";
- }
-}
-{ package Mouse;
- @ISA = qw(Animal);
- sub sound { 'squeak' }
- sub speak {
- my $class = shift;
- print "a $class goes ", $class->sound, "!\n";
- print "[but you can barely hear it!]\n";
- }
-}
-Mouse->speak;
 =EN which results in:
 =CN 其输出是：
 =EN a Mouse goes squeak!
@@ -30,44 +14,12 @@ Mouse->speak;
 =CN 我们能避免吗？ 我们可以做到一只老鼠能做其它动物能做的, 然后有其自己的特殊的情况吗？当然可以！
 =EN As our first attempt, let's invoke the Animal::speak method directly:
 =CN 像我们首先尝试的, 当我们直接调用Animal::speak:
-{ package Animal;
- sub speak {
- my $class = shift;
- print "a $class goes ", $class->sound, "!\n";
- }
-}
-{ package Mouse;
- @ISA = qw(Animal);
- sub sound { 'squeak' }
- sub speak {
- my $class = shift;
- Animal::speak($class);
- print "[but you can barely hear it!]\n";
- }
-}
 =EN Note that because we've stopped using the method arrow, we have to include the $class parameter (almost surely the value Mouse) as the first parameter to Animal::speak. 
 =CN 注意, 因为我们已经不用方法箭头, 我们必须用$class参数（当然其值是Mouse）作为Animal::speak的第一个参数. 
 =EN Why did we stop using the arrow? Well, if we invoke Animal->speak there, the first parameter to the method is "Animal" not "Mouse" and when the time comes for it to call for the sound, it won't have the right class to select the proper methods for this object. 
 =CN 为什么我们不用方法箭头？哦, 如果我们在那里用Animal->speak, 那给方法的第一个参数就是Animal而不是Mouse, 而且当程序调用sound的时候, 它不会选用正确的类. 
 =EN Invoking Animal::speak directly is a mess, however. What if Animal::speak didn't exist before, and it inherited from a class mentioned in @Animal::ISA? For example, suppose the code was:
 =CN 然而, 调用直接调用Animal::speak是一个错误. 如果Animal::speak事先不存在呢？ 它会从@Animal::ISA继承？如：
-{ package LivingCreature;
- sub speak { … }
- …
-}
-{ package Animal;
- @ISA = qw(LivingCreature);
- # no definition for speak( )
- …
-}
-{ package Mouse;
- @ISA = qw(Animal);
- sub speak {
- …
- Animal::speak( … );
- }
- …
-}
 =EN Because we no longer use the method arrow, we get one and only one chance to hit the right method because we're treating it like a regular subroutine with no inheritance magic. We'll look for it in Animal and not find it, and the program aborts. 
 =CN 因为我们不用方法箭头, 我们有一个且只有一个机会命中正确的方法, 因为我们对待它就像是一般的, 没有继承特色的子程序. 我们会在Animal类中找, 没找到它, 程序就停止. 
 =EN The Animal class name is now hardwired into the method selection. This is a mess if someone maintains the code, changing @ISA for Mouse, and doesn't notice Animal there in speak. Thus, this is probably not the right way to go. 

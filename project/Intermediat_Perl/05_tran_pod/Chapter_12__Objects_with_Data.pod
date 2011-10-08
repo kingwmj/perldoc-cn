@@ -1,10 +1,10 @@
-Chapter 12. Objects with Data 
+=head2 Chapter 12. 带数据的对象
 
-Using the simple syntax introduced in Chapter 11, we have class methods, (multiple) inheritance, overriding, and extending. We've been able to factor out common code and provide a way to reuse implementations with variations. This is at the core of what objects provide, but objects also provide instance data, which we haven't even begun to cover.  
+应用第11章介绍的简单的语法, 我们就可以创建类方法, （多重）继承、重载和扩展. 我们也可以把代码中共同的部份找出来并用变量代之以重用. 这是面向对象编程的核心概念, 而且对象也提供实例数据, 这点我们还没有开始了解. 
 
-12. 1. A Horse Is a Horse, of Course of Courseor Is It? 
+=head2 12. 1. A Horse Is a Horse, of Course of Course或者, 如何才好呢？
 
-Let's look at the code used in Chapter 11 for the Animal classes and Horse classes: 
+让我们看一下我们在第11章用于表示动物类和马类的代码：
 
 
  { package Animal; 
@@ -18,61 +18,61 @@ Let's look at the code used in Chapter 11 for the Animal classes and Horse class
    sub sound { 'neigh' } 
  } 
 
-This lets us invoke Horse->speak to ripple upward to Animal::speak, calling back to Horse::sound to get the specific sound, and the output of: 
+这样, 让我们调用Horse->speak从而会找到Animal::speak, 然后会回调Horse::sound来取得特定的声音, 其输出是：
 
 
  a Horse goes neigh! 
 
-But all Horse objects would have to be absolutely identical. If we add a method, all horses automatically share it. That's great for making horses identical, but how do we capture the properties of an individual horse? For example, suppose we want to give our horse a name. There's got to be a way to keep its name separate from those of other horses.  
+但是所有的Horse对象都必须完全相同. 如果我们加了一个方法, 则所有的horses对象都自动共享它. 这对于保持对象都有的共性这点很好, 但是如何捕捉到每个horse个体的属性呢？比如说, 假定我们要给我们的马取个名字. 应该有个方法来区分它的名字与其它马的名字. 
 
-We can do so by establishing an instance. An instance is generally created by a class, much like a car is created by a car factory. An instance will have associated properties, called instance variables (or member variables, if you come from a C++ or Java background). An instance has a unique identity (like the serial number of a registered horse), shared properties (the color and talents of the horse), and common behavior (e. g. , pulling the reins back tells the horse to stop).  
+我们可以建立一个实例来实现这个功能. 一个实例一般来说根据一个类创建, 就是汽车由汽车工厂生产一样. 一个实例有其关联的属性, 称为实例的变量（或者叫成员变量, 如果你有C++或Java背景的话）. 每个实例有个惟一标识（有些像注册过的赛马的序列号一样）, 共享属性（赛马的毛色与出色的体力）, 和一般的行为（比如拉缰绳告诉马要停下）. 
 
-In Perl, an instance must be a reference to one of the built-in types. Start with the simplest reference that can hold a horse's name, a scalar reference:[*] 
+在Perl中, 一个实例必须是一个对内建类的引用. 通过最简单的引用可以保存马的名字, 一个标量引用：[*]
 
-[*] It's the simplest, but rarely used in real code for reasons we'll show shortly.  
+[*] 这是最简单的, 但鲜有在实际的代码中使用, 原因我们后面会说到. 
 
 
  my $name = 'Mr. Ed'; 
  my $tv_horse = \$name; 
 
-Now $tv_horse is a reference to what will be the instance-specific data (the name). The final step in turning this into a real instance involves a special operator called bless: 
+现在$tv_horse是对一个实例数据（马的名字）的引用. 最后一步就是把它变成一个真实的实例, 这要么一个专门的操作符叫bless:
 
 
  bless $tv_horse, 'Horse'; 
 
-The bless operator follows the reference to find what variable it points to in this case, the scalar $name. Then it "blesses" that variable, turning $tv_horse into an objecta Horse object, in fact. (Imagine that a little sticky-note that says Horse is now attached to $name. ) 
+The bless operator follows the reference to find what variable it points to in this case, the scalar $name. Then it "blesses" that variable, turning $tv_horse into an objecta Horse object, in fact. (Imagine that a little sticky-note that says Horse is now attached to $name. )
 
-At this point, $tv_horse is an instance of Horse. [] That is, it's a specific horse. The reference is otherwise unchanged and can still be used with traditional dereferencing operators. [] 
+这下, $tv_horse现在是Horse的一个实例. [+] 那就是, 它现在是一个不同的马了. 而引用并没有改变什么, 它仍然可以以传统的还原操作符还原. [+] []
 
-[] Actually, $tv_horse points to the object, but, in common terms, we nearly always deal with objects by references to those objects. Hence, it's simpler to say that $tv_horse is the horse, not "the thing that $tv_horse references. " 
+[] [+]实际上, $tv_horse指向一个对象, 但是, 在常用的术语来说, 我们几乎总是用引用与对象打交道来处理对象的. 之后, 我们就可以简单地说$tv_horse就是马, 而不是"$tv_horse引用的那个东西"
 
-[] Although doing so outside the class is a bad idea, as we'll show later.  
+[] [+] 尽管在一个类之外做这事是个糟糕的想法, 这个我们会在后面解说. 
 
-12. 2. Invoking an Instance Method 
+=head2 12. 2. Invoking an Instance Method
 
-The method arrow can be used on instances, as well as names of packages (classes). Let's get the sound that $tv_horse makes: 
+方法箭头可以用在实例上, 就像用在包名上（类）一样. 让我们用$tv_horse发声：
 
 
  my $noise = $tv_horse->sound; 
 
-To invoke sound, Perl first notes that $tv_horse is a blessed reference, and thus an instance. Perl then constructs an argument list, similar to the way an argument list was constructed when we used the method arrow with a class name. In this case, it'll be just ($tv_horse). (Later we'll show that arguments will take their place following the instance variable, just as with classes. ) 
+为了调用sound方法, Perl首先注意到$tvHorse是一个"被祝福"的引用, 所以是一个对象实例. 于是Perl创建一个参数列表, 有些像当我们用类名加方法箭头那种形式. 在这个例子中, 它就是($tv_horse). （之后我们会展示参数将跟在实例变量后面, 就像跟着类一样. ）
 
-Now for the fun part: Perl takes the class in which the instance was blessed, in this case, Horse, and uses it to locate and invoke the method, as if we had said Horse->sound instead of $tv_horse->sound. The purpose of the original blessing is to associate a class with that reference to allow Perl to find the proper method.  
+现在有趣的地方来了：Perl被祝福的实例中的类, 在这个例子中是Horse, 并用它来定位并调用方法, 就好像我们用的是Horse->sound而不是$tv_horse->sound一样. 最初所谓的"祝福"的目的就是把一个类和它的引用关联起来, 让Perl能找到适当的方法. 
 
-In this case, Perl finds Horse::sound directly (without using inheritance), yielding the final subroutine invocation: 
+在此例中, Perl直接找到Horse::sound(没有用到继承), 也就是最终的子程序调用：
 
 
  Horse::sound($tv_horse) 
 
-Note that the first parameter here is still the instance, not the name of the class as before. neigh is the return value, which ends up as the earlier $noise variable.  
+注意这里第一个参数仍旧是实例, 不是像以前一样的类名. "neigh"是输出值, 像以往$noise变量一样. 
 
-If Perl did not find Horse::sound, it would walk up the @Horse::ISA list to try to find the method in one of the superclasses, just as for a class method. The only difference between a class method and an instance method is whether the first parameter is an instance (a blessed reference) or a class name (a string). [*] 
+如果Perl没有找到Horse::sound, 那么它会根据@Horse::ISA列表回溯在父类中查找方法, 就象对类方法的操作一样. 类方法和实例方法的区别是第一个参数是否为实例（一个被祝福过的引用）或一个类名（一个字串）. [*]
 
-[*] This is perhaps different from other OOP languages with which you may be familiar.  
+[*] 这同你可能熟悉的其它面向对象语言有所不同. 
 
-12. 3. Accessing the Instance Data 
+=head2 12. 3. Accessing the Instance Data
 
-Because we get the instance as the first parameter, we can now access the instance-specific data. In this case, let's add a way to get at the name: 
+因为我们把实例作为第一个参数, 我们现在可以访问实例自己的数据. 在这个例子中, 让我们添加一个方法来获取一个名字：
 
 
  { package Horse; 
@@ -84,20 +84,20 @@ Because we get the instance as the first parameter, we can now access the instan
    } 
  } 
 
-Now we call for the name: 
+现在调用名字：
 
-print $tv_horse->name, " says ", $tv_horse->sound, "\n"; 
+print $tv_horse->name, " says ", $tv_horse->sound, "\n";
 
-Inside Horse::name, the @_ array contains just $tv_horse, which the shift stores into $self. It's traditional to shift the first parameter into a variable named $self for instance methods, so stay with that unless you have strong reasons to do otherwise (Perl places no significance on the name $self, however). [] Then we dereference $self as a scalar reference, yielding Mr. Ed. The result is: 
+在Horse::name中, @_数组只包含了$tv_horse, 并保存到$self中. 一般来说它把第一个参数传到实例方法的$self变量中, 所以保持这个风格, 除非你有十足的理由用其它的风格（然而, Perl对$self并没有特殊的意义）.  [] [+] 如果你把$self作为一个标量引用还原, 那么输出Mr. Ed是：
 
-[] If you come from another OO language background, you might choose $this or $me for the variable name, but you'll probably confuse most other Perl OO hackers.  
+[] 如果你有其它面向对象语言的背景, 你可能会用$this或$me为变量起名, 不过你可能与其它Perl面向对象的黑客混淆. 
 
 
  Mr. Ed says neigh.  
 
-12. 4. How to Build a Horse 
+=head2 12. 4. How to Build a Horse
 
-If we constructed all our horses by hand, we'd most likely make mistakes from time to time. Making the "inside guts" of a Horse visible also violates one of the principles of OOP. That's good if we're a veterinarian but not if we just like to own horses. We let the Horse class build a new horse: 
+如果我们手工创建所有的马, 那我们很可能一次次犯错. 而且暴露Horse内部的信息也违反了面向对象编程的基本原则. 我们不是兽医, 我们只想拥有一匹马而已. 我们用Horse类创建一个新的马：
 
 
  { package Horse; 
@@ -114,18 +114,18 @@ If we constructed all our horses by hand, we'd most likely make mistakes from ti
    } 
  } 
 
-Now, with the new named method, we build a Horse: 
+现在, 用新的named方法, 我们来创建一个Horse:
 
 
  my $tv_horse = Horse->named('Mr. Ed'); 
 
-We're back to a class method, so the two arguments to Horse::named are "Horse" and "Mr. Ed". The bless operator not only blesses $name, it also returns the reference to $name, so that's fine as a return value. And that's how we build a horse.  
+参考类方法, 所以有两个参数传给Horse::named, "Horse"和"Mr. Ed". Bless操作符不仅"祝福"了$name, 也返回了$name的引用, 所以返回值是对的. 我们就是这样创建一个horse对象. 
 
-We called the constructor named here so it quickly denotes the constructor's argument as the name for this particular Horse. We can use different constructors with different names for different ways of "giving birth" to the object (such as recording its pedigree or date of birth). However, we'll find that most people use a single constructor named new, with various ways of interpreting the arguments to new. Either style is fine, as long as we document our particular way of giving birth to an object. Most core and CPAN modules use new, with notable exceptions, such as DBI's DBI->connect( ). It's really up to the author.  
+我们调用构建函数named来快速地把参数作为马的名字. 我们可以用不同名字的构建函数来给对象加上生日（如谱系记录或生日）. 然而, 大多数人喜欢用new来命名构建函数, 并对不同的参数以不同的解释. 只要能太到目的, 两种方法都可以. Perl综合典藏网上大多数模块用new, 也有些是例外, 比如DBI模块的DBI->connect(). 这根据开发者的习俗. 
 
-12. 5. Inheriting the Constructor 
+=head2 12. 5. Inheriting the 构造or
 
-Was there anything specific to Horse in that method? No. Therefore, it's also the same recipe for building anything else inherited from Animal, so let's put it there: 
+对于那个方法中Horse类有其它特殊的吗？ 没有. 因此, 它同样可以继承自Animal类, 所以我们可以把它放到这儿：
 
 
  { package Animal; 
@@ -148,22 +148,22 @@ Was there anything specific to Horse in that method? No. Therefore, it's also th
    sub sound { 'neigh' } 
  } 
 
-Ahh, but what happens if we invoke speak on an instance? 
+嗯, 但如果我们在实例上调用speak会发生什么呢？
 
 
  my $tv_horse = Horse->named('Mr. Ed'); 
  $tv_horse->speak; 
 
-We get a debugging value: 
+我们会得到一个测试值：
 
 
  a Horse=SCALAR(0xaca42ac) goes neigh! 
 
-Why? Because the Animal::speak method expects a class name as its first parameter, not an instance. When we pass in the instance, we'll use a blessed scalar reference as a string, which shows up as we showed it just now similar to a stringified reference, but with the class name in front.  
+为什么呢?因为Animal::speak方法期一个类名作为它的第一个参数, 而不是一个实例. 当我们传一个实例时, 我们会把"祝福"过的标量引用当作一个字串, 就像我们直接打印一个引用一样, 不过是前面有个类名提示. 
 
-12. 6. Making a Method Work with Either Classes or Instances 
+=head2 12. 6. Making a Method Work with Either Classes or Instances
 
-All we need to fix this is a way to detect whether the method is called on a class or an instance. The most straightforward way to find out is with the ref operator. This operator returns a string (the class name) when used on a blessed reference, and undef when used on a string (like a class name). We modify the name method first to notice the change: 
+解决这个问题, 我们所要做的就是查这个方法的调用者是个类还是实例. 最直接的方法是用ref 操作符. 这个操作符在用在一个blessed引用上会返回一个字串（类名）, 而用在一个字串（如类名）时返回的是空值. 我们改下看看：
 
 
  sub name { 
@@ -173,7 +173,7 @@ All we need to fix this is a way to detect whether the method is called on a cla
      : "an unnamed $either";   # it's a class, return generic 
  } 
 
-Here the ?: operator selects either the dereference or a derived string. Now we can use it with either an instance or a class. Note that we changed the first parameter holder to $either to show that it is intentional: 
+这里?:操作符选择是否是还原或是类字串. 现在不管是实例或者是类我们都可以使用他们. 注意, 我们把第一个参数位改成$either来显示这是有意的：
 
 
  print Horse->name, "\n";      # prints "an unnamed Horse\n" 
@@ -182,7 +182,7 @@ Here the ?: operator selects either the dereference or a derived string. Now we 
  my $tv_horse = Horse->named('Mr. Ed'); 
  print $tv_horse->name, "\n";   # prints "Mr. Ed. \n" 
 
-and now we'll fix speak to use this: 
+我们将使用这个设置叫声
 
 
  sub speak { 
@@ -190,11 +190,11 @@ and now we'll fix speak to use this:
    print $either->name, ' goes ', $either->sound, "\n"; 
  } 
 
-Since sound already worked with either a class or an instance, we're done! 
+因此sound方法既可以在类上也可以在实例上运行, 完成了！
 
-12. 7. Adding Parameters to a Method 
+=head2 12. 7. Adding Parameters to a Method
 
-Let's train our animals to eat: 
+现在让我们训练我们的动物会吃：
 
 
  { package Animal; 
@@ -228,40 +228,40 @@ Let's train our animals to eat:
    sub sound { 'baaaah' } 
  } 
 
-Now try it out: 
+然后试试：
 
 
  my $tv_horse = Horse->named('Mr. Ed'); 
  $tv_horse->eat('hay'); 
  Sheep->eat('grass'); 
 
-It prints: 
+输出如下：
 
 
  Mr. Ed eats hay.  
  an unnamed Sheep eats grass.  
 
-An instance method with parameters gets invoked with the instance, and then the list of parameters. That first invocation is like: 
+一个带实例方法把实际作为参数, 然后是参数列表. 调用的样子如下：
 
 
  Animal::eat($tv_horse, 'hay'); 
 
-The instance methods form the Application Programming Interface (API) for an object. Most of the effort involved in designing a good object class goes into the API design, because the API defines how reusable and maintainable the object and its subclasses will be. Don't rush to freeze an API design before you've considered how you (or others) will use the object.  
+一个实际的方法就是一个对象的应用程序接口（ＡＰＩ）. 一个好的面向对象的设计很大程度上取决于ＡＰＩ设计, 因为ＡＰＩ决定了对象如何被使用和被维护, 以及其子类应该是什么样子的. 不要在还没有考虑好你（或其他人）如何用这个对象前急急忙忙的确定ＡＰＩ设计. 
 
-12. 8. More Interesting Instances 
+=head2 12. 8. More Interesting Instances
 
-What if an instance needs more data? Most interesting instances are made of many items, each of which can, in turn, be a reference or another object. The easiest way to store these items is often in a hash. The keys of the hash serve as the names of parts of the object (also called instance or member variables), and the corresponding values are, well, the values.  
+如果一个实例需要更多的数据如何？大多数有用的实例是由许多成员组成, 而其中每个成员可以是一个引用或另一个对象. 保存这些成员最简单的办法就是把它们放在一个散列中. 这个散列的键是对象的名字（也被叫作实例或成员变量）, 而且相应的值就是, 值. 
 
-How do we turn the horse into a hash?[*] Recall that an object is any blessed reference. We can just as easily make it a blessed hash reference as a blessed scalar reference, as long as everything that looks at the reference is changed accordingly.  
+我们把horse变成一个散列如何？[*] 回想一下, 所谓对象实际上是被"祝福"的引用. 我们可以像"祝福"一个标量引用一样容易的"祝福"一个散列引用, 只要把它们看作引用就可以了. 
 
-[*] Other than calling on a butcher, that is.  
+[*] 就是说不要叫屠夫来就可以了. 
 
-Let's make a sheep that has a name and a color: 
+让我们做一个有名有色的绵羊：
 
 
  my $lost = bless { Name => 'Bo', Color => 'white' }, Sheep; 
 
-$lost->{Name} has Bo, and $lost->{Color} has white. But we want to make $lost->name access the name, and that's now messed up because it's expecting a scalar reference. Not to worry, because it's pretty easy to fix: 
+$lost->{Name}里存的是"Bo", $lost->{Color}里放的是white. 但我们要用$lost->name访问name变量, 但是因为要用标量引用, 所以会造成混乱. 别急, 这很容易解决：
 
 
  ## in Animal 
@@ -272,7 +272,7 @@ $lost->{Name} has Bo, and $lost->{Color} has white. But we want to make $lost->n
      : "an unnamed $either"; 
  } 
 
-named still builds a scalar sheep, so let's fix that as well: 
+named方法创建标量的sheep对象, 所以让我们来修改一下：
 
 
  ## in Animal 
@@ -283,25 +283,25 @@ named still builds a scalar sheep, so let's fix that as well:
    bless $self, $class; 
  } 
 
-What's this default_color? If named has only the name, we still need to set a color, so we'll have a class-specific initial color. For a sheep, we might define it as white: 
+那么缺省毛色呢？
 
 
  ## in Sheep 
  sub default_color { 'white' } 
 
-Then, to keep from having to define one for each additional class, define a backstop method, which serves as the "default default, " directly in Animal: 
+然后, 为了不用在每个类都作定义, 我们直接在Animal中定义一个缺省的方法. 
 
 
  ## in Animal 
  sub default_color { 'brown' } 
 
-Thus, all animals are brown (muddy, perhaps), unless a specific animal class gives a specific override to this method.  
+这样, 所有的动物都是棕色（土色, 也许吧）, 除非个别动物特别指定了毛色, 对这个方法进行了重载. 
 
-Now, because name and named were the only methods that referenced the structure of the object, the remaining methods can stay the same, so speak still works as before. This supports another basic rule of OOP: if only the object accesses its internal data, there's less code to change when it's time to modify that structure.  
+现在, 因为name和named是引用这个对象仅有的方法, 所以其它方法可以不变, 这样speak仍然可以像以前那样使用. 这就支持了面向对象编程的一条基本法则：如果要访问对象内部数据, 那修改结构的时候应该用最少的代码修改. 
 
-12. 9. A Horse of a Different Color 
+=head2 12. 9. 一匹有不同色彩的马
 
-Having all horses be brown would be boring. Let's add a method or two to get and set the color: 
+我们来加一两个方法来设置颜色, 这样让所有出生的马都是棕色. 
 
 
  ## in Animal 
@@ -314,36 +314,38 @@ Having all horses be brown would be boring. Let's add a method or two to get and
    $self->{Color} = shift; 
  } 
 
-Now we can fix that color for Mr. Ed: 
+我们可以为Mr. Ed修改一下颜色：
 
 
  my $tv_horse = Horse->named('Mr. Ed'); 
  $tv_horse->set_color('black-and-white'); 
  print $tv_horse->name, ' is colored ', $tv_horse->color, "\n"; 
 
-which results in: 
+其输出是：
 
 
  Mr. Ed is colored black-and-white 
 
-12. 10. Getting Our Deposit Back Because of the way the code is written, the setter also returns the updated value. Think about this (and document it) when we write a setter. What does the setter return? Here are some common variations: 
+=head2 12. 10. 取回存储
 
-The updated parameter (same as what was passed in) 
+根据代码的写法, 设置方法也可以返回更新的值. 当我们写设值代码时我们要考虑, 或者要写下来. 设置代码应该返回什么？下面是一般的答案：
 
-The previous value (similar to the way umask or the single-argument form of select works) 
+更新过的值（类似于传入的是什么）
 
-The object itself 
+以前的值（类似于用掩码的方法或选择工作时单值形式的参数）
 
-A success/fail code 
+对象自身
 
-Each has advantages and disadvantages. For example, if we return the updated parameter, we can use it again for another object: 
+成功／失败码
+
+几种方法各有优缺点. 比如, 如果我们返回更新的值, 我们可以将其用于其它的对象：
 
 
  $tv_horse->set_color( $eating->set_color( color_from_user(  ) )); 
 
-The implementation given earlier returns the newly updated value. Frequently, this is the easiest code to write, and often the fastest to execute.  
+上面的例子返回新更新的值. 一般来说, 这样写代码是容易, 执行起来也最快. 
 
-If we return the previous parameter, we can easily create "set this value temporarily to that" functions: 
+如果我们返回更改前的值, 我们可以容易地写临时处理程序：
 
 
  { 
@@ -351,7 +353,7 @@ If we return the previous parameter, we can easily create "set this value tempor
    $tv_horse->set_color($old_color); 
  } 
 
-This is implemented as: 
+实现结果是：
 
 
  sub set_color { 
@@ -361,7 +363,7 @@ This is implemented as:
    $old; 
  } 
 
-For more efficiency, we can avoid stashing the previous value when in a void context using the wantarray function: 
+为了效率, 我们可以用wantarray函数在没有返回值的情况下不存以前的值：
 
 
  sub set_color { 
@@ -378,7 +380,7 @@ For more efficiency, we can avoid stashing the previous value when in a void con
    } 
  } 
 
-If we return the object itself, we can chain settings: 
+如果想返回对象自身, 我们可以链式设置：
 
 
  my $tv_horse = 
@@ -387,7 +389,7 @@ If we return the object itself, we can chain settings:
         ->set_age(4) 
         ->set_height('17 hands'); 
 
-This works because the output of each setter is the original object, becoming the object for the next method call. Implementing this is, again, relatively easy: 
+这样的代码是可行的, 因为每个设置方法都是原始对象, 成为下个方法调用对象. 还可以这样：
 
 
  sub set_color { 
@@ -396,17 +398,17 @@ This works because the output of each setter is the original object, becoming th
    $self; 
  } 
 
-The void context trick can be used here too, although with questionable value because we've already established $self.  
+避免无返回值的方法这里也可以使用, 尽管我们已经建立了$self变量. 
 
-Finally, returning a success status is useful if it's fairly common for an update to fail, rather than an exceptional event. The other variations would have to indicate failure by throwing an exception with die.  
+最后, 如果程序明显出错, 返回一个返回状态要比一个意外报错要好. 其它的变化会发一个例外并终止程序, 以示程序错误. 
 
-In summary: use what you want, be consistent if you can, but document it nonetheless (and don't change it after you've already released one version).  
+总结：经过考虑后, 按需要应用, 但无论如何要写下来（而且在发布后不要再改）
 
-12. 11. Don't Look Inside the Box 
+=head2 12. 11. 不要往盒子里看
 
-We might have obtained or set the color outside the class simply by following the hash reference: $tv_horse->{Color}. However, this violates the encapsulation of the object by exposing its internal structure. The object is supposed to be a black box, but we've pried off the hinges and looked inside.  
+我们可以通过下面的散列引用$tv_horse->{Color}通过类的外部来获取或设置颜色.  然而, 这样就因为暴露了内部结构而违反了对象的封装性.  对象应该是一个黑盒, 而我们已经撬开了绞链, 看到了里边. 
 
-One purpose of OOP is to enable the maintainer of Animal or Horse to make reasonably independent changes to the implementation of the methods and still have the exported interface work properly. To see why accessing the hash directly violates this, let's say that Animal no longer uses a simple color name for the color, but instead changes to use a computed RGB triple to store the color (holding it as an arrayref). In this example, we use a fictional (at the time of this writing) Color::Conversions module to change the format of the color data behind the scenes: 
+面向对象设计的目标之一就是要让Animal或Horse的代码维护者在进行合理独立的改动方法的实现的时候, 使接口仍然可以工作.  要看为什么直接访问散列就破坏了封装, 让我们打个比方, 如果我们不用简单的颜色名字来代表颜色, 而是用ＲＧＢ三色数字来代表颜色（用一个数组引用来代表）.  在这个例子中, 我们用一个假想的（写这本书的时候）Color::转化模块来改幕后的色彩格式：
 
 
  use Color::Conversions qw(color_name_to_rgb rgb_to_color_name); . . .  
@@ -420,7 +422,7 @@ One purpose of OOP is to enable the maintainer of Animal or Horse to make reason
    rgb_to_color_name($self->{Color});               # takes arrayref 
  } 
 
-We can still maintain the old interface if we use a setter and getter, because they can perform the translations without the user knowing about it. We can also add new interfaces now to enable the direct setting and getting of the RGB triple: 
+我们可以在维护旧的接口时一样可以用设置和取值程序, 因为在用户不知道具体细节的情况下他们可以自动转换. 我们也可以添加新的方法来直接改ＲＧＢ三色数字：
 
 
  sub set_color_rgb { 
@@ -432,22 +434,22 @@ We can still maintain the old interface if we use a setter and getter, because t
    @{ $self->{Color} };                  # return RGB list 
  } 
 
-If we use code outside the class that looks at $tv_horse->{Color} directly, this change is no longer possible. It won't work to store a string ('blue') where an arrayref is needed ([0, 0, 255]) or to use an arrayref as a string. This is why OO programming encourages you to call getters and setters, even if they take some time.  
+如果我们在类的外面直接看$tv_horse->{Color}, 这样的改变是不可能的.  它不能在存数组引用（[0, 0, 255]）的地方存字串（'blue'）或把数组引用当作字串.  这就是为什么面向对象的编程鼓励你用设置器或取值器, 尽管他们可能费些写代码的时间. 
 
-12. 12. Faster Getters and Setters 
+=head2 12. 12. 更快的取值器和设置器
 
-Because we're going to play nice and always call the getters and setters instead of reaching into the data structure, getters and setters are called frequently. To save a teeny-tiny bit of time, we might see these getters and setters written as: 
+因为我们打算总以比较良好的方式调用取值器和设置器, 而不直接改变数据结构, 设置器和取值器会被调用得很频繁.  为了节约调用时间, 我们可以看到他们被写成这样：
 
 
  ## in Animal 
  sub color     { $_[0]->{Color} } 
  sub set_color { $_[0]->{Color} = $_[1] } 
 
-We save a bit of typing when we do this, and the code is slightly faster, although probably not enough for us to notice it with everything else that's going on in our program. The $_[0] is just the single element access to the @_ array. Instead of using shift to put the argument into another variable, we can simply use it directly.  
+写这些代码的时候我们省了点儿时间, 代码执行也快了点儿, 尽管对于这些代码在我们的程序里具体发挥什么作用可能也不太了解. 变量$_[0]是访问@_数组的第一个元素.  相比于把数组的变量放到另一个变量中的作法, 我们简单的直接引用它. 
 
-12. 13. Getters That Double as Setters 
+=head2 12. 13. 既是设置器也是取值器
 
-Another alternative to the pattern of creating two different methods for getting and setting a parameter is to create one method that notes whether or not it gets any additional arguments. If the arguments are absent, it's a get operation; if the arguments are present, it's a set operation. A simple version looks like: 
+另一种建立设置器和取值器替代方案是用一个方法, 以参数作区分是取值还是设置值. 如果参数缺失, 那么就作取值操作;如果有值, 那就设置值.  简例如下：
 
 
  sub color { 
@@ -461,20 +463,20 @@ Another alternative to the pattern of creating two different methods for getting
    } 
  } 
 
-Now we can say: 
+这样我们就可以这样写：
 
 
  my $tv_horse = Horse->named('Mr. Ed'); 
  $tv_horse->color('black-and-white'); 
  print $tv_horse->name, ' is colored ', $tv_horse->color, "\n"; 
 
-The presence of the parameter in the second line denotes that we are setting the color, while its absence in the third line indicates a getter.  
+第二行出现的参数表明我们正设置颜色, 如果它缺失, 表示我们调用取值器. 
 
-This strategy is attractive because of its simplicity, but it also has disadvantages. It complicates the actions of the getter, which is called frequently. It also makes it difficult to search through our code to find the setters of a particular parameter, which are often more important than the getters. We've been burned in the past when a setter became a getter because another function returned more parameters than expected after an upgrade.  
+这种方案具有吸引力是因为其简洁, 但这也有其缺点. 它混淆了频繁的取值的动作. 它也使通过我们的代码来找用特殊参数的设置器变得困难, 而这往往比取值重要. 在以往, 因为一个设置器因为在升级后另一个函数返回多个值而变成了取值器的情况造成的麻烦就很多. <似乎应该反过来－－译者>
 
-12. 14. Restricting a Method to Class-Only or Instance-Only 
+=head2 12. 14. 将方法限制成类的或对象实例的
 
-Setting the name of an unnameable generic Horse is probably not a good idea; neither is calling named on an instance. Nothing in the Perl method definition says "this is a class method" or "this is an instance method. " Fortunately, the ref operator lets us throw an exception when called incorrectly. As an example of instance- or class-only methods, consider the following, where we check the argument to see what to do: 
+给一个无法命名的抽象的"马"起名字多半不是个好主意; 对实例也是一样.  在Perl语言中没有一种方法定义"这是一个类的方法" 或"这是一个对象实例的方法". 好在ref操作符让我们可以在调用出错的时候抛出一个异常. 考虑下面一个仅仅是"实例"或"类"方法的例子, 我们用参数来决定下面一步是什么：
 
 
  use Carp qw(croak); 
@@ -489,20 +491,20 @@ Setting the name of an unnameable generic Horse is probably not a good idea; nei
    ref(my $class = shift) and croak "class name needed"; . . . use $class as the class. . .  
  } 
 
-The ref function returns true for an instance, which is just a blessed reference, or false for a class, which is just a string. If it returns an undesired value, we use the croak function from the Carp module (which comes in the standard distribution). The croak function places the blame on the caller by making the error message look like it came from the spot where we called the method instead of the spot where we issued the error. The caller will get an error message like this, giving the line number in their code where the wrong method was called: 
+ref函数对于实例会返回true, 对于被"祝福"的引用也是一样, 如果是类就返回false, 就是个字串.  如果它返回一个我们不要的值, 我们可以用Carp模块（在标准发行版）中的croak函数.  croak函数把出错信息看上去好像是调用者发出的一样, 而不是被调用的函数发出. 这样调用者会得到如下的出错信息, 并显示调用者的行号：
 
 
  instance variable needed at their_code line 1234 
 
-Just as croak is provided as the alternate form of die, Carp also provides carp as a replacement for warn. Each tells the user which line of code called the code that caused the problem. Instead of using die or warn in your modules, use the Carp functions instead. Your users will thank you for it.  
+croak提供了die函数的替代方案, Carp模块同样提供carp来替代warn的方案. 它们都指出出问题的调用函数所在的行号.  我们可以在代码中用die和warn一样用Carp模块中的函数. 你的用户会因此感谢你的. 
 
-12. 15. Exercise 
+=head2 12. 15. 练习
 
-You can find the answer to this exercise in "Answer for Chapter 12" in the Appendix.  
+答案索引找
 
-12. 15. 1. Exercise [45 min] 
+=head2 12. 15. 1. 练习 ［４５分钟］
 
-Give the Animal class the ability to get and set the name and color. Be sure that your result works under use strict. Also make sure your get methods work with both a generic animal and a specific animal instance. Test your work with: 
+给Animal类添加设置和取得名字和颜色的能力.  要保证在use strict下能运行. 而且要保证get方法在类和实例情况下都能工作. 并以以下代码测试：
 
 
  my $tv_horse = Horse->named('Mr. Ed'); 
@@ -511,5 +513,5 @@ Give the Animal class the ability to get and set the name and color. Be sure tha
  print $tv_horse->name, ' is ', $tv_horse->color, "\n"; 
  print Sheep->name, ' colored ', Sheep->color, ' goes ', Sheep->sound, "\n"; 
 
-What should you do if you're asked to set the name or color of a generic animal? 
+要在类层面设置名字或颜色, 你该如何做？
 

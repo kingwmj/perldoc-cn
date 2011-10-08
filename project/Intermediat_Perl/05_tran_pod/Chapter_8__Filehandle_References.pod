@@ -1,16 +1,16 @@
-Chapter 8. Filehandle References 
+=head2 第八章 引用文件句柄
 
-We've seen arrays, hashes, and subroutines passed around in references, permitting a level of indirection to solve certain types of problems. We can also store filehandles in references. Let's look at the old problems and the new solutions.  
+我们已经看到如何通过引用传递数组, 散列和子程序, 并通过一定的手段来解决一定复杂度的问题. 同样, 我们也可以将文件句柄存到引用里. 让我们看如何用新办法来解决老问题. 
 
-8. 1. The Old Way 
+=head2 8. 1. 旧的方法
 
-In the olden days, Perl used barewords for filehandle names. The filehandle is another Perl data type, although people don't talk about it too much since it doesn't get its own special sigil. You've probably already seen a lot of code that uses these bareword filehandles.  
+在以往的日子里, Perl用裸字来代表文件句柄. 文件句柄是另一种Perl的数据类型, 尽管人们对此讨论不多, 因为它也没有专门的符号标注. 你大概已经许多用裸字文件句柄的代码, 如：
 
 
  open LOG_FH, '>> castaways. log' 
         or die "Could not open castaways. log: $!"; 
 
-What happens if we want to pass around these filehandles so we could share them with other parts of our code, such as libraries? You've probably seen some tricky looking code that uses a typeglob or a reference to a typeglob.  
+如果我们要同程序的其它部份, 比如库, 共享这些文件句柄该如何做呢？ 我们大概见过一些讨巧的办法, 用typeglob或一个对typeglob的引用来处理. 
 
 
  log_message( *LOG_FH, 'The Globetrotters are stranded with us!' ); 
@@ -18,7 +18,7 @@ What happens if we want to pass around these filehandles so we could share them 
 
  log_message( *LOG_FH, 'An astronaut passes overhead' ); 
 
-In the log_message( ) routine, we take the first element off of the argument list and store it in another typeglob. Without going into too many details, a typeglob stores pointers to all the package variables of that name. When we assign one typeglob to another, we create aliases to the same data. We can now access the data, including the details of the filehandle, from another name. Then, when we use that name as a filehandle, Perl knows to look for the filehandle portion of the typeglob. We'd have a much easier time if filehandles had sigils! 
+在log_message( ) 子程序中, 我们从参数列表中取下第一个元素, 并且存在另一个typeglob中. 不需要详述太多的细节, 一个typeglob存储了包里面所有变量的名字的指针. 当我们把一个typeglob赋值给另一个的时候, 我们就为相同的数据创建了一个别名. 这样我们现在就可以用另外一个名字来访问这块数据的文件句柄了. 如此, 当我们把名字当文件句柄用时, Perl知道在typeglob中找到这个名字的文件句柄部份. 如果文件句柄已经有符号, 那会更容易. 
 
 
  sub log_message { 
@@ -28,20 +28,20 @@ In the log_message( ) routine, we take the first element off of the argument lis
   print FH @_, "\n"; 
  } 
 
-Notice the use of local there. A typeglob works with the symbol table, which means it's dealing with package variables. Package variables can't be lexical variables, so we can't use my. Since we don't want to stomp on anything else that might be named FH somewhere else in the script, we must use local to say that the name FH has a temporary value for the duration of the log_message subroutine and that when the subroutine finishes, Perl should restore any previous values to FH as if we were never there.  
+注意这里local的用法. 一个typeglob同符号表一起工作, 这意味着它处理包变量. 包变量不能是词法变量, 所以我们不能用my. 因为我们不能与程序其它部份的以FH命名的句柄混淆, 我们必须用local告诉Perl这个FH是在log_message子程序中用作临时变量, 用完即丢, Perl会把原来的FH句柄恢复, 好像没有发生过一样. 
 
-If all of that makes you nervous and wish that none of this stuff existed, that's good. Don't do this anymore! We put it in a section called "The Old Way" because there is a much better way to do it now. Pretend this section never existed and move on to the next one.  
+如果这一切作法让你大为紧张, 希望没有这种事该多好, 可以. 我们不用作这种事情！就是因为现在有更好的方法, 所以我们把这节叫作"旧的方法". 我们假装没有这节吧, 直接跳到下一节吧. 
 
-8. 2. The Improved Way 
+=head2 8. 2. 改进的方法
 
-Starting with Perl 5. 6, open can create a filehandle reference in a normal scalar variable. Instead of using a bareword for the filehandle name, we use a scalar variable whose value is undef.  
+从Perl 5. 6版本开始, 可以用一个通常的标量变量打开一个文件句柄. 相比于使用裸字来代表句柄名字, 我们可以用一个含有空值的标量变量代表. 
 
 
  my $log_fh; 
  open $log_fh, '>> castaways. log' 
         or die "Could not open castaways. log: $!"; 
 
-If the scalar already has a value, this doesn't work because Perl won't stomp on our data.  
+如果标量已经有值的话, Perl会报错, 因为Perl不会冲掉你的数据：
 
 
  my $log_fh = 5; 
@@ -49,21 +49,21 @@ If the scalar already has a value, this doesn't work because Perl won't stomp on
          or die "Could not open castaways. log: $!"; 
  print $log_fh "We need more coconuts!\n";   # doesn't work 
 
-However, the Perl idiom is to do everything in one step. We can declare the variable right in the open statement. It looks funny at first, but after doing it a couple (okay, maybe several) times, you'll get used to it and like it better.  ' 
+当然, Perl的信条是尽量一步到位. 我们可以在open语句中声明变量. 一开始你可能觉得好笑, 但用了两次（好吧, 多次）之后, 你会习惯并喜欢使用这种方法.  '
  open my $log_fh, '>> castaways. log' 
         or die "Could not open castaways. log: $!"; 
 
-When we want to print to the filehandle, we use the scalar variable instead of a bareword. Notice that there is still no comma after the filehandle.  
+当我们要把内容打印到文件句柄的时候, 我们就把标量变量代替以前裸字的位置. 注意文件句柄后面一样没有逗号. 
 
 
  print $log_fh "We have no bananas today!\n"; 
 
-That syntax might look funny to you, though, and even if it doesn't look funny to you, it might look odd to the person who has to read your code later. In Perl Best Practices, Damian Conway recommends putting braces around the filehandle portion to explicitly state what you intend. This syntax makes it look more like grep and map with inline blocks.  
+尽管下面的代码可能你看上去比较搞笑, 或者, 如果你不觉得搞笑, 可能那些后来读到你的代码的人也觉得看上去比较怪异. 在《Perl最佳实践》这本书中, Damian Conway建议在文件句柄部份要加上大括号以显明你的态度. 这样的语法使它看上去更新grep或者map的内嵌块形式. 
 
 
  print {$log_fh} "We have no bananas today!\n"; 
 
-Now we treat the filehandle reference just like any other scalar. We don't have to do any tricky magic to make it work.  
+现在我们就可以把文件句柄引用当作标量一样到处使用了. 我们不必不得不搞些怪手法来处理问题. 
 
 
  log_message( $log_fh, 'My name is Mr. Ed' ); 
@@ -76,53 +76,53 @@ Now we treat the filehandle reference just like any other scalar. We don't have 
    print $fh @_, "\n"; 
  } 
 
-We can also create filehandle references from which we can read. We simply put the right thing in the second argument.  
+我们同样可以以读的方式创建文件句柄引用. 我们只要简单地在第二个参数放上适当的文件名即可：
 
 
  open my $fh, "castaways. log" 
         or die "Could not open castaways. log: $!"; 
 
-Now we use the scalar variable in place of the bareword in the line input operator. Before, we would have seen the bareword between the angle brackets: 
+现在, 我们就可以在行输入操作符中裸字的位置替换成标量.  之前, 我们会看到我们把裸字放在尖括号里：
 
 
  while( <LOG_FH> ) {. . . } 
 
-And now we see the scalar variable in its place.  
+现在我们用标量代替：
 
 
  while( <$log_fh> ) {. . . } 
 
-In general, where we've seen the bareword filehandle we can substitute the scalar variable filehandle reference.  
+一般情况下, 所有用裸这字代表文件句柄的地方, 我们都可以用含有文件句柄引用的标量变量代替. 
 
-In any of these forms, when the scalar variable goes out of scope (or we assign another value to it), Perl closes the file. We don't have to explicitly close the file ourselves.  
+在以上的各种使用方式中, 只要这个标量变量跑出范围（或者我们赋另一个值给它）, Perl就会自动关闭文件. 我们不必自己显式地关闭文件. 
 
-8. 3. The Even Better Way 
+=head2 8. 3. 更上一层楼
 
-So far, our examples have shown the two-argument form of open, but that actually has a catch: the open mode and the filename both live in the second argument. That means that we have to store two different things in one string, and we have to trust Perl to be able to figure it out.  
+到目前为此, 我们的例子展示的open都是两个参数的形式, 但实际上有个隐含之处：文件的打开方式是和文件名都放在第二个参数的位置上的. 这意味着我们在一个字串里表达了两种不同的意义, 而且我们不得不相信Perl一定会很好的区分. 
 
-To get around that, we break the second argument into two separate arguments.  
+为了解决这个问题, 我们可以把第两个参数分开：
 
 
  open my $log_fh, '>>', 'castaways. log' 
         or die "Could not open castaways. log: $!"; 
 
-This three-argument form has the added advantage of access to the Perl IO filters. We won't go into too much detail here. [*] The open function's entry in perlfunc is over 400 lines, even though it has its own perldoc tutorial, perlopentut.  
+这种三参数的形式有可以利用Perl的IO过滤器的优点. 这里我们不涉及太多. [*] 在perlfunc中open函数的条目有400行之多, 尽管在它自己的perldoc教材和perlopentut中也有说明. 
 
-8. 4. IO::Handle 
+=head2 8. 4. IO::Handle模块
 
-Behind the scenes, Perl is really using the IO::Handle module to work this magic, so our filehandle scalar is really an object. [*] The IO::Handle package is a base class for input-output things, so it handles a lot more than just files.  
+在帷幕之后, Perl实际上用调用IO::Handle模块模块来变这个戏法的, 所以, 我们的文件句柄实际上是一个对象[*]. IO::Handle模块包是输入输出的基础类, 所以它处理许多不仅仅有关文件的操作. 
 
-[*] Have you ever wondered why there is no comma after the filehandle portion of the print? It is really the indirect object notation (which we have not mentioned yet, unless you have read the whole book before you read the footnotes, like we told you to do in the preface!).  
+[*] 你是否曾经疑惑为什么print语句的文件句柄后面为什么不加逗号？这的确是对象的一种间接标记（这是我们还没有提及的, 除非你已经在读这个脚注前先读完了本书, 就像我们在前言里说的那样！）
 
-Unless you are creating new IO modules, you probably shouldn't use IO::Handle directly. Instead, use some of the handy modules built on top of it. We haven't told you about object-oriented programming (OOP) yet (it's in Chapter 11, so we almost have), but in this case, you just have to follow the example in its documentation.  
+除非你正在创建新的IO模块, 一般来说你不会直接调用IO::Handle模块模块. 相反的, 我们可以用一些建立在IO::Handle模块模块之上更加好用的模块. 我们还没有告诉你有关面向对象编程的知识（在第11章, 所以我们一定会说的）, 但目前情况下, 你只要跟着本书的例子就可以了. 
 
-Some of these modules do some of the same things that we can already do with Perl's built-in open (depending on which version of Perl we have), but they can be handy when we want to decide as late as possible which module should handle input or output. Instead of using the built-in open, we use the module interface. To switch the behavior, we simply change the module name. Since we've set up our code to use a module interface, it's not that much work to switch modules.  
+这些模块做的工作同Perl自带的open相同（这要依赖你使用的Perl的版本）, 但是, 当我们要尽可能晚的决定模块处理输入输出时, 用他们就很顺手. 代替我们使用内建的open, 我们使用模块接口. 我们只要简单的改一下模块的名字, 就可以改变行为. 因为我们已经为使用模块接口建立了代码, 切换模块就不费多少功夫. 
 
-8. 4. 1. IO::File 
+=head2 8. 4. 1. IO::File
 
-The IO::File module subclasses IO::Handle to work with files. It comes with the standard Perl distribution, so you should already have it. There are a variety of ways to create an IO::File object.  
+IO::File模块是IO::Handle模块模块的子类, 用来同文件打交道. 它是随标准Perl一起发布的, 所以你应该已经有这些模块了. 可以用多种方法来创建一个IO::File对象. 
 
-We can create the filehandle reference with the one-argument form of the constructor. We check the result of the operation by looking for a defined value in the filehandle reference variable.  
+我们可以用单参数构造器的形式创建文件句柄的引用. 我们可以通过检查返回值是否为空来判断文件句柄引用创建是否成功. 
 
 
  use IO::File; 
@@ -131,25 +131,25 @@ We can create the filehandle reference with the one-argument form of the constru
  my $fh = IO::File->new( '> castaways. log' ) 
         or die "Could not create filehandle: $!"; 
 
-If you do not like that (for the same reasons as regular open), use one of the other calling conventions. The optional second argument is the filehandle mode. [] 
+如果不喜欢用这种方式（因为同样原因也不喜欢标准open）, 你可以用另一种调用约定. 可选的第二个参数是文件句柄的打开方式. []
 
-[] These are the ANSI C fopen mode strings. You can also use these with the built-in open. Indeed, IO::File uses the built-in open behind the scenes.  
+[] 这些都是ANSI C 的fopen的文件打开方式的字串. 你在内建的open中也可以使用. 实际上, IO::File在后台也是使用内建的open函数的. 
 
 
  my $read_fh  = IO::File->new( 'castaways. log', 'r' ); 
  my $write_fh = IO::File->new( 'castaways. log', 'w' ); 
 
-Using a bit mask as the mode allows for more granular control. The IO::File module supplies the constants.  
+用打开模式掩码可以对文件进行更细致的控制. IO::File模块提供这些掩码的定义. 
 
 
  my $append_fh = IO::File->new( 'castaways. log', O_WRONLY|O_APPEND ); 
 
-Besides opening named files, we might want to open an anonymous temporary file. On systems that support this sort of thing, we simply create the new object to get a read-write filehandle.  
+除了打开命名文件, 我们可能要打开匿名的临时文件. 对于支持这种文件的系统, 我们只要简单地以读写文件名柄建立一个新对象就可以了. 
 
 
  my $temp_fh = IO::File->new_tmpfile; 
 
-As before, Perl closes these files when the scalar variable goes out of scope, but if that is not enough, we do it ourselves explicitly.  
+在以前, Perl会在这些标量变量跑出范围的时候把文件关闭, 不过, 如果你还不放心, 我们可以显式关闭文件. 
 
 
  $temp_fh->close; 
@@ -157,9 +157,9 @@ As before, Perl closes these files when the scalar variable goes out of scope, b
 
  undef $append_fh; 
 
-8. 4. 2. Anonymous IO::File Objects 
+=head2 8. 4. 2. 匿名IO:File对象
 
-If we don't put our IO::File object in a simple scalar variable, some operations require a slightly modified syntax to work. For example, we want to copy every file matched by the glob pattern of *. input to a corresponding file whose suffix is. output, but do it in parallel. First, we open all the files, both inputs and outputs:' 
+如果我们不是把IO::File返回的对象放到一个标量变量中, 那么操作起来需要一些对语法的小小变动. 比如这么一个例子, 我们现在要把所有符合*. input的文件都拷贝到相应的*. output文件中, 但我们要并行的进行拷贝. 首先, 我们打开所有的文件, 包括输入和输出的双方：'
 
 
  my @handlepairs; 
@@ -173,7 +173,7 @@ If we don't put our IO::File object in a simple scalar variable, some operations
         ]; 
  } 
 
-Now we have an array of references to arrays, each element of which is an IO::File object. Now, let us pump the data from the input files to the output files.  
+好, 现在我们有了一个保存数组引用的数组, 这个数组中所每个元素都是IO::File对象. 现在, 让我们把输入文件的数据灌入输出文件中去. 
 
 
  while (@handlepairs) { 
@@ -186,14 +186,14 @@ Now we have an array of references to arrays, each element of which is an IO::Fi
   } @handlepairs; 
  } 
 
-As long as we have pairs, we keep passing the list through the grep structure: 
+只要还有文件对, 我们就会通过grep结构不断把列表传过来：
 
 
  @handlepairs = grep { CONDITION } @handlepairs; 
 
-On each pass, only the handle pairs that evaluate as true in the grep CONDITION survive. Inside, we take the first element of each pair and try to read from it. If that's successful, write that line to the second element of the pair (the corresponding output handle). If the print is successful, it returns true, which lets grep know that we want to keep that pair. If either the print fails or the getline returns undef, the grep sees the false value as an indication to discard that pair. Discarding the pair automatically closes both filehandles. Cool! 
+在每个传输过程中, 只有那些通过grep条件测试的句柄对才会留下. 在条件测试中, 我们拿句柄对中第一个元素并读取其中内容. 如果处理成功, 则向句柄对中第二个元素（对应的输出句柄）写行. 如果打印成功, 它返回true, 这样就让grep知道我们要保留那个句柄对. 只要打印失败或取行返回未定义值, grep就会认做false并放弃那个句柄对. 放弃句柄对自动就关闭了输入输出句柄. 太妙了！
 
-Note that we can't use the more traditional filehandle read or filehandle print operations, because the reading and writing filehandles were not in a simple scalar variable. We can rewrite that loop to see if copying the handles is easier: 
+注意, 我们不能用更传统的句柄读或者写操作, 因为句柄的读写不能在简单标量变量中. 我们可以通过重写那个循环, 看看拷贝句柄是否更方便：
 
 
  while (@handlepairs) { 
@@ -207,7 +207,7 @@ Note that we can't use the more traditional filehandle read or filehandle print 
   } @handlepairs; 
  } 
 
-This scenario is arguably better. Most of the time, simply copying the complexly referenced value into a simple scalar is easier on the eyes. In fact, another way to write that loop is to get rid of the ugly if structure: 
+这样的写法理论上应该很好. 大多数情况下, 简单地把复杂引用的值拷贝到一个标量看上去应该更简单. 实际上, 用另一种方法写这个循环可以把讨厌的if结构去掉：
 
 
  while (@handlepairs) { 
@@ -218,13 +218,13 @@ This scenario is arguably better. Most of the time, simply copying the complexly
   } @handlepairs; 
  } 
 
-As long as someone understands that and is a partial evaluator and that print returns true when everything is okay, this is a fine replacement. Remember the Perl motto: "There's more than one way to do it" (although not all of them are equally nice or legitimate).  
+如果你懂得and是个部分求值的短路操作, 只要一切OK就返回true, 这就是个不错的替代. 记住Perl的信条："条条大路通罗马"（尽管不一定在所有的情况下都合情合理）. 
 
-8. 4. 3. IO::Scalar 
+=head2 8. 4. 3. IO::Scalar
 
-Sometimes we don't want to print to a file and would rather build up the output in a string. Some module interfaces don't give us that option, so we have to make it look like we are printing to a file by using a filehandle. We might also want to build up our content before we write it to a file so we can encrypt it, compress it, or send it as email directly from your program.  
+有些时候, 我们并不想把内容直接打印到文件, 宁愿把输出送到一个字串中去. 一些模块的接口不提供给我们这个选项, 所以我们不得不利用看上去像打印到文件中去的文件句柄来完成. 我们可能要在把内容写到文件之前先建立好, 这样我们就可以对文件内容进行加密, 压缩或从你的程序中直接把它作为邮件发出去. 
 
-The IO::Scalar module uses the magic of tie behind the scenes to give us a filehandle reference that appends to a scalar. This module doesn't come with the standard Perl distribution, so you'll have to install it yourself most likely.  
+IO::Scalar模块在幕后是使用tie（绑定操作符）来实现魔法的, 它把一个文件句柄引用给一个标量. 这个模块不在标准的Perl发行版中, 所以你可能必须自己安装它. 
 
 
  use IO::Scalar; 
@@ -236,7 +236,7 @@ The IO::Scalar module uses the magic of tie behind the scenes to give us a fileh
 
  print $scalar_fh "The Howells' private beach club is closed\n"; 
 
-Now our log message ends up in the scalar variable $string_log instead of a file. What if we want to read from our logfile, though? We do the same thing. In this example, we create $scalar_fh just as we did before, then read from it with the line input operator. In our while loop, we'll extract the log messages that contain Gilligan (which is probably most of them, since he's always part of the mess): 
+现在我们的日志信息不是放在文件中, 而是放在标量变量$string_log中. 那我们如何从我们的日志文件中读呢？ 故伎重演而已. 在这个例子中, 我们象之前一样创建变量$scalar_fh, 然后用用输入操作符从中读行. 在我们的while循环中, 我们从日志信息中抽出包含Gilligan的行（应该有很多吧, 因为他总是纠缠在许多事情中）：
 
 
  use IO::Scalar; 
@@ -251,15 +251,15 @@ Now our log message ends up in the scalar variable $string_log instead of a file
         print; 
         } 
 
-As of Perl version 5. 8, we can do this directly in Perl without using IO::Scalar.  
+在Perl 5. 8中, 我们可以直接在Perl中写这样的语句, 而不必引入IO::Scalar:
 
 
  open( my $fh, '>>', \$string_log ) 
         or die "Could not append to string! $!"; 
 
-8. 4. 4. IO::Tee 
+=head2 8. 4. 4. IO::Tee
 
-What if we want to send output to more than one place at a time? What if we want to send it to a file and save it in a string at the same time? Using what we know already, we had have to do something like this: 
+如果我们要一次将结果发送到多个不同的地方, 应该如何做？ 如果我们要把内容发送到一个文件的同时存入一个字串中呢？ 用我们目前所知, 我们大概不得不做如下这些：
 
 
  my $string = ''; 
@@ -274,14 +274,14 @@ What if we want to send output to more than one place at a time? What if we want
  print $log_fh    $log_message; 
  print $scalar_fh $log_message; 
 
-Of course, we could shorten that a bit so we only have one print statement. We use the foreach control structure to iterate through the filehandle references, store each in $fh in turn, and print to each one.  
+当然, 我们可以缩短一些, 这样我们可以只用一个打印语句. 我们用foreach控制结构来迭代地使用句柄引用, 用$fn一次换一个, 打印到每个句柄. 
 
 
  foreach my $fh ( $log_fh, $scalar_fh ) { 
         print $fh $log_message; 
  } 
 
-That's still a bit too much work. In the foreach, we had to decide which filehandles to include. What if we could just define a group of filehandles that answered to the same name? Well, that's what IO::Tee does for us. Imagine it like a tee connector on a bilge output pipe; when the water gets to the tee, it can flow it two different directions at the same time. When our output gets to IO::Tee, it can go to two (or more) different channels at the same time. That is, IO::Tee multiplexes output. In this example, the castaways log message goes to both the logfile and the scalar variable.  
+不过, 这个看上去还是有些复杂. 在foreach, 我们还得决定是哪个句柄. 以不能定义一组句柄来回答同样的问题呢？ 哈, 这就是IO::Tee提供的功能. 可以把它想像成舱底连接输出水管儿的T字连接口; 当水灌到T字口的时候, 它会同时向两个不同的方向流. 当我们的数据灌入IO::Tee时, 它会流向两个（或多个）不同管道. 就是说IO::Tee实现了多路输出. 在下面 例子中, 日志同时写入logfile和标量变量. 
 
 
  use IO::Tee; 
@@ -292,7 +292,7 @@ That's still a bit too much work. In the foreach, we had to decide which filehan
 
  print $tee_fh "The radio works in the middle of the ocean!\n"; 
 
-That's not all, though. If the first argument to IO::Tee is an input filehandle (the succeeding arguments must be output filehandles), we can use the same teed filehandle to read from input and write to the output. The source and destination channels are different, but we get to treat them as a single filehandle. ' 
+呵呵, 还有更绝的. 如果我们给IO::Tee一些参数（第一个为输入句柄, 其后均为输出句柄）, 我们可以用同一个Tee过的句柄来从输入中读和从输出中写. 虽然输出源和输出目的地不同, 但我们可以用同一个句柄来操作.  '
 
 
  use IO::Tee; 
@@ -308,11 +308,11 @@ That's not all, though. If the first argument to IO::Tee is an input filehandle 
  # prints to $log_fh and $scalar_fh 
  print $tee_fh $message; 
 
-The $read_fh doesn't have to be connected to a file, either. It might also be connected to a socket, a scalar variable, an external command's output, [*] or anything else we can dream up.  
+而且$read_fh并不一定非要连上文件. 它可以连上一个套接字, 一个标量变量, 一个外部命令的输出, [*] 或者任何其它你想得出来的东西. 
 
-8. 5. Directory Handle References 
+=head2 8. 5. 目录句柄引用
 
-In the same way that we can create references to filehandles, we can create directory handle references.  
+用创建对句柄的引用同样的方法, 我可以创建对目录句柄的引用. 
 
 
  opendir my $dh, '. ' or die "Could not open directory: $!"; 
@@ -322,13 +322,13 @@ In the same way that we can create references to filehandles, we can create dire
         print "Skipper, I found $file!\n"; 
  } 
 
-The directory handle reference obeys the same rules we laid out before. This only works if the scalar variable does not already have a value, and the handle automatically closes when the variable goes out of scope or we assign it a new value.  
+对目录句柄引用遵从我们在之前我们说过的规则. 它必须在标量变量没有值的情况下才能工作, 跑出范围或变量被另外赋值时, 句柄自动关闭. 
 
-8. 5. 1. IO::Dir 
+=head2 8. 5. 1. IO::Dir
 
-We can use object-oriented interfaces for directory handles too. The IO::Dir module has been part of the standard Perl distribution since 5. 6. It doesn't add interesting new features but wraps the Perl built-in functions. []' 
+我们也是用面向对象的接口来处理目录句柄. 从Perl 5. 6开始, IO::Dir模块就是标准发行版的一部份了. 它并没有添加什么新的功能, 无非包装了Perl的内建函数而已. [+] []'
 
-[] For each IO::Dir method name, append "dir" and look at the documentation in perlfunc.  
+[] 对于每个IO::Dir模块名, 加上"dir" 并用perlfunc查看其文档. 
 
 
  use IO::Dir; 
@@ -341,7 +341,7 @@ We can use object-oriented interfaces for directory handles too. The IO::Dir mod
         print "Skipper, I found $file!\n"; 
         } 
 
-We don't have to create a new directory handle if we decide we want to go through the list again (perhaps later in the program). We can rewind the directory handle to start over: 
+如果我们要重新查看文件列表的时候（可能在程序的后面）, 我们不必重建句柄. 我们可以用rewind来重用目录句柄：
 
 
  while( defined( my $file = $dir_fh->read ) ) { 
@@ -357,17 +357,17 @@ We don't have to create a new directory handle if we decide we want to go throug
         print "I can still find $file!\n"; 
  } 
 
-8. 6. Exercises 
+=head2 8. 6. 习题
 
-You can find the answers to these exercises in "Answers for Chapter 8" in the Appendix.  
+答案附录找. 
 
-8. 6. 1. Exercise 1 [20 min] 
+=head2 8. 6. 1. 练习1 ［20分钟］
 
-Write a program that prints the date and the day of the week, but allow the user to choose to send the output either to a file, a scalar, or both at the same time. No matter which output channels the user selects, send the output with a single print statement. If the user chooses to send the output to a scalar, at the end of the program print the scalar's value to standard output.  
+写一个程序打印一周的日期, 但要允许用户选择输出到文件或标量, 或者同时输出. 不论用户如何选择, 都必须用一个打印语句输出. 如果用户选择打印到标量, 那么在程序结束时, 要将其打印到标准输出. 
 
-8. 6. 2. Exercise 2 [30 min] 
+=head2 8. 6. 2. 练习 2 [30 分钟]
 
-The Professor has to read a logfile that looks like: 
+教授必须读如下的日志：
 
 
  Gilligan: 1 coconut 
@@ -377,15 +377,15 @@ The Professor has to read a logfile that looks like:
  Professor: 3 coconuts 
  MaryAnn: 2 papayas . . .  
 
-He wants to write a series of files, called gilligan. info, maryann. info, and so on. Each file should contain all the lines that begin with that name. (Names are always delimited by the trailing colon. ) At the end, gilligan. info should start with: 
+他要写一系列的文件, 名字是：gilligan. info, maryann. info等等, 以此类推. 每个文件必须只有以文件名开始的行. （名字以冒号分隔. ） 其结果, gilligan. info应该是如下样子：
 
 
  Gilligan: 1 coconut 
  Gilligan: 1 banana 
 
-Now the logfile is large, and the coconut-powered computer is not very fast, so he wants to process the input file in one pass and write all output files in parallel. How does he do it? 
+现在这个日志文件很大, 而计算机又不快, 所以他要一次读入, 并行输出. 他该怎么办呢？
 
-Hint: use a hash, keyed by the castaway name, holding IO::File objects for each output file. Create them as necessary.  
+提示： 用一个散列, 键用名字, 值是IO::File对象提供的每个输出文件. 按照需要创建他们. 
 
-8. 6. 3. Exercise 3 [15 min] 
+=head2 8. 6. 3. 练习 3 [15 分钟]
 

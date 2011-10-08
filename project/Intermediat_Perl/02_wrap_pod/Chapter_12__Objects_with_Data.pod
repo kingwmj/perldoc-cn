@@ -1,8 +1,8 @@
-Chapter 12. Objects with Data 
+=head2 Chapter 12. Objects with Data 
 
 Using the simple syntax introduced in Chapter 11, we have class methods, (multiple) inheritance, overriding, and extending. We've been able to factor out common code and provide a way to reuse implementations with variations. This is at the core of what objects provide, but objects also provide instance data, which we haven't even begun to cover.  
 
-12. 1. A Horse Is a Horse, of Course of Courseor Is It? 
+=head2 12. 1. A Horse Is a Horse, of Course of Courseor Is It? 
 
 Let's look at the code used in Chapter 11 for the Animal classes and Horse classes: 
 
@@ -48,7 +48,7 @@ At this point, $tv_horse is an instance of Horse. [] That is, it's a specific ho
 
 [] Although doing so outside the class is a bad idea, as we'll show later.  
 
-12. 2. Invoking an Instance Method 
+=head2 12. 2. Invoking an Instance Method 
 
 The method arrow can be used on instances, as well as names of packages (classes). Let's get the sound that $tv_horse makes: 
 
@@ -70,7 +70,7 @@ If Perl did not find Horse::sound, it would walk up the @Horse::ISA list to try 
 
 [*] This is perhaps different from other OOP languages with which you may be familiar.  
 
-12. 3. Accessing the Instance Data 
+=head2 12. 3. Accessing the Instance Data 
 
 Because we get the instance as the first parameter, we can now access the instance-specific data. In this case, let's add a way to get at the name: 
 
@@ -95,7 +95,7 @@ Inside Horse::name, the @_ array contains just $tv_horse, which the shift stores
 
  Mr. Ed says neigh.  
 
-12. 4. How to Build a Horse 
+=head2 12. 4. How to Build a Horse 
 
 If we constructed all our horses by hand, we'd most likely make mistakes from time to time. Making the "inside guts" of a Horse visible also violates one of the principles of OOP. That's good if we're a veterinarian but not if we just like to own horses. We let the Horse class build a new horse: 
 
@@ -123,7 +123,7 @@ We're back to a class method, so the two arguments to Horse::named are "Horse" a
 
 We called the constructor named here so it quickly denotes the constructor's argument as the name for this particular Horse. We can use different constructors with different names for different ways of "giving birth" to the object (such as recording its pedigree or date of birth). However, we'll find that most people use a single constructor named new, with various ways of interpreting the arguments to new. Either style is fine, as long as we document our particular way of giving birth to an object. Most core and CPAN modules use new, with notable exceptions, such as DBI's DBI->connect( ). It's really up to the author.  
 
-12. 5. Inheriting the Constructor 
+=head2 12. 5. Inheriting the Constructor 
 
 Was there anything specific to Horse in that method? No. Therefore, it's also the same recipe for building anything else inherited from Animal, so let's put it there: 
 
@@ -161,7 +161,7 @@ We get a debugging value:
 
 Why? Because the Animal::speak method expects a class name as its first parameter, not an instance. When we pass in the instance, we'll use a blessed scalar reference as a string, which shows up as we showed it just now similar to a stringified reference, but with the class name in front.  
 
-12. 6. Making a Method Work with Either Classes or Instances 
+=head2 12. 6. Making a Method Work with Either Classes or Instances 
 
 All we need to fix this is a way to detect whether the method is called on a class or an instance. The most straightforward way to find out is with the ref operator. This operator returns a string (the class name) when used on a blessed reference, and undef when used on a string (like a class name). We modify the name method first to notice the change: 
 
@@ -192,7 +192,7 @@ and now we'll fix speak to use this:
 
 Since sound already worked with either a class or an instance, we're done! 
 
-12. 7. Adding Parameters to a Method 
+=head2 12. 7. Adding Parameters to a Method 
 
 Let's train our animals to eat: 
 
@@ -248,7 +248,7 @@ An instance method with parameters gets invoked with the instance, and then the 
 
 The instance methods form the Application Programming Interface (API) for an object. Most of the effort involved in designing a good object class goes into the API design, because the API defines how reusable and maintainable the object and its subclasses will be. Don't rush to freeze an API design before you've considered how you (or others) will use the object.  
 
-12. 8. More Interesting Instances 
+=head2 12. 8. More Interesting Instances 
 
 What if an instance needs more data? Most interesting instances are made of many items, each of which can, in turn, be a reference or another object. The easiest way to store these items is often in a hash. The keys of the hash serve as the names of parts of the object (also called instance or member variables), and the corresponding values are, well, the values.  
 
@@ -299,7 +299,7 @@ Thus, all animals are brown (muddy, perhaps), unless a specific animal class giv
 
 Now, because name and named were the only methods that referenced the structure of the object, the remaining methods can stay the same, so speak still works as before. This supports another basic rule of OOP: if only the object accesses its internal data, there's less code to change when it's time to modify that structure.  
 
-12. 9. A Horse of a Different Color 
+=head2 12. 9. A Horse of a Different Color 
 
 Having all horses be brown would be boring. Let's add a method or two to get and set the color: 
 
@@ -326,7 +326,9 @@ which results in:
 
  Mr. Ed is colored black-and-white 
 
-12. 10. Getting Our Deposit Back Because of the way the code is written, the setter also returns the updated value. Think about this (and document it) when we write a setter. What does the setter return? Here are some common variations: 
+=head2 12. 10. Getting Our Deposit Back 
+
+Because of the way the code is written, the setter also returns the updated value. Think about this (and document it) when we write a setter. What does the setter return? Here are some common variations: 
 
 The updated parameter (same as what was passed in) 
 
@@ -402,7 +404,7 @@ Finally, returning a success status is useful if it's fairly common for an updat
 
 In summary: use what you want, be consistent if you can, but document it nonetheless (and don't change it after you've already released one version).  
 
-12. 11. Don't Look Inside the Box 
+=head2 12. 11. Don't Look Inside the Box 
 
 We might have obtained or set the color outside the class simply by following the hash reference: $tv_horse->{Color}. However, this violates the encapsulation of the object by exposing its internal structure. The object is supposed to be a black box, but we've pried off the hinges and looked inside.  
 
@@ -434,7 +436,7 @@ We can still maintain the old interface if we use a setter and getter, because t
 
 If we use code outside the class that looks at $tv_horse->{Color} directly, this change is no longer possible. It won't work to store a string ('blue') where an arrayref is needed ([0, 0, 255]) or to use an arrayref as a string. This is why OO programming encourages you to call getters and setters, even if they take some time.  
 
-12. 12. Faster Getters and Setters 
+=head2 12. 12. Faster Getters and Setters 
 
 Because we're going to play nice and always call the getters and setters instead of reaching into the data structure, getters and setters are called frequently. To save a teeny-tiny bit of time, we might see these getters and setters written as: 
 
@@ -445,7 +447,7 @@ Because we're going to play nice and always call the getters and setters instead
 
 We save a bit of typing when we do this, and the code is slightly faster, although probably not enough for us to notice it with everything else that's going on in our program. The $_[0] is just the single element access to the @_ array. Instead of using shift to put the argument into another variable, we can simply use it directly.  
 
-12. 13. Getters That Double as Setters 
+=head2 12. 13. Getters That Double as Setters 
 
 Another alternative to the pattern of creating two different methods for getting and setting a parameter is to create one method that notes whether or not it gets any additional arguments. If the arguments are absent, it's a get operation; if the arguments are present, it's a set operation. A simple version looks like: 
 
@@ -472,7 +474,7 @@ The presence of the parameter in the second line denotes that we are setting the
 
 This strategy is attractive because of its simplicity, but it also has disadvantages. It complicates the actions of the getter, which is called frequently. It also makes it difficult to search through our code to find the setters of a particular parameter, which are often more important than the getters. We've been burned in the past when a setter became a getter because another function returned more parameters than expected after an upgrade.  
 
-12. 14. Restricting a Method to Class-Only or Instance-Only 
+=head2 12. 14. Restricting a Method to Class-Only or Instance-Only 
 
 Setting the name of an unnameable generic Horse is probably not a good idea; neither is calling named on an instance. Nothing in the Perl method definition says "this is a class method" or "this is an instance method. " Fortunately, the ref operator lets us throw an exception when called incorrectly. As an example of instance- or class-only methods, consider the following, where we check the argument to see what to do: 
 
@@ -496,11 +498,11 @@ The ref function returns true for an instance, which is just a blessed reference
 
 Just as croak is provided as the alternate form of die, Carp also provides carp as a replacement for warn. Each tells the user which line of code called the code that caused the problem. Instead of using die or warn in your modules, use the Carp functions instead. Your users will thank you for it.  
 
-12. 15. Exercise 
+=head2 12. 15. Exercise 
 
 You can find the answer to this exercise in "Answer for Chapter 12" in the Appendix.  
 
-12. 15. 1. Exercise [45 min] 
+=head2 12. 15. 1. Exercise [45 min] 
 
 Give the Animal class the ability to get and set the name and color. Be sure that your result works under use strict. Also make sure your get methods work with both a generic animal and a specific animal instance. Test your work with: 
 

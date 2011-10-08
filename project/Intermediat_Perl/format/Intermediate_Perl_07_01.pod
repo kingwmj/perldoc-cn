@@ -1,186 +1,76 @@
-=EN 7. 1. Referencing a Named Subroutine
-=CN 7. 1. 对命名子程序的引用
+=EN Referencing a Named Subroutine
+=CN 对命名子程序的引用
 =EN The Skipper and Gilligan are having a conversation:
 =CN Skipper和Gilligan之间有一通对话：
-sub skipper_greets {
- my $person = shift;
- print "Skipper: Hey there, $person!\n";
-}
-sub gilligan_greets {
- my $person = shift;
- if ($person eq "Skipper") {
- print "Gilligan: Sir, yes, sir, $person!\n";
- } else {
- print "Gilligan: Hi, $person!\n";
- }
-}
-skipper_greets("Gilligan");
-gilligan_greets("Skipper");
 =EN This results in:
 =CN 这里是输出结果：
-Skipper: Hey there, Gilligan!
-Gilligan: Sir, yes, sir, Skipper!
 =EN So far, nothing unusual has happened. Note, however, that Gilligan has two different behaviors, depending on whether he is addressing the Skipper or someone else. 
 =CN 到现在为止, 一切正常. 然而, 你要注意, Gilligan有两个不同的行为, 这依赖于它是否对Skipper说话, 还是对其它人说. 
 =EN Now, have the Professor walk into the hut. Both of the Minnow crew greet the newest participant:
 =CN 现在, 教授到屋子里来了. 这两个Minnow船员都向新来者问候：
-skipper_greets('Professor');
-gilligan_greets('Professor');
 =EN which results in:
 =CN 其输出是：
-Skipper: Hey there, Professor!
-Gilligan: Hi, Professor!
 =EN Now the Professor feels obligated to respond:
 =CN 这下轮到教授要作出反映了：
-sub professor_greets {
- my $person = shift;
- print "Professor: By my calculations, you must be $person!\n";
-}
-professor_greets('Gilligan');
-professor_greets('Skipper');
 =EN resulting in:
 =CN 输出结果是：
-Professor: By my calculations, you must be Gilligan!
-Professor: By my calculations, you must be Skipper!
-=EN Whew! That's lot of typing and not very general. If each person's behavior is in a separate named subroutine, and a new person walks in the door, we have to figure out what other subroutines to call. We could certainly do it with enough hard-to-maintain code, but we can simplify the process by adding a bit of indirection, just as we did with arrays and hashes. 
-=CN 咻！这程序写得真费事, 而且一点也不抽象. 如果每个乘客的行为以不同的子程序命名, 而且每个乘客都进来的话, 我们要不得不写多少程序来对付啊. 当然, 我们可以用这样难以维护的代码来处理这件事, 但是, 就像我们在数组和散列上做的那样, 我们只要加一些小技巧, 就可以简化处理过程. 
-=EN First, let's use the "take a reference to" operator. It actually needs no introduction because it's that very same backslash as before:
-=CN 首先, 让我们用"取引用"操作符. 实际上这也不用介绍, 因为它与之前的反斜杠长得非常像：
-my $ref_to_greeter = \&skipper_greets;
-=EN We're taking a reference to the subroutine skipper_greets( ). Note that the preceding ampersand is mandatory here, and the lack of trailing parentheses is also intentional. Perl stores the reference to the subroutine (a coderef) within $ref_to_greeter, and, like all other references, it fits nearly anywhere a scalar fits. 
-=CN 我们现在取子程序skipper_greets()的引用. 注意, 前导的&字符在这里是强制必须的, 而其后的小括号也不要加. Perl会把对这个子程序的引用放到变量$ref_to_greeter中, 而且, 同对其它的引用一样, 它适合于任何可以使用标量的地方. 
-=EN There's only one reason to get back to the original subroutine by dereferencing the coderef: to invoke it. Dereferencing a code reference is similar to dereferencing other references. First, start with the way we would have written it before we heard of references (including the optional ampersand prefix):
-=CN 还原一个对子程序的引用的惟一目的就是：为了调用它. 还原对代码的引用同还原对其它数据类型的引用是相似的. 首先, 我们可以采用我们在听说引用以前写过的方法来处理（包括前导的&号）
-& skipper_greets ( 'Gilligan' )
+=EN Whew! That's lot of typing and not very general. 
+=CN 咻！这程序写得真费事, 而且一点也不抽象. 
+=EN If each person's behavior is in a separate named subroutine, and a new person walks in the door, we have to figure out what other subroutines to call.
+=CN 如果每个乘客的行为以不同的子程序命名, 而且每个乘客都进来的话, 我们要不得不写多少程序来对付啊.
+=EN We could certainly do it with enough hard-to-maintain code, but we can simplify the process by adding a bit of indirection, just as we did with arrays and hashes. 
+=CN 当然, 我们可以用这样难以维护的代码来处理这件事, 但是, 就像我们在数组和散列上做的那样, 我们只要加一些小技巧, 就可以简化处理过程. 
+=EN First, let's use the "take a reference to" operator.
+=CN 首先, 让我们用"取引用"操作符. 
+=EN It actually needs no introduction because it's that very same backslash as before:
+=CN 实际上这也不用介绍, 因为它与之前的反斜杠长得非常像：
+=EN We're taking a reference to the subroutine skipper_greets( ).
+=CN 我们现在取子程序skipper_greets()的引用. 
+=EN Note that the preceding ampersand is mandatory here, and the lack of trailing parentheses is also intentional.
+=CN 注意, 前导的&字符在这里是强制必须的, 而其后的小括号也不要加. 
+=EN Perl stores the reference to the subroutine (a coderef) within $ref_to_greeter, and, like all other references, it fits nearly anywhere a scalar fits. 
+=CN Perl会把对这个子程序的引用放到变量$ref_to_greeter中, 而且, 同对其它的引用一样, 它适合于任何可以使用标量的地方. 
+=EN There's only one reason to get back to the original subroutine by dereferencing the coderef: to invoke it.
+=CN 还原一个对子程序的引用的惟一目的就是：为了调用它. 
+=EN Dereferencing a code reference is similar to dereferencing other references.
+=CN 还原对代码的引用同还原对其它数据类型的引用是相似的. 
+=EN First, start with the way we would have written it before we heard of references (including the optional ampersand prefix):
+=CN 首先, 我们可以采用我们在听说引用以前写过的方法来处理（包括前导的&号）
 =EN Next, we replace the name of the subroutine with curly braces around the thing holding the reference:
 =CN 下一步, 我们把子程序的名字用引用变量名字外套花括号代替：
-& { $ref_to_greeter } ( 'Gilligan' )
 =EN There we have it. This construct invokes the subroutine currently referenced by $ref_to_greeter, passing it the single Gilligan parameter. 
 =CN 就是它了. 这个方法调用了当前$ref_to_greeter变量中保存的那个对子程序的引用, 并给它传了一个字串参数：Gilligan. 
-=EN But boy-oh-boy, is that ugly or what? Luckily, the same reference simplification rules apply. If the value inside the curly braces is a simple scalar variable, we can drop the braces:
-=CN 不过, 这样子是不是太丑陋了？ 幸运的是同样的简化规则也能应用于对子程序的引用. 如果花括号里是简单的标量变量的话, 花括号可以去掉：
-& $ref_to_greeter ( 'Gilligan' )
+=EN But boy-oh-boy, is that ugly or what? Luckily, the same reference simplification rules apply.
+=CN 不过, 这样子是不是太丑陋了？ 幸运的是同样的简化规则也能应用于对子程序的引用. 
+=EN If the value inside the curly braces is a simple scalar variable, we can drop the braces:
+=CN 如果花括号里是简单的标量变量的话, 花括号可以去掉：
 =EN We can also flip it around a bit with the arrow notation:
 =CN 我们也可以把它转换成带箭头的格式：
-$ref_to_greeter -> ( 'Gilligan' )
 =EN That last form is particularly handy when the coderef is in a larger data structure, as you will see in a moment. 
 =CN 最后一种形式特别适用于在一个大数据结构中进行代码引用, 你一会儿就会看到. 
 =EN To have both Gilligan and the Skipper greet the Professor, we merely need to iterate over all the subroutines:
 =CN 如果让Gilligan和Skipper向教授问好, 我们只需要迭代调用子程序就可以了：
-for my $greet (\&skipper_greets, \&gilligan_greets) {
- $greet->('Professor');
-}
-=EN First, inside the parentheses, we create a list of two items, each of which is a coderef. The coderefs are then individually dereferenced, invoking the corresponding subroutine and passing it the Professor string. 
-=CN 首先, 在小括号里面, 我们建立一个两个元素的列表, 而且这两个元素各保存一个对代码块的引用. 而每个对代码的引用都各自被还原, 调用相应的子程序并传入"教授"字串. 
-=EN We have seen the coderefs in a scalar variable and as an element of a list. Can we put these coderefs into a larger data structure? Certainly. Create a table that maps people to the behavior they exhibit to greet others, and then rewrite that previous example using the table:
-=CN 我们已经看到了把代码引用作为一个列表中的元素. 那我们是否可以把代码引用放到一个大的数据结构中呢？ 当然可以. 我们可以创建一个表, 来让乘客与其向他们问候动作对应, 我们可以重写之前的例子：
-sub skipper_greets {
- my $person = shift;
- print "Skipper: Hey there, $person!\n";
-}
-sub gilligan_greets {
- my $person = shift;
- if ($person eq 'Skipper') {
- print "Gilligan: Sir, yes, sir, $person!\n";
- } else {
- print "Gilligan: Hi, $person!\n";
- }
-}
-sub professor_greets {
- my $person = shift;
- print "Professor: By my calculations, you must be $person!\n";
-}
-my %greets = (
- Gilligan => \&gilligan_greets, 
- Skipper => \&skipper_greets, 
- Professor => \&professor_greets, 
-);
-for my $person (qw(Skipper Gilligan)) {
- $greets{$person}->('Professor');
-}
-=EN Note that $person is a name, which we look up in the hash to get to a coderef. Then we dereference that coderef, passing it the name of the person being greeted, and we get the correct behavior, resulting in:
-=CN 注意, 变量$person是字名, 他们以前在散列中查找代码引用. 然后我们还原那个代码引用, 并传给他要问候的人名, 获得正确的问候行为, 输出结果如下：
-Skipper: Hey there, Professor!
-Gilligan: Hi, Professor!
+=EN First, inside the parentheses, we create a list of two items, each of which is a coderef.
+=CN 首先, 在小括号里面, 我们建立一个两个元素的列表, 而且这两个元素各保存一个对代码块的引用. 
+=EN The coderefs are then individually dereferenced, invoking the corresponding subroutine and passing it the Professor string. 
+=CN 而每个对代码的引用都各自被还原, 调用相应的子程序并传入"教授"字串. 
+=EN We have seen the coderefs in a scalar variable and as an element of a list.
+=CN 我们已经看到了把代码引用作为一个列表中的元素. 
+=EN Can we put these coderefs into a larger data structure
+=CN 那我们是否可以把代码引用放到一个大的数据结构中呢
+=EN Certainly
+=CN 当然可以
+=EN Create a table that maps people to the behavior they exhibit to greet others, and then rewrite that previous example using the table:
+=CN 我们可以创建一个表, 来让乘客与其向他们问候动作对应, 我们可以重写之前的例子：
+=EN Note that $person is a name, which we look up in the hash to get to a coderef.
+=CN 注意, 变量$person是字名, 他们以前在散列中查找代码引用. 
+=EN Then we dereference that coderef, passing it the name of the person being greeted, and we get the correct behavior, resulting in:
+=CN 然后我们还原那个代码引用, 并传给他要问候的人名, 获得正确的问候行为, 输出结果如下：
 =EN Now have everyone greet everyone, in a very friendly room:
 =CN 现在我们可以让大家互相问候了, 在一个十分友好的房间：
-sub skipper_greets {
- my $person = shift;
- print "Skipper: Hey there, $person!\n";
-}
-sub gilligan_greets {
- my $person = shift;
- if ($person eq 'Skipper') {
- print "Gilligan: Sir, yes, sir, $person!\n";
- } else {
- print "Gilligan: Hi, $person!\n";
- }
-}
-sub professor_greets {
- my $person = shift;
- print "Professor: By my calculations, you must be $person!\n";
-}
-my %greets = (
- Gilligan => \&gilligan_greets, 
- Skipper => \&skipper_greets, 
- Professor => \&professor_greets, 
-);
-my @everyone = sort keys %greets;
-for my $greeter (@everyone) {
- for my $greeted (@everyone) {
- $greets{$greeter}->($greeted)
- unless $greeter eq $greeted; # no talking to yourself
- }
-}
 =EN This results in:
 =CN 其输出结果如下：
-Gilligan: Hi, Professor!
-Gilligan: Sir, yes, sir, Skipper!
-Professor: By my calculations, you must be Gilligan!
-Professor: By my calculations, you must be Skipper!
-Skipper: Hey there, Gilligan!
-Skipper: Hey there, Professor!
 =EN Hmm. That's a bit complex. Let's let them walk into the room one at a time:
 =CN 呣. 这里有些复杂. 让我们使他们一个个进来. 
-sub skipper_greets {
- my $person = shift;
- print "Skipper: Hey there, $person!\n";
-}
-sub gilligan_greets {
- my $person = shift;
- if ($person eq 'Skipper') {
- print "Gilligan: Sir, yes, sir, $person!\n";
- } else {
- print "Gilligan: Hi, $person!\n";
- }
-}
-sub professor_greets {
- my $person = shift;
- print "Professor: By my calculations, you must be $person!\n";
-}
-my %greets = (
- Gilligan => \&gilligan_greets, 
- Skipper => \&skipper_greets, 
- Professor => \&professor_greets, 
-);
-my @room; # initially empty
-for my $person (qw(Gilligan Skipper Professor)) {
- print "\n";
- print "$person walks into the room. \n";
- for my $room_person (@room) {
- $greets{$person}->($room_person); # speaks
- $greets{$room_person}->($person); # gets reply
- }
- push @room, $person; # come in, get comfy
-}
 =EN The result is a typical day on that tropical island:
 =CN 输出结果如下, 岛上典型的一天是这样的：
-Gilligan walks into the room. 
-Skipper walks into the room. 
-Skipper: Hey there, Gilligan!
-Gilligan: Sir, yes, sir, Skipper!
-Professor walks into the room. 
-Professor: By my calculations, you must be Gilligan!
-Gilligan: Hi, Professor!
-Professor: By my calculations, you must be Skipper!
-Skipper: Hey there, Professor!

@@ -1,4 +1,0 @@
-=EN 6.5. Using the map and grep Operators
-=CN 6.5. 使用map和grep操作符
-=EN As the data structures become more complex, it helps to have higher-level constructs deal with common tasks such as selection and transformation. In this regard, Perl’s grep and map operators are worth mastering.
-=CN 随着数据结构越来越复杂， 我们就能有更强的结构来处理那些经常性的拣选和转换的任务。 考虑这些因素， 掌握Perl的grep和map操作符是值得的。

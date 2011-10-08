@@ -1,8 +1,8 @@
-Chapter 6. Manipulating Complex Data Structures
+=head2 Chapter 6. Manipulating Complex Data Structures
 
 Now that you've seen the basics of references, let's look at additional ways to manipulate complex data. We'll start by using the debugger to examine complex data structures and then use Data::Dumper to show the data under programmatic control. Next, you'll learn to store and retrieve complex data easily and quickly using Storable, and finally we'll wrap up with a review of grep and map and see how they apply to complex data.
 
-6.1. Using the Debugger to View Complex Data
+=head2 6.1. Using the Debugger to View Complex Data
 
 The Perl debugger can display complex data easily. For example, let's single-step through one version of the byte-counting program from Chapter 5:
 
@@ -213,7 +213,7 @@ Note that dumping $total_bytes{$source} shows that it was a hash reference. Also
 
 As we can see with the debugger, we can easily show the data, even structured data, to help us understand our program.
 
-6.2. Viewing Complex Data with Data::Dumper
+=head2 6.2. Viewing Complex Data with Data::Dumper
 
 Another way to visualize a complex data structure rapidly is to dump it. A particularly nice dumping package is included in the Perl core distribution, called Data::Dumper. Let's replace the last half of the byte-counting program with a simple call to Data::Dumper:
 
@@ -289,7 +289,7 @@ Notice how we've created two different variables now, since there are two parame
 
 Note that the phrase REUSED_ADDRESS indicates that some parts of the data are actually references we've already seen.
 
-6.3. YAML
+=head2 6.3. YAML
 
 Data::Dumper is not the only game on the island, though. Brian Ingerson came up with Yet Another Markup Language (YAML) to provide a more readable (and more compact) dump. It works in the same way as Data::Dumper. We'll see more about YAML when we talk about modules later, so we won't say much about it here.
 
@@ -320,7 +320,7 @@ When you use the same data from the earlier example, you get this output:
 
 That's a lot easier to read because it takes up less space on the screen, which can be really handy when you have deeply nested data structures.
 
-6.4. Storing Complex Data with Storable
+=head2 6.4. Storing Complex Data with Storable
 
 We can take the output of Data::Dumper's Dumper routine, place it into a file, and then load the file to a different program. When we evaluate the code as Perl code, we end up with two package variables, $VAR1 and $VAR2, that are equivalent to the original data. This is called marshaling the data: converting complex data into a form that we can write to a file as a stream of bytes for later reconstruction.
 
@@ -396,11 +396,11 @@ and we'll get:
 
 just as we did in the original program. With Storable, we can store data and retrieve it later. More information on Storable can be found in perldoc Storable, as always.
 
-6.5. Using the map and grep Operators
+=head2 6.5. Using the map and grep Operators
 
 As the data structures become more complex, it helps to have higher-level constructs deal with common tasks such as selection and transformation. In this regard, Perl's grep and map operators are worth mastering.
 
-6.6. Applying a Bit of Indirection
+=head2 6.6. Applying a Bit of Indirection
 
 Some problems that may appear very complex are actually simple once we've seen a solution or two. For example, suppose we want to find the items in a list that have odd digit sums but don't want the items themselves. What we want to know is where they occurred in the original list.
 
@@ -460,7 +460,7 @@ More easily, we can skip the step of building the intermediate array by simply r
 
 If the index is good, return the resulting array value. If the index is bad, return an empty list, making that item disappear.
 
-6.7. Selecting and Altering Complex Data
+=head2 6.7. Selecting and Altering Complex Data
 
 We can use these operators on more complex data. Taking the provisions list from Chapter 5:
 
@@ -507,17 +507,17 @@ Yes, a map within a map. The outer map selects one person at a time. We save thi
 
 We had to use $person here to hold the outer $_ temporarily. Otherwise, we can't refer to both temporary values for the outer map and the inner map.
 
-6.8. Exercises
+=head2 6.8. Exercises
 
 You can find the answers to these exercises in "Answers for Chapter 6" in the Appendix.
 
-6.8.1. Exercise 1 [20 min]
+=head2 6.8.1. Exercise 1 [20 min]
 
 The program from Exercise 2 in Chapter 5 needs to read the entire datafile each time it runs. However, the Professor has a new router logfile each day and doesn't want to keep all that data in one giant file that takes longer and longer to process.
 
 Fix up that program to keep the running totals in a datafile so the Professor can simply run it on each day's logs to get the new totals.
 
-6.8.2. Exercise 2 [5 min]
+=head2 6.8.2. Exercise 2 [5 min]
 
 To make it really useful, what other features should be added to that program? You don't need to implement them!
 

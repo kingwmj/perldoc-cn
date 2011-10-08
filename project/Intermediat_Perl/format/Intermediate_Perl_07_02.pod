@@ -1,5 +1,5 @@
-=EN 7. 2. Anonymous Subroutines
-=CN 7. 2. 匿名子程序
+=EN Anonymous Subroutines
+=CN 匿名子程序
 =EN In that last example, we never explicitly called subroutines such as professor_greets( ), we only called them indirectly through the coderef. Thus, we wasted some brain cells to come up with a name for the subroutine used only in one other place, to initialize the data structure. But, just as we can create anonymous hashes and arrays, we can create anonymous subroutines !
 =CN 在最后那个例子中, 我们并没有显式的调用子程序, 如profressor_greets( ), 我们只是间接通过代码引用来调用它. 所以, 为了初始化一个数据结构, 我们仅仅因为在其它地方使用而给子程序提供名字纯属浪费脑筋. 但是, 就像我们可以建立匿名数组和匿名散列一样, 我们也可能建立一个匿名的子程序！
 =EN Let us add another island inhabitant: Ginger. But rather than define her greeting behavior as a named subroutine, we create an anonymous subroutine:

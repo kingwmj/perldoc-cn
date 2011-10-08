@@ -1,31 +1,22 @@
-=EN 8. 6. Exercises
-=CN 8. 6. 练习
+=EN Exercises
+=CN 练习
 =EN You can find the answers to these exercises in "Answers for Chapter 8" in the Appendix. 
 =CN 答案附录找. 
-=EN 8. 6. 1. Exercise 1 [20 min]
-=CN 8. 6. 1. 练习 1 [20 分钟]
+=EN Exercise 1 [20 min]
+=CN 练习 1 [20 分钟]
 =EN Write a program that prints the date and the day of the week, but allow the user to choose to send the output either to a file, a scalar, or both at the same time. No matter which output channels the user selects, send the output with a single print statement. If the user chooses to send the output to a scalar, at the end of the program print the scalar's value to standard output. 
 =CN 写一个程序打印一周的日期, 但要允许用户选择输出到文件或标量, 或者同时输出. 不论用户如何选择, 都必须用一个打印语句输出. 如果用户选择打印到标量, 那么在程序结束时, 要将其打印到标准输出. 
-=EN 8. 6. 2. Exercise 2 [30 min]
-=CN 8. 6. 2. 练习 2 [30 分钟]
+=EN Exercise 2 [30 min]
+=CN 练习 2 [30 分钟]
 =EN The Professor has to read a logfile that looks like:
 =CN 教授必须读如下的日志：
-Gilligan: 1 coconut
-Skipper: 3 coconuts
-Gilligan: 1 banana
-Ginger: 2 papayas
-Professor: 3 coconuts
-MaryAnn: 2 papayas
-…
 =EN He wants to write a series of files, called gilligan. info, maryann. info, and so on. Each file should contain all the lines that begin with that name. (Names are always delimited by the trailing colon. ) At the end, gilligan. info should start with:
 =CN 他要写一系列的文件, 名字是：gilligan. info, maryann. info等等, 以此类推. 每个文件必须只有以文件名开始的行. （名字以冒号分隔. ） 其结果, gilligan. info应该是如下样子：
-Gilligan: 1 coconut
-Gilligan: 1 banana
 =EN Now the logfile is large, and the coconut-powered computer is not very fast, so he wants to process the input file in one pass and write all output files in parallel. How does he do it?
 =CN 现在这个日志文件很大, 而计算机又不快, 所以他要一次读入, 并行输出. 他该怎么办呢？
 =EN Hint: use a hash, keyed by the castaway name, holding IO::File objects for each output file. Create them as necessary. 
 =CN 提示： 用一个散列, 键用名字, 值是IO::File对象提供的每个输出文件. 按照需要创建他们. 
-=EN 8. 6. 3. Exercise 3 [15 min]
-=CN 8. 6. 3. 练习 3 [15 分钟]
+=EN Exercise 3 [15 min]
+=CN 练习 3 [15 分钟]
 =EN Write a program that takes in multiple directory names from the command line, then prints out their contents. Use a function that takes a directory handle reference that you made using IO::Dir. 
 =CN 写一个程序, 从命令行读取多个目录名字, 然后打印出他们的目录内容. 用一个取目录句柄引用的函数, 可以在函数中用IO::Dir模块. 

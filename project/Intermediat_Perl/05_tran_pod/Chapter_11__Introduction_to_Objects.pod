@@ -1,18 +1,18 @@
-Chapter 11. Introduction to Objects 
+=head2 第11章 介绍对象
 
-Object-oriented programming (OOP) helps programmers run code sooner and maintain it easier by organizing the code into things that we can name. We need a little more infrastructure to get going with objects, but in the long run, it's worth it.  
+面向对象编程（ＯＯＰ）帮助程序员把代码到他们可以命名的对象里的办法使代码运行起来更快和维护起来更方便. 我们需要一点功夫来找出对象, 但对于长远来说是值得的. 
 
-The benefits of OOP become worthwhile when our program (including all external libraries and modules) exceeds about N lines of code. Unfortunately, nobody can agree on what the value of N is, but for Perl programs, it's arguably around 1, 000 lines of code. If our whole program is only a couple hundred lines of code, using objects is probably overkill.  
+当程序超过Ｎ行的时候, 面向对象的好处就显露出来了. 不过, 对于这个Ｎ到底是多少, 各有各的持法, 但对于Perl程序来说, 1000行左右代码是比较能被接受的. 如果我们的程序就区区几百行, 用面向对象编程可能就太过了. 
 
-Like references, Perl's object architecture was grafted on after a substantial amount of existing pre-Perl 5 code was already in use, so we had to ensure that it wouldn't break existing syntax. Amazingly, the only additional syntax to achieve object nirvana is the method call, introduced shortly. But the meaning of that syntax requires a bit of study, so let's proceed.  
+如同引用, Perl的对象架构也是从一些现存的前Perl 5已经用的代码移植过来的. 所以我们必须保证不对现有的语法有影响. 令人惊奇的是, 实现向面向对象重生的只用了一个附加的语法, 就是简单引入了方法调用. 但其语不意义需要我们一些研究, 所以让我们开始吧. 
 
-The Perl object architecture relies heavily on packages, subroutines, and references, so if you're skipping around in this book, please go back to the beginning. Ready? Here we go.  
+Perl的对象结构严重依赖于包, 子例程和引用, 所以如果你已经跳过书中的这些章节, 请回到开始的部份好好看完. 准备好了吗？我们开始. 
 
-11. 1. If We Could Talk to the Animals. . .  
+=head2 11. 1. If We Could Talk to the Animals. . .
 
-Obviously, the castaways can't survive on coconuts and pineapples alone. Luckily for them, a barge carrying random farm animals crashed on the island not long after they arrived, and the castaways began farming and raising animals.  
+显然, castaways船员不可能仅仅靠椰子和菠萝活下来. 幸运的是, 一船满载农场牲畜的驳船在他们来此不久也在小岛搁浅了. 于是船员们开始牧养这些牲畜. 
 
-Let's listen to those animals for a moment: 
+让我们听一下那些动物的叫声：
 
 
  sub Cow::speak { 
@@ -30,14 +30,14 @@ Let's listen to those animals for a moment:
  Horse::speak; 
  Sheep::speak; 
 
-This results in: 
+其输出结果如下：
 
 
  a Cow goes moooo! 
  a Horse goes neigh! 
  a Sheep goes baaaah! 
 
-Nothing spectacular here: simple subroutines, albeit from separate packages, and called using the full package name. Let's create an entire pasture: 
+这里没有什么特别的：简单的子程序, 虽然来自不同的包, 但用完整的包名. 让我们来建立整个牧场：
 
 
  sub Cow::speak { 
@@ -56,7 +56,7 @@ Nothing spectacular here: simple subroutines, albeit from separate packages, and
    &{$beast. "::speak"};                # Symbolic coderef 
  } 
 
-This results in: 
+其输出结果如下：
 
 
  a Cow goes moooo! 
@@ -65,17 +65,17 @@ This results in:
  a Sheep goes baaaah! 
  a Sheep goes baaaah! 
 
-Wow. That symbolic coderef dereferencing there in the body of the loop is pretty nasty. We're counting on no strict 'refs' mode, certainly not recommended for larger programs. [*] And why was that necessary? Because the name of the package seems inseparable from the name of the subroutine we want to invoke within that package.  
+哇, 在loop中有代码的符号引用还原操作是够糟的. 我们需要指望没有严格的'refs'模式. 当然, 在大型程序中不建议这样. 为什么要这样做？因为包名与我们包里我们要调用的子程序名字是不能分开的. 
 
-[*] Although all examples in this book should be valid Perl code, some examples in this chapter will break the rules enforced by use strict to make them easier to understand. By the end of the chapter, though, we'll show how to make strict-compliant code again.  
+[*] 尽管书中所有的例子都是有效的Perl程序, 但是有些章节的例子会打破由strict定义的规则, 来使其看上去易懂. 在章节的结尾, 我们会展示如用strict兼容的例子. 
 
-Or is it? 
+或者, 如何才好呢？
 
-11. 2. Introducing the Method Invocation Arrow 
+=head2 11. 2. 介绍方法调用符
 
-A class is a group of things with similar behaviors and traits. For now, let's say that Class->method invokes subroutine method in package Class. A method is the object-oriented version of the subroutine, so we'll say "method" from now on. [*] That's not completely accurate, but we'll go on one step at a time. Let's use it like so: 
+一个类是一组具有相同很行为性状的事物的集合. 对于Perl, 我们就认为类->方法就是Class包调用method子程序. 一个方法就是面向对象版本的子程序, 所以从现在开始, 我们会说"方法"[*] 这不是特别准确, 但是第一步. 让我们像下面那样使用：
 
-[*] In Perl, there really isn't a difference between a subroutine and a method. They both get an argument list in @_, and we have to make sure we do the right thing.  
+[*] 在Perl, 实际上子程序和方法没什么差别. 他们都以@_作参数, 我们来决定什么是对的. 
 
 
  sub Cow::speak { 
@@ -93,22 +93,22 @@ A class is a group of things with similar behaviors and traits. For now, let's s
  Horse->speak; 
  Sheep->speak; 
 
-And once again, this results in: 
+同样, 其输出是：
 
 
  a Cow goes moooo! 
  a Horse goes neigh! 
  a Sheep goes baaaah! 
 
-That's not fun yet. We've got the same number of characters, all constant, no variables. However, the parts are separable now: 
+不好玩是不是？ 我们得到了相同的输出结果, 都是常量, 没有变量. 然而, 现在被拆开了：
 
 
  my $beast = 'Cow'; 
  $beast->speak;                # invokes Cow->speak 
 
-Ahh! Now that the package name is separated from the subroutine name, we can use a variable package name. This time, we've got something that works even when we enable use strict 'refs'.  
+哈！既然包名和子程序的名字分开, 我们就可用一个变量包名. 这次, 我们就可以得到我们用use strict 'refs'时也可以工作的东西. 
 
-Take the arrow invocation and put it back in the barnyard example: 
+我们用箭头调用来看前面农场的例子：
 
 
  sub Cow::speak { 
@@ -127,25 +127,25 @@ Take the arrow invocation and put it back in the barnyard example:
    $beast->speak; 
  } 
 
-There! Now all the animals are talking, and safely at that, without the use of symbolic coderefs.  
+如此！ 现在所有的动物都能安全地交谈, 不必使用符号代码引用. 
 
-But look at all that common code. Each speak method has a similar structure: a print operator and a string that contains common text, except for two words. One of OOP's core principles is to minimize common code: if we write it only once, we'll save time. If we test and debug it only once, we'll save more time.  
+但查看一般代码. 每个speak方法都相似结构：一个打印操作符和一个包含一般文本的字串, 除了两个字不同. OOP的一个核心原则就是把通用的代码最小化：如果我们仅写一次, 我们就节约了时间. 如果我们调试一次就可以了, 我们就节省了更多时间. 
 
-Now that we know more about what the method invocation arrow actually does, we've got an easier way to do the same thing.  
+即然我们已经知道了箭头调用符是如何工作的, 我们就得到了入门的捷径. 
 
-11. 3. The Extra Parameter of Method Invocation 
+=head2 11. 3. 方法调用的额外参数
 
-The invocation of: 
+调用：
 
 
  Class->method(@args) 
 
-attempts to invoke the subroutine Class::method as: 
+会以如下方式调用子程序Class::method :
 
 
  Class::method('Class', @args); 
 
-(If it can't find the method, inheritance kicks in, but we'll show that later. ) This means that we get the class name as the first parameter, or the only parameter, if no arguments are given. We can rewrite the Sheep speaking method as: 
+（如果它找不到方法, 那么继承者会介入, 我们会在以后的章节中展示. ）这意味着我们以类名作为第一个参数, 或者说在没有参数的情况下是仅有的一个参数. 我们可以将其重写为：
 
 
  sub Sheep::speak { 
@@ -153,7 +153,7 @@ attempts to invoke the subroutine Class::method as:
    print "a $class goes baaaah!\n"; 
  } 
 
-The other two animals come out similarly: 
+另外两只动物的代码也一样写：
 
 
  sub Cow::speak { 
@@ -165,11 +165,11 @@ The other two animals come out similarly:
    print "a $class goes neigh!\n"; 
  } 
 
-In each case, $class gets the value appropriate for that method. But once again, we have a lot of similar structure. Can we factor out that commonality even further? Yesby calling another method in the same class.  
+In each case, $class gets the value appropriate for that method. But once again, we have a lot of similar structure. Can we factor out that commonality even further? Yesby calling another method in the same class.
 
-11. 4. Calling a Second Method to Simplify Things 
+=head2 11. 4. 调用第二个方法来简化操作
 
-We can call out from speak to a helper method called sound. This method provides the constant text for the sound itself: 
+我们可以从speak调一个方法叫sound. 这个方法提供一个常量做为声音的内容：
 
 
  { package Cow; 
@@ -180,7 +180,7 @@ We can call out from speak to a helper method called sound. This method provides
    } 
  } 
 
-Now, when we call Cow->speak, we get a $class of Cow in speak. This, in turn, selects the Cow->sound method, which returns moooo. How different would this be for the Horse? 
+现在, 当我们调用Cow->speak, 我们会在speak中获得一个Cow的$class. 这样, 选择Cow->sound方法, 返回moooo. 马会怎么样呢？
 
 
  { package Horse; 
@@ -191,9 +191,9 @@ Now, when we call Cow->speak, we get a $class of Cow in speak. This, in turn, se
    } 
  } 
 
-Only the name of the package and the specific sound change. So can we share the definition for speak between the cow and the horse? Yes, with inheritance ! 
+只有包名和声音变了. 那么我们可以把牛和马的speak定义共享吗？ 是的, 用继承！
 
-Now let's define a common method package called Animal with the definition for speak: 
+现在, 让我们定义一个共享的方法的包, 叫Animal, 其speak定义如下：
 
 
  { package Animal; 
@@ -203,7 +203,7 @@ Now let's define a common method package called Animal with the definition for s
    } 
  } 
 
-Then, for each animal, we can say it inherits from Animal, along with the animal-specific sound: 
+这样, 对于每个动物, 我们说它继承自Animal, 并有此动物专有的叫声：
 
 
  { package Cow; 
@@ -211,18 +211,18 @@ Then, for each animal, we can say it inherits from Animal, along with the animal
    sub sound { "moooo" } 
  } 
 
-Note the added @ISA array. We'll get to that in a minute.  
+注意我们加了@ISA数组. 我们后面会介绍的. 
 
-What happens when we invoke Cow->speak now? 
+现在我们调用Cow->speak会发生什么？
 
-First, Perl constructs the argument list. In this case, it's just Cow. Then Perl looks for Cow::speak. That's not there, so Perl checks for the inheritance array @Cow::ISA. It's there and contains the single name Animal.  
+首先, Perl创建参数列表. 在这个例子中, 就是Cow. 然后Perl找Cow::speak. 当前包没有, 所以Perl就在其祖先数组里找@Cow::ISA. 这里面有Animal包. 
 
-Perl next checks for speak inside Animal instead, as in Animal::speak. That found, Perl invokes that method with the already frozen argument list, as if we had said: 
+然后Perl就用Animal里的speak来代替了, 就是Animal::speak. 找到后, Perl用已经不变的参数列表来调用, 就像我们这样写的一样：
 
 
  Animal::speak('Cow'); 
 
-Inside the Animal::speak method, $class becomes Cow as the first argument is shifted off. When we get to the step of invoking $class->sound while performing the print, it looks for Cow->sound: 
+在Animal::speak方法里, $class变成Cow, 作为第一个参数传入. 当我们打印时就调用$class->sound, 它会找到Cow->sound:
 
 
  print "a $class goes ", $class->sound, "!\n"; 
@@ -231,43 +231,43 @@ Inside the Animal::speak method, $class becomes Cow as the first argument is shi
  # which invokes Cow->sound, returning 'moooo', so 
  print 'a Cow goes ', 'moooo', "!\n"; 
 
-and we get our desired output.  
+这样就得到我们需要的输出结果. 
 
-11. 5. A Few Notes About @ISA 
+=head2 11. 5. 有关@ISA的一些说明
 
-This magical @ISA variable (pronounced "is a" not "ice-uh") declares that Cow "is a" Animal. [*] Note that it's an array, not a simple single value, because on rare occasions it makes sense to have more than one parent class searched for the missing methods. We'll show more about that later.  
+这个神奇的@ISA变量（发音是"is a"不是"ice-uh"）声明了Cow"是一个"动物. [*] 注意它是一个数组, 不是一个简单的标量值, 因为在罕有的情况下它可能有多重祖先, 我们将会在下面讨论这个问题. 
 
-[*] ISA is actually a linguistic term. Once again, Larry Wall's background as a linguist has come back to influence Perl.  
+[*] ISA 实际上是一个语言学上的术语. 再提醒一次, Larry Wall的语言学家的背景又在反过来影响了Perl. 
 
-If Animal also had an @ISA, Perl would check there too. [] Typically, each @ISA has only one element (multiple elements means multiple inheritance and multiple headaches), so we get a nice tree of inheritance. [] 
+如果Animal同样也有一个@ISA数组, Perl也会再去查找. [+] 一般来说, 每个@ISA只有一个元素（多个元素意味着多重继承及多重"头痛"）, 这样我们就可以得到一个清楚的继承树. [+] []
 
-[] The search is recursive, depth-first, and left to right in each @ISA.  
+[] 查找是递归的, 在每个@ISA数组中是从上到下, 从左到右. 
 
-[] There is also inheritance through UNIVERSAL and AUTOLOAD; see the perlobj manpage for the whole story.  
+[] 同样可以从UNIVERSAL和AUTOLOAD继承;可以查看perlobj手册页来得到它的身世. 
 
-When we turn on use strict, we'll get complaints on @ISA because it's not a variable containing an explicit package name, nor is it a lexical (my) variable. We can't make it a lexical variable, though: it has to belong to the package to be found by the inheritance mechanism.  
+当我们打开strict后, 我们会有关于@ISA的警告信息, 因为它既不是一个有明确包名的变量, 也不是一个词法（my声明)的变量. 我们不能把它定义为词法变量, 因为它属于它所继承的那个包. 
 
-There are a couple of straightforward ways to handle the declaration and setting of @ISA. The easiest is to just spell out the package name: 
+有两个简单方法来处理对@ISA的声明和设置. 最简单的方法是指出包名：
 
 
  @Cow::ISA = qw(Animal); 
 
-We can also allow it as an implicitly named package variable: 
+我们也允许它作为一个隐含命名的包变量：
 
 
  package Cow; 
  use vars qw(@ISA); 
  @ISA = qw(Animal); 
 
-If you're on a recent-enough Perl (5. 6 or later), you can use the our declaration to shorten it to: 
+如果你用的是比较新版本的Perl, 你可以用如下的简短形式：
 
 
  package Cow; 
  our @ISA = qw(Animal); 
 
-However, if you think your code might be used by people stuck with Perl 5. 005 or earlier, it's best to avoid our.  
+当然, 如果你需要你的代码让那些执着于Perl 5. 005或更早的版本的人, 最好避免使用our. 
 
-If we're bringing in the class from outside, via an object-oriented module, we can change: 
+如果我们要用从外面(通过一个面对对象的模块)带进来的类, 我们可以改成：
 
 
  package Cow; 
@@ -275,17 +275,17 @@ If we're bringing in the class from outside, via an object-oriented module, we c
  use vars qw(@ISA); 
  @ISA = qw(Animal); 
 
-to just: 
+或者：
 
 
  package Cow; 
  use base qw(Animal); 
 
-That's pretty darn compact. Furthermore, use base has the advantage that it's performed at compile time, eliminating a few potential errors from setting @ISA at runtime, like some of the other solutions.  
+这是非常简短的形式了. 此外, use base有个优点是它是在编译时执行的, 这样消除了在运行时设置@ISA可能发生的潜在错误, 就像先前的一些解决方案那样. 
 
-11. 6. Overriding the Methods 
+=head2 11. 6. 重载方法
 
-Let's add a mouse that can barely be heard: 
+让我们来加一种少有耳闻的老鼠：
 
 
  { package Animal; 
@@ -307,19 +307,19 @@ Let's add a mouse that can barely be heard:
 
  Mouse->speak; 
 
-which results in: 
+其输出是：
 
 
  a Mouse goes squeak! 
  [but you can barely hear it!] 
 
-Here, Mouse has its own speaking routine, so Mouse->speak doesn't immediately invoke Animal->speak. This is known as overriding. We use overriding to shadow the method in the derived class (Mouse) because we have a specialized version of the routine, instead of calling the more general base class's method (in Animal). In fact, we didn't even need to initialize @Mouse::ISA to say that a Mouse was an Animal, because all the methods needed for speak are defined completely with Mouse.  
+这里, 老鼠有自己的发声程序, 所以Mouse->speak不会立即调用Animal->speak. 这被称为重载. 我们用重载来在继承类（Mouse）中重写方法, 因为我们有个特别版本的子程序来代替原来基础类里更一般化的类方法（在Animal类中）. 实际上, 我们甚至根本不需要初始化@Mouse::ISA来声明Mouse是动物, 因为所有有关发声的方法都已经在Mouse中定义了. 
 
-We've now duplicated some of the code from Animal->speak; this can be a maintenance headache. For example, suppose someone decides that the word goes in the output of the Animal class is a bug. Now the maintainer of that class changes goes to says. Our mice will still say goes, which means the code still has the bug. The problem is that we invoked cut and paste to duplicate code, and in OOP, that's a sin. We should reuse code through inheritance, not by cut and paste.  
+我们现在已经在Animal->speak重复写了些代码了; 这会引起维护上的问题. 比如, 某人认为Animal类的输出的词不对, 是个错误. 现在代码维护者改变了程序. 而我们的老鼠仍旧说原来的话, 意味着错误仍旧存在. 问题是我们采用剪切和粘贴来复制代码, 在面向对象编程中, 这是不可饶恕的罪过. 我们应该通过继承来重用代码, 而不是靠剪切和粘贴. 
 
-How can we avoid that? Can we say somehow that a Mouse does everything any other Animal does, but add in the extra comment? Sure! 
+我们能避免吗？ 我们可以做到一只老鼠能做其它动物能做的, 然后有其自己的特殊的情况吗？当然可以！
 
-As our first attempt, let's invoke the Animal::speak method directly: 
+像我们首先尝试的, 当我们直接调用Animal::speak:
 
 
  { package Animal; 
@@ -338,11 +338,11 @@ As our first attempt, let's invoke the Animal::speak method directly:
    } 
  } 
 
-Note that because we've stopped using the method arrow, we have to include the $class parameter (almost surely the value Mouse) as the first parameter to Animal::speak.  
+注意, 因为我们已经不用方法箭头, 我们必须用$class参数（当然其值是Mouse）作为Animal::speak的第一个参数. 
 
-Why did we stop using the arrow? Well, if we invoke Animal->speak there, the first parameter to the method is "Animal" not "Mouse" and when the time comes for it to call for the sound, it won't have the right class to select the proper methods for this object.  
+为什么我们不用方法箭头？哦, 如果我们在那里用Animal->speak, 那给方法的第一个参数就是Animal而不是Mouse, 而且当程序调用sound的时候, 它不会选用正确的类. 
 
-Invoking Animal::speak directly is a mess, however. What if Animal::speak didn't exist before, and it inherited from a class mentioned in @Animal::ISA? For example, suppose the code was: 
+然而, 调用直接调用Animal::speak是一个错误. 如果Animal::speak事先不存在呢？ 它会从@Animal::ISA继承？如：
 
 
  { package LivingCreature; 
@@ -359,13 +359,13 @@ Invoking Animal::speak directly is a mess, however. What if Animal::speak didn't
    } . . .  
  } 
 
-Because we no longer use the method arrow, we get one and only one chance to hit the right method because we're treating it like a regular subroutine with no inheritance magic. We'll look for it in Animal and not find it, and the program aborts.  
+因为我们不用方法箭头, 我们有一个且只有一个机会命中正确的方法, 因为我们对待它就像是一般的, 没有继承特色的子程序. 我们会在Animal类中找, 没找到它, 程序就停止. 
 
-The Animal class name is now hardwired into the method selection. This is a mess if someone maintains the code, changing @ISA for Mouse, and doesn't notice Animal there in speak. Thus, this is probably not the right way to go.  
+现在Animal类名被硬编码用于方法选择. 这对维护代码的人很不方便, 为Mouse改@ISA, 并不会注意到Speak中的Animal类. 所以, 这并非最好的解决方法. 
 
-11. 7. Starting the Search from a Different Place 
+=head2 11. 7. 从不同的地方查找
 
-A better solution is to tell Perl to search from a different place in the inheritance chain: 
+一个更好的解决方案是告诉Perl在继承链中从不同的地方去查找. 
 
 
  { package Animal; 
@@ -384,15 +384,15 @@ A better solution is to tell Perl to search from a different place in the inheri
    } 
  } 
 
-Ahh. As ugly as this is, it works. Using this syntax, start with Animal to find speak and use all of Animal's inheritance chain if not found immediately. The first parameter is $class (because we're using an arrow again), so the found speak method gets Mouse as its first entry and eventually works its way back to Mouse::sound for the details.  
+啊. 虽然丑陋, 但是能用啊. 用这个语法, 如果没有立即找到方法, 就会从继承链中去找方法. 第一个参数是$class（因为我们再次使用了箭头）, 所以找到的speak方法象是Mouse的第一个条目, 回到Mouse::sound. 
 
-This isn't the best solution, however. We still have to keep the @ISA and the initial search package in sync (changes in one must be considered for changes in the other). Worse, if Mouse had multiple entries in @ISA, we wouldn't necessarily know which one had actually defined speak.  
+然而, 这也并非最终的解决方法.  我们还是要使@ISA和初始包同步（改了一个句就必须考虑另一个）.  更糟的是, 如果在@ISA中Mouse类有多个条目, 我们不知道哪个实际上定义了speak. 
 
-So, is there an even better way? 
+那么, 还有更好的方法吗？
 
-11. 8. The SUPER Way of Doing Things 
+=head2 11. 8. 用SUPER方法来处理问题
 
-By changing the Animal class to the SUPER class in that invocation, we get a search of all our superclasses (classes listed in @ISA) automatically: 
+在调用时, 把Animal类改成SUPER类, 我们可以自动查到我们的所有的超级类（在@ISA列表中的类）：
 
 
  { package Animal; 
@@ -411,57 +411,57 @@ By changing the Animal class to the SUPER class in that invocation, we get a sea
    } 
  } 
 
-Thus, SUPER::speak means to look in the current package's @ISA for speak, invoking the first one found if there's more than one. In this case, we look in the one and only base class, Animal, find Animal::speak, and pass it Mouse as its only parameter.  
+所以, SUPER::speak 表示在当前包的@ISA查找speak, 如果找到多个, 则调用第一个被找到的.  在这个例子中, 我们找到仅有的一个基础类： Aniaml, 找到方法：Animal::speak, 并将其作为参数传给Mouse类. 
 
-11. 9. What to Do with @_ 
+=head2 11. 9. What to Do with @_
 
-In that last example, had there been any additional parameters to the speak method (like how many times, or in what pitch for singing, for example), the parameters would be ignored by the Mouse::speak method. If we want them to be passed uninterpreted to the parent class, we can add it as a parameter: 
+在上一个例子中, 没有任何额外的参数给speak方法（如多少次, 或者唱什么调）, 参数将会被Mouse::speak方法忽略. 如果我们要把他们未经解释的传给父类, 我们可以把它作为参数加进去：
 
 
  $class->SUPER::speak(@_); 
 
-This invokes the speak method of the parent class, including all the parameters that we've not yet shifted off of our parameter list.  
+这句调用父因的方法, 包括所有我们还没有传入的参数列表. 
 
-Which one is correct? It depends. If we are writing a class that simply adds to the parent class behavior, it's best to simply pass along arguments we haven't dealt with. However, if we want precise control over the parent class's behavior, we should determine the argument list explicitly and pass it.  
+哪个方法是对的？ 这要按情况看. 如果我们写一个类, 只加到父类的行为, 那么最好就是把我们没能处理的参数传给他. 然而, 如果我们要精确控制父类的行为, 我们应该明确决定参数列表, 并传给它. 
 
-11. 10. Where We Are So Far. . .  
+=head2 11. 10. Where We Are So Far. . .
 
-So far, we've used the method arrow syntax: 
+至此, 我们已经用了方法箭头这个语法：
 
 
  Class->method(@args); 
 
-or the equivalent: 
+或者等价的：
 
 
  my $beast = 'Class'; 
  $beast->method(@args); 
 
-which constructs an argument list of: 
+创建一个参数列表：
 
 
  ('Class', @args) 
 
-and attempts to invoke: 
+尝试调用：
 
 
  Class::method('Class', @args); 
 
-However, if Perl doesn't find Class::method, it examines @Class::ISA (recursively) to locate a package that does indeed contain method and then invokes that version instead.  
+然而, 如果Perl没有找到Class::method, 它会去查@Class::ISA(以递归的方式)来定位实际包含执行方法的包, 并调用. 
 
-Chapter 12 shows how to distinguish the individual animals by giving them associated properties, called instance variables.  
+第12章展示如何给出相关的属性来区分不同的动物, 所谓实例变量. 
 
-11. 11. Exercises 
+=head2 11. 11. 习题
 
-You can find the answers to these exercises in "Answers for Chapter 11" in the Appendix.  
+答案附录找. 
 
-11. 11. 1. Exercise 1 [20 min] 
+=head2 11. 11. 1. 练习1 ［20分钟］
 
-Type in the Animal, Cow, Horse, Sheep, and Mouse class definitions. Make it work with use strict. Use our if you're using a recent enough version of Perl. Your program should ask the user to enter the names of one or more barnyard animals. Create a barnyard with those animals, and have each animal speak once.  
+输入Animal, Cow, Horse, Sheep, 和Mouse类的定义. 在use strict下可以工作. 如果你的Perl版本很新, 那么你可以用our关键字. 你的程序要问用户输入一个或多个农场动物的名字. 然后以这些动物创建整个农场, 每个动物都有自己的叫声. 
 
-11. 11. 2. Exercise 2 [40 min] 
+=head2 11. 11. 2. 练习2 ［40分钟］
 
-Add a Person class at the same level as Animal, and have both of them inherit from a new class called LivingCreature. Also make the speak method take a parameter of what to say, falling back to the sound (humming for a Person) if no parameter is given. Since this isn't Dr. Dolittle, make sure the animals can't talk. (That is, don't let speak have any parameters for an animal. ) Try not to duplicate any code, but be sure to catch likely errors of usage, such as forgetting to define a sound for an animal.  
+在Aniaml同一层加上Person类, 而且他们两个都继承自一个新类：LivingCreature. 写一个speak方法, 它取一个参数作为说话内容, 如果没有给参数, 则使用sound（对于Person类来说是humming）. 因为这不是怪医杜立德, 所以要保证动物们不能对话. （就是说speak对于动物来说没有任何参数）不要写重复代码, 但是要保证捕获到相似的错误, 如忘了为某个动物定义叫声. 
 
-Demonstrate the Person class by invoking a person with nothing to say, and then demonstrate it a second time by invoking a person with something to say.  
+用调用Person类, 然后再调用Person类, 并让他说些话. 
 

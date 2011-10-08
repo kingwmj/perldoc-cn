@@ -1,56 +1,56 @@
-Chapter 1. Introduction 
+=head2 第一章 引言
 
-Welcome to the next step in your understanding of Perl. You're probably here either because you want to learn to write programs that are more than 100 lines long or because your boss has told you to do so.  
+欢迎来到认识 Perl 的下一台阶.  你来到这里的原因可能是你想比100行更长的 Perl 程序, 或者你的老板要你来学. 
 
-See, our Learning Perl book was great because it introduced the use of Perl for short and medium programs (which is most of the programming done in Perl, we've observed). But, to avoid having "the Llama book" be big and intimidating, we left a lot of information out, deliberately and carefully.  
+看, 我们的《Learning Perl》写得如此之好, 因为它介绍给你如何用Perl写那些小或中型的程序（据我们观察, 也的确, 大多数Perl程序用这么小的代码量就能很好的完成任务）.  但是, 为了避免"小骆驼书"篇幅太大以至于把初学者吓退, 我们小心谨慎地精简了许多知识. 
 
-In the pages that follow, you can get "the rest of the story" in the same style as our friendly Llama book. It covers what you need to write programs that are 100 to 10, 000 lines long.  
+在后面的学习中, 我们会以《小骆驼书》同样的风格来向你介绍"余下的故事".  本书将会覆盖写从100行到1万行的程序所需要的知识. 
 
-For example, you'll learn how to work with multiple programmers on the same project. This is great, because unless you work 35 hours each day, you'll need some help with larger tasks. You'll also need to ensure that all your code fits with the other code as you develop it for the final application.  
+比如, 你将会学到多外程序员如果在同一项目中一起工作.  这是很重要的, 因为除非你一天工作35小时, 否则你很难在没有他们帮助下完成更大的任务.  同样, 在协作环境下, 你要保证你开发的所有的代码在最终的应用程序中能很好的同他人的代码配合. 
 
-This book will also show you how to deal with larger and more complex data structures, such as what we might casually call a "hash of hashes" or an "array of arrays of hashes of arrays. " Once you know a little about references, you're on your way to arbitrarily complex data structures.  
+这本书也展示了如何处理更大和更复杂的数据结构. 例如我们可能会提到的所谓一个"散列中的散列", 或"数组中的数组中的散列中的数组".  只要你掌握了一点关于引用的知识, 你就可以在复杂数据结构中自在遨游了. 
 
-And then there's the buzzworthy notion of object-oriented programming (OOP), which allows parts of your code (or hopefully code from others) to be reused with minor or major variations within the same program. The book will cover that as well, even if you've never seen objects before.  
+另外, 还有一个必须知道的概念是关于什么是面向对象编程, 就是让你部份的代码（特别是可能与其它程序员共用的）能在或多或少的程度上在同一个项目中被重用.  这本书也介绍了这部分的知道, 尽管你可能重来没有面向对象的概念. 
 
-An important aspect of working in teams is having a release cycle and tests for unit and integration testing. You'll learn the basics of packaging your code as a distribution and providing unit tests for that distribution, both for development and for verifying that your code works in the ultimate end environment.  
+在团队中工作中的一个重要的方面是在一个发布周期中的单元测试和集成测试.  在本书中你会学到把你的代码如何打包成一个发布版本, 并对其在开发环境中进行单元测试或在最终运行环境进行代码验证. 
 
-And, just as was promised and delivered in Learning Perl, we'll entertain you along the way with interesting examples and bad puns. (We've sent Fred, Barney, Betty, and Wilma home, though. A new cast of characters will take the starring roles. ) 
+另外, 就像我们在已经出版的《Learning Perl》中保证, 我们会在整个学习过程中用一些有趣的例子和没治的双关语让你的学习旅程充满乐趣.  （尽管我们把Fred, Barney, Betty和wilma送回家了, 但我们让一些新的明星来担纲表演. ）
 
-1. 1. What Should You Know Already? 
+=head2 1. 1. 你应该已经知晓哪些概念?
 
-We'll presume that you've already read Learning Perl, or at least pretend you have, and that you've played enough with Perl to already have those basics down. For example, you won't see an explanation in this book that shows how to access the elements of an array or return a value from a subroutine.  
+我们会假定你已经读过《Learning Perl》, 或假装你已经读过, 或者你已经玩过Perl一段时间, 已经把基础知识拿下.  比如, 这本书里我们不会再解释如何访问一个数组里一个元素或者从一个子程序里返回一个值. 
 
-Make sure you know the following things: 
+下面这些知识你应该事先掌握:
 
-How to run a Perl program on your system 
+在你的平台如何运行Perl
 
-The three basic Perl variable types: scalars, arrays, and hashes 
+Perl的三种变量类型：标量、数据和散列
 
-Control structures such as while, if, for, and foreach 
+控制结构的语法如：while, if, for 和 foreach
 
-Subroutines 
+子程序
 
-Perl operators such as grep, map, sort, and print 
+Perl的操作符：grep, map, sort 和 print
 
-File manipulation such as open, file reading, and -X (file tests) 
+文件操作的语法：打开、文件操作和 -X （文件检测操作）
 
-You might pick up deeper insight into these topics in this book, but we're going to presume you know the basics.  
+我们可能在本书对这些话题进行深入探讨, 不过我们假定你已经掌握这些概念的基础知识. 
 
-1. 2. What About All Those Footnotes? 
+=head2 1. 2. 那些脚注是怎么回事?
 
-Like Learning Perl, this book relegates some of the more esoteric items out of the way for the first reading and places those items in footnotes. [*] You should skip those the first time through and pick them up on a rereading. You will not find anything in a footnote that you'll need to understand any of the material we present later.  
+同《Learning Perl》这本书的做法一样, 我们把那些深奥的概念移掉了, 并把他们做为脚注.  [*] 在你第一次读本书的时候尽可以略过不看, 在重读的时候可以把它们看看.  我们在以后提供给你的材料中不会涉及对这些脚注的理解. 
 
-1. 3. What's with the Exercises? 
+=head2 1. 3. 关于练习?
 
-Hands-on training gets the job done better. The best way to provide this training is with a series of exercises after every half-hour to hour of presentation. Of course, if you're a speed reader, the end of the chapter may come a bit sooner than a half hour. Slow down, take a breather, and do the exercises! 
+动口又动手, 学习就是好.  培训最好的途径就是在半小时或一小时之后的讲课后有一系列的练习.  当然, 如果你阅读速度很快的话, 一章大概在半小时之内就可以看完.  那么, 停一停, 不着急, 做一下练习吧 !
 
-Each exercise has a "minutes to complete" rating. We intend for this rating to hit the midpoint of the bell curve, but don't feel bad if you take significantly longer or shorter. Sometimes it's just a matter of how many times you've faced similar programming tasks in your studies or jobs. Use the numbers merely as a guideline.  
+每个练习都有限时.  我们打算取一个平均的解题速度, 但是, 如果你用了更长的时间, 也不必但心. 有时候这不过取决于在工作或学习中面对同样问题的次数.  只要把限时当作指导性的就可以了. 
 
-Every exercise has its answer in the Appendix. Again, try not to peek; you'll ruin the value of the exercise.  
+每个练习在附录都有参考答案.  再提醒一下, 作题前别去看, 看了再作题, 学习效果就差了. 
 
-1. 4. What If I'm a Perl Course Instructor? 
+=head2 1. 4. 如果我是讲授 Perl 课程的指导老师?
 
-If you're a Perl instructor who has decided to use this as your textbook, you should know that each set of exercises is short enough for most students to complete in 45 minutes to an hour, with a little time left over for a break. Some chapters' exercises should be quicker, and some may take longer. That's because once all those little numbers in square brackets were written, we discovered that we didn't know how to add.  
+如果你是讲授 Perl 课程的指导老师, 并且决定用此书作为课程讲义, 你应该知道, 对于大多数学生来说, 每组练习45分钟到一小时就足够完成了, 余下留点时间作课间休息.  一些章节可能快些, 有的章节可能要慢些.  标在方框内的限时是死的, 所以一切按实际情况决定. 
 
-So let's get started. Class begins after you turn the page. . . .  
+好吧, 开始喽. 翻过此页, 我们的课就马上开始. . . .
 

@@ -1,5 +1,5 @@
-=EN 9. 5. Multi-Level Sort with the Schwartzian Transform
-=CN 9. 5. 用施瓦茨变换作多层排序
+=EN Multi-Level Sort with the Schwartzian Transform
+=CN 用施瓦茨变换作多层排序
 =EN If we need to sort on more than one criterion, the Schwartzian Transform is still up to the task. 
 =CN 如果我们需要用多个测试条件进行排序, 施瓦茨变换照样可以处理这样的任务. 
 my @output_data =

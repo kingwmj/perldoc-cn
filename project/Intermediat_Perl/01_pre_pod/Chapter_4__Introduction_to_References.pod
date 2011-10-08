@@ -1,10 +1,10 @@
-Chapter 4. Introduction to References
+=head2 Chapter 4. Introduction to References
 
 References are the basis for complex data structures, object-oriented programming (OOP), and fancy subroutine magic. They're the magic that was added between Perl version 4 and version 5 to make it all possible.
 
 A Perl scalar variable holds a single value. An array holds an ordered list of one or more scalars. A hash holds a collection of scalars as values, keyed by other scalars. Although a scalar can be an arbitrary string, which allows complex data to be encoded into an array or hash, none of the three data types are well suited to complex data interrelationships. This is a job for the reference. Let's look at the importance of references by starting with an example.
 
-4.1. Performing the Same Task on Many Arrays
+=head2 4.1. Performing the Same Task on Many Arrays
 
 Before the Minnow can leave on an excursion (for example, a three-hour tour), we should check every passenger and crew member to ensure they have all the required trip items in their possession. Let's say that, for maritime safety, every person on-board the Minnow needs to have a life preserver, some sunscreen, a water bottle, and a rain jacket. We can write a bit of code to check for the Skipper's supplies:
 
@@ -71,7 +71,7 @@ Suppose we want to modify the original array to force the provisions list to inc
 
 To solve either or both of these problems, we need pass by reference rather than pass by value. And that's just what the doctor (or Professor) ordered.
 
-4.2. Taking a Reference to an Array
+=head2 4.2. Taking a Reference to an Array
 
 Among its many other meanings, the backslash (\) character is also the "take a reference to" operator. When we use it in front of an array name, e.g., \@skipper, the result is a reference to that array. A reference to the array is like a pointer: it points at the array, but it is not the array itself.
 
@@ -113,7 +113,7 @@ Because we can copy a reference, and passing an argument to a subroutine is real
 
 Now $items in the subroutine is a reference to the array of @skipper. But how do we get from a reference back into the original array? We dereference the reference, of course.
 
-4.3. Dereferencing the Array Reference
+=head2 4.3. Dereferencing the Array Reference
 
 If you look at @skipper, you'll see that it consists of two parts: the @ symbol and the name of the array. Similarly, the syntax $skipper[1] consists of the name of the array in the middle and some syntax around the outside to get at the second element of the array (index value 1 is the second element because index values start at 0).
 
@@ -171,7 +171,7 @@ Could we have eliminated the two shifts at the beginning of the subroutine? Sure
 
 We still have two elements in @_. The first element is the passenger or crew member name, which we use in the error message. The second element is a reference to the correct provisions array, which we use in the grep expression.
 
-4.4. Getting Our Braces Off
+=head2 4.4. Getting Our Braces Off
 
 Most of the time, the array reference we want to dereference is a simple scalar variable, such as @{$items} or ${$items}[1]. In those cases, we can drop the curly braces, unambiguously forming @$items or $$items[1].
 
@@ -195,7 +195,7 @@ Thus, an easier-on-the-eyes version of that subroutine might be:
 
 The only difference here is that we removed the braces around @$items.
 
-4.5. Modifying the Array
+=head2 4.5. Modifying the Array
 
 You've seen how to solve the excessive copying problem with an array reference. Now let's look at modifying the original array.
 
@@ -227,7 +227,7 @@ The key is in the last line of that subroutine. We're dereferencing the $items a
 
 Also, @$items (and its more generic form, @{$items}) works within a double-quoted string. We can't include any whitespace between the @ and the immediately following character, although we can include nearly arbitrary whitespace within the curly braces as if it were normal Perl code.
 
-4.6. Nested Data Structures
+=head2 4.6. Nested Data Structures
 
 In this example, the array @_ contains two elements, one of which is also an array. What if we take a reference to an array that also contains a reference to an array? We end up with a complex data structure, which can be quite useful.
 
@@ -278,7 +278,7 @@ or even:
 
 As you can see, various levels of optimization can lead to obfuscation. Be sure to consider where your head will be a month from now when you have to reread your own code. If that's not enough, consider the new person who will take over your job after you have left.[*]
 
-4.7. Simplifying Nested Element References with Arrows
+=head2 4.7. Simplifying Nested Element References with Arrows
 
 Look at the curly-brace dereferencing again. As in our earlier example, the array reference for Gilligan's provision list is ${$all_with_names[2]}[1]. Now, what if we want to know Gilligan's first provision? We need to dereference this item one more level, so it's yet another layer of braces: ${${$all_with_names[2]}[1]}[0]. That's a really noisy piece of syntax. Can we shorten that? Yes!
 
@@ -320,7 +320,7 @@ Dereference that as an array reference, taking the entire array.
 
 The last step doesn't have a shortcut arrow form. Oh well.[*]
 
-4.8. References to Hashes
+=head2 4.8. References to Hashes
 
 Just as we can take a reference to an array, we can also take a reference to a hash. Once again, we use the backslash as the "take a reference to" operator:
 
@@ -426,11 +426,11 @@ There is no shortcut form with an arrow (->) for array slices or hash slices, ju
 
 A hash reference prints as a string that looks like HASH(0x1a2b3c), showing the hexadecimal memory address of the hash. That's not very useful to an end user and only barely more usable to the programmer, except as an indication of the lack of appropriate dereferencing.
 
-4.9. Exercises
+=head2 4.9. Exercises
 
 You can find the answers to these exercises in "Answers for Chapter 4" in the Appendix.
 
-4.9.1. Exercise 1 [5 min]
+=head2 4.9.1. Exercise 1 [5 min]
 
 How many different things do these expressions refer to?
 
@@ -439,7 +439,7 @@ How many different things do these expressions refer to?
  $ginger->[2]->[1]
  ${$ginger->[2]}[1]
 
-4.9.2. Exercise 2 [30 min]
+=head2 4.9.2. Exercise 2 [30 min]
 
 Using the final version of check_required_items, write a subroutine check_items_for_all that takes a hash reference as its only parameter, pointing at a hash whose keys are the people aboard the Minnow and whose corresponding values are array references of the things they intend to bring onboard.
 

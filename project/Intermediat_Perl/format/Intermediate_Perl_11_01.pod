@@ -1,5 +1,5 @@
-=EN 11. 1. If We Could Talk to the Animals...
-=CN 11. 1. 如果能与动物对话… …
+=EN If We Could Talk to the Animals...
+=CN 如果能与动物对话… …
 =EN Obviously, the castaways can't survive on coconuts and pineapples alone. Luckily for them, a barge carrying random farm animals crashed on the island not long after they arrived, and the castaways began farming and raising animals. 
 =CN 显然, castaways船员不可能仅仅靠椰子和菠萝活下来. 幸运的是, 一船满载农场牲畜的驳船在他们来此不久也在小岛搁浅了. 于是船员们开始牧养这些牲畜. 
 =EN Let's listen to those animals for a moment:
@@ -45,7 +45,7 @@ a Sheep goes baaaah!
 a Sheep goes baaaah!
 =EN Wow. That symbolic coderef dereferencing there in the body of the loop is pretty nasty. We're counting on no strict 'refs' mode, certainly not recommended for larger programs. [*] And why was that necessary? Because the name of the package seems inseparable from the name of the subroutine we want to invoke within that package. 
 =CN 哇, 在loop中有代码的符号引用还原操作是够糟的. 我们需要指望没有严格的'refs'模式. 当然, 在大型程序中不建议这样. 为什么要这样做？因为包名与我们包里我们要调用的子程序名字是不能分开的. 
-=EN [*] Although all examples in this book should be valid Perl code, some examples in this chapter will break the rules enforced by use strict to make them easier to understand. By the end of the chapter, though, we'll show how to make strict-compliant code again. 
-=CN [*] 尽管书中所有的例子都是有效的Perl程序, 但是有些章节的例子会打破由strict定义的规则, 来使其看上去易懂. 在章节的结尾, 我们会展示如用strict兼容的例子. 
+=EN Although all examples in this book should be valid Perl code, some examples in this chapter will break the rules enforced by use strict to make them easier to understand. By the end of the chapter, though, we'll show how to make strict-compliant code again. 
+=CN 尽管书中所有的例子都是有效的Perl程序, 但是有些章节的例子会打破由strict定义的规则, 来使其看上去易懂. 在章节的结尾, 我们会展示如用strict兼容的例子. 
 =EN Or is it?
 =CN 或者, 如何才好呢？

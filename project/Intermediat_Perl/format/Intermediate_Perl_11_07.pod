@@ -1,25 +1,16 @@
-=EN 11. 7. Starting the Search from a Different Place
-=CN 11. 7. 从不同的地方查找
+=EN Starting the Search from a Different Place
+=CN 从不同的地方查找
 =EN A better solution is to tell Perl to search from a different place in the inheritance chain:
 =CN 一个更好的解决方案是告诉Perl在继承链中从不同的地方去查找. 
-{ package Animal;
- sub speak {
- my $class = shift;
- print "a $class goes ", $class->sound, "!\n";
- }
-}
-{ package Mouse;
- @ISA = qw(Animal);
- sub sound { 'squeak' }
- sub speak {
- my $class = shift;
- $class->Animal::speak(@_);
- print "[but you can barely hear it!]\n";
- }
-}
-=EN Ahh. As ugly as this is, it works. Using this syntax, start with Animal to find speak and use all of Animal's inheritance chain if not found immediately. The first parameter is $class (because we're using an arrow again), so the found speak method gets Mouse as its first entry and eventually works its way back to Mouse::sound for the details. 
-=CN 啊. 虽然丑陋, 但是能用啊. 用这个语法, 如果没有立即找到方法, 就会从继承链中去找方法. 第一个参数是$class（因为我们再次使用了箭头）, 所以找到的speak方法象是Mouse的第一个条目, 回到Mouse::sound. 
-=EN This isn't the best solution, however. We still have to keep the @ISA and the initial search package in sync (changes in one must be considered for changes in the other). Worse, if Mouse had multiple entries in @ISA, we wouldn't necessarily know which one had actually defined speak. 
-=CN 然而, 这也并非最终的解决方法. 我们还是要使@ISA和初始包同步（改了一个句就必须考虑另一个）. 更糟的是, 如果在@ISA中Mouse类有多个条目, 我们不知道哪个实际上定义了speak. 
+=EN Ahh. As ugly as this is, it works. Using this syntax, start with Animal to find speak and use all of Animal's inheritance chain if not found immediately.
+=CN 啊. 虽然丑陋, 但是能用啊. 用这个语法, 如果没有立即找到方法, 就会从继承链中去找方法.
+=EN The first parameter is $class (because we're using an arrow again), so the found speak method gets Mouse as its first entry and eventually works its way back to Mouse::sound for the details. 
+=CN 第一个参数是$class（因为我们再次使用了箭头）, 所以找到的speak方法象是Mouse的第一个条目, 回到Mouse::sound. 
+=EN This isn't the best solution, however.
+=CN 然而, 这也并非最终的解决方法. 
+=EN We still have to keep the @ISA and the initial search package in sync (changes in one must be considered for changes in the other). 
+=CN 我们还是要使@ISA和初始包同步（改了一个句就必须考虑另一个）. 
+=EN Worse, if Mouse had multiple entries in @ISA, we wouldn't necessarily know which one had actually defined speak. 
+=CN 更糟的是, 如果在@ISA中Mouse类有多个条目, 我们不知道哪个实际上定义了speak. 
 =EN So, is there an even better way?
 =CN 那么, 还有更好的方法吗？

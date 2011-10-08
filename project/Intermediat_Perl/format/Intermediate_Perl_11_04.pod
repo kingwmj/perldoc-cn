@@ -1,5 +1,5 @@
-=EN 11. 4. Calling a Second Method to Simplify Things
-=CN 11. 4. 调用第二个方法来简化操作
+=EN Calling a Second Method to Simplify Things
+=CN 调用第二个方法来简化操作
 =EN We can call out from speak to a helper method called sound. This method provides the constant text for the sound itself:
 =CN 我们可以从speak调一个方法叫sound. 这个方法提供一个常量做为声音的内容：
 { package Cow;

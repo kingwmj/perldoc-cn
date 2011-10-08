@@ -78,21 +78,13 @@ foreach my $file ( @filelist ) {
     my %ignore_hash = array2hash([@ignore_array]);
     my %format_hash = array2hash([@format_array]);
 
-    # 测试
-    while (my ($key, $value) = each %format_hash) {
-        say DEBUG "$key=>$value";
-    }
-    
-    # 备份原始英文文档 $tran -> 全文翻译结果，保留格式
-    my $tran = $text;
-
     # 隐藏 =head =item =over ... code 等格式化字符
     say "Replace head token and code string ...";
     foreach my $string (sort bylength keys %format_hash) {
         next if ($string eq '');
         my $char = $format_hash{$string};
-        say "$string -> $char";
-        $text =~ s/^\s*\Q$string\E/$char/msg;
+#        say DEBUG "<$string>=><$char>";
+        $text =~ s/\Q$string\E/$char/xmsgi;
     }
 
     # 格式化 $text 去除空格
@@ -102,13 +94,12 @@ foreach my $file ( @filelist ) {
 
     # 备份中间结果
     my $no_format_en_text = $text;
-=pod
+
     # 开始全文段落短语替换
     say "Replace Sentence in dict ...";
     foreach my $en_sentence (sort bylength keys %hash_dict_sentence) {
         my $cn_sentence = $hash_dict_sentence{$en_sentence};
         # 忽略单词大小写的替换
-        $tran =~ s/\Q$en_sentence\E/$cn_sentence/ixmsg;
         $text =~ s/\Q$en_sentence\E/$cn_sentence/ixmsg;
     }
 
@@ -118,14 +109,13 @@ foreach my $file ( @filelist ) {
         my $char = $format_hash{$string};
         $text =~ s/$char/$string/g;
     }
-=cut    
+    
     # 输出翻译结果
     my $tran_file = "$tran_dir/$basename";
-	write_file($tran_file, {binmode => ':utf8'}, $tran);
+	write_file($tran_file, {binmode => ':utf8'}, $text);
     next;
 
     # 释放已经不用的变量，清理内存
-    undef $tran;
     undef $tran_file;
 
     # 专有字符 C<> http ftp email var func file 暂时隐藏

@@ -1,8 +1,8 @@
-Chapter 5. References and Scoping 
+=head2 Chapter 5. References and Scoping 
 
 We can copy and pass around references like any other scalar. At any given time, Perl knows the number of references to a particular data item. Perl can also create references to anonymous data structures (structures that do not have explicit names) and create references automatically as needed to fulfill certain kinds of operations. Let's look at copying references and how it affects scoping and memory usage.  
 
-5. 1. More Than One Reference to Data 
+=head2 5. 1. More Than One Reference to Data 
 
 Chapter 4 explored how to take a reference to an array @skipper and place it into a new scalar variable: 
 
@@ -56,7 +56,7 @@ Perl recycles the memory for the array only when all references (including the n
 
 Such memory is available to Perl for other data later in this program invocation, and generally Perl doesn't give it back to the operating system.  
 
-5. 2. What If That Was the Name? 
+=head2 5. 2. What If That Was the Name? 
 
 Typically, all references to a variable are gone before the variable itself. But what if one of the references outlives the variable name? For example, consider this code: 
 
@@ -101,7 +101,7 @@ The data stays alive until we destroy the last reference:
  $ref = undef; # not yet. . .  
  $copy_of_ref = undef; # poof! 
 
-5. 3. Reference Counting and Nested Data Structures 
+=head2 5. 3. Reference Counting and Nested Data Structures 
 
 The data remains alive until we destroy the last reference, even if that reference lives within a larger active data structure. Suppose an array element is itself a reference. Recall the example from Chapter 4: 
 
@@ -194,7 +194,7 @@ then when we remove @all_with_names, we still have one live reference to what wa
 
 The bottom line is simply: Perl does the right thing. If we still have a reference to data, we still have the data.  
 
-5. 4. When Reference Counting Goes Bad 
+=head2 5. 4. When Reference Counting Goes Bad 
 
 Reference counting as a way to manage memory has been around for a long time. A really long time. The downside of reference counting is that it breaks when the data structure is not a directed graph that is, when some parts of the structure point back in to other parts in a looping way. For example, suppose each of two data structures contains a reference to the other (see Figure 5-1): 
 
@@ -233,7 +233,7 @@ Some upcoming version of Perl is likely to use garbage collection in addition to
 
 We eliminated the reference to @data2 from within @data1, and vice versa. Now the data have only one reference each, which all go to zero references at the end of the block. In fact, we can clear out either one and not the other, and it still works nicely. Chapter 13 shows how to create weak references, which can help with many of these problems.  
 
-5. 5. Creating an Anonymous Array Directly 
+=head2 5. 5. Creating an Anonymous Array Directly 
 
 In the get_provisions_list routine earlier, we created a half dozen array names that we used only so that we could take a reference to them immediately afterward. When the subroutine exited, the array names all went away, but the references remained.  
 
@@ -328,7 +328,7 @@ We can show a reference to an empty anonymous array using an empty anonymous arr
 
 This is a single element of the larger list. This item is a reference to an array with two elements, the first of which is the name string, and the second of which is itself a reference to an empty anonymous array. The array is empty because Mrs. Howell hasn't packed anything for this trip.  
 
-5. 6. Creating an Anonymous Hash 
+=head2 5. 6. Creating an Anonymous Hash 
 
 Similar to creating an anonymous array, you can also create an anonymous hash. Consider the crew roster from Chapter 4: 
 
@@ -426,7 +426,9 @@ The anonymous hash constructor always evaluates its contents in a list context a
 
 Now, a word from our parser: because blocks and anonymous hash constructors both use curly braces in roughly the same places in the syntax tree, the compiler has to make ad hoc determinations about which of the two you mean. If the compiler ever decides incorrectly, you might need to provide a hint to get what you want. To show the compiler that you want an anonymous hash constructor, put a plus sign before the opening curly brace: +{. . . }. To be sure to get a block of code, just put a semicolon (representing an empty statement) at the beginning of the block: {;. . . }.  
 
-5. 7. Autovivification Let's look again at the provisions list. Suppose we were reading the data from a file, in this format: 
+=head2 5. 7. Autovivification 
+
+Let's look again at the provisions list. Suppose we were reading the data from a file, in this format: 
 
 
  The Skipper 
@@ -525,7 +527,7 @@ This autovivification also works for multiple levels of assignment:
 
 Initially, $top contains undef, but because we dereference it as if it were an array reference, Perl inserts a reference to an empty anonymous array into $top. Perl then accesses the third element (index value 2), which causes Perl to grow the array to be three elements long. That element is also undef, so Perl stuffs it with a reference to another empty anonymous array. We then spin out along that newly created array, setting the fifth element to lee-lou.  
 
-5. 8. Autovivification and Hashes 
+=head2 5. 8. Autovivification and Hashes 
 
 Autovivification also works for hash references. If we dereference a variable containing undef as if it were a hash reference, a reference to an empty anonymous hash is inserted, and the operation continues.  
 
@@ -582,11 +584,11 @@ For good measure, we should probably sort both lists to be consistent:
 
 This is a typical data-reduction report generation strategy. [*] Simply create a hash-of-hashrefs (perhaps nested even deeper, as you'll see later), using autovivification to fill in the gaps in the upper data structures as needed, and then walk through the resulting data structure to display the results.  
 
-5. 9. Exercises 
+=head2 5. 9. Exercises 
 
 You can find the answers to these exercises in "Answers for Chapter 5" in the Appendix.  
 
-5. 9. 1. Exercise 1 [5 min] 
+=head2 5. 9. 1. Exercise 1 [5 min] 
 
 Without running it, can you see what's wrong with this piece of a program? If you can't see the problem after a minute or two, see whether trying to run it will give you a hint of how to fix it.  
 
@@ -610,7 +612,7 @@ Without running it, can you see what's wrong with this piece of a program? If yo
 
  my @passengers = (\%passenger_1, \%passenger_2); 
 
-5. 9. 2. Exercise 2 [40 min] 
+=head2 5. 9. 2. Exercise 2 [40 min] 
 
 The Professor's datafile (mentioned earlier in this chapter) is available as coconet. dat in the files you can download from the O'Reilly web site. There may be comment lines (beginning with a pound sign); be sure to skip them. (That is, your program should skip them. You might find a helpful hint if you read them!) 
 
