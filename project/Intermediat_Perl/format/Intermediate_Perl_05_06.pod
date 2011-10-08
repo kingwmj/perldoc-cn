@@ -16,5 +16,13 @@
 =CN 现在@crew里所包含的值同先前是一样的, 但不再需要为中间数据结构起名字了. 就像上一个版本一样, @crew包含两个元素, 每个元素都是一个指向一个包含以键为基础的散列, 表示了船上成员的特殊信息. 
 =EN The anonymous hash constructor always evaluates its contents in a list context and then constructs a hash from key/value pairs, just as if we had assigned that list to a named hash. Perl returns a reference to that hash as a single value that fits wherever a scalar fits. 
 =CN 匿名散列构造器总是把内容放在列表环境, 并把他们以键／值对的形式输出, 就像我们分配那个列表给命名散列一样. Perl返回一个那个散列的引用, 并将其作为标量值, 并适合任何标量合适的地方. 
-=EN Now, a word from our parser: because blocks and anonymous hash constructors both use curly braces in roughly the same places in the syntax tree, the compiler has to make ad hoc determinations about which of the two you mean. If the compiler ever decides incorrectly, you might need to provide a hint to get what you want. To show the compiler that you want an anonymous hash constructor, put a plus sign before the opening curly brace: +{ ... }. To be sure to get a block of code, just put a semicolon (representing an empty statement) at the beginning of the block: {; ... }. 
-=CN 现在, 下面一些话是从我们的解释器那里来： 因为代码块和匿名散列构造器都用花括号, 在语法树中大致相同的位置, 编译器不得不即时判断你到底是要用哪一个. 如果编译器没法决定, 就需要你给个暗示, 你到底是用哪个. 如果你是要用匿名散列, 那你要在花括号前加一个正号：+{…}. 如果你是用代码块, 则要在花括号后加上分号：{; … }. 
+=EN Now, a word from our parser:
+=CN 现在, 下面一些话是从我们的解释器那里来：
+=EN because blocks and anonymous hash constructors both use curly braces in roughly the same places in the syntax tree, the compiler has to make ad hoc determinations about which of the two you mean.
+=CN 因为代码块和匿名散列构造器都用花括号, 在语法树中大致相同的位置, 编译器不得不即时判断你到底是要用哪一个.
+=EN If the compiler ever decides incorrectly, you might need to provide a hint to get what you want. 
+=CN 如果编译器没法决定, 就需要你给个暗示, 你到底是用哪个.
+=EN To show the compiler that you want an anonymous hash constructor, put a plus sign before the opening curly brace: +{. . . }.
+=CN 如果你是要用匿名散列, 那你要在花括号前加一个正号：+{…}. 
+=EN To be sure to get a block of code, just put a semicolon (representing an empty statement) at the beginning of the block: {;. . . }. 
+=CN 如果你是用代码块, 则要在花括号后加上分号：{; … }. 

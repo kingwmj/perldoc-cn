@@ -1,10 +1,10 @@
-=head2 第五章 引用和范围
+=head2 Chapter 5. 引用和范围
 
-我们可以像任何其它标量变量那样拷贝和传递引用. 在任何给定的时间, Perl会知道有多少引用指向一个特定的数据项. Perl也会为匿名数据结构（所谓没有名字的数据结构）创建引用, 以及在为了满足一定的操作自动的创建引用. 让我们来看一下引用的拷贝以及其对范围和内存使用方面的影响. 
+我们可以像任何其它标量变量那样拷贝和传递引用. 在任何给定的时间, Perl会知道有多少引用指向一个特定的数据项.  Perl也会为匿名数据结构（所谓没有名字的数据结构）创建引用, 以及在为了满足一定的操作自动的创建引用.  让我们来看一下引用的拷贝以及其对范围和内存使用方面的影响. 
 
 =head2 5. 1. 更多有关对数据进行引用的故事
 
-Chapter 4 explored how to take a reference to an array @skipper and place it into a new scalar variable:
+在第四章里, 我们了解了如何取一个数组@skipper的引用, 并把它放到一个新建的标量变量中:
 
 
  my @skipper = qw(blue_shirt hat jacket preserver sunscreen); 
@@ -52,7 +52,7 @@ Perl跟踪有多少途径在访问数据的机制叫做"引用计数". 原来的
 
 不管是我们改变变量的值, 或者变量跑出范围, Perl会注意到这些, 并且适当的减少对数据的引用计数. 
 
-Perl recycles the memory for the array only when all references (including the name of the array) go away. In this case, Perl only reclaims memory when @skipper and all the references we created to it disappear.
+只有这个数组的所有引用（包括数组名）都没有了, Perl才会回收这个数组占用的内存 . 在上例中, 只有在@skipper数组及我们所有对它的引用全消失后, Perl才会回收内存.
 
 这些被释放的内存会被Perl安排用在程序中之后的其它数据的调用, 一般来说Perl不会把这些内存还给操作系统. 
 
@@ -75,9 +75,9 @@ Perl recycles the memory for the array only when all references (including the n
 
  print "$ref->[2]\n"; # still prints jacket\n 
 
-Immediately after we declare the @skipper array, we have one reference to the five-element list. After $ref is initialized, we'll have two, down to the end of the 块. When the 块 ends, the @skipper name disappears. However, this was only one of the two ways to access the data! Thus, the five-element list is still in memory, and $ref still points to that data.
+在我们声明@skipper数组之后, 我们有了一个指向这个五个元素的列表的引用. 在$ref被初始化后, 到块结束的地方, 我们会有两个引用.  到块结束, @skipper名子消失了.  然而, 这不过是仅仅访问数据的一个途径而已! 这样, 这个五个元素的列表依旧在内存里, 而且$ref变量仍然指向这块数据. 
 
-这个时候, 这个五个元素的列表是个匿名数组－－为没有名字的数组起的一个漂亮名字. 
+这个时候, 这个五个元素的列表是个匿名数组－－为没有名字的数组起的一个漂亮名字.
 
 直到$ref的值改变, 或者$ref自己消失, 我们依旧可以使用任何我们在前面学到的还原方法, 尽管数组的名字已经不存在了. 实际上, 它仍然是一个不折不扣的数组, 我们可以像对待其它任何Perl数组那样把它拉长和缩小：
 
@@ -424,7 +424,7 @@ Immediately after we declare the @skipper array, we have one reference to the fi
 
 匿名散列构造器总是把内容放在列表环境, 并把他们以键／值对的形式输出, 就像我们分配那个列表给命名散列一样. Perl返回一个那个散列的引用, 并将其作为标量值, 并适合任何标量合适的地方. 
 
-Now, a word from our parser: because 块s and anonymous hash 构造ors both use curly braces in roughly the same places in the syntax tree, the compiler has to make ad hoc determinations about which of the two you mean. If the compiler ever decides incorrectly, you might need to provide a hint to get what you want. To show the compiler that you want an anonymous hash 构造or, put a plus sign before the opening curly brace: +{. . . }. To be sure to get a 块 of code, just put a semicolon (representing an empty statement) at the beginning of the 块: {;. . . }.
+现在, 下面一些话是从我们的解释器那里来： 因为代码块和匿名散列构造器都用花括号, 在语法树中大致相同的位置, 编译器不得不即时判断你到底是要用哪一个. 如果编译器没法决定, 就需要你给个暗示, 你到底是用哪个. 如果你是要用匿名散列, 那你要在花括号前加一个正号：+{…}.  如果你是用代码块, 则要在花括号后加上分号：{; … }. 
 
 =head2 5. 7. 自生成
 
@@ -502,7 +502,7 @@ Now, a word from our parser: because 块s and anonymous hash 构造ors both use 
 
 这样的处理叫做：自生成. 任何一个不存在的变量, 或个存有undef的变量, 当被用来查找一个变量的时候（技术上被称为左值环境）, 会自动被适当的生成空项引用, Perl然后再让处理继续. 
 
-This is actually the same behavior we've probably been using in Perl all along. Perl creates new variables as needed. Before that statement, $provisions{"The Skipper"} didn't exist, so Perl created it. Then @{ $provisions{"The Skipper"} } didn't exist, so Perl created it as well.
+实际上, 我们在使用Perl时, 到处都会有相似的行为. 只要有需要, Perl会自动创建变量. 在这之前, $provisions{"The Skipper"}不存在, 所以Perl就创建它. 后来@{ $provisions{"The Skipper"} }不存在, 所以Perl故伎重演. 
 
 比如, 下面在代码是工作的：
 
@@ -531,7 +531,7 @@ This is actually the same behavior we've probably been using in Perl all along. 
 
 在散列引用中, 自生成功能也起作用. 如果我们还原一个含有undef的变量, 就好像它是一个散列引用一样, 那么一个指向空的匿名散列的引用就会被插入, 让操作继续下去. 
 
-One place this comes in very handy is in a typical data reduction task. For example, let's say the Professor gets an island-area network up and running (perhaps using Coco-Net or maybe Vines) and now wants to track the traffic from host to host. He begins logging the number of bytes transferred to a log file, giving the source host, the destination host, and the number of transferred bytes:
+自生成功能一大用处是在那些典型的单向读取的任务（消防水带）. 比如说, 假设教授要建立一个岛间的网络. 现在他要跟踪主机与主机之间的流量. 他现在开始把之间传输的字间记录到日志文件. 记录源主机, 目标主机和传输的字节数:
 
 
  professor. hut gilligan. crew. hut 1250 
@@ -542,7 +542,7 @@ One place this comes in very handy is in a typical data reduction task. For exam
  ginger. girl. hut professor. hut 1218 
  ginger. girl. hut maryann. girl. hut 199 . . .  
 
-Now the Professor wants to produce a summary of the source host, the destination host, and the total number of transferred bytes for the day. Tabulating the data is as simple as:
+现在, 教授要生成一个有关源主机,目标主机和总传输字节数的报表. 把数据列表显示出来：
 
 
  my %total_bytes; 
@@ -588,7 +588,7 @@ Now the Professor wants to produce a summary of the source host, the destination
 
 附录部份可以找到答案
 
-=head2 5. 9. 1. 练习1 ［5分钟］
+=head2 5. 9. 1. 练习 1 [5 分钟]
 
 先不要运行程序, 看看你能否判断出这程序的哪部份出了问题？如果你看不出来, 就可以运行一相程序, 得到些暗示, 来看是否能修改好：
 
@@ -618,5 +618,5 @@ Now the Professor wants to produce a summary of the source host, the destination
 
 修改一下这章的那段程序, 使每个源主机显示所有从它那里输出的字节数. 以字节数从大到小排. 对于每一组中, 以所有目标主机, 也以传输到此目标主机的字节数以大到小排. 
 
-The result should be that the machine that sent the most data will be the first source machine in the list, and the first destination should be the machine to which it sent the most data. The Professor can use this printout to reconfigure the network for efficiency.
+其最终的结果就是列出传输最多的源主机, 然后以此源主机为组, 接收最多的目标主机排在最前.  教授可以以此报表来重新安排网络效率.
 

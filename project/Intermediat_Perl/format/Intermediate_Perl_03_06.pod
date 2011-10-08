@@ -14,5 +14,5 @@
 =CN 输出结果
 =EN As before, this module imports nothing.
 =CN 如前所述, 这个模块没有导入任何东西. 
-=EN Its entire interface uses class methods, such as new, against the class name to create instances, and then calls instance methods, such as bpow and bstr, against those instances. 
-=CN 其全部的接口使用对象的方法, 如用new跟在类名之后, 来建立实例. 然后调用实例的方法, 如跟在实例名字后的bpow和bstr. 
+=EN Its entire interface uses class methods, such as new, against the class name to create instances, and then calls instance methods, such as bpow and bstr, against those instances
+=CN 其全部的接口使用对象的方法, 如用new跟在类名之后, 来建立实例. 然后调用实例的方法, 如跟在实例名字后的bpow和bstr

@@ -8,10 +8,6 @@
 =CN 这一切说明对文件的查验, 如-s, 是自动应用在即时找到的那个文件上的. 尽管这很方便, 回调程序里的当前目录还是与搜索目录不同. 
 =EN What if we want to use File::Find to accumulate the total size of all files seen? The callback subroutine cannot take arguments, and the caller discards its result. But that doesn't matter. When dereferenced, a subroutine reference can see all visible lexical variables when the reference to the subroutine is taken. For example:
 =CN 如果我们要用File::Find来累加所找到的所有文件的大小的话, 应该如何做呢？回调子程序不能有参数, 而调用者也忽略回调子程序返回的结果. 但这没有关系. 在还原后, 一个子程序引用可以看到所有指向子程序的引用的可见词法变量. 例如：
-use File::Find;
-my $total_size = 0;
-find(sub { $total_size += -s if -f }, '. ');
-print $total_size, "\n";
 =EN As before, we call the find routine with two parameters: a reference to an anonymous subroutine and the starting directory. When it finds names within that directory (and its subdirectories), it calls the anonymous subroutine. 
 =CN 同以前一样, 我们调用find子程序时传给它两个参数：一个指向匿名子程序的引用和一个起始搜索目录. 在它找到文件在目录中时（或其子目录中时）, 它会调用匿名子程序. 
 =EN Note that the subroutine accesses the $total_size variable. We declare this variable outside the scope of the subroutine but still visible to the subroutine. Thus, even though find invokes the callback subroutine (and would not have direct access to $total_size), the callback subroutine accesses and updates the variable. 
@@ -20,8 +16,15 @@ print $total_size, "\n";
 =CN 那种能访问所有我们声明的在运行时存在的词法变量的子程序, 我们叫它闭包（一个从数字世界借过一的词）. 在Perl术语中, 一个闭包就是指一种能引用在程序范围之外的词法变量的子程序. 
 =EN Furthermore, the access to the variable from within the closure ensures that the variable remains alive as long as the subroutine reference is alive. For example, let's number the output files:
 =CN 更有甚者, 在闭包内部访问变量能保证只要匿名子程序引用存在, 变量的值就能保留. 比如, 让我们对输出文件计数：
-=EN This code seems to have an extra semicolon at the end of the line that assigns to $callback, doesn't it? But remember, the construct sub { ... } is an expression. Its value (a coderef) is assigned to $callback, and there's a semicolon at the end of that statement. It's easy to forget to put the proper punctuation after the closing curly brace of an anonymous subroutine declaration. 
-=CN 这里的代码好像在行尾给$callback赋值时多出一个分号, 不是吗？ 但是注意, sub { … }创建的是个表达式. 值（一段代码引用）赋给变量$callback, 所以语句后面有分号. 在花括号定义的匿名子程序后面加上适当的标点符号是很容易被遗忘的. 
+=EN This code seems to have an extra semicolon at the end of the line that assigns to $callback, doesn't it?
+=CN 这里的代码好像在行尾给$callback赋值时多出一个分号, 不是吗？
+=EN But remember, the construct sub { ... } is an expression.
+=CN 但是注意, sub { … }创建的是个表达式.
+=EN Its value (a coderef) is assigned to $callback, and there's a semicolon at the end of that statement. 
+=CN 值（一段代码引用）赋给变量$callback, 所以语句后面有分号.
+=EN It's easy to forget to put the proper punctuation after the closing curly brace of an anonymous subroutine declaration. 
+=CN 在花括号定义的匿名子程序后面加上适当的标点符号是很容易被遗忘的. 
+
 =EN Here, we declare a variable to hold the callback. We cannot declare this variable within the naked block (the block following that is not part of a larger Perl syntax construct), or Perl will recycle it at the end of that block. Next, the lexical $count variable is initialized to 0. We then declare an anonymous subroutine and place its reference into $callback. This subroutine is a closure because it refers to the lexical $count variable. 
 =CN 这儿, 我们定义了一个保存有回调子程序引用的变量. 我们不能在裸块中定义这个变量（其后的块并非Perl语法构建的一部份）, 或者Perl在块结束时会回收它. 之后, 词法变量$count变量会初始化为0. 我们声明一个匿名子程序并把其引用给$callback. 这个子程序就是个闭包, 因它指向词法变量$count. 
 =EN At the end of the naked block, the $count variable goes out of scope. However, because it is still referenced by subroutine in $callback, it stays alive as an anonymous scalar variable. [*] When the callback is invoked from find, the value of the variable formerly known as $count is incremented from 1 to 2 to 3, and so on. 

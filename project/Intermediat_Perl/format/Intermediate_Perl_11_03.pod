@@ -8,19 +8,13 @@ Class->method(@args)
 Class::method('Class', @args);
 =EN (If it can't find the method, inheritance kicks in, but we'll show that later. ) This means that we get the class name as the first parameter, or the only parameter, if no arguments are given. We can rewrite the Sheep speaking method as:
 =CN （如果它找不到方法, 那么继承者会介入, 我们会在以后的章节中展示. ）这意味着我们以类名作为第一个参数, 或者说在没有参数的情况下是仅有的一个参数. 我们可以将其重写为：
-sub Sheep::speak {
- my $class = shift;
- print "a $class goes baaaah!\n";
-}
 =EN The other two animals come out similarly:
 =CN 另外两只动物的代码也一样写：
-sub Cow::speak {
- my $class = shift;
- print "a $class goes moooo!\n";
-}
-sub Horse::speak {
- my $class = shift;
- print "a $class goes neigh!\n";
-}
-=EN In each case, $class gets the value appropriate for that method. But once again, we have a lot of similar structure. Can we factor out that commonality even further? Yes by calling another method in the same class. 
-=CN 在以上例子中, $class类为那个方法取到适当的值. 可是又一次, 我们又看到许多相似的结构. 我们能不能更进一步, 求出最大公约数呢？有, 只要调用同一个类中的另一个方法就可以了. 
+=EN In each case, $class gets the value appropriate for that method.
+=CN 在以上例子中, $class类为那个方法取到适当的值. 
+=EN But once again, we have a lot of similar structure.
+=CN 可是又一次, 我们又看到许多相似的结构.
+=EN Can we factor out that commonality even further?
+=CN 我们能不能更进一步, 求出最大公约数呢？
+=EN Yes by calling another method in the same class.
+=CN 有, 只要调用同一个类中的另一个方法就可以了.

@@ -1,6 +1,6 @@
 =head2 Chapter 3. 使用模块
 
-Modules are the building 块s for our programs. They provide reusable 子程序, variables, and even object-oriented classes. On our way to building our own modules, we'll show you some of those you might be interested in. We'll also look at the basics of 使用模块 that others have already written.
+模块是建造我们程序的代码块。他提供了可用的子程序，变量或者是面向对象的类。用我们的方式建造我们自己的模块，我们将向你展示一些你也许感兴趣的地方。我们也将讲讲一些如何使用别人已经写好的模块的基本常识。
 
 =head2 3. 1. 标准发行版
 
@@ -10,13 +10,13 @@ Perl发行版已经自带了最受欢迎的模块.  实际上, 最近的发行�
 
 在这本书里, 我们会向你标出哪些模块是Perl自带的（而且在大多数情况下, 会说明是从哪个版本开始收入Perl发行版中的）. 我们把它们称为"核心模块", 或者标注它们是在"标准发行版"中的. 如果你安装了Perl, 那你就可以用这些模块.  因为我们写这本书的时候是用的Perl 5. 8. 7版, 所以我们也假定这是Perl的当前版本. 
 
-当你在开发你的程序的时候, 你可能要考虑是否你应该仅仅用核心模块. 这样的话你就能保证任何用Perl的人都能执行你的代码, 只要他们的Perl版本同你相同.  [] 这里我们也不多费口舌了, 主要是因为我们太喜欢Perl综合典藏网了, 不用它就舍不得. 
+当你在开发你的程序的时候, 你可能要考虑是否你应该仅仅用核心模块. 这样的话你就能保证任何用Perl的人都能执行你的代码, 只要他们的Perl版本同你相同.  [] 这里我们也不多费口舌了, 主要是因为我们太喜欢CPAN了, 不用它就舍不得. 
 
 =head2 3. 2. 使用模块
 
 几乎所有的Perl模块都带有文档说明. 所以尽管我们可能不知道那些模块背后的戏法是怎么变的, 如果我们知道如何使用接口, 我们就不必去担心那些细节.  这就是在这里介绍接口的原因, 毕竟：它屏蔽了复杂性. 
 
-在我们的本机当中, 我们可以用perldoc命令来调出模块文档.  We give it the module NAME we're interested in, and it prints out its 文档.
+在我们的本机当中, 我们可以用perldoc命令来调出模块文档.  我们输入我们要查的模块的名字, 然后perldoc打印出文档内容：
 
 
  $ perldoc File::Basename 
@@ -41,9 +41,9 @@ Perl发行版已经自带了最受欢迎的模块.  实际上, 最近的发行�
          $basename = basename($fullname, @suffixlist); 
          $dirname = dirname($fullname); 
 
-我们在这里列出了文档的一般结构（至少是最重要的部分）. Module 文档 typically follows the old Unix manpage format, which starts with a NAME and SYNOPSIS section.
+我们在这里列出了文档的一般结构（至少是最重要的部分）. 模块文档是按Unix旧文档格式组织的, 以NAME和SYNOPSIS开始.
 
-The SYNOPSIS gives us 实例 of the module's use, and if we can suspend understanding for a bit and follow the example, we can use the module. 就是说, 这可以使你在还没有熟悉Perl技术和语法的情况下, 仅仅看这些例子, 就可以使程序工作起来. 
+synopsis节给我们关于这个模块的用法的例子, 这样我们就可以稍微理解了用法就可以使用这个模块. 就是说, 这可以使你在还没有熟悉Perl技术和语法的情况下, 仅仅看这些例子, 就可以使程序工作起来. 
 
 如今, 因为Perl成了一个过程的、函数的、面向对象和其它各种语言类型的混合体, Perl模块文档开始有不同的接口. 我们会在不同的模块使用稍微不同风格的文档, 但是只要我们可以查文档, 我们就不会有问题. 
 
@@ -89,9 +89,9 @@ File::Basename会自己"感知"它所处的是哪种操作系统, 并且因此�
 
  my $dirname = File::Basename::dirname($some_path); 
 
-The list of names following use doesn't change which 子程序 are defined in the module's package (in this case, File::Basename). We can always use the full NAME regardless of the import list, as in:[*]
+use 关键字后面的名字列表并不会使模块里(在这个例子中是File::Basename)的子例程的定义有任何改变. 我们可以忽略导入清单, 直接用全名, 像下面一样:[*]
 
-[*] You don't need the ampersand in front of any of these subroutine invocations, because the subroutine NAME is already known to the compiler following use.
+[*] 你不必在这些调用的子例程的前面加"＆"符号, 因为编译器已经知道子例程的名字了. 
 
 
  my $basename = File::Basename::basename($some_path); 
@@ -106,7 +106,7 @@ The list of names following use doesn't change which 子程序 are defined in th
 
 =head2 3. 5. 面向对象的接口
 
-相比于File::Basename导出的子例程, 在核心模块中有另外一个File::Spec模块也提供类似的功能. File::Spec被设计来支持对文件属性的一般操作.  (A file specification is usually a file or directory name, but it may be a NAME of a file that doesn't existin which case, it's not really a filename, is it?)
+相比于File::Basename导出的子例程, 在核心模块中有另外一个File::Spec模块也提供类似的功能. File::Spec被设计来支持对文件属性的一般操作.  (一个文件属性指文件或目录的名字, 但它可能并不是实际存在的名子, 是这样吗？)
 
 与File::Basename模块不同的是, File::Spec模块接口是被设计成面向对象的. 我们也用use来调入模块, 象往常一样：
 
@@ -145,23 +145,23 @@ File::Spec 模块还提供了许多其它的方法来用可移植的方式处理
 
  print $value->bstr(  ), "\n";     # print it out 
 
-如前所述, 这个模块没有导入任何东西.  Its entire interface uses class methods, such as new, against the class NAME to create instances, and then calls instance methods, such as bpow and bstr, against those instances.
+如前所述, 这个模块没有导入任何东西.  其全部的接口使用对象的方法, 如用new跟在类名之后, 来建立实例. 然后调用实例的方法, 如跟在实例名字后的bpow和bstr.
 
-=head2 3. 7. Perl综合典藏网模块仓库
+=head2 3. 7. CPAN模块仓库
 
-Perl综合典藏网是众多志愿者协同工作的产物. 志愿者中的许多人用他们自己的FTP站点来维持前台的Perl综合典藏网 Web页面.  直到1993年底, 他们还是用perl-packrats邮件列表来协调他们的工作. 之后, 因为磁盘空间越来越便宜, 所以相同信息可以在所有的站点复制, 而不必放在专门的站点上.  这种想法酝酿了一年左右, 以Jarkko Hietaniemi(芬兰人, 详见：http://users. tkk. fi/jhi/jarkko. html. 中文名：沙雅可, 日文名：奴稗谷笑)在芬兰建立的FTP站点为母站, 其它的镜相站点可以以此来进行及时的更新. 
+CPAN是众多志愿者协同工作的产物. 志愿者中的许多人用他们自己的FTP站点来维持前台的CPAN Web页面.  直到1993年底, 他们还是用perl-packrats邮件列表来协调他们的工作. 之后, 因为磁盘空间越来越便宜, 所以相同信息可以在所有的站点复制, 而不必放在专门的站点上.  这种想法酝酿了一年左右, 以Jarkko Hietaniemi(芬兰人, 详见：http://users. tkk. fi/jhi/jarkko. html. 中文名：沙雅可, 日文名：奴稗谷笑)在芬兰建立的FTP站点为母站, 其它的镜相站点可以以此来进行及时的更新. 
 
-这个站点的一部份工作是重新编排和组织分离的Perl文档. 建立起放置为非UNIX系统的二进制文件、脚本、和Perl源代码的空间. 然而, Perl综合典藏网当然最关心的是占空间大部份的Perl模块部分. 
+这个站点的一部份工作是重新编排和组织分离的Perl文档. 建立起放置为非UNIX系统的二进制文件、脚本、和Perl源代码的空间. 然而, CPAN当然最关心的是占空间大部份的Perl模块部分. 
 
-按模块的功能编目, Perl综合典藏网把模块用符号连接组织起来, 指向他们的作者目录－－实际文件所在的地方.  模块还包含以易于Perl分析的格式索引, 如Data::Dumper这样的输出来丰富模块索引的内容.  自然啦, 这一切编目索引都是有主服务器的Perl程序自动从数据库生成的.  一般来说, Perl综合典藏网中从一个服务器同步到另一个服务器的工作是由mirror. pl这个古老的Perl程序完成的. 
+按模块的功能编目, CPAN把模块用符号连接组织起来, 指向他们的作者目录－－实际文件所在的地方.  模块还包含以易于Perl分析的格式索引, 如Data::Dumper这样的输出来丰富模块索引的内容.  自然啦, 这一切编目索引都是有主服务器的Perl程序自动从数据库生成的.  一般来说, CPAN中从一个服务器同步到另一个服务器的工作是由mirror. pl这个古老的Perl程序完成的. 
 
-从屈指可数的几台镜相服务器开始, Perl综合典藏网如今已经成长为超过200公共服务器, 至少每天（有时是每小时）刷新一次的网络.  无论你在世界的哪头, 我们总是可以找到最近的Perl综合典藏网镜相站. 
+从屈指可数的几台镜相服务器开始, CPAN如今已经成长为超过200公共服务器, 至少每天（有时是每小时）刷新一次的网络.  无论你在世界的哪头, 我们总是可以找到最近的CPAN镜相站. 
 
-Perl综合典藏网 Search (http://search. Perl综合典藏网. org)的难以置信的易用性, 一定会成为你最喜欢的搜寻界面.  从那个网页, 你可以搜寻模块、看它的文档、浏览它有哪些版本、查询他们的Perl综合典藏网测试者的报告以及许多其它事情. 
+CPAN Search (http://search. cpan. org)的难以置信的易用性, 一定会成为你最喜欢的搜寻界面.  从那个网页, 你可以搜寻模块、看它的文档、浏览它有哪些版本、查询他们的CPAN测试者的报告以及许多其它事情. 
 
-=head2 3. 8. 安装从Perl综合典藏网下载的模块
+=head2 3. 8. 安装从CPAN下载的模块
 
-安装从Perl综合典藏网获得的简单模块可以很直接：先从Perl综合典藏网下载发布的文档, 解压到一个目录. 下例中我们用wget下载文档, 当然, 你可以用你习惯的工具下载. 
+安装从CPAN获得的简单模块可以很直接：先从CPAN下载发布的文档, 解压到一个目录. 下例中我们用wget下载文档, 当然, 你可以用你习惯的工具下载. 
 
 
  $ wget http://www. cpan. org/. . . /HTTP-Cookies-Safari-1. 10. tar. gz 
@@ -249,7 +249,7 @@ Perl会向我们报怨在@INC中找不到需要的模块, 并且向我们展示�
 
 [*] 之所以有效是因为它在编译期间执行而不是在运行时执行. 接下来正是时候立即用use了. 
 
-Because a use lib pragma will pretty much always have a site-dependent pathname, it is traditional and we encourage you to put it near the top of the file. This makes it easier to find and update when we need to move the file to a new system or when the lib directory's NAME 变更. (Of course, we can eliminate use lib entirely if we can install our modules in standard @INC locations, but that's not always practical. )
+因为use lib编译提示总是包含站点相关的路径名, 所以一般来说我们推荐你把它写在文件的开头.  这样当你需要为新系统移动文件, 或库目录名字变化时比较容易更新.  (当然, 还有一种办法, 我们压根去掉use lib编译提示, 如果我们可以把我们的模块直接安装在@INC包括的标准路径下, 但这不是总是可行的. )
 
 要注意到：use lib不是指"用这个库", 而是指"用这个路径可以找到我的库（以及模块）. " 很多情况下, 我们会看到代码被写成这样：
 
@@ -278,7 +278,7 @@ Because a use lib pragma will pretty much always have a site-dependent pathname,
 
 我们刚才看到如果我们要安装一个模块, 并且这个模块要引用Module::Build模块的话, 我们要事先装好Module::Build模块. 这就是个稍稍让人头痛的有关一般模块依赖性的例子. 那我们的castaways岛的所有的椰子应该如何处理呢？我们要安装另一些模块, 而这些模块各自又依赖更多的其它不同的模块. 
 
-幸而, 我们有工具来助一臂之力. 自从Perl 5. 004版开始, Perl综合典藏网. pm模块成为核心发布的一部份. 它给我们提供了一个交互式的模块安装环境. 
+幸而, 我们有工具来助一臂之力. 自从Perl 5. 004版开始, CPAN. pm模块成为核心发布的一部份. 它给我们提供了一个交互式的模块安装环境. 
 
 
  $ perl -MCPAN -e shell 
@@ -288,17 +288,17 @@ Because a use lib pragma will pretty much always have a site-dependent pathname,
 
  cpan> 
 
-To install a module along with its dependencies, we issue the install command with the NAME of the module. Now, Perl综合典藏网. pm handles all the work of downloading, unpacking, building, testing, and installing the module, and it does so recursively for all its dependencies.
+要装一个模块和它所依赖的模块, 我们只要发出一个带模块名字的安装命令即可.  如此, CPAN. pm会处理所有下载、解包、编译、测试以及安装模块的工作, 并且它会递归处理所有的依赖关系. 
 
 
  cpan> install CGI::Prototype 
 
-如果觉得用上面的方法还烦琐, brian写了个Perl综合典藏网脚本放在Perl的发行包里. 我们只要简单的列出要安装的模块, 由脚本来处理余下的事情. 
+如果觉得用上面的方法还烦琐, brian写了个cpan脚本放在Perl的发行包里. 我们只要简单的列出要安装的模块, 由脚本来处理余下的事情. 
 
 
  $ cpan CGI::Prototype HTTP::Cookies::Safari Test::Pod 
 
-还有一个工具：Perl综合典藏网PLUS, 是对Perl综合典藏网. pm完全的重写. 但它不是Perl核心包的一部份, 如下：
+还有一个工具：CPANPLUS, 是对CPAN. pm完全的重写. 但它不是Perl核心包的一部份, 如下：
 
 
  $ perl -MCPANPLUS -e shell 
@@ -315,7 +315,7 @@ To install a module along with its dependencies, we issue the install command wi
 
  CPAN Terminal> i CGI::Prototype 
 
-Perl综合典藏网PLUS模块同样有一个方便的脚本, 叫做Perl综合典藏网p. 执行起来用i开关并列出要安装的模块列表, 像如下那样：
+CPANPLUS模块同样有一个方便的脚本, 叫做cpanp. 执行起来用i开关并列出要安装的模块列表, 像如下那样：
 
 
  $ cpanp i CGI::Prototype HTTP::Cookies::Safari Test::Pod 
@@ -330,5 +330,5 @@ Perl综合典藏网PLUS模块同样有一个方便的脚本, 叫做Perl综合典
 
 =head2 3. 10. 2. 练习 2 [35 分钟]
 
-分析一下这本书的国际标准书号（0596102062）. 从Perl综合典藏网里安装一下Business::ISBN模块, 并且用它来从ISBN数字中抽取国家代码和发行商代码. 
+分析一下这本书的国际标准书号（0596102062）. 从CPAN里安装一下Business::ISBN模块, 并且用它来从ISBN数字中抽取国家代码和发行商代码. 
 

@@ -239,10 +239,10 @@ Sometimes the Skipper runs a ship into an island, but sometimes the collision in
  }
  
  sub compute_heading_to_island {
-   .. code here ..
+   # .. code here ..
  }
  
- .. more program here ..
+ #.. more program here ..
 
 Gilligan then has his program debugged (perhaps with the aid of a smart person whom we'll call "the Professor"), and everything works well.
 
@@ -263,15 +263,15 @@ One way is to require that the Skipper put an explicit prefix in front of every 
  }
  
  sub compute_heading_to_island {
-   .. code here ..
+   # .. code here ..
  }
  
- .. more program here ..
+ # .. more program here ..
 
 Clearly, the navigation_turn_toward_heading comes from the navigation.pm file. This is great for Gilligan but awkward for the Skipper, as his file now has longer subroutine names:
 
  sub navigation_turn_toward_heading {
-   .. code here ..
+    #.. code here ..
  }
 
 =head2 10.7. Packages as Namespace Separators
@@ -281,11 +281,11 @@ If the name prefix of the last example didn't have to be spelled out on every us
  package Navigation;
  
  sub turn_toward_heading {
-   .. code here ..
+   # .. code here ..
  }
  
  sub turn_toward_port {
-   .. code here ..
+   #.. code here ..
  }
  
  1;
@@ -293,11 +293,11 @@ If the name prefix of the last example didn't have to be spelled out on every us
 The package declaration at the beginning of this file tells Perl to virtually insert Navigation:: in front of most names within the file. Thus, the code above practically says:
 
  sub Navigation::turn_toward_heading {
-   .. code here ..
+    # code here ..
  }
  
  sub Navigation::turn_toward_port {
-   .. code here ..
+    # code here ..
  }
  
  1;
@@ -313,10 +313,10 @@ Now when Gilligan uses this file, he simply adds Navigation:: to the subroutines
  }
  
  sub compute_heading_to_island {
-   .. code here ..
+    #.. code here ..
  }
  
- .. more program here ..
+ # .. more program here ..
 
 Package names are like variable names: they consist of alphanumerics and underscores but can't begin with a digit. Also, for reasons explained in the perlmodlib documentation, a package name should begin with a capital letter and not overlap an existing CPAN or core module name. Package names can also have multiple names separated by double colons, such as Minnow::Navigation and Minnow::Food::Storage.
 
@@ -332,7 +332,7 @@ So, in navigation.pm, we can use variables such as:[]
  @homeport = (21.283, -157.842);
  
  sub turn_toward_port {
-   .. code ..
+    #.. code ..
  }
 
 We can refer to the @homeport variable in the main code with its full package specification:
@@ -342,7 +342,7 @@ We can refer to the @homeport variable in the main code with its full package sp
 If every name has a package name inserted in front of it, what about names in the main program? Yes, they are also in a package, called main. It's as if package main; were at the beginning of each file. Thus, to keep Gilligan from having to say Navigation::turn_toward_heading, the navigation.pm file can say:
 
  sub main::turn_toward_heading {
-   .. code here ..
+    # .. code here ..
  }
 
 Now the subroutine is defined in the main package, not the Navigation package. This isn't an optimal solution (we'll show better solutions in Chapter 15 when we talk about Exporter), but at least there's nothing sacred or terribly unique about main compared to any other package.
@@ -361,7 +361,7 @@ All files start as if we had said package main;.[*] Any package directive remain
    package main;  # now in package main
  
    sub turn_toward_heading {  # main::turn_toward_heading
-     .. code here ..
+      # .. code here ..
    }
  
  }  # end scope block
@@ -369,7 +369,7 @@ All files start as if we had said package main;.[*] Any package directive remain
  # back to package Navigation
  
  sub turn_toward_port { # Navigation::turn_toward_port
-   .. code here ..
+    # .. code here ..
  }
 
 The current package is lexically scoped, similar to the scope of my variables, narrowed to the innermost-enclosing brace pair or file in which we introduced the package.
@@ -390,12 +390,12 @@ For example, suppose a subroutine within navigation.pm declares a lexical @homep
  sub get_me_home {
    my @homeport;
  
-   .. @homeport .. # refers to the lexical variable
-   .. @Navigation::homeport .. # refers to the package variable
+    #.. @homeport .. # refers to the lexical variable
+    #.. @Navigation::homeport .. # refers to the package variable
  
  }
  
- .. @homeport .. # refers to the package variable
+  # .. @homeport .. # refers to the package variable
 
 Obviously, this can lead to confusing code, so we shouldn't introduce such duplication needlessly. The results are completely predictable, though.
 

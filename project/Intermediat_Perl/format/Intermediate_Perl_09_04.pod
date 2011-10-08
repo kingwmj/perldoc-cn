@@ -2,11 +2,6 @@
 =CN 施瓦茨变换
 =EN The intermediate variables between each of these steps were not necessary, except as input to the next step. We can save ourselves some brainpower by just stacking all the steps together:
 =CN 每一步当中的中间变量, 除了作为下一步的入, 实际上并不需要他们. 我们可以把这些步骤全都堆在一块儿, 这也节省点力气. 
-my @names =
- map $_->[0], 
- sort { $b->[1] <=> $a->[1] }
- map [ $_, ask_monkey_about($_) ], 
- @castaways;
 =EN Because the map and sort operators are right to left, we have to read this construct from the bottom up. Take a list of @castaways, create some arrayrefs by asking the monkey a simple question, sort the list of arrayrefs, and then extract the names from each arrayref. This gives us the list of names in the desired order. 
 =CN 因为map和sort操作是从右到左分析的, 我们读这些结构时应该由下而上的读. 所以顺序是这样的：先取数组 @castaways, 问下小猴一些问题后, 创建一个数组引用, 将数组引用列表排序, 并抽出数组引用中的名字. 这样我们就将名字列表以希望的顺序排序. 
 =EN This construct is commonly called the Schwartzian Transform, which was named after Randal (but not by Randal), thanks to a Usenet posting he made many years ago. 
@@ -15,19 +10,13 @@ my @names =
 =CN 施瓦茨变换已经被证明是我们的排序技巧的武器库中非常有效的利器. 
 =EN If this transform looks like it might be too complex to memorize or come up with from first principles, it might help to look at the flexible and constant parts:
 =CN 如果你觉得这个技巧太复杂而难以记忆或提供一种简明的办法, 下面这种简化成常量的表达可能更灵活一点：
-my @output_data =
- map $_->[0], 
- sort { SORT COMPARISON USING $a->[1] AND $b->[1] }
- map [ $_, EXPENSIVE FUNCTION OF $_ ], 
- @input_data;
 =EN The basic structure maps the original list into a list of arrayrefs, computing the expensive function only once for each; sorts those array refs, looking at the cached value of each expensive function invocation;[*] and then extracts the original values back out in the new order. All we have to do is plug in the proper two operations, and we're done. For example, to use the Schwartzian Transform to implement a case-insensitive sort, we could use code like this:[]
 =CN 基本的结构将原始的列表变成一个数组引用的列表, 为每个成员只计算一次昂贵的计算; 将数组引用排序以缓存中通过前面昂贵的计算得到的结果进行排序［＊］, 然后抽出原始的值, 以前的次序排. 我们所要做的全部工作就是将两个操作合适发安排, 然后事儿就这样成了. 比如, 按照施瓦茨变换来实现一个不区分大小写的排序, 我们可以这样编码：［＋］
 =EN An expensive operation is one that takes a relatively long time or a relatively large amount of memory. 
 =CN 一个昂贵的操作是花相对时间长的操作, 或者相对使用大量内存的操作. 
-=EN This is an efficient way to do this only if the uppercasing operation is sufficiently expensive, which it might be if our strings tend to be very long or if we have a large enough number of them. For a small number of not-long strings, a simple my @output_data = sort { "\U$a" cmp "\U$b"} @input_data is probably more efficient. If in doubt, benchmark. 
-=CN 这只是在当转换大写是非常昂贵时才是有效的, 或当我们的字串很长或要排的字串很多时. 对于小数量的或不长的字串, 简单的一句：my @output_data = sort { "\U$a" cmp "\U$b"} @input_data 就能解决问题, 足够有效率了. 如果不信, 作基准测试吧. 
-my @output_data =
- map $_->[0], 
- sort { $a->[1] cmp $b->[1] }
- map [ $_, "\U$_" ], 
- @input_data;
+=EN This is an efficient way to do this only if the uppercasing operation is sufficiently expensive, which it might be if our strings tend to be very long or if we have a large enough number of them.
+=CN 这只是在当转换大写是非常昂贵时才是有效的, 或当我们的字串很长或要排的字串很多时.
+=EN For a small number of not-long strings, a simple my @output_data = sort { "\U$a" cmp "\U$b"} @input_data is probably more efficient. 
+=CN 对于小数量的或不长的字串, 简单的一句：my @output_data = sort { "\U$a" cmp "\U$b"} @input_data 就能解决问题, 足够有效率了.
+=EN If in doubt, benchmark. 
+=CN 如果不信, 作基准测试吧. 

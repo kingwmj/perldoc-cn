@@ -14,7 +14,7 @@
 =CN 这样我们当然保护了本地的dirname例程, 但是, 如果我们想用File::Basename模块的dirname提供的功能怎么办？没问题！我们只要打出这个例程的全名就可以了：
 =EN The list of names following use doesn't change which subroutines are defined in the module's package (in this case, File::Basename). We can always use the full name regardless of the import list, as in
 =CN use 关键字后面的名字列表并不会使模块里(在这个例子中是File::Basename)的子例程的定义有任何改变. 我们可以忽略导入清单, 直接用全名, 像下面一样
-=EN You don't need the ampersand in front of any of these subroutine invocations, because the subroutine name is already known to the compiler following use. 
+=EN You don't need the ampersand in front of any of these subroutine invocations, because the subroutine name is already known to the compiler following use.
 =CN 你不必在这些调用的子例程的前面加"＆"符号, 因为编译器已经知道子例程的名字了. 
 =EN In an extreme (but extremely useful) case, we can specify an empty list for the import list, as in
 =CN 在一种极端的情况（但也极端有用）, 我们可能为导入列表指定一个空列表, 就像下面一样

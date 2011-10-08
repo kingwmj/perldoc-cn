@@ -12,5 +12,7 @@
 =CN 教授的数据文件（注意早先这章提到的）叫coconet. dat, 保存在O'Reilly的网站上, 你可以下载. 有些行可能被注释了一些行（用前导＃号）;跳过这些行. （就是说, 你的程序可以跳过他们, 不过你阅读这些行还有很有益的！）
 =EN Modify the code from this chapter so that each source machine's portion of the output shows the total number of bytes from that machine. List the source machines in order from most to least data transferred. Within each group, list the destination machines in order from most to least data transferred to that target from the source machine. 
 =CN 修改一下这章的那段程序, 使每个源主机显示所有从它那里输出的字节数. 以字节数从大到小排. 对于每一组中, 以所有目标主机, 也以传输到此目标主机的字节数以大到小排. 
-=EN The result should be that the machine that sent the most data will be the first source machine in the list, and the first destination should be the machine to which it sent the most data. The Professor can use this printout to reconfigure the network for efficiency. 
-=CN 其最终的结果就是列出传输最多的源主机, 然后以此源主机为组, 接收最多的目标主机排在最前. 教授可以以此报表来重新安排网络效率. 
+=EN The result should be that the machine that sent the most data will be the first source machine in the list, and the first destination should be the machine to which it sent the most data.
+=CN 其最终的结果就是列出传输最多的源主机, 然后以此源主机为组, 接收最多的目标主机排在最前. 
+=EN The Professor can use this printout to reconfigure the network for efficiency
+=CN 教授可以以此报表来重新安排网络效率

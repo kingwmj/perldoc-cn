@@ -1,10 +1,10 @@
-=head2 第七章 对子程序的引用
+=head2 Chapter 7. 对子程序的引用
 
-目前, 你已经看到了对Perl三种数据类型的引用：标量, 数组和散列. 同样, 我们也可以对一个子程序进行引用（有时候我们把它叫作代码引用）. 
+目前, 你已经看到了对Perl三种数据类型的引用：标量, 数组和散列.  同样, 我们也可以对一个子程序进行引用 (有时候我们把它叫作代码引用 ).
 
-但我们为什么要做那个呢？ 与我们用指向数组的引用来实现用同一代码块在不同时间处理不同数组相同, 我们也可以使用指向子程序的引用实现在不同时间调用不同的子程序. 一样, 引用充许复杂的数据结构. 一个指向子程序的引用使子程序成为复杂数据结构的一部份成为可能. 
+但我们为什么要做那个呢？ 与我们用指向数组的引用来实现用同一代码块在不同时间处理不同数组相同, 我们也可以使用指向子程序的引用实现在不同时间调用不同的子程序.  一样, 引用充许复杂的数据结构. 一个指向子程序的引用使子程序成为复杂数据结构的一部份成为可能. 
 
-换一种说法, 一个变量或者一个复杂数据结构是一个程序中的数据的仓库. 一个对子程序的引用可以被想像成为一个程序动作（方法）的仓库. 本节中的例子可以向你揭示这一点. 
+换一种说法, 一个变量或者一个复杂数据结构是一个程序中的数据的仓库.  一个对子程序的引用可以被想像成为一个程序动作（方法）的仓库. 本节中的例子可以向你揭示这一点. 
 
 =head2 7. 1. 对命名子程序的引用
 
@@ -285,7 +285,7 @@ $ginger的值是一个代码引用, 就像我们在其后定义了子程序一�
 
  Ginger: (in a sultry voice) Well hello, Skipper! 
 
-Although we kept the value in a scalar variable, we could have put that sub {. . . } 构造 directly into the initialization of the greetings hash:
+尽管我们可以把代码引用作为标量值保存, 但我们也可以直接把sub {...} 代码块直接放在初始化的greetings散列中：
 
 
  my %greets = ( 
@@ -421,7 +421,7 @@ Although we kept the value in a scalar variable, we could have put that sub {. .
 
 更有甚者, 在闭包内部访问变量能保证只要匿名子程序引用存在, 变量的值就能保留. 比如, 让我们对输出文件计数：[*]
 
-[*] This code seems to have an extra semicolon at the end of the line that assigns to $callback, doesn't it? But remember, the 构造 sub {. . . } is an expression. Its value (a coderef) is assigned to $callback, and there's a semicolon at the end of that statement. It's easy to forget to put the proper punctuation after the closing curly brace of an anonymous subroutine declaration.
+[*] 这里的代码好像在行尾给$callback赋值时多出一个分号, 不是吗？ But remember, the construct sub {. . . } is an expression. 值（一段代码引用）赋给变量$callback, 所以语句后面有分号. 在花括号定义的匿名子程序后面加上适当的标点符号是很容易被遗忘的. 
 
 
  use File::Find; 

@@ -1,0 +1,5 @@
+=EN Using Modules
+=CN 使用模块
+
+=EN Modules are the building blocks for our programs. They provide reusable subroutines, variables, and even object-oriented classes. On our way to building our own modules , we'll show you some of those you might be interested in. We'll also look at the basics of using modules that others have already written.
+=CN 模块是建造我们程序的代码块。他提供了可用的子程序，变量或者是面向对象的类。用我们的方式建造我们自己的模块，我们将向你展示一些你也许感兴趣的地方。我们也将讲讲一些如何使用别人已经写好的模块的基本常识。

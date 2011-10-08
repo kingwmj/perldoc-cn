@@ -1,4 +1,4 @@
-=head2 第九章 实用引用技巧
+=head2 Chapter 9. 实用引用技巧
 
 这一章我们来看看如何优化排序并且如何处理嵌套数据结构. 
 
@@ -6,7 +6,7 @@
 
 Perl内建的sort排序操作符缺省情况下将文本字串以他们的字符顺序进行排序. [*] 这在我们进行字符排序时没有任何问题：
 
-[*] 我朋友把这叫做"按美国信息交换标准码表顺序"排序. 通常来说, 当前的Perl已经不用美国信息交换标准码字符表了; 它依照当前的缺省字符集的排序顺序来进行排序. 具体可以查看perllocale(不是perllocal!)文档页. 
+[*] 我朋友把这叫做"按ASCII表顺序"排序. 通常来说, 当前的Perl已经不用ASCII字符表了; 它依照当前的缺省字符集的排序顺序来进行排序. 具体可以查看perllocale(不是perllocal!)文档页. 
 
 
  my @sorted = sort qw(Gilligan Skipper Professor Ginger Mary_Ann); 
@@ -39,7 +39,7 @@ Perl内建的sort排序操作符缺省情况下将文本字串以他们的字符
 
 目前, 我们对数字进行了合适的比较方法, 所以有了正常的数字排序. 当然, 如此的排序方法还是繁琐, 所以我们可以用一个飞船操作符来代替：
 
-my @numerically_sorted = sort { $a <=> $b } 1, 2, 4, 8, 16, 32; 
+my @numerically_sorted = sort { $a <=> $b } 1, 2, 4, 8, 16, 32;
 
 飞船操作符按我们前面的算法返回-1, 0或+1. 如果是降序, 在Perl中也很简单 ：［＋］[]
 
@@ -131,7 +131,7 @@ my @numerically_sorted = sort { $a <=> $b } 1, 2, 4, 8, 16, 32;
 
 按理, 这个程序不错. 对于第一对名字（Gilligan和Skipper), 我们问下猴子："Gilligan有多少菠萝？" 和"Skipper手里有多少菠萝？" 我们从猴子那里得到这个值后, 并以此来将Gilligan和Skipper在最终的列表中排座次. 
 
-However, at some point, we have to compare the number of pineapples that Gilligan has with another castaway as well. For example, suppose the pair is Ginger and Gilligan. We ask the monkey about Ginger, get a number back, and then ask the monkey about Gilligan. . . again. This will probably annoy the monkey a bit, since we already asked earlier. But we need to ask for each value two, three, or maybe even four times, just to put the seven values into order.
+然而, 我们还得把Gilligan手中的持有的菠萝数量与其它castaway成员手中持有的菠萝数目相比较.  比如, 假定我们对比的是Ginger和Gilligan. We ask the monkey about Ginger, get a number back, and then ask the monkey about Gilligan. . . again. 这可能会让猴烦不胜烦, 因为我们早前已经问过它了.  但我们必须再二再三, 再三再四地为每个值去问, 直到把七个值排顺. 
 
 这可能会成为一个问题, 这太刺激猴子了. 
 
@@ -190,7 +190,7 @@ However, at some point, we have to compare the number of pineapples that Gilliga
 
 [*] 一个昂贵的操作是花相对时间长的操作, 或者相对使用大量内存的操作. 
 
-[] This is an efficient way to do this only if the uppercasing operation is sufficiently expensive, which it might be if our strings tend to be very long or if we have a large enough number of them. For a small number of not-long strings, a simple my @output_data = sort { "\U$a" cmp "\U$b"} @input_data is probably more efficient. If in doubt, benchmark.
+[] 这只是在当转换大写是非常昂贵时才是有效的, 或当我们的字串很长或要排的字串很多时. 对于小数量的或不长的字串, 简单的一句：my @output_data = sort { "\U$a" cmp "\U$b"} @input_data 就能解决问题, 足够有效率了. 如果不信, 作基准测试吧. 
 
 
  my @output_data = 
@@ -243,7 +243,7 @@ sub factorial {
 
 =head2 9. 7. 构建嵌套定义的数据
 
-我们可能要收集一个文件系统的信息, 包括文件名和目录名, 以及他们的内容. 用一个散列代表目录, 在其中, 键代表条目名字, 其值如果是未定义则代表是一般的文件. 以/bin目录为例：
+我们可能要收集一个文件系统的信息, 包括文件名和目录名, 以及他们的内容. 用一个散列代表目录, 在其中, 键代表条目名字, 其值如果是未定义则代表是一般的文件.  以/bin目录为例：
 
 
  my $bin_directory = { 
@@ -289,9 +289,9 @@ sub factorial {
    },  
  }; 
 
-Now the hierarchical nature of the data starts to come into play.
+现在分层性质的数据开始起作用了.
 
-显然, 我们不必在程序里用硬编码的形式来构建和维护这个结构. 我们可以用子程序来获取这些数据. 写个子程序, 如果找到的是文件, 则返回未定义值, 如果是目录的话, 则返回一个散列引用. 最基本的查看文件的例子是最简单的, 所以我们可以这样写：
+显然, 我们不必在程序里用硬编码的形式来构建和维护这个结构. 我们可以用子程序来获取这些数据.  写个子程序, 如果找到的是文件, 则返回未定义值, 如果是目录的话, 则返回一个散列引用. 最基本的查看文件的例子是最简单的, 所以我们可以这样写：
 
 
  sub data_for_path { 
@@ -330,11 +330,11 @@ Now the hierarchical nature of the data starts to come into play.
    return undef; 
  } 
 
-The base cases in this recursive algorithm are the 文件 and symbolic links. This algorithm wouldn't correctly traverse the 文件ystem if it followed symbolic links to directories as if they were true (hard) links, since it could end up in a circular loop if the symlink pointed to a directory that contained the symlink. [*] It would also fail to correctly traverse a malformed 文件ystemthat is, one in which the directories form a ring rather than a tree structure, say. Although malformed 文件ystems may not often be an issue, recursive algorithms in general are vulnerable to 错误 in the structure of the recursive data.
+这个递归算法中的基础情况是文件和符号链接.  如果文件系统中的符号链接指向目录, 好像是真的（硬）连接, 这个算法不能正确遍历文件系统. 因为如果符号链接指向一个包含着符号链接的目录的话, 它会最终走向一个循环. [*] 在遍历一个错误格式的文件系统时也会出错. 所谓错误格式的文件系统是指, 目录形成一个循环结构, 而不是树形结构. 尽管错误格式的文件不一定成为问题, 递归算法一般来说在遇到循环数据结构时会有麻烦. 
 
 [*] 这并不是说我们任何人都没有碰到过, 并奇怪为什么程序一直运行. 第二次确实不是我们的错, 第三次只是运气不好. 这就是我们的故事而且挥之不去. 
 
-对于目录中的每个文件都会查一下, 从递归调用data_for_path得到的结果就是未定义值. 这就生成了散列中大部份的值. 当一个命名引用返回时, 引用立即跑出程序范围, 所以成为对一个匿名散列的引用. （数据本身并没有改变, 但是我们可以有多种方法来访问数据变化. ）
+对于目录中的每个文件都会查一下, 从递归调用data_for_path得到的结果就是未定义值.  这就生成了散列中大部份的值.  当一个命名引用返回时, 引用立即跑出程序范围, 所以成为对一个匿名散列的引用.  (数据本身并没有改变, 但是我们可以有多种方法来访问数据变化. )
 
 如果这其中是个子目录, 则嵌套子程序调用使用readdir抽出目录内容, 并返回一个散列引用, 并由调用者放到散列结构中. 
 
@@ -346,7 +346,7 @@ The base cases in this recursive algorithm are the 文件 and symbolic links. Th
 
 显然, 如果我们自己的目录里有子目录的话, 那看上去就有趣多了. 
 
-=head2 9. 8. Displaying 数据的嵌套定义g
+=head2 9. 8. 显示嵌套数据g
 
 用Data::Dumper模块的Dumper程序显示输出是不错, 但如果我们不喜欢它使用的格式怎么办呢？ 我们可以写一个程序来显示数据. 同样, 对于嵌套定义的数据, 我们用递归子程序是关键. 
 
@@ -413,11 +413,11 @@ The base cases in this recursive algorithm are the 文件 and symbolic links. Th
 
 如果你发现在/bin中没有文件, 可能是因为你用的不是UNIX系统, 所以可以按需改一下glob的参数. 
 
-=head2 9. 9. 2. 练习2 [15分钟]
+=head2 9. 9. 2. 练习2 ［15分钟]
 
 读一下Perl里的Benchmark模块. 写个程序解决一个问题："用了施瓦茨变换使练习1的任务快了多少？"
 
-=head2 9. 9. 3. 练习 3 [10 min]
+=head2 9. 9. 3. 练习3 ［10分钟]
 
 用施瓦茨变换, 读一列表词, 以"字典顺序"对他们进行排序. 所谓字典顺序忽略大小写和和音节符. 暗示：下列转换可能有用：
 
@@ -429,7 +429,7 @@ The base cases in this recursive algorithm are the 文件 and symbolic links. Th
 
 注意, 不要把数据搞乱了！ 如果输入是Professor和skipper, 那么输出也应该是这个次序, 同样的大小写. 
 
-=head2 9. 9. 4. 练习 4 [20 min]
+=head2 9. 9. 4. 练习4 [20分钟]
 
 修改一下递归目录打印程序, 让它以缩进的形式显示嵌套子目录. 一个空的目录应该如下显示：
 

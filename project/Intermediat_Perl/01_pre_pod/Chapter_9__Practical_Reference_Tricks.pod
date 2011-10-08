@@ -308,7 +308,7 @@ Now for the directory part. We need a hash reference, which we declare as a name
    return undef;
  }
 
-The base cases in this recursive algorithm are the files and symbolic links. This algorithm wouldn't correctly traverse the filesystem if it followed symbolic links to directories as if they were true (hard) links, since it could end up in a circular loop if the symlink pointed to a directory that contained the symlink.[*] It would also fail to correctly traverse a malformed filesystemthat is, one in which the directories form a ring rather than a tree structure, say. Although malformed filesystems may not often be an issue, recursive algorithms in general are vulnerable to errors in the structure of the recursive data.
+The base cases in this recursive algorithm are the files and symbolic links. This algorithm wouldn't correctly traverse the filesystem if it followed symbolic links to directories as if they were true (hard) links, since it could end up in a circular loop if the symlink pointed to a directory that contained the symlink.[*] It would also fail to correctly traverse a malformed filesystem that is, one in which the directories form a ring rather than a tree structure, say. Although malformed filesystems may not often be an issue, recursive algorithms in general are vulnerable to errors in the structure of the recursive data.
 
 [*] Not that any of us have ever done that and wondered why the program took forever. The second time really wasn't our fault anyway, and the third time was just bad luck. That's our story and we're sticking to it.
 

@@ -3,8 +3,8 @@
 =EN The Skipper can save disk space (and brain space) by bringing the definition for turn_toward_heading out into a separate file. 
 =CN Skipper可以把程序turn_toward_heading的定义独立出为另一个文件以节省磁盘空间（也是脑力空间）. 
 =EN For example, suppose the Skipper figures out a half-dozen common subroutines related to navigating the Minnow that he seems to use in most or all of the programs he's writing for the task.
-=CN He can put them in a separate file called navigation. pm, which consists only of the needed subroutines. 
-=EN 比如, 如果Skipper发现与导航相关的半打通用子程序, 他可能用在大多数或所有的程序中.
+=CN 比如, 如果Skipper发现与导航相关的半打通用子程序, 他可能用在大多数或所有的程序中.
+=EN He can put them in a separate file called navigation. pm, which consists only of the needed subroutines. 
 =CN 他可以把它们放在一个分开的文件叫做navigation. pm中, 只包含有需要的子程序. 
 =EN But now, how can we tell Perl to pull in that program snippet from another file? We could do it the hard way, using the string form of eval that we discussed in Chapter 2. 
 =CN 到目前为止, 我们如何告诉Perl从另外一个程序中拉出一块程序代码呢？ 我们可以用硬编码, 第二章所讨论过的用eval的形式来求一个字串的值. 
