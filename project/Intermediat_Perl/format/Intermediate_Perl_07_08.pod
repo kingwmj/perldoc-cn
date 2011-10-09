@@ -4,37 +4,21 @@
 =CN 答案附件找. 
 =EN Exercise [50 min]
 =CN 练习 [50分钟]
-=EN The Professor modified some files on Monday afternoon, and now he's forgotten which ones they were. This happens all the time. He wants you to make a subroutine called gather_mtime_between, which, given a starting and ending timestamp, returns a pair of coderefs. The first one will be used with File::Find to gather the names of only the items that were modified between those two times; the second one should return the list of items found. 
-=CN 周一中午, 教授修改了一些文件, 不过现在他忘了改了哪些文件. 这种事情老是发生. 他要你写个程序, 叫"gather_mtime_between". 这个程序接受开始和结束时间作为参数, 返回一对代码引用. 第一个会被File::Find模块用来收集那些修改时间在两个时间点之间的文件名;第二个将返回所有文件列表. 
-=EN Here's some code to try; it should list only items that were last modified on the most recent Monday, although you could easily change it to work with a different day. (You don't have to type all of this code. This program should be available as the file named ex6-1. plx in the downloadable files, available on the O'Reilly web site. )
-=CN 这里有一些代码; 它应该列出那些在最近的周一之后修改过的文件, 当然, 你可以容易的修改它来适应不同的日期. （你不必写出所有的代码. 这个程序应该可以在O'Reilly网站下载, 名字叫ex6-1. plx）
+=EN The Professor modified some files on Monday afternoon, and now he's forgotten which ones they were. 
+=CN 周一中午, 教授修改了一些文件, 不过现在他忘了改了哪些文件. 
+=EN This happens all the time. He wants you to make a subroutine called gather_mtime_between, which, given a starting and ending timestamp, returns a pair of coderefs.
+=CN 这种事情老是发生. 他要你写个程序, 叫"gather_mtime_between". 这个程序接受开始和结束时间作为参数, 返回一对代码引用. 
+=EN The first one will be used with File::Find to gather the names of only the items that were modified between those two times; the second one should return the list of items found. 
+=CN 第一个会被File::Find模块用来收集那些修改时间在两个时间点之间的文件名;第二个将返回所有文件列表. 
+=EN Here's some code to try; it should list only items that were last modified on the most recent Monday, although you could easily change it to work with a different day.
+=CN 这里有一些代码; 它应该列出那些在最近的周一之后修改过的文件, 当然, 你可以容易的修改它来适应不同的日期.
+=EN You don't have to type all of this code.
+=CN 你不必写出所有的代码.
+=EN This program should be available as the file named ex6-1. plx in the downloadable files, available on the O'Reilly web site.
+=CN 这个程序应该可以在O'Reilly网站下载, 名字叫ex6-1.plx
 =EN Hint: you can find a file's timestamp (mtime) with code such as:
 =CN 暗示：你可以用如下代码找到一个文件的时间戳：
-my $timestamp = (stat $file_name)[9];
 =EN Because it is a slice, remember that those parentheses are mandatory. Don't forget that the working directory inside the callback isn't necessarily the starting directory in which find was called. 
 =CN 因为是片断, 记住上面这段代码中那些小括号是必须要加的. 别忘记回调里的工作目录不一定是find程序调用的起始目录. 
-use File::Find;
-use Time::Local;
-my $target_dow = 1; # Sunday is 0, Monday is 1, …
-my @starting_directories = (". ");
-my $seconds_per_day = 24 * 60 * 60;
-my($sec, $min, $hour, $day, $mon, $yr, $dow) = localtime;
-my $start = timelocal(0, 0, 0, $day, $mon, $yr); # midnight today
-while ($dow != $target_dow) {
- # Back up one day
- $start -= $seconds_per_day; # hope no DST!
- if (–$dow < 0) {
- $dow += 7;
- }
-}
-my $stop = $start + $seconds_per_day;
-my($gather, $yield) = gather_mtime_between($start, $stop);
-find($gather, @starting_directories);
-my @files = $yield->( );
-for my $file (@files) {
- my $mtime = (stat $file)[9]; # mtime via slice
- my $when = localtime $mtime;
- print "$when: $file\n";
-}
 =EN Note the comment about DST. In many parts of the world, on the days when daylight savings time or summer time kicks in and out, the day is no longer 86, 400 seconds long. The program glosses over this issue, but a more pedantic coder might take it into consideration appropriately. 
 =CN 注意关于DST的注释. 在世界上的其它部份, 在夏时制的白天可能有出入, 并不一定是86, 400秒. 这个程序忽略了这个问题, 但是一些更"顶真"的程序员可能会把这种情况适当考虑进去. 

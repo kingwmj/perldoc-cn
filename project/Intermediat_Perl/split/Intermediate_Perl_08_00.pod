@@ -1,0 +1,8 @@
+=EN Filehandle References
+=CN 引用文件句柄
+=EN We've seen arrays, hashes, and subroutines passed around in references, permitting a level of indirection to solve certain types of problems.
+=CN 我们已经看到如何通过引用传递数组, 散列和子程序, 并通过一定的手段来解决一定复杂度的问题。
+=EN We can also store filehandles in references.
+=CN 同样, 我们也可以将文件句柄存到引用里。
+=EN Let's look at the old problems and the new solutions.
+=CN 让我们看如何用新办法来解决老问题。

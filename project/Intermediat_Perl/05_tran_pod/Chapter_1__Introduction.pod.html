@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>D:\PortableGit\perldoc-cn\project\Intermediat_Perl\05_tran_pod\Chapter_1__Introduction.pod.html</title>
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
+<meta name="syntax" content="pod">
+<meta name="settings" content="use_css">
+<style type="text/css">
+<!--
+pre { font-family: monospace; color: #a0ffa0; background-color: #000000; }
+body { font-family: monospace; color: #a0ffa0; background-color: #000000; }
+.Type { color: #c0c0c0; }
+.Comment { color: #ffa500; }
+.Constant { color: #ffffff; }
+.Statement { color: #ffff00; }
+-->
+</style>
+</head>
+<body>
+<pre>
+<span class="Statement">=head2</span><span class="Constant"> Chapter 1. 引言 </span>
+
+欢迎来到认识 <span class="Comment">Perl</span> 的下一台阶。 你来到这里的原因可能是你想比 <span class="Comment">100</span> 行
+更长的 <span class="Comment">Perl</span> 程序, 或者你的老板要你来学。
+
+看, 我们的 <span class="Type">Learning</span><span class="Comment"> </span><span class="Comment">Perl</span> 写得如此之好, 因为它介绍给你如何用 <span class="Comment">Perl</span> 写
+那些小或中型的程序 (据我们观察, 也的确, 大多数 <span class="Comment">Perl</span> 程序用这么小
+的代码量就能很好的完成任务。). 但是, 为了避免 <span class="Type">Learning</span><span class="Comment"> </span><span class="Comment">Perl</span> 篇幅太
+大以至于把初学者吓退, 我们小心谨慎地精简了许多知识。
+
+在后面的学习中, 我们会以 <span class="Type">Learning</span><span class="Comment"> </span><span class="Comment">Perl</span> 同样的风格来向你介绍 <span class="Type">&quot;</span><span class="Comment"> 余下的</span>
+<span class="Comment">故事 </span><span class="Comment">&quot;</span><span class="Comment">.</span> 本书将会覆盖写从 <span class="Comment">100</span> 行到 1 万行的程序所需要的知识。
+
+比如, 你将会学到多外程序员如果在同一项目中一起工作。 这是很重要的,
+因为除非你一天工作 35 小时, 否则你很难在没有他们帮助下完成更大的任
+务。 同样, 在协作环境下, 你要保证你开发的所有的代码在最终的应用程序
+中能很好的同他人的代码配合。
+
+这本书也展示了如何处理更大和更复杂的数据结构.例如我们可能会提到的所谓
+一个 <span class="Type">&quot;</span><span class="Comment"> 散列中的散列&quot;</span>, 或 <span class="Type">&quot;</span><span class="Comment"> 数组中的数组中的散列中的数组 </span><span class="Comment">&quot;</span><span class="Comment">.</span>
+只要你掌握了一点关于引用的知识, 你就可以在复杂数据结构中自在遨游了。
+
+另外, 还有一个必须知道的概念是关于什么是面向对象编程, 就是让你部份的
+代码（特别是可能与其它程序员共用的）能在或多或少的程度上在同一个项目
+中被重用。 这本书也介绍了这部分的知道, 尽管你可能重来没有面向对象的
+概念。
+
+在团队中工作中的一个重要的方面是在一个发布周期中的单元测试和集成测试。
+在本书中你会学到把你的代码如何打包成一个发布版本, 并对其在开发环境中
+进行单元测试或在最终运行环境进行代码验证。
+
+另外, 就像我们在已经出版的 <span class="Type">Learning</span><span class="Comment"> </span><span class="Comment">Perl</span> 中保证, 我们会在整个学习过程中
+用一些有趣的例子和没治的双关语让你的学习旅程充满乐趣。 (尽管我们把 <span class="Comment">Fred</span>
+, <span class="Comment">Barney</span> , <span class="Comment">Betty</span> 和 <span class="Comment">wilma</span> 送回家了, 但我们让一些新的明星来担纲表演。 )
+
+<span class="Statement">=head2</span><span class="Constant"> 1. 1. 你应该已经知晓哪些概念? </span>
+
+我们会假定你已经读过 <span class="Type">Learning</span><span class="Comment"> </span><span class="Comment">Perl</span> , 或假装你已经读过, 或者你已经玩过
+<span class="Comment">Perl</span>一段时间, 已经把基础知识拿下。 比如, 这本书里我们不会再解释如何
+访问一个数组里一个元素或者从一个子程序里返回一个值。
+
+下面这些知识你应该事先掌握:
+
+在你的平台如何运行 <span class="Comment">Perl</span>
+
+<span class="Comment">Perl</span> 的三种变量类型：标量、数据和散列
+
+控制结构的语法如： <span class="Comment">while</span>, <span class="Comment">if</span>, <span class="Comment">for</span> 和 <span class="Comment">foreach</span>
+
+子程序
+
+<span class="Comment">Perl</span> 的操作符： <span class="Comment">grep</span>, <span class="Comment">map</span>, <span class="Comment">sort</span> 和 <span class="Comment">print</span>
+
+文件操作的语法：打开、文件操作和 -X （文件检测操作）
+
+我们可能在本书对这些话题进行深入探讨, 不过我们假定你已经掌握这些概念的
+基础知识。
+
+<span class="Statement">=head2</span><span class="Constant"> 1. 2. 那些脚注是怎么回事? </span>
+
+同 <span class="Type">Learning</span><span class="Comment"> </span><span class="Comment">Perl</span> 这本书的做法一样, 我们把那些深奥的概念移掉了, 并把他们做为
+脚注。 [*] 在你第一次读本书的时候尽可以略过不看, 在重读的时候可以把它们看看。
+我们在以后提供给你的材料中不会涉及对这些脚注的理解。
+
+<span class="Statement">=head2</span><span class="Constant"> 1. 3. 关于练习? </span>
+
+动口又动手, 学习就是好。 培训最好的途径就是在半小时或一小时之后的讲课后有
+一系列的练习。 当然, 如果你阅读速度很快的话, 一章大概在半小时之内就可以看
+完。 那么, 停一停, 不着急, 做一下练习吧!
+
+每个练习都有限时。 我们打算取一个平均的解题速度, 但是, 如果你用了更长的时
+间, 也不必但心。 有时候这不过取决于在工作或学习中面对同样问题的次数。 只
+要把限时当作指导性的就可以了。
+
+每个练习在附录都有参考答案。 再提醒一下, 作题前别去看, 看了再作题, 学习效
+果就差了。
+
+<span class="Statement">=head2</span><span class="Constant"> 1. 4. 如果我是讲授 </span><span class="Comment">Perl</span><span class="Constant"> 课程的指导老师? </span>
+
+如果你是讲授 <span class="Comment">Perl</span> 课程的指导老师, 并且决定用此书作为课程讲义, 你应该知道,
+对于大多数学生来说, 每组练习 45 分钟到一小时就足够完成了, 余下留点时间作
+课间休息。 一些章节可能快些, 有的章节可能要慢些。 标在方框内的限时是死的,
+所以一切按实际情况决定。
+
+好吧, 开始喽。 翻过此页, 我们的课就马上开始. . . .
+
+</pre>
+</body>
+</html>

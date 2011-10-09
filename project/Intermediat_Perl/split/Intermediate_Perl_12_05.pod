@@ -1,0 +1,14 @@
+=EN Inheriting the Constructor
+=CN 继承构建函数
+=EN Was there anything specific to Horse in that method? No.
+=CN 对于那个方法中 I<Horse> 类有其它特殊的吗？ 没有。
+=EN Therefore, it's also the same recipe for building anything else inherited from Animal, so let's put it there:
+=CN 因此, 它同样可以继承自 I<Animal> 类, 所以我们可以把它放到这儿：
+=EN Ahh, but what happens if we invoke speak on an instance?
+=CN 嗯, 但如果我们在实例上调用 I<speak> 会发生什么呢？
+=EN We get a debugging value:
+=CN 我们会得到一个测试值：
+=EN Why? Because the Animal::speak method expects a class name as its first parameter, not an instance.
+=CN 为什么呢?因为 I<Animal::speak> 方法期一个类名作为它的第一个参数, 而不是一个实例。
+=EN When we pass in the instance, we'll use a blessed scalar reference as a string, which shows up as we showed it just now similar to a stringified reference, but with the class name in front.
+=CN 当我们传一个实例时, 我们会把"祝福"过的标量引用当作一个字串, 就像我们直接打印一个引用一样, 不过是前面有个类名提示。

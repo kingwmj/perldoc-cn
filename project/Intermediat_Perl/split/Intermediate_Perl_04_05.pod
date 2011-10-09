@@ -1,0 +1,12 @@
+=EN Modifying the Array
+=CN 修改数组
+=EN You've seen how to solve the excessive copying problem with an array reference. Now let's look at modifying the original array.
+=CN 你已经看到了如何用一个指向数组的引用来解决大量拷贝带来的问题.现在我们来看看如何修改原始数组。
+=EN For every missing provision, we push that provision onto an array, forcing the passenger to consider the item:
+=CN 对于每个遗忘的的装备, 我们把它放到另一个数组里, 要求乘客关注这些装备：
+=EN Note the addition of the @missing array. If we find any items missing during the scan, we push them into @missing. If there's anything there at the end of the scan, we add it to the original provision list.
+=CN 注意我们另外增加了一个 I<@missing> 数组.如果我们在扫描数组的时候发现有遗忘的装备, 我们就把它放到 I<@missing> 数组里.在扫描结束后, 如果发现 I<@missing> 里有内容, 我们就把这个数组加在供应清单后面。
+=EN The key is in the last line of that subroutine. We're dereferencing the $items array reference, accessing the original array, and adding the elements from @missing. Without passing by reference, we'd modify only a local copy of the data, which has no effect on the original array.
+=CN 关键就在于那个子例程的最后一行.我们把指向数组的引用 I<$items> 还原成数组, 访问还原后的数组, 并且把 I<@missing> 数组中的元素加进去。
+=EN Also, @$items (and its more generic form, @{$items}) works within a double-quoted string. We can't include any whitespace between the @ and the immediately following character, although we can include nearly arbitrary whitespace within the curly braces as if it were normal Perl code.
+=CN 同样, I<@$items(> 或者其更一般的形式 I<:@{$items})> 在双引号内也可以工作.尽管我们可以在大括号里加任意空格, 但我们不能在@和后面跟着的字符间加上空格。

@@ -1,0 +1,12 @@
+=EN Directory Handle References
+=CN 目录句柄引用
+=EN In the same way that we can create references to filehandles, we can create directory handle references.
+=CN 用创建对句柄的引用同样的方法, 我可以创建对目录句柄的引用。
+=EN The directory handle reference obeys the same rules we laid out before. This only works if the scalar variable does not already have a value, and the handle automatically closes when the variable goes out of scope or we assign it a new value.
+=CN 对目录句柄引用遵从我们在之前我们说过的规则.它必须在标量变量没有值的情况下才能工作, 跑出范围或变量被另外赋值时, 句柄自动关闭。
+=EN We can use object-oriented interfaces for directory handles too. The IO::Dir module has been part of the standard Perl distribution since 5. 6. It doesn't add interesting new features but wraps the Perl built-in functions.
+=CN 我们也是用面向对象的接口来处理目录句柄.从 I<Perl> I<5.6> 开始, I<IO::Dir> 模块就是标准发行版的一部份了.它并没有添加什么新的功能, 无非包装了 I<Perl> 的内建函数而已 I<.[> +]
+=EN For each IO::Dir method name, append "dir" and look at the documentation in perlfunc.
+=CN 对于每个 I<IO::Dir> 模块名, 加上 I<"dir"> 并用 I<perlfunc> 查看其文档。
+=EN We don't have to create a new directory handle if we decide we want to go through the list again (perhaps later in the program). We can rewind the directory handle to start over:
+=CN 如果我们要重新查看文件列表的时候（可能在程序的后面）, 我们不必重建句柄.我们可以用 I<rewind> 来重用目录句柄：

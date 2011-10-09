@@ -1,0 +1,12 @@
+=EN Exercises
+=CN 练习
+=EN You can find the answers to these exercises in "Answers for Chapter 10" in the Appendix.
+=CN 答案见附录。
+=EN Exercise 1 [25 min]
+=CN 练习1 I<[25> 分钟]
+=EN The Oogaboogoo natives on the island have unusual names for the days and months. Here is some simple but not very well-written code from Gilligan. Fix it up, add a conversion function for the month names, and make the whole thing into a library. For extra credit, add suitable error checking and consider what should be in the documentation.
+=CN 岛上的土著 I<Oogaboogoo> 对于日期和月份着不同寻常的名字.这里有个从 I<Gilligan> 来的简单但写得不是很好的代码.修改一下, 给月份名加一个对话函数, 并把这些放到一个库里.为了更好的可靠性, 添加一个错误检查程序以及文档。
+=EN Exercise 2 [15 min]
+=CN 练习2 I<[15> 分钟]
+=EN Make a program that uses your library and the following code to print out a message, such as Today is dip, sen 15, 2011, meaning that today is a Monday in August. (Hint: the year and month numbers returned by localtime may not be what you'd expect, so you need to check the documentation. )
+=CN 写个程序使用你的库并用如下代码打印一些信息, 如今天是 I<dip> , I<sen> I<15> , I<2011> , 表示今天是八月的周一.（暗示： I<localtime> 返回的年月数字可能并不一定是你想要的, 所以你要查一下文档.）

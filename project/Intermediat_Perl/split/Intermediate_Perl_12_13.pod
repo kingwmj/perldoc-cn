@@ -1,0 +1,16 @@
+=EN Getters That Double as Setters
+=CN 既是设置器也是取值器
+=EN Another alternative to the pattern of creating two different methods for getting and setting a parameter is to create one method that notes whether or not it gets any additional arguments.
+=CN 另一种建立设置器和取值器替代方案是用一个方法, 以参数作区分是取值还是设置值。
+=EN If the arguments are absent, it's a get operation;
+=CN 如果参数缺失, 那么就作取值操作;
+=EN if the arguments are present, it's a set operation.
+=CN 如果有值, 那就设置值。
+=EN A simple version looks like:
+=CN 简例如下：
+=EN Now we can say:
+=CN 这样我们就可以这样写：
+=EN The presence of the parameter in the second line denotes that we are setting the color, while its absence in the third line indicates a getter.
+=CN 第二行出现的参数表明我们正设置颜色, 如果它缺失, 表示我们调用取值器。
+=EN This strategy is attractive because of its simplicity, but it also has disadvantages. It complicates the actions of the getter, which is called frequently. It also makes it difficult to search through our code to find the setters of a particular parameter, which are often more important than the getters. We've been burned in the past when a setter became a getter because another function returned more parameters than expected after an upgrade.
+=CN 这种方案具有吸引力是因为其简洁, 但这也有其缺点.它混淆了频繁的取值的动作.它也使通过我们的代码来找用特殊参数的设置器变得困难, 而这往往比取值重要.在以往, 因为一个设置器因为在升级后另一个函数返回多个值而变成了取值器的情况造成的麻烦就很多 I<.<> 似乎应该反过来－－译者>

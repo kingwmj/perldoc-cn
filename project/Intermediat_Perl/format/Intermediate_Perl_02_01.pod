@@ -1,21 +1,21 @@
 =EN List Operators
 =CN 列表操作符
 =EN You already know about several list operators in Perl, but you may not have thought of them as working with lists.
-=CN 你可能已经知道Perl的一些列表操作符, 但并没有想过他们是怎么同列表一起工作的. 最常用的列表操作符应该是print了. 
+=CN 你可能已经知道 Perl 的一些列表操作符, 但并没有想过他们是怎么同列表一起工作的. 最常用的列表操作符应该是 print 了. 
 =EN The most common list operator is probably print. We give it one or more arguments, and it puts them together for us. 
 =CN 我们给它一些参数, 然后它把他们合在一起显示出来. 
 =EN There are several other list operators that you already know about from Learning Perl.
-=CN 在Learning Perl这本书里, 你可能知道了另外一些列表操作符.
+=CN 在 B<Learning Perl> 这本书里, 你可能知道了另外一些列表操作符.
 =EN The sort operator puts its input list in order.
-=CN 如sort操作符将输入的列表按顺序列出. 
+=CN 如 sort 操作符将输入的列表按顺序列出. 
 =EN In their theme song, the castaways don't come in alphabetical order, but sort can fix that for us. 
-=CN 在Gilligan's Island的主题歌中的那些求生者没有按字母次序出场, sort可以为我们修正这一点. 
+=CN 在 Gilligan's Island 的主题歌中的那些求生者没有按字母次序出场, sort 可以为我们修正这一点. 
 =EN The reverse operator returns a list in the opposite order. 
-=CN reverse操作符返回反向排序的列表. 
+=CN C<reverse> 操作符返回反向排序的列表. 
 =EN Perl has many other operators that work with lists, and, once you get used to them, you'll find yourself typing less and expressing your intent more clearly. 
 =CN Perl 还有其它与列表打交道的操作符. 而且一旦你使用他们, 你会发现这些语句会使你表达得更清楚, 写更少的代码. 
 =EN List Filtering with grep
-=CN 用grep操作符来过滤列表
+=CN 用 grep 操作符来过滤列表
 =EN The grep operator takes a list of values and a "testing expression. " It takes one item after another in the list and places it into the $_ variable. It then evaluates the testing expression in a scalar context. If the expression evaluates to a true value, grep passes $_ on to the output list. 
 =CN grep操作符取一个列表和一个"测试表达式". 它一个一个地从列表中把元素取出来放到$_变量中, 并在标量环境中, 用"测试表达式"来检验这个值. 如果检验出来是个"真"值, grep会把$_变量送到输出列表中. 
 =EN In a list context, the grep operator returns a list of all such selected items. In a scalar context, grep returns the number of selected items. 
@@ -77,7 +77,7 @@
 =EN If the last digit is 4, we return the digits themselves by evaluating @digits (which is in list context). If the last digit is not 4, we return an empty list, effectively removing results for that particular item. Thus, we can always use a map in place of a grep, but not vice versa.
 =CN 如果最后的数字是 4，我们原样返回 @digits (列表环境). 如果最后的数字不是 4，我们返回一个空列表，这样就剔除了指定的数值。这样，我们使用map达到了grep的效果。但反过来就不行了。
 =EN Of course, everything we can do with map and grep, we can also do with explicit foreach loops. But then again, we can also code in assembler or by toggling bits into a front panel.
-=CN 当然，所有能用map和grep做的，都能用 foreach 循环语句实现。但其次，我们可以在前端继续优化代码。
+=CN 当然，所有我们能用 map和 grep 做的事情，都可以用 foreach 循环来做。但是话又说回来，我们也可以用汇编或者 toggling bits 来写代码。
 
 =EN The point is that proper application of grep and map can help reduce the complexity of the program, allowing us to concentrate on high-level issues rather than details.
-=CN 重点是正确的应用 grep 和 map 能降低程序的复杂程度。让我们可以更关注更高级的问题而不是拘泥与细节。
+=CN 重点是正确的应用 grep 和 map 能降低程序的复杂程度。让我们可以更关注更高级的问题而不是拘泥于细节。

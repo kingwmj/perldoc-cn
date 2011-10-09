@@ -24,7 +24,7 @@ Horse::sound($tv_horse)
 =EN neigh is the return value, which ends up as the earlier $noise variable. 
 =CN "neigh"是输出值, 像以往$noise变量一样. 
 =EN If Perl did not find Horse::sound, it would walk up the @Horse::ISA list to try to find the method in one of the superclasses, just as for a class method.
-=CN 如果Perl没有找到Horse::sound, 那么它会根据@Horse::ISA列表回溯在父类中查找方法, 就象对类方法的操作一样.
+=CN 如果Perl没有找到 Horse::sound, 那么它会根据 @Horse::ISA 列表回溯在父类中查找方法, 就象对类方法的操作一样.
 =EN The only difference between a class method and an instance method is whether the first parameter is an instance (a blessed reference) or a class name (a string).
 =CN 类方法和实例方法的区别是第一个参数是否为实例（一个被祝福过的引用）或一个类名（一个字串）.
 =EN This is perhaps different from other OOP languages with which you may be familiar. 

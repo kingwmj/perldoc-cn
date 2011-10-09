@@ -49,7 +49,7 @@ while (my ($en, $cn) = each %hash_dict_sentence) {
 }
 
 # 合并整句词典
-%hash_dict_sentence = (%hash_proj_sentence, %hash_dict_sentence);
+%hash_dict_sentence = %hash_proj_sentence;
 
 # 加载普通单词词典，直接替换
 my $dict_common = '../dict/common.dict';
@@ -86,11 +86,6 @@ foreach my $file ( @filelist ) {
 #        say DEBUG "<$string>=><$char>";
         $text =~ s/^\Q$string\E/$char/xmsgi;
     }
-
-    # 格式化 $text 去除空格
-    $text =~ s/$blank+/$blank/msg;
-    $text =~ s/$blank*,$blank*/,$blank/msg;
-    $text =~ s/$blank+$//msg;
 
     # 备份中间结果
     my $no_format_en_text = $text;

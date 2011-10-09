@@ -1,0 +1,16 @@
+=EN Exercises
+=CN 练习
+=EN You can find the answers to these exercises in "Answers for Chapter 4" in the Appendix.
+=CN 在附录中"第四章的答案"中找答案
+=EN Exercise 1 [5 min]
+=CN 练习 1 I<[5> 分钟]
+=EN How many different things do these expressions refer to?
+=CN 下列表达式各表示什么不同的含义：
+=EN Exercise 2 [30 min]
+=CN 练习 2 I<[30> 分钟]
+=EN Using the final version of check_required_items, write a subroutine check_items_for_all that takes a hash reference as its only parameter, pointing at a hash whose keys are the people aboard the Minnow and whose corresponding values are array references of the things they intend to bring onboard.
+=CN 运用书中最后那个版本的 I<check_required_items> , 写一个子程序 I<check_items_for_all> , 把一个散列引用作为惟一参数.这个散列引用的键是在 I<Minnow> 船上的所有乘客, 其对应的值是他们各自想带上船的东西。
+=EN For example, the hash reference might be constructed like so:
+=CN 比如, 这个散列引用可以是这样的：
+=EN The newly constructed subroutine should call check_required_items for each person in the hash, updating their provisions list to include the required items.
+=CN 我们新建的那个子程序要调用 I<check_required_items> 来为散列中每个人更新其必需的装备清单。

@@ -17,9 +17,9 @@
 =EN Let's make a sheep that has a name and a color:
 =CN 让我们做一个有名有色的绵羊：
 =EN $lost->{Name} has Bo, and $lost->{Color} has white. But we want to make $lost->name access the name, and that's now messed up because it's expecting a scalar reference. Not to worry, because it's pretty easy to fix:
-=CN $lost->{Name}里存的是"Bo", $lost->{Color}里放的是white. 但我们要用$lost->name访问name变量, 但是因为要用标量引用, 所以会造成混乱. 别急, 这很容易解决：
+=CN $lost->{Name} 里存的是 "Bo", $lost->{Color} 里放的是 white. 但我们要用 $lost->name 访问 name变量, 但是因为要用标量引用, 所以会造成混乱. 别急, 这很容易解决：
 =EN named still builds a scalar sheep, so let's fix that as well:
-=CN named方法创建标量的sheep对象, 所以让我们来修改一下：
+=CN named 方法创建标量的 sheep 对象, 所以让我们来修改一下：
 =EN What's this default_color? If named has only the name, we still need to set a color, so we'll have a class-specific initial color. For a sheep, we might define it as white:
 =CN 那么缺省毛色呢？
 =EN Then, to keep from having to define one for each additional class, define a backstop method, which serves as the "default default, " directly in Animal:

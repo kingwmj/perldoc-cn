@@ -1,0 +1,8 @@
+=EN Intermediate Foundations
+=CN 进阶基础
+=EN Before we get started on the meat of the book, we want to introduce some intermediate-level Perl idioms that we use throughout the book
+=CN 在开始深入学习这本书之前, 我们要介绍一些中阶 I<Perl> 语言的 I<B<"> 习惯用语 I<">> ，我们会在整本书里都用到这些 I<B<"> 习语 I<">>
+=EN These are the things that typically set apart the beginning and intermediate Perl programmers
+=CN 对这些 I<B<"> 习语 I<">> 的掌握程度区分了一个程序员对 I<Perl> 的运用等级是中阶还是初阶
+=EN Along the way, we'll also introduce you to the cast of characters that we'll use in the examples throughout the book
+=CN 我们将会在贯穿整本书的例子里向您介绍这些 I<B<"> 演员 I<">>

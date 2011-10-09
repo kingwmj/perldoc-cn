@@ -5,9 +5,9 @@
 =EN Exercise 1 [15 min]
 =CN 习题 1 [15 分钟]
 =EN Write a program that takes a list of filenames on the command line and uses grep to select the ones whose size in bytes is less than 1000.
-=CN 写一个程序从命令行取一个文件清单, 然后用grep把那些文件大小在1000字节以内的文件找出来. 
+=CN 写一个程序从命令行取一个文件清单, 然后用 grep 把那些文件大小在 1000 字节以内的文件找出来. 
 =EN Use map to transform the strings in this list, putting four space characters in front of each and a newline character after. 
-=CN 用map把这个清单里的每个字串前加四个空格并在字串后面加上换行符. 
+=CN 用 map 把这个清单里的每个字串前加四个空格并在字串后面加上换行符. 
 =EN Print the resulting list. 
 =CN 然后输出列表结果. 
 =EN Exercise 2 [25 min]

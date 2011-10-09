@@ -23,7 +23,7 @@
 =EN This is similar in syntax to the nearly two dozen other operations provided by File::Spec. 
 =CN 对于File::Spec提供的其它方法, 调用的语法都是相似的. 
 =EN That string might be something like /home/gilligan/web_docs/photos/USS_Minnow. gif on a Unix system. 
-=CN 返回的的字段结果, 如果在UNIX系统, 那么多半是：/home/gilligan/web_docs/photos/USS_Minnow. gif.
+=CN 返回的的字段结果, 如果在UNIX系统, 那么多半是：/home/gilligan/web_docs/photos/USS_Minnow gif.
 =EN On a Windows system, it would typically use backslashes as directory separators. 
 =CN 如果在windows系统里, 就会用代表目录分隔符的反斜杠.
 =EN This module lets us write portable code easily, at least where file specs are concerned. 
@@ -31,4 +31,4 @@
 =EN The File::Spec module provides several other methods for dealing with file paths in a portable manner.
 =CN File::Spec 模块还提供了许多其它的方法来用可移植的方式处理路径. 
 =EN You can read more about portability issues in the perlport documentation. 
-=CN 你可以通过perlport文档了解更多有关移植方面的专题. 
+=CN 你可以通过 perlport 文档了解更多有关移植方面的专题. 

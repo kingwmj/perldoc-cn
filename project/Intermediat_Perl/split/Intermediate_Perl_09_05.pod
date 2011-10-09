@@ -1,0 +1,6 @@
+=EN Multi-Level Sort with the Schwartzian Transform
+=CN 用施瓦茨变换作多层排序
+=EN If we need to sort on more than one criterion, the Schwartzian Transform is still up to the task.
+=CN 如果我们需要用多个测试条件进行排序, 施瓦茨变换照样可以处理这样的任务。
+=EN This code skeleton has a three-level sort comparison, using three computed values saved in the anonymous array (alongside the original data item to be sorted, which always comes first).
+=CN 这个代码结构是三层的排序条件, 把三个计算过的值放到一个匿名数组里（还有把原始值放在排过序的列表中第一个位置.）

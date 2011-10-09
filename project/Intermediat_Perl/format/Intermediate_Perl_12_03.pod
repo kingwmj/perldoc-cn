@@ -1,22 +1,16 @@
-=EN 12. 3. Accessing the Instance Data
-=CN 12. 3. 访问实例数据
+=EN Accessing the Instance Data
+=CN 访问实例数据
 =EN Because we get the instance as the first parameter, we can now access the instance-specific data. In this case, let's add a way to get at the name:
 =CN 因为我们把实例作为第一个参数, 我们现在可以访问实例自己的数据. 在这个例子中, 让我们添加一个方法来获取一个名字：
-{ package Horse;
- @ISA = qw(Animal);
- sub sound { 'neigh' }
- sub name {
- my $self = shift;
- $$self;
- }
-}
 =EN Now we call for the name:
 =CN 现在调用名字：
-print $tv_horse->name, " says ", $tv_horse->sound, "\n";
-=EN Inside Horse::name, the @_ array contains just $tv_horse, which the shift stores into $self. It's traditional to shift the first parameter into a variable named $self for instance methods, so stay with that unless you have strong reasons to do otherwise (Perl places no significance on the name $self, however). 
-=CN 在Horse::name中, @_数组只包含了$tv_horse, 并保存到$self中. 一般来说它把第一个参数传到实例方法的$self变量中, 所以保持这个风格, 除非你有十足的理由用其它的风格（然而, Perl对$self并没有特殊的意义）. 
+=EN Inside Horse::name, the @_ array contains just $tv_horse, which the shift stores into $self.
+=CN 在Horse::name中, @_数组只包含了$tv_horse, 并保存到$self中.
+=EN It's traditional to shift the first parameter into a variable named $self for instance methods, so stay with that unless you have strong reasons to do otherwise
+=CN 一般来说它把第一个参数传到实例方法的$self变量中, 所以保持这个风格, 除非你有十足的理由用其它的风格
+=EN Perl places no significance on the name $self, however 
+=CN 然而, Perl对$self并没有特殊的意义 
 =EN Then we dereference $self as a scalar reference, yielding Mr. Ed. The result is:
-=CN [+] 如果你把$self作为一个标量引用还原, 那么输出Mr. Ed是：
-Mr. Ed says neigh. 
+=CN 如果你把$self作为一个标量引用还原, 那么输出Mr. Ed是：
 =EN If you come from another OO language background, you might choose $this or $me for the variable name, but you'll probably confuse most other Perl OO hackers. 
 =CN 如果你有其它面向对象语言的背景, 你可能会用$this或$me为变量起名, 不过你可能与其它Perl面向对象的黑客混淆. 

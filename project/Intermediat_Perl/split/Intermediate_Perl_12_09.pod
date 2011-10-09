@@ -1,0 +1,8 @@
+=EN A Horse of a Different Color
+=CN 一匹有不同色彩的马
+=EN Having all horses be brown would be boring. Let's add a method or two to get and set the color:
+=CN 我们来加一两个方法来设置颜色, 这样让所有出生的马都是棕色。
+=EN Now we can fix that color for Mr. Ed:
+=CN 我们可以为 I<Mr.Ed> 修改一下颜色：
+=EN which results in:
+=CN 输出结果是：

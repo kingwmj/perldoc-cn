@@ -1,13 +1,11 @@
-=EN 10. 4. Using require
-=CN 10. 4. 使用 require
+=EN Using require
+=CN 使用 require
 =EN Suppose navigation. pm itself also pulls in drop_anchor. pm for some common navigation task. Perl reads the file once directly and then again while processing the navigation package. This needlessly redefines drop_anchor( ). Worse than that, if we have warnings enabled, [*] we'll get a warning from Perl that we've redefined the subroutine, even if it's the same definition. 
 =CN 假定navigation. pm自己, 因为一些导航任务而把drop_anchor. pm引进自己的模块里. Perl在处理导航程序包的时候将文件一次直接读入. 在这次重新定义drop_anchor()是不必要的. 更糟的是, 如果我们把警告打开, 我们会从Perl得到一个警告信息, 说我们已经重新定义子程序, 尽管是一模一样的定义. 
-=EN [*] You are using warnings, right? You can enable them with either -w or use warnings;. 
-=CN [*] 你开启警告是吗？你可以用-w开关, 以及use warnings来开始警告;
+=EN You are using warnings, right? You can enable them with either -w or use warnings;. 
+=CN 你开启警告是吗？你可以用-w开关, 以及use warnings来开始警告;
 =EN We need a mechanism that tracks which files we've brought in and then brings them in only once. Perl has such an operation, called require. Change the previous code to simply:
 =CN 我们需要一种机制来跟踪哪些文件我们已经调入了, 而且应该只把它们调入一次. Perl提供了这个功能, 叫作require. 把前面的代码改成如下就可以了：
-require 'drop_anchor. pm';
-require 'navigation. pm';
 =EN The require operator keeps track of the files Perl has read. [] Once Perl has processed a file successfully, it simply ignores any further require operations on that same file. This means that even if navigation. pm contains require "drop_anchor. pm", Perl imports the drop_anchor. pm file exactly once, and we'll get no annoying error messages about duplicate subroutine definitions (see Figure 10-2). Most importantly, we'll also save time by not processing the file more than once. 
 =CN require操作符会在Perl每次读入文件的时候进行跟踪[+] 一旦Perl成功加载了一个文件, 它就会忽略之后require引入相同的文件. 这意味着就算navigation. pm包括require "drop_anchor. pm", Perl只会把drop_anchor. pm引入一次, 我们就不会收到烦人的警告重复定义子程序的消息了（见图10－2）. 更重要的是, 我们同样节省时间, 不必多次加载文件了. 
 =EN In the %INC hash, as described in the entry for require in the perlfunc documentation. 

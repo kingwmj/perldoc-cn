@@ -2,8 +2,10 @@
 =CN 既是设置器也是取值器
 =EN Another alternative to the pattern of creating two different methods for getting and setting a parameter is to create one method that notes whether or not it gets any additional arguments. 
 =CN 另一种建立设置器和取值器替代方案是用一个方法, 以参数作区分是取值还是设置值.
-=EN If the arguments are absent, it's a get operation; if the arguments are present, it's a set operation.
-=CN 如果参数缺失, 那么就作取值操作;如果有值, 那就设置值. 
+=EN If the arguments are absent, it's a get operation;
+=CN 如果参数缺失, 那么就作取值操作;
+=EN if the arguments are present, it's a set operation.
+=CN 如果有值, 那就设置值. 
 =EN A simple version looks like:
 =CN 简例如下：
 =EN Now we can say:

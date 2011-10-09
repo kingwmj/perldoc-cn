@@ -1,0 +1,16 @@
+=EN What to Do with @_
+=CN I<@_> 的作用
+=EN In that last example, had there been any additional parameters to the speak method (like how many times, or in what pitch for singing, for example), the parameters would be ignored by the Mouse::speak method.
+=CN 在上一个例子中, 没有任何额外的参数给 I<speak> 方法（如多少次, 或者唱什么调）, 参数将会被 I<Mouse::speak> 方法忽略。
+=EN If we want them to be passed uninterpreted to the parent class, we can add it as a parameter:
+=CN 如果我们要把他们未经解释的传给父类, 我们可以把它作为参数加进去：
+=EN This invokes the speak method of the parent class, including all the parameters that we've not yet shifted off of our parameter list.
+=CN 这句调用父因的方法, 包括所有我们还没有传入的参数列表。
+=EN Which one is correct
+=CN 哪个方法是对的
+=EN It depends.
+=CN 这要按情况看。
+=EN If we are writing a class that simply adds to the parent class behavior, it's best to simply pass along arguments we haven't dealt with.
+=CN 如果我们写一个类, 只加到父类的行为, 那么最好就是把我们没能处理的参数传给他。
+=EN However, if we want precise control over the parent class's behavior, we should determine the argument list explicitly and pass it.
+=CN 然而, 如果我们要精确控制父类的行为, 我们应该明确决定参数列表, 并传给它。
