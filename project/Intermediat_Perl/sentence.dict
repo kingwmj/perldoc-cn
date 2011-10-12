@@ -76,7 +76,7 @@ Instead of using a bareword for the filehandle name, we use a scalar variable wh
 Any mention of @homeport will then be the newly introduced lexical variable, but a fully qualified mention of @Navigation::homeport accesses the package variable instead.||那么, 任何使用 I<@homeport> 时, 都是指新引入的词法变量, 但是如果用全名来引用 I<@havigation::homeport> 将访问的是包变量。
 If we want them to be passed uninterpreted to the parent class, we can add it as a parameter:||如果我们要把他们未经解释的传给父类, 我们可以把它作为参数加进去：
 This works because the output of each setter is the original object, becoming the object for the next method call. Implementing this is, again, relatively easy:||这样的代码是可行的, 因为每个设置方法都是原始对象, 成为下个方法调用对象.还可以这样：
-An important aspect of working in teams is having a release cycle and tests for unit and integration testing.||在团队中工作中的一个重要的方面是在一个发布周期中的单元测试和集成测试。
+An important aspect of working in teams is having a release cycle and tests for unit and integration testing.||在团队中工作中的一个重要的方面是，在一个发布周期中进行单元测试和集成测试。
 Nothing in the Perl method definition says "this is a class method" or "this is an instance method. "||在 I<Perl> 语言中没有一种方法定义"这是一个类的方法" 或"这是一个对象实例的方法 I<".>
 There's only one reason to get back to the original subroutine by dereferencing the coderef: to invoke it.||还原一个对子程序的引用的惟一目的就是：为了调用它。
 Then it "blesses" that variable, turning $tv_horse into an object a Horse object, in fact.||那么它就"祝福"那个变量, 将 I<$tv_horse> 转变成一个 I<Horse> 对象。
@@ -262,7 +262,7 @@ To install a module, we use the i command.||我们用i命令来安装模块：
 We set the value of @all_with_names to contain three references.||我们用数组 I<@all_with_names> 的值来放三个引用。
 Starting with Perl 5. 6, open can create a filehandle reference in a normal scalar variable.||从 I<Perl> I<5.6> 版本开始, 可以用一个通常的标量变量打开一个文件句柄。
 with the anonymous hash constructor:||如果用匿名散列的话：
-And then there's the buzzworthy notion of object-oriented programming (OOP), which allows parts of your code (or hopefully code from others) to be reused with minor or major variations within the same program.||另外, 还有一个必须知道的概念是关于什么是面向对象编程, 就是让你部份的代码（特别是可能与其它程序员共用的）能在或多或少的程度上在同一个项目中被重用。
+And then there's the buzzworthy notion of object-oriented programming (OOP), which allows parts of your code (or hopefully code from others) to be reused with minor or major variations within the same program.||另外, 还有一个必须知道的概念，就是什么是面向对象编程, 就是让你部分的代码（特别是可能与其它程序员共用的）能在或多或少的程度上在同一个项目中被重用。
 Parse the International Standard Book Number from the back of this book (0596102062). Install the Business::ISBN module from CPAN and use it to extract the country code and the publisher code from the number.||分析一下这本书的国际标准书号（ I<0596102062> ）.从 I<CPAN> 里安装一下 I<Business::ISBN> 模块, 并且用它来从 I<ISBN> 数字中抽取国家代码和发行商代码。
 Introduction||引言
 The require operator also has two additional features:||I<require> 操作符同样有以下两个功能：
@@ -598,7 +598,7 @@ Now, we should get all destinations. The syntax for this is a bit tricky. We wan
 We can add and remove references as we wish, and as long as the reference count doesn't hit zero, Perl maintains the array in memory and it is still accessible via any of the other access paths. For example, we might have a temporary reference:||我们可以任意添加和删除引用, 并且, 只要引用计算不减到0, I<Perl> 就会在内存中保留这个数组, 并且能通过任何其它的途径来访问这个数组.比如, 我们可能有一个临时引用：
 If we find a file named Makefile. PL, we run this series of commands to build, test, and finally install the source:||如果我们找到一个叫 I<makefile.pl> 的文件, 我们可以运行如下的命令来编译, 测试和最终安装源码：
 The coderefs are then individually dereferenced, invoking the corresponding subroutine and passing it the Professor string.||而每个对代码的引用都各自被还原, 调用相应的子程序并传入"教授"字串。
-The book will cover that as well, even if you've never seen objects before.||这本书也介绍了这部分的知道, 尽管你可能重来没有面向对象的概念。
+The book will cover that as well, even if you've never seen objects before.||这本书也很好的介绍了这部分内容, 尽管你可能从来没有面向对象的概念。
 That is to say, it may be that you're not yet familiar with some of the Perl techniques and syntax in the synopsis, but you can generally just follow the example and make everything work.||就是说, 这可以使你在还没有熟悉 I<Perl> 技术和语法的情况下, 仅仅看这些例子, 就可以使程序工作起来。
 To make it really useful, what other features should be added to that program? You don't need to implement them!||要让这个程序真正有用, 还要采取其它什么功能？你只要说出来就可以了, 不必真正实现他们！
 Among its many other meanings, the backslash (\) character is also the "take a reference to" operator. When we use it in front of an array name, e. g., \@skipper, the result is a reference to that array. A reference to the array is like a pointer: it points at the array, but it is not the array itself.||相对于其它方法, 反斜杠 I<(\)> 符号被用来当作"取址"操作符.比如, 哪我们把它放在一个数组前面时： I<\@skipper> , 其结果就是取这个数组的地址.引用这个数组就是一个指针：指向这个数组, 但并不是这个数组本身。
@@ -626,7 +626,7 @@ However, another Perl core module is much better suited for marshaling: Storable
 If we reuse the callback, the same variable still has its most recently used value. The initialization occurred in the original subroutine (create_find_callback_that_counts), not the callback (unnamed) subroutine:||如果我们重用回调, 相同的变量仍会保留它最近的值.初始值是在最初调用子程序的时候创建的（ I<create_find_callback_that_counts> ）, 并不是回调的匿名子程序中：
 We're taking a reference to the subroutine skipper_greets( ).||我们现在取子程序 I<skipper_greets()> 的引用。
 This happens all the time. He wants you to make a subroutine called gather_mtime_between, which, given a starting and ending timestamp, returns a pair of coderefs.||这种事情老是发生.他要你写个程序, 叫 I<"gather_mtime_between".> 这个程序接受开始和结束时间作为参数, 返回一对代码引用。
-We've sent Fred, Barney, Betty, and Wilma home, though. A new cast of characters will take the starring roles.||尽管我们把 I<Fred> , I<Barney> , I<Betty> 和 I<wilma> 送回家了, 但我们让一些新的明星来担纲表演。
+We've sent Fred, Barney, Betty, and Wilma home, though. A new cast of characters will take the starring roles.||尽管我们把 I<Fred> , I<Barney> , I<Betty> 和 I<wilma> 送回家了, 但我们让一些新的明星来担当角色。
 The map operator has a very similar syntax to the grep operator and shares a lot of the same operational steps. For example, it temporarily places items from a list into $_ one at a time, and the syntax allows both the expression block forms.||I<map> 操作符的语法同 I<grep> 操作符非常相像, 他们有相同的操作步骤.例如它们都是把输入列表中的元素临时地放到 I<$_> 变量中去, 而且他们的语法中都有表达式形式和代码块形式。
 Trapping Errors with eval||用 I<eval> 捕捉错误
 but gets pretty messy when we want to sort numbers:||可是, 当我们对数字进行排序的时候却是一团糟：
@@ -650,7 +650,7 @@ which necessarily results in:||我们所需的输出是：
 How annoying! The Skipper decides to fix this problem by checking for a zero turn value:||真烦人！ I<Skipper> 决定修正这个0航向的问题：
 He finds himself cutting and pasting a very common routine into each program:||他发现自己不停的在各个程序之间复制和粘贴一个通用子例程：
 This autovivification also works for multiple levels of assignment:||在多层赋值时, 自生成也起作用：
-And, just as was promised and delivered in Learning Perl, we'll entertain you along the way with interesting examples and bad puns.||另外, 就像我们在已经出版的 I<B<Learning> I<Perl>> 中保证, 我们会在整个学习过程中用一些有趣的例子和没治的双关语让你的学习旅程充满乐趣。
+And, just as was promised and delivered in Learning Perl, we'll entertain you along the way with interesting examples and bad puns.||另外, 就像我们在已经出版的 I<B<Learning> I<Perl>> 中保证, 我们会在整个学习过程中用一些有趣的例子和双关语让你的学习旅程充满乐趣。
 Since this isn't Dr. Dolittle, make sure the animals can't talk.||因为这不是怪医杜立德, 所以要保证动物们不能对话。
 or perhaps simply started drifting in the proper direction||或者作简单的在正确的航向漂流
 or member variables, if you come from a C++ or Java background||或者叫成员变量, 如果你有C++或 I<Java> 背景的话
@@ -744,7 +744,7 @@ These directories were set when the administrator installed Perl, and we can see
 Welcome to the next step in your understanding of Perl.||欢迎来到认识 I<Perl> 的下一台阶。
 The File::Basename module knows what sort of system it's on, and thus its functions figure out how to correctly parse the strings for the different delimiters we might encounter.||I<File::Basename> 会自己"感知"它所处的是哪种操作系统, 并且因此针对所遇到的操作系统, 用不同的分隔符来解析字串。
 The Skipper needs a way to write the code in one place and then share it among many programs. And, like most things in Perl, there's more than one way to do it.||I<Skipper> 需要一种方法, 只写一篇程序, 然后把它共享给其它程序.而且, 正像 I<Perl> 的大多数事物一样, 条条大路通罗马。
-In the log_message( ) routine, we take the first element off of the argument list and store it in another typeglob. Without going into too many details, a typeglob stores pointers to all the package variables of that name. When we assign one typeglob to another, we create aliases to the same data. We can now access the data, including the details of the filehandle, from another name. Then, when we use that name as a filehandle, Perl knows to look for the filehandle portion of the typeglob. We'd have a much easier time if filehandles had sigils!||在 I<log_message(> ) 子程序中, 我们从参数列表中取下第一个元素, 并且存在另一个 I<typeglob> 中.不需要详述太多的细节, 一个 I<typeglob> 存储了包里面所有变量的名字的指针.当我们把一个 I<typeglob> 赋值给另一个的时候, 我们就为相同的数据创建了一个别名.这样我们现在就可以用另外一个名字来访问这块数据的文件句柄了.如此, 当我们把名字当文件句柄用时, I<Perl> 知道在 I<typeglob> 中找到这个名字的文件句柄部份.如果文件句柄已经有符号, 那会更容易。
+In the log_message( ) routine, we take the first element off of the argument list and store it in another typeglob. Without going into too many details, a typeglob stores pointers to all the package variables of that name. When we assign one typeglob to another, we create aliases to the same data. We can now access the data, including the details of the filehandle, from another name. Then, when we use that name as a filehandle, Perl knows to look for the filehandle portion of the typeglob. We'd have a much easier time if filehandles had sigils!||在 I<log_message()> 子程序中, 我们从参数列表中取下第一个元素, 并且存在另一个 I<typeglob> 中.不需要详述太多的细节, 一个 I<typeglob> 存储了包里面所有变量的名字的指针.当我们把一个 I<typeglob> 赋值给另一个的时候, 我们就为相同的数据创建了一个别名.这样我们现在就可以用另外一个名字来访问这块数据的文件句柄了.如此, 当我们把名字当文件句柄用时, I<Perl> 知道在 I<typeglob> 中找到这个名字的文件句柄部份.如果文件句柄已经有符号, 那会更容易。
 That works fine and dandy. The subroutines defined in both libraries are available to this program.||这一工作很好很顺利.子程序在两个库中定义, 使用起来就像在这个程序里一样。
 Figure 10-2. Once Perl brings in the drop_anchor. pm file, it ignores another attempt to require it||图 I<10-2.> 一旦 I<Perl> 调入 I<drop_anchor.pm> 文件, 它会忽略其它相同文件的导入
 Fix up that program to keep the running totals in a datafile so the Professor can simply run it on each day's logs to get the new totals.||修改那个程序, 只要简单的收纳每天教授新产生的日志文件就可以计算数据文件中的即时总数。
@@ -1132,7 +1132,7 @@ We may run into some cases where we can't install modules in the pre-configured 
 Note that $person is a name, which we look up in the hash to get to a coderef.||注意, 变量 I<$person> 是字名, 他们以前在散列中查找代码引用。
 This algorithm wouldn't correctly traverse the filesystem if it followed symbolic links to directories as if they were true (hard) links, since it could end up in a circular loop if the symlink pointed to a directory that contained the symlink.||如果文件系统中的符号链接指向目录, 好像是真的（硬）连接, 这个算法不能正确遍历文件系统.因为如果符号链接指向一个包含着符号链接的目录的话, 它会最终走向一个循环。
 Otherwise, Perl executes statements in the order that it finds them, and we have to ensure that our unshift shows up before our require.||除此之外, I<Perl> 会以文件中的自然顺序执行语句, 所以我们要保证我们的 I<unshift> 要出现在我们的 I<require> 之前。
-This book will also show you how to deal with larger and more complex data structures, such as what we might casually call a "hash of hashes" or an "array of arrays of hashes of arrays. "||这本书也展示了如何处理更大和更复杂的数据结构.例如我们可能会提到的所谓一个 I<B<"> 散列中的散列 I<">> , 或 I<B<"> 数组中的数组中的散列中的数组 I<">.>
+This book will also show you how to deal with larger and more complex data structures, such as what we might casually call a "hash of hashes" or an "array of arrays of hashes of arrays. "||这本书也展示了如何处理更大和更复杂的数据结构.例如我们可能会提到的所谓一个 I<B<> 散列中的散列>, 或 I<B<> 数组中的数组中的散列中的数组 I<>.>
 Obviously, this will be more interesting if our current directory contains subdirectories.||显然, 如果我们自己的目录里有子目录的话, 那看上去就有趣多了。
 The easiest way to store these items is often in a hash.||保存这些成员最简单的办法就是把它们放在一个散列中。
 Faster Getters and Setters||更快的取值器和设置器
@@ -1366,7 +1366,7 @@ Well, we can apply a bit of indirection. Let's not sort the actual names but rat
 Don't do this anymore!||我们不用作这种事情！
 The inner map walks over this item list, executing the expression to construct an anonymous array reference for each item.||而内层的 I<map> 遍历装备清单, 执行一个表达式来为每个装备构建一个匿名数组引用。
 Now, in addition to searching the standard directories and the current directory, Perl searches the Skipper's personal Perl library.||现在, 除了搜索标准目录和当前目录, I<Perl> 还搜索 I<Skipper> 的个人 I<Perl> 模块库。
-For example, you'll learn how to work with multiple programmers on the same project.||比如, 你将会学到多外程序员如果在同一项目中一起工作。
+For example, you'll learn how to work with multiple programmers on the same project.||比如, 你将会学到多个程序员如何在同一项目中一起工作。
 Your users will thank you for it.||你的用户会因此感谢你的。
 Now $average is either the quotient or undef, depending upon whether the operation completed successfully or not.||现在, 根据这个操作执行的成败, 变量 I<$average> 要么是两数之商要么是个未定义值。
 The idea took about a year to ferment, and Jarkko Hietaniemi established the Finnish FTP site as the CPAN mothership from which all other mirrors could draw their daily or hourly updates.||这种想法酝酿了一年左右, 以 I<Jarkko> I<Hietaniemi> (芬兰人, 详见： I<http://users.tkk.fi/jhi/jarkko.html.> 中文名：沙雅可, 日文名：奴稗谷笑)在芬兰建立的 I<FTP> 站点为母站, 其它的镜相站点可以以此来进行及时的更新。

@@ -23,7 +23,7 @@ foreach my $file (@filelist) {
         chomp $line;
         $line =~ s/\s+$//;
         if ($line =~ /^\S/) {
-            say {$fh_ou} wrap_utf8_text($line, 65);
+            say {$fh_ou} wrap_utf8_text($line, 60);
             next;
         }
         say {$fh_ou} $line;

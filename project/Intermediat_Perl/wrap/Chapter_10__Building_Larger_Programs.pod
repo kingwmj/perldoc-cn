@@ -1,0 +1,674 @@
+=head2 Chapter 10. 构建更大的程序
+
+这一章我们来看看如何把程序分成一些小的部份, 并且包括那些把
+小程序组合成一个整体时会发生的问题, 以及多个人协同完成一个项
+目时分发生的问题。
+
+=head2 10. 1. 修改通用代码
+
+I<Skipper> 写了许多 I<Perl> 程序应 I<Minnow> 的要求为一般
+的港口提供导航服务。 他发现自己不停的在各个程序之间复制和粘贴
+一个通用子例程：
+
+
+ sub turn_toward_heading {
+   my $new_heading = shift;
+   my $current_heading = current_heading(  );
+   print "Current heading is ", $current_heading, ". \n";
+   print "Come about to $new_heading ";
+   my $direction = 'right';
+   my $turn = ($new_heading - $current_heading) % 360;
+   if ($turn > 180) { # long way around
+     $turn = 360 - $turn;
+     $direction = 'left';
+   }
+   print "by turning $direction $turn degrees. \n";
+ }
+
+这个通用子例程提供从当前航向的最短的转向（从子程序 I<curr
+ent_heading()> 返回）到一个新的航向（由第一个参数输入）。
+
+子程序的第一行可以用如下行代替：
+
+
+ my ($new_heading) = @_;
+
+这是另一特色的调用：两种情况, 第一个参数都结束于 I<$new_h
+eading.> 然而, 正像他们指出的, 从 I<@_> 提取元素比较方便。 所
+以, 我们大多数情况下用 I<"shift"> 风格的参数解析.现在回到我
+们手头的程序……
+
+用这个例程写了一打程序之后, I<Skipper> 发现这样用下来, 当
+他花时间调到正确的航向时, 已经有非常多的输出 (或者作简单的在
+正确的航向漂流). 毕竟, 如果当前航向是 I<234> 度, 而他要转 I<
+234> 度, 我们会看到：
+
+
+ Current heading is 234.
+ Come about to 234 by turning right 0 degrees.
+
+真烦人！ I<Skipper> 决定修正这个0航向的问题：
+
+
+ sub turn_toward_heading {
+   my $new_heading = shift;
+   my $current_heading = current_heading(  );
+   print "Current heading is ", $current_heading, ". \n";
+   my $direction = 'right';
+   my $turn = ($new_heading - $current_heading) % 360;
+   unless ($turn) {
+     print "On course (good job!). \n";
+     return;
+   }
+   print "Come about to $new_heading ";
+   if ($turn > 180) { # long way around
+     $turn = 360 - $turn;
+     $direction = 'left';
+   }
+   print "by turning $direction $turn degrees. \n";
+ }
+
+不错.新的子程序工作得很好.然而, 因为前期他已经用拷贝粘贴的
+办法把这个程序贴在导航程序里很多地方, 其它程序仍旧出现令 I<
+Skipper> 不胜其烦的超量输出信息。
+
+I<Skipper> 需要一种方法, 只写一篇程序, 然后把它共享给其它
+程序.而且, 正像 I<Perl> 的大多数事物一样, 条条大路通罗马。
+
+=head2 10. 2. 用 I<eval> 插入代码
+
+I<Skipper> 可以把程序 I<turn_toward_heading> 的定义独立出
+为另一个文件以节省磁盘空间（也是脑力空间）。 比如, 如果 I<Sk
+ipper> 发现与导航相关的半打通用子程序, 他可能用在大多数或所有
+的程序中。 他可以把它们放在一个分开的文件叫做 I<navigation.
+pm> 中, 只包含有需要的子程序。
+
+到目前为止, 我们如何告诉 I<Perl> 从另外一个程序中拉出一块
+程序代码呢？ 我们可以用硬编码, 第二章所讨论过的用 I<eval> 的
+形式来求一个字串的值。
+
+
+ sub load_common_subroutines {
+   open MORE_CODE, 'navigation. pm' or die "navigation. pm: $!";
+   undef $/; # enable slurp mode
+   my $more_code = <MORE_CODE>;
+   close MORE_CODE;
+   eval $more_code;
+   die $@ if $@;
+ }
+
+I<Perl> 把 I<navigation.pm> 程序的代码写入变量 I<$more_co
+de.> 我们用 I<eval> 来让 I<Perl> 把这段文本以代码来处理.任何
+I<$more_code> 变量中的词法变量被当作本地变量来求值。 [*] 如
+果其中有语法错误, I<Perl> 会设置 I<$@> 变量, 并且导致程序以适
+当的出错信息退出。
+
+[*] 奇怪的是, 变量 I<$morecode> 同样对于求值代码可见, 不像
+其它 I<eval> 求值时会改变变量。
+
+现在, 不必在每个文件里的打上几十行通用代码, 我们方便地把一
+个子程序放到每个文件中。
+
+不过这不是最漂亮的, 特别是当我们需要重复这些工作的时候。
+好在, I<Perl> 有多种途径来帮助我们。
+
+=head2 10. 3. 使用 I<do>
+
+I<Skipper> 把一些导航通用子程序放入 I<navigation.pm> 后,
+如果 I<Skipper> 只将如下语句：
+
+
+ do 'navigation. pm';
+ die $@ if $@;
+
+放到导航程序里的话, 它几乎同我们用 I<eval> 把代码插在同一
+地点的执行结果是相同的。 []
+
+[] 这排除了考虑 I<@INC> 、 I<%INC> 的情况, 以及丢失文件定
+位处理, 这个我们在后面的章节会遇到。
+
+那就是说, I<do> 操作符的功能就像把 I<navigation.pm> 中的代
+码直接引入现当前的程序一样, 尽管在它自己的块范围内, 所以词法
+变量（ I<my> 声明的变量） 和大多数指示字（如 I<use> I<stric
+t> ）不会流到主程序里去。
+
+这样, I<Skipper> 可能安全的修改一处拷贝, 而不必把这些修改
+和扩展拷贝到所有其它他创建和使用的导航程序中.图 I<10-1> 展示
+了 I<Skipper> 如何使用他的通用程序库。
+
+图 I<10-1.Skipper> 在他其它所有的导航程序中使用 I<navigat
+ion.pm> 文件中的程序
+
+当然, 这样做需要一些约束, 因为如果在给出的子程序中破坏了一
+个预期的接口, 会影响到许多其它的程序而不只自己一个。 [] I<S
+kipper> 需要对组件的重用性和模块化的设计给予专门的考虑.我们先
+假定 I<Skipper> 有这方面的经验, 但是我们会在以后的章节中展示
+更多这方面的知识。
+
+[] 在后面的章节中, 我们会展示如何建立测试程序来维护可重用
+的代码。
+
+通过将一些代码放到文件中, 其它的程序员可以重用 I<Skipper>
+写的程序, 反过来也一样.如果 I<Gilligan> 写了一个程序 I<:dro
+p_dnchor()> , 并且将其放到文件 I<drop_anchor.pm> 中, 这样 I<
+Skipper> 就可以通过引入库的办法使用 I<Gilligan> 的代码：
+
+
+ do 'drop_anchor. pm';
+ die $@ if $@; . . .
+ drop_anchor(  ) if at_dock(  ) or in_port(  );
+
+所以, 从分开的文件引入代码可以使我们可以更方便地维护和协同
+编程。
+
+当代码从一个 I<.pm> 文件导入的时候可以有直接可执行的语句,
+这比用 I<do> 简单定义子程序更为常用。
+
+我们再回到 I<drop_anchor.pm> 库, 如果 I<Skipper> 要写个程
+序需要"抛锚"和导航呢？
+
+
+ do 'drop_anchor. pm';
+ die $@ if $@;
+ do 'navigation. pm';
+ die $@ if $@; . . .
+ turn_toward_heading(90); . . .
+ drop_anchor(  ) if at_dock(  );
+
+这一工作很好很顺利.子程序在两个库中定义, 使用起来就像在这
+个程序里一样。
+
+=head2 10. 4. 使用 I<require>
+
+假定 I<navigation.pm> 自己, 因为一些导航任务而把 I<drop_a
+nchor.pm> 引进自己的模块里 I<.Perl> 在处理导航程序包的时候将
+文件一次直接读入.在这次重新定义 I<drop_anchor()> 是不必要的.
+更糟的是, 如果我们把警告打开, 我们会从 I<Perl> 得到一个警告信
+息, 说我们已经重新定义子程序, 尽管是一模一样的定义。
+
+[*] 你开启警告是吗？你可以用 I<-w> 开关, 以及 I<use> I<wa
+rnings> 来开始警告;
+
+我们需要一种机制来跟踪哪些文件我们已经调入了, 而且应该只把
+它们调入一次 I<.Perl> 提供了这个功能, 叫作 I<require.> 把前
+面的代码改成如下就可以了：
+
+
+ require 'drop_anchor. pm';
+ require 'navigation. pm';
+
+I<require> 操作符会在 I<Perl> 每次读入文件的时候进行跟踪[
++] 一旦 I<Perl> 成功加载了一个文件, 它就会忽略之后 I<require
+> 引入相同的文件.这意味着就算 I<navigation.pm> 包括 I<requir
+e> I<"drop_anchor.pm"> , I<Perl> 只会把 I<drop_anchor.pm> 引
+入一次, 我们就不会收到烦人的警告重复定义子程序的消息了（见图
+I<10> －2）.更重要的是, 我们同样节省时间, 不必多次加载文件了
+。
+
+[] 在 I<%INC> 散列中, 正如 I<perlfunc> 文档中 I<require>
+条目所描述的一样。
+
+图 I<10-2.> 一旦 I<Perl> 调入 I<drop_anchor.pm> 文件, 它会
+忽略其它相同文件的导入
+
+I<require> 操作符同样有以下两个功能：
+
+任何语法错误会导致程序终止; 所以许多 I<die> I<$@> I<if> I
+<$@> 语句在这里是不需要的。
+
+文件最后一个求值必须返回真值
+
+正因为第二点, 所以大多数给 I<require> 导入的文件最后求值总
+有个神秘的1; 这保证了最后的表达式总是 I<1.> 努力保持这个传统
+吧。
+
+一开始, 强制性的返回真值是给导入文件的一个方法, 给调用者一
+个信号－－代码被成功处理且没有错误。 However, nearly everyo
+ne has adopted the die if. . . strategy instead, deeming the
+"last expression evaluated is false" strategy a mere histor
+ic annoyance.
+
+=head2 10. 5. I<require> 和 I<@INC>
+
+到目前为止, 这些例子都忽略了我们如何建立目录结构来安排主要
+代码和要导入的代码文件应该安放的位置。 那是因为"能工作就行"
+, 用最简单的情形, 我们把程序和它的库放在同一目录, 并就在这个
+目录里运行程序。
+
+当库文件不在当前目录的时候, 事件就有些复杂了。 实际上, I<
+Perl> 按库一个库搜索路径来查找库, 有些像 I<UNIX> I<shell> 用
+I<PATH> 环境变量一样。 当前目录（在 I<Unix> 里以句点表示）是
+查寻目录之一。 所以只要我们的库在我们的当前工作目录, 就没问
+题。
+
+查寻目录是在一个特别的数组 I<@INC> 中的列表中一系列的元素
+, 就象我们在第三章讲过的一样。 缺省时, 数组包括当前目录和一些
+由编译 I<Perl> 的用户指定的目录。 在命令行输入 I<Perl> I<-V
+> 可以在最后几行显示出这些目录。 用如下的命令也可以显示 I<@I
+NC> 所包括的目录:[*]
+
+[*] 在 I<Windows> 操作系统的电脑上, 用双引号代替单引号。
+
+
+ perl -le 'print for @INC'
+
+在输出列表中, 除了句点., 除非我们是负责在这台电脑上维护 I
+<Perl> 的人, 我们大概不能写任何其它的目录进去.在这种情况下,
+我们应该能把它们写进去。 象我们后面要看到的, 余下的目录是 I<
+Perl> 系统搜索系统库和模块的目录, 象我们后面所看到的。
+
+=head2 10. 5. 1. 括展 I<@INC>
+
+我们可能碰到这些情况, 即不能（想）在预先配置在 I<@INC> 中
+的目录中安装模块。 但我们可以在 I<require> 之前先改变数组 I<
+@INC> 自己, 这样 I<Perl> 也会去查找我们的目录。 数组 I<@INC>
+就是平常的数组, 所以让 I<Skipper> 把它主目录加进去：
+
+
+ unshift @INC, '/home/skipper/perl-lib';
+
+现在, 除了搜索标准目录和当前目录, I<Perl> 还搜索 I<Skippe
+r> 的个人 I<Perl> 模块库。 实际上, I<Perl> 首先就会查这个目录
+, 因为这条会排在数组 I<@INC> 最前面。 因为使用的是 I<unshif
+t> 而不是 I<push> , I<Perl> 会将取 I<Skipper> 的文件放在优先
+位置, 以此解决 I<Skipper> 的私有文件与系统安装的文件之间可能
+的冲突。
+
+一般来说, 我们要保证添加搜索目录一定要放在其它事之前, 我们
+可以把它放进 I<BEGIN> 块 I<.Perl> 会在编译阶段执行在 I<BEGI
+N> 块中的语句, 而在运行时执行 I<require> 语句。 除此之外, I<
+Perl> 会以文件中的自然顺序执行语句, 所以我们要保证我们的 I<u
+nshift> 要出现在我们的 I<require> 之前。
+
+
+ BEGIN {
+   unshift @INC, '/home/skipper/perl-lib';
+ };
+
+因为这个操作太常见了, 所以 I<Perl> 有一个编译指示字来处理
+。 编译指示字发生在任何运行时之前, 所以我们可以得到预期的效果
+。 它会把我们指示的目录放到 I<@INC> 数组的最前面, 正象我们前
+面做的那样。
+
+use lib qw(/home/skipper/perl-lib);
+
+我们不一定总是能事先预知目录路径。 在前面的例子中, 我们对
+路径是硬编码的。 如果我们事先不知道路径是什么, 这有可能是我们
+在几个机器之前传送代码, I<Perl> 自带的 I<FindBin> 模块可以帮
+助你。 它会找到脚本所在的目录的全路径, 这样我们可以依此来建
+立自己的路径。
+
+
+ use FindBin qw($Bin);
+
+现在, 变量 I<$Bin> 中的路径是我们的脚本所在的路径.如果我们
+把库放在同一路径, 我们下一行可以是：
+
+
+ use lib $Bin;
+
+如果我们把库放在脚本目录中的一个目录, 我们只要把正确的路径
+加上去就可以了, 这样就能工作了。
+
+
+ use lib "$Bin/lib";    # in a subdirectory
+
+
+ use lib "$Bin/. . /lib"; # up one, then down into lib
+
+这样, 如果我们知道脚本目录的相对路径, 我们就不必硬编码全路
+径了.这使我们的脚本更加易于移植。
+
+=head2 10. 5. 2. 用 I<PERL5LIB> 环境变量扩展 I<@INC>
+
+I<Skipper> 必须编辑每个程序里以使用他的私有库来导入前面的
+那些代码。 如果这样编辑太麻烦了, 他可以设置 I<PERL5LIB> 环境
+变量, 加上库文件目录.比如, 在C I<shell> 中, 他可以用下面这行
+：
+
+
+ setenv PERL5LIB /home/skipper/perl-lib
+
+在 I<Bourne> 类型的 I<shell> 中, 他可以用类似于如下的行：
+
+
+ PERL5LIB=/home/skipper/perl-lib; export PERL5LIB
+
+I<Skipper> 可以在一次设置 I<PERL5LIB> 后就把它忘了。 然而
+, 除非 I<Gilligan> 使用同样的 I<PERL5LIB> 环境变量, 它的程序
+就会失败! 因为 I<PERL5LIB> 对个人使用非常有用, 当我们与其它人
+共享程序时, 我们不能依靠它。 (而且我们也不能让我们整个程序员
+团队的人用一个共同的 I<PERL5LIB> 变量.相信我们, 我们试过。
+)
+
+I<PERL5LIB> 环境变量可以加多个目录, 中间用分号分开 I<.Per
+l> 会把所有这些目录加到 I<@INC> 中。
+
+当一个系统管理员把 I<PERL5LIB> 作为系统范围的设置, 大多数
+人可能为此而不悦。 I<PERL5LIB> 的目录是使非管理员来扩展 I<Pe
+rl> 搜索目录.如果一个系统管理员要添加目录, 它仅仅需要重编译和
+重装 I<Perl.>
+
+=head2 10. 5. 3. 用 I<-I> 扩展 I<@INC>
+
+如果 I<Gilligan> 注意到 I<Skipper> 的程序丢失了合适的指示
+字, I<Gilligan> 可以通过设置正确的 I<PERL5LIB> 环境变量, 也可
+以用 I<Perl> 的 I<-I> 选项。 比如, 要调用 I<Skipper> 的 I<g
+et_us_home> 程序, 在命令行可能是：
+
+
+ perl -I/home/skipper/perl-lib /home/skipper/bin/get_us_home
+
+显然, 如果程序自己定义额外的库, 对 I<Gilligan> 来说更方便
+。 但有时加一个 I<-I> 仅是修复一些东西。 [*] 这在 I<Gilligan
+> 无需编辑 I<Skipper> 的程序的情况下也能工作。 当然, 它要有读
+的权限, 但是, 举个例子来说, I<Gilligan> 可以用这个技术试一个
+使用 I<Skipper> 程序的新版本。
+
+[*] 括展 I<@INC> with either PERL5LIB orI also automatica
+lly adds the versionand architecture-specific subdirectories
+of the specified directories. 自动引入这些目录也简化了安装
+I<Perl> 模块的任务, 如果这些代码是结构化的或对版本敏事情的,
+就像编译过的C代码之类。
+
+=head2 10. 6. 名字空间冲突的问题
+
+有时候 I<Sipper> 要把船开进一个小岛, 但有时程序里会发生一
+对名字发生冲突的情况。 假定 I<Skipper> 把他的所有的有用和酷的
+子程序加到 I<navigation.pm> 中, 而 I<Gilligan> 已经导入他自
+己的导航程序包, I<head_toward_island:>
+
+
+ #!/usr/bin/perl
+
+
+ require 'navigation. pm';
+
+
+ sub turn_toward_port {
+   turn_toward_heading(compute_heading_to_island(  ));
+ }
+
+
+ sub compute_heading_to_island {
+   #. . code here. .
+ }
+
+
+ #. . more program here. .
+
+I<Gilligan> 开始调试自己的程序（可能有一个有个聪明的人在帮
+他, 我们叫他"教授"）, 一切顺利。
+
+然而, 现在 I<Skipper> 决定修改他的 I<navigation.pm> 库, 加
+一个子程序： I<turn_toward_port> , 使船可以以 I<45> 度角向左
+舷转向（航海术语, 左舷是靠向岸的舷）。
+
+I<Gilligan> 的程序总是在他准备转向岸时就出现灾难：他会使船
+总是转圈！ 问题在于 I<Perl> 编译器开始编译 I<Gilligan> 主程
+序中的 I<turn_toward_port> , 然后当 I<Perl> 在运行时解析 I<r
+equire> 时, 它以 I<Skipper> 的定义的 I<turn_toward_port> 重新
+定义了这个程序。 当然, 录果 I<Gilligan> 打开了警告, 他会注意
+有出错信息, 但他为什要仰赖这个呢?
+
+问题在于 I<Gilligan> 定义的 I<turn_toward_port> 的作用是"
+把左舷靠向岛", 而 I<Skipper> 的定义是"向左转 I<".> 如何来解决
+这个问题呢？
+
+一种方法是需要 I<Skipper> 加个显式的前缀在每个他定义的库中
+的程序名上, 比如, I<navigation_.> 这样, I<Gilligan> 的程序看
+上去是这样的：
+
+
+ #!/usr/bin/perl
+
+
+ require 'navigation. pm';
+
+
+ sub turn_toward_port {
+   navigation_turn_toward_heading(compute_heading_to_island(  ));
+ }
+
+
+ sub compute_heading_to_island {
+   #. . code here. .
+ }
+
+
+ #. . more program here. .
+
+这样就明白了, I<navigation_turn_toward_heading> 来自于 I<
+navigation.pm> 文件。 这对 I<Gilligan> 是不错, 不过让 I<Skip
+per> 很窘, 因为他的程序现在有很长的程序名：
+
+
+ sub navigation_turn_toward_heading {
+    #. . code here. .
+ }
+
+=head2 10. 7. 包名字作为名字空间分隔符
+
+如果上例中的名字前缀不必在每个使用的地方都打印, 那工作该多
+好.我们可以用程序包来增强可读性。
+
+
+ package Navigation;
+
+
+ sub turn_toward_heading {
+   #. . code here. .
+ }
+
+
+ sub turn_toward_port {
+   #. . code here. .
+ }
+
+
+ 1;
+
+在文件的开始的程序包声明, 显式地告诉 I<Perl> 将 I<Navigat
+ion::> 插入到文件中大多数名字的前面.这样, 上面的代码实际上在
+说：
+
+
+ sub Navigation::turn_toward_heading {
+    # code here. .
+ }
+
+
+ sub Navigation::turn_toward_port {
+    # code here. .
+ }
+
+
+ 1;
+
+现在 I<Gilligan> 导入这个文件, 他只要简单的把在库里引用的
+子例程前加上 I<Navigation::> 前缀即可, 而在他自己的同名程序前
+面不加前缀。
+
+
+ #!/usr/bin/perl
+
+
+ require 'navigation. pm';
+
+
+ sub turn_toward_port {
+   Navigation::turn_toward_heading(compute_heading_to_island(  ));
+ }
+
+
+ sub compute_heading_to_island {
+    #. . code here. .
+ }
+
+
+ #. . more program here. .
+
+程序包名字与变量名字相同：他们包括字母和数字及下划线, 但是
+不能以数字开头.同样, 因为在 I<Perl> 的 I<perlmodlib> 文档中
+说明的理由, 一个程序包名应该以大写开头, 并且不与现存的 I<CPA
+N> 或核心的模块名重名.包名可以以双冒号分隔定义多个名字, 如：
+I<Minnow::Navigation> 及 I<Minnow::Food::Storage.>
+
+几乎所有的标量、数组、散列、子程序及文件句柄名字实际上已经
+加上了当前的程序包的名字, 除非原来的名字已经包括一个或多个双
+冒号标记。
+
+[*] 除了词法变量, 我们会在后面说到。
+
+所以, 在 I<navigation.pm> 中, 我们可以用下面的变量名：[]
+
+[] 小注： I<21.283> 度以北, I<157.842> 度以西是现实生活中
+一个地点, 上过一个著名的电视节目.如果你不信, 可以查查 I<Goog
+le> I<Maps.>
+
+
+ package Navigation;
+ @homeport = (21. 283, -157. 842);
+
+
+ sub turn_toward_port {
+    #. . code. .
+ }
+
+我们可以在主程序中用全名引用 I<@homeport> 变量：
+
+
+ @destination = @Navigation::homeport;
+
+如果每个名字前面都有包名字, 那么主程序的名字会是什么？是的
+, 他们同样有包名字, 称作 I<main.> 就好象在 I<main> 这个程序
+包里面;在每个文件开始的地方.所以, 要 I<Gilligan> 避免说 I<Na
+vigation::turn_toward_heading> , I<navigation.pm> 文件中可以
+用：
+
+
+ sub main::turn_toward_heading {
+    #. . code here. .
+ }
+
+现在, 子程序被定义在 I<main> 程序包中, 不在 I<navigation>
+包中.这不是一个好的解决方法（我们会在第 I<15> 章, 讨论 I<Ex
+porter> 的时候来说更好的做法）, 但是, 至少目前也没有其它利害
+的独特方案可以匹分 I<main> 与其它包。
+
+这就是在第三章中的那些模块在导入符号到脚本时要做的事情, 但
+是当时我们没有告诉你整个故事的细节.这些模块把子例程和变量导
+入到当前的包（通常, 这是你这个脚本的 I<main> 包）.换句话说,
+这些符号仅存在于那些包中, 除非你全名引用.我们会在后面来详述这
+套机制是如何工作的。
+
+=head2 10. 8. 包指示字的范围
+
+所有的文件都好像以 I<main> 程序包开始;[*] 所有的包指示字的
+范围在其声明处开始到下一个包指示字声明的地方结束, 除非那个包
+指示字在一个大括号范围之内.在那种情况下, I<Perl> 会记住前面
+的包, 并在其范围结束时恢复它.这里是个例子。
+
+[*] I<Perl> 不会让我们像C那样创建一个显式的 I<main(> )循环
+I<.Perl> 清楚每个脚本都需要它, 所以它自动为我们做了这项工作
+。
+
+
+ package Navigation;
+
+
+ {  # start scope block
+   package main;  # now in package main
+
+
+   sub turn_toward_heading {  # main::turn_toward_heading
+      #. . code here. .
+   }
+
+
+ }  # end scope block
+
+
+ # back to package Navigation
+
+
+ sub turn_toward_port { # Navigation::turn_toward_port
+    #. . code here. .
+ }
+
+当前的包是词法范围的, 像 I<my> 声明的变量一样, 范围限制在
+大括号的最里层或我们引入包的文件范围之内。
+
+大多数的库只在一个文件里放一个包, 并且在文件开始的地方声明
+包名.大多数的程序就把缺省的 I<main> 作为包名.不过知道我们可
+以临时有个不同的当前包名是不错的 I<.[> +] []
+
+[] Some names are always in package main regardless of th
+e current package: ARGV, ARGVOUT, ENV, INC, SIG, STDERR, STD
+IN, and STDOUT. We can always refer to @INC and be assured o
+f getting @main::INC. The punctuation mark variables, such a
+s $_, $2, and $!, are either all lexicals or forced into pac
+kage main, so when we write $. , we never get $Navigation::.
+by mistake.
+
+=head2 10. 9. 包和词法变量
+
+一个词法变量（以 I<my> 声明的变量） 不会有当前包名做前缀,
+因为包变量已经是全局的了: 我们总是可以引用一个包变量, 如果我
+们知道它的全名。 一个词法变量通常是临时的或只在程序的局部可
+访问。 如果我们声明一个词法变量, 然后不带包前缀地使用它, 就获
+得一个词法变量。 一个包前缀保证我们可以访问一个包变量, 而不
+是词法变量。
+
+举例来说, 假定 I<navigationpm> 中的一个子例程声明了一个词
+法变量 I<@homeport.> 那么, 任何使用 I<@homeport> 时, 都是指新
+引入的词法变量, 但是如果用全名来引用 I<@havigation::homepor
+t> 将访问的是包变量。
+
+
+ package Navigation;
+ @homeport = (21. 283, -157. 842);
+
+
+ sub get_me_home {
+   my @homeport;
+
+
+    #. . @homeport. . # refers to the lexical variable
+    #. . @Navigation::homeport. . # refers to the package variable
+
+
+ }
+
+
+  #. . @homeport. . # refers to the package variable
+
+显然, 这段代码会导致混淆, 所以我们不应该搞这种没必要的双重
+声明。 尽管结果早就会料到。
+
+=head2 10. 10. 习题
+
+答案见附录。
+
+=head2 10. 10. 1. 练习 1 I<[25> 分钟]
+
+岛上的土著 I<Oogaboogoo> 对于日期和月份着不同寻常的名字.这
+里有个从 I<Gilligan> 来的简单但写得不是很好的代码.修改一下,
+给月份名加一个对话函数, 并把这些放到一个库里.为了更好的可靠
+性, 添加一个错误检查程序以及文档。
+
+
+ @day = qw(ark dip wap sen pop sep kir);
+ sub number_to_day_name { my $num = shift @_; $day[$num]; }
+ @month = qw(diz pod bod rod sip wax lin sen kun fiz nap dep);
+
+=head2 10. 10. 2. 练习2 ［ I<15> 分钟]
+
+写个程序使用你的库并用如下代码打印一些信息, 如今天是 I<di
+p> , I<sen> I<15> , I<2011> , 表示今天是八月的周一.（暗示：
+I<localtime> 返回的年月数字可能并不一定是你想要的, 所以你要查
+一下文档.）
+
+
+ my($sec, $min, $hour, $mday, $mon, $year, $wday) = localtime;
+

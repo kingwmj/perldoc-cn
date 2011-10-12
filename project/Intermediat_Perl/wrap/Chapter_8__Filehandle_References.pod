@@ -1,0 +1,518 @@
+=head2 Chapter 8. 引用文件句柄
+
+我们已经看到如何通过引用传递数组, 散列和子程序, 并通过一定
+的手段来解决一定复杂度的问题。 同样, 我们也可以将文件句柄存
+到引用里。 让我们看如何用新办法来解决老问题。
+
+=head2 8. 1. 旧的方法
+
+在以往的日子里, I<Perl> 用裸字来代表文件句柄。 文件句柄是
+另一种 I<Perl> 的数据类型, 尽管人们对此讨论不多, 因为它也没有
+专门的符号标注。 你大概已经许多用裸字文件句柄的代码, 如：
+
+
+ open LOG_FH, '>> castaways. log'
+        or die "Could not open castaways. log: $!";
+
+如果我们要同程序的其它部份, 比如库, 共享这些文件句柄该如何
+做呢？ 我们大概见过一些讨巧的办法, 用 I<typeglob> 或一个对
+I<typeglob> 的引用来处理。
+
+
+ log_message( *LOG_FH, 'The Globetrotters are stranded with us!' );
+
+
+ log_message( *LOG_FH, 'An astronaut passes overhead' );
+
+在 I<log_message()> 子程序中, 我们从参数列表中取下第一个元
+素, 并且存在另一个 I<typeglob> 中.不需要详述太多的细节, 一个
+I<typeglob> 存储了包里面所有变量的名字的指针.当我们把一个
+I<typeglob> 赋值给另一个的时候, 我们就为相同的数据创建了一个
+别名.这样我们现在就可以用另外一个名字来访问这块数据的文件句柄
+了.如此, 当我们把名字当文件句柄用时, I<Perl> 知道在 I<typeg
+lob> 中找到这个名字的文件句柄部份.如果文件句柄已经有符号, 那
+会更容易。
+
+
+ sub log_message {
+  local *FH = shift;
+
+
+  print FH @_, "\n";
+ }
+
+注意这里 I<local> 的用法.一个 I<typeglob> 同符号表一起工作
+, 这意味着它处理包变量.包变量不能是词法变量, 所以我们不能用
+I<my.> 因为我们不能与程序其它部份的以 I<FH> 命名的句柄混淆,
+我们必须用 I<local> 告诉 I<Perl> 这个 I<FH> 是在 I<log_mess
+age> 子程序中用作临时变量, 用完即丢, I<Perl> 会把原来的 I<FH
+> 句柄恢复, 好像没有发生过一样。
+
+如果这一切作法让你大为紧张, 希望没有这种事该多好, 可以。
+我们不用作这种事情！ 就是因为现在有更好的方法, 所以我们把这节
+叫作"旧的方法 I<".> 我们假装没有这节吧, 直接跳到下一节吧。
+
+=head2 8. 2. 改进的方法
+
+从 I<Perl> I<5.6> 版本开始, 可以用一个通常的标量变量打开一
+个文件句柄。 相比于使用裸字来代表句柄名字, 我们可以用一个含
+有空值的标量变量代表。
+
+
+ my $log_fh;
+ open $log_fh, '>> castaways. log'
+        or die "Could not open castaways. log: $!";
+
+如果标量已经有值的话, I<Perl> 会报错, 因为 I<Perl> 不会冲
+掉你的数据：
+
+
+ my $log_fh = 5;
+ open $log_fh, '>> castaways. log'
+         or die "Could not open castaways. log: $!";
+ print $log_fh "We need more coconuts!\n";   # doesn't work
+
+当然, I<Perl> 的信条是尽量一步到位.我们可以在 I<open> 语句
+中声明变量。 一开始你可能觉得好笑, 但用了两次（好吧, 多次）
+之后, 你会习惯并喜欢使用这种方法。  '
+ open my $log_fh, '>> castaways. log'
+        or die "Could not open castaways. log: $!";
+
+当我们要把内容打印到文件句柄的时候, 我们就把标量变量代替以
+前裸字的位置.注意文件句柄后面一样没有逗号。
+
+
+ print $log_fh "We have no bananas today!\n";
+
+尽管下面的代码可能你看上去比较搞笑, 或者, 如果你不觉得搞笑
+, 可能那些后来读到你的代码的人也觉得看上去比较怪异。 在《 I
+<Perl> 最佳实践》这本书中, I<Damian> I<Conway> 建议在文件句柄
+部份要加上大括号以显明你的态度。 这样的语法使它看上去更新 I
+<grep> 或者 I<map> 的内嵌块形式。
+
+
+ print {$log_fh} "We have no bananas today!\n";
+
+现在我们就可以把文件句柄引用当作标量一样到处使用了.我们不
+必不得不搞些怪手法来处理问题。
+
+
+ log_message( $log_fh, 'My name is Mr. Ed' );
+
+
+ sub log_message {
+   my $fh = shift;
+
+
+   print $fh @_, "\n";
+ }
+
+我们同样可以以读的方式创建文件句柄引用.我们只要简单地在第
+二个参数放上适当的文件名即可：
+
+
+ open my $fh, "castaways. log"
+        or die "Could not open castaways. log: $!";
+
+现在, 我们就可以在行输入操作符中裸字的位置替换成标量。 之
+前, 我们会看到我们把裸字放在尖括号里：
+
+
+ while( <LOG_FH> ) {. . . }
+
+现在我们用标量代替：
+
+
+ while( <$log_fh> ) {. . . }
+
+一般情况下, 所有用裸这字代表文件句柄的地方, 我们都可以用含
+有文件句柄引用的标量变量代替。
+
+在以上的各种使用方式中, 只要这个标量变量跑出范围（或者我们
+赋另一个值给它）, I<Perl> 就会自动关闭文件。 我们不必自己显
+式地关闭文件。
+
+=head2 8. 3. 更上一层楼
+
+到目前为此, 我们的例子展示的 I<open> 都是两个参数的形式,
+但实际上有个隐含之处： 文件的打开方式是和文件名都放在第二个参
+数的位置上的。 这意味着我们在一个字串里表达了两种不同的意义
+, 而且我们不得不相信 I<Perl> 一定会很好的区分。
+
+为了解决这个问题, 我们可以把第两个参数分开：
+
+
+ open my $log_fh, '>>', 'castaways. log'
+        or die "Could not open castaways. log: $!";
+
+这种三参数的形式有可以利用 I<Perl> 的 I<IO> 过滤器的优点.
+这里我们不涉及太多 I<.[> *] 在 I<perlfunc> 中 I<open> 函数的
+条目有 I<400> 行之多, 尽管在它自己的 I<perldoc> 教材和 I<per
+lopentut> 中也有说明。
+
+=head2 8. 4. I<IO::Handle> 模块
+
+在帷幕之后, I<Perl> 实际上用调用 I<I<IO::Handle> 模块> 模
+块来变这个戏法的, 所以, 我们的文件句柄实际上是一个对象。 [*]
+I<I<IO::Handle> 模块> 包是输入输出的基础类, 所以它处理许多不
+仅仅有关文件的操作。
+
+[*] 你是否曾经疑惑为什么 I<print> 语句的文件句柄后面为什么
+不加逗号？这的确是对象的一种间接标记 (这是我们还没有提及的,
+除非你已经在读这个脚注前先读完了本书, 就像我们在前言里说的那
+样！
+
+除非你正在创建新的 I<IO> 模块, 一般来说你不会直接调用 I<I
+<IO::Handle> 模块> 模块.相反的, 我们可以用一些建立在 I<I<IO:
+:Handle> 模块> 模块之上更加好用的模块。 我们还没有告诉你有关
+面向对象编程的知识（在第 I<11> 章, 所以我们一定会说的）, 但目
+前情况下, 你只要跟着本书的例子就可以了。
+
+这些模块做的工作同 I<Perl> 自带的 I<open> 相同（这要依赖你
+使用的 I<Perl> 的版本）, 但是, 当我们要尽可能晚的决定模块处
+理输入输出时, 用他们就很顺手。 I<To> I<switch> I<the> I<beha
+vior> , I<we> I<simply> I<change> I<the> I<module> I<name.>
+To switch the behavior, we simply change the module name. 代
+替我们使用内建的 I<open> , 我们使用模块接口。
+
+=head2 8. 4. 1. IO::File
+
+I<IO::File> 模块是 I<I<IO::Handle> 模块> 模块的子类, 用来
+同文件打交道。 它是随标准 I<Perl> 一起发布的, 所以你应该已经
+有这些模块了。 可以用多种方法来创建一个 I<IO::File> 对象。
+
+我们可以用单参数构造器的形式创建文件句柄的引用。 我们可以
+通过检查返回值是否为空来判断文件句柄引用创建是否成功。
+
+
+ use IO::File;
+
+
+ my $fh = IO::File->new( '> castaways. log' )
+        or die "Could not create filehandle: $!";
+
+如果不喜欢用这种方式（因为同样原因也不喜欢标准 I<open> ）
+, 你可以用另一种调用约定。 可选的第二个参数是文件句柄的打开方
+式。 []
+
+[] 这些都是 I<ANSI> C 的 I<fopen> 的文件打开方式的字串.你
+在内建的 I<open> 中也可以使用。 实际上, I<IO::File> 在后台也
+是使用内建的 I<open> 函数的。
+
+
+ my $read_fh  = IO::File->new( 'castaways. log', 'r' );
+ my $write_fh = IO::File->new( 'castaways. log', 'w' );
+
+用打开模式掩码可以对文件进行更细致的控制 I<.IO::File> 模块
+提供这些掩码的定义。
+
+
+ my $append_fh = IO::File->new( 'castaways. log', O_WRONLY|O_APPEND );
+
+除了打开命名文件, 我们可能要打开匿名的临时文件。 对于支持
+这种文件的系统, 我们只要简单地以读写文件名柄建立一个新对象就
+可以了。
+
+
+ my $temp_fh = IO::File->new_tmpfile;
+
+在以前, I<Perl> 会在这些标量变量跑出范围的时候把文件关闭,
+不过, 如果你还不放心, 我们可以显式关闭文件。
+
+
+ $temp_fh->close;
+
+
+ undef $append_fh;
+
+=head2 8. 4. 2. 匿名 I<IO:File> 对象
+
+如果我们不是把 I<IO::File> 返回的对象放到一个标量变量中,
+那么操作起来需要一些对语法的小小变动。 比如这么一个例子, 我们
+现在要把所有符合* I<.input> 的文件都拷贝到相应的* I<.output
+> 文件中, 但我们要并行的进行拷贝。 首先, 我们打开所有的文件,
+包括输入和输出的双方：'
+
+
+ my @handlepairs;
+
+
+ foreach my $file ( glob( '*. input' ) ) {
+        (my $out = $file) =~ s/\. input$/. output/;
+        push @handlepairs, [
+                (IO::File->new('<$file') || die),
+                (IO::File->new('>$out') || die),
+        ];
+ }
+
+好, 现在我们有了一个保存数组引用的数组, 这个数组中所每个元
+素都是 I<IO::File> 对象.现在, 让我们把输入文件的数据灌入输出
+文件中去。
+
+
+ while (@handlepairs) {
+   @handlepairs = grep {
+    if (defined(my $line = $_->[0]->getline)) {
+      print { $_->[1] } $line;
+    } else {
+      0;
+    }
+  } @handlepairs;
+ }
+
+只要还有文件对, 我们就会通过 I<grep> 结构不断把列表传过来
+：
+
+
+ @handlepairs = grep { CONDITION } @handlepairs;
+
+在每个传输过程中, 只有那些通过 I<grep> 条件测试的句柄对才
+会留下.在条件测试中, 我们拿句柄对中第一个元素并读取其中内容.
+如果处理成功, 则向句柄对中第二个元素（对应的输出句柄）写行.如
+果打印成功, 它返回 I<true> , 这样就让 I<grep> 知道我们要保留
+那个句柄对.只要打印失败或取行返回未定义值, I<grep> 就会认做
+I<false> 并放弃那个句柄对.放弃句柄对自动就关闭了输入输出句柄
+.太妙了！
+
+注意, 我们不能用更传统的句柄读或者写操作, 因为句柄的读写不
+能在简单标量变量中.我们可以通过重写那个循环, 看看拷贝句柄是
+否更方便：
+
+
+ while (@handlepairs) {
+  @handlepairs = grep {
+    my ($IN, $OUT) = @$_;
+    if (defined(my $line = <$IN>)) {
+      print $OUT $line;
+    } else {
+      0;
+    }
+  } @handlepairs;
+ }
+
+这样的写法理论上应该很好.大多数情况下, 简单地把复杂引用的
+值拷贝到一个标量看上去应该更简单.实际上, 用另一种方法写这个循
+环可以把讨厌的 I<if> 结构去掉：
+
+
+ while (@handlepairs) {
+  @handlepairs = grep {
+    my ($IN, $OUT) = @$_;
+    my $line;
+    defined($line = <IN>) and print $OUT $line;
+  } @handlepairs;
+ }
+
+如果你懂得 I<and> 是个部分求值的短路操作, 只要一切 I<OK>
+就返回 I<true> , 这就是个不错的替代.记住 I<Perl> 的信条："条
+条大路通罗马"（尽管不一定在所有的情况下都合情合理）。
+
+=head2 8. 4. 3. IO::Scalar
+
+有些时候, 我们并不想把内容直接打印到文件, 宁愿把输出送到一
+个字串中去.一些模块的接口不提供给我们这个选项, 所以我们不得
+不利用看上去像打印到文件中去的文件句柄来完成.我们可能要在把内
+容写到文件之前先建立好, 这样我们就可以对文件内容进行加密, 压
+缩或从你的程序中直接把它作为邮件发出去。
+
+I<IO::Scalar> 模块在幕后是使用 I<tie> 来实现魔法的, 它把一
+个文件句柄引用给一个标量.这个模块不在标准的 I<Perl> 发行版中
+, 所以你可能必须自己安装它。
+
+
+ use IO::Scalar;
+
+
+ my $string_log = '';
+ my $scalar_fh = IO::Scalar->new( \$string_log );
+
+
+ print $scalar_fh "The Howells' private beach club is closed\n";
+
+现在我们的日志信息不是放在文件中, 而是放在标量变量 I<$str
+ing_log> 中.那我们如何从我们的日志文件中读呢？ 故伎重演而已.
+在这个例子中, 我们象之前一样创建变量 I<$scalar_fh> , 然后用用
+输入操作符从中读行.在我们的 I<while> 循环中, 我们从日志信息
+中抽出包含 I<Gilligan> 的行（应该有很多吧, 因为他总是纠缠在许
+多事情中）：
+
+
+ use IO::Scalar;
+
+
+ my $string_log = '';
+ my $scalar_fh = IO::Scalar->new( \$string_log );
+
+
+ while( <$scalar_fh> ) {
+        next unless /Gilligan/;
+        print;
+        }
+
+在 I<Perl> I<5.8> 中, 我们可以直接在 I<Perl> 中写这样的语
+句, 而不必引入 I<IO::Scalar:>
+
+
+ open( my $fh, '>>', \$string_log )
+        or die "Could not append to string! $!";
+
+=head2 8. 4. 4. IO::Tee
+
+如果我们要一次将结果发送到多个不同的地方, 应该如何做？ 如
+果我们要把内容发送到一个文件的同时存入一个字串中呢？ 用我们目
+前所知, 我们大概不得不做如下这些：
+
+
+ my $string = '';
+
+
+ open my $log_fh, '>>', 'castaways. log'
+        or die "Could not open castaways. log";
+ open my $scalar_fh, '>>', \$string;
+
+
+ my $log_message = "The Minnow is taking on water!\n"
+ print $log_fh    $log_message;
+ print $scalar_fh $log_message;
+
+当然, 我们可以缩短一些, 这样我们可以只用一个打印语句.我们
+用 I<foreach> 控制结构来迭代地使用句柄引用, 用 I<$fn> 一次换
+一个, 打印到每个句柄。
+
+
+ foreach my $fh ( $log_fh, $scalar_fh ) {
+        print $fh $log_message;
+ }
+
+不过, 这个看上去还是有些复杂.在 I<foreach> , 我们还得决定
+是哪个句柄.以不能定义一组句柄来回答同样的问题呢？ 哈, 这就是
+I<IO::Tee> 提供的功能.可以把它想像成舱底连接输出水管儿的T字
+连接口; 当水灌到T字口的时候, 它会同时向两个不同的方向流.当我
+们的数据灌入 I<IO::Tee> 时, 它会流向两个（或多个）不同管道.就
+是说 I<IO::Tee> 实现了多路输出.在下面 例子中, 日志同时写入
+I<logfile> 和标量变量。
+
+
+ use IO::Tee;
+
+
+ $tee_fh = IO::Tee->new( $log_fh, $scalar_fh );
+
+
+ print $tee_fh "The radio works in the middle of the ocean!\n";
+
+呵呵, 还有更绝的.如果我们给 I<IO::Tee> 一些参数（第一个为
+输入句柄, 其后均为输出句柄）, 我们可以用同一个 I<Tee> 过的句
+柄来从输入中读和从输出中写.虽然输出源和输出目的地不同, 但我们
+可以用同一个句柄来操作。 '
+
+
+ use IO::Tee;
+
+
+ $tee_fh = IO::Tee->new( $read_fh, $log_fh, $scalar_fh );
+
+
+ # reads from $read_fh
+ my $message = <$tee_fh>;
+
+
+ # prints to $log_fh and $scalar_fh
+ print $tee_fh $message;
+
+而且 I<$read_fh> 并不一定非要连上文件.它可以连上一个套接字
+, 一个标量变量, 一个外部命令的输出, [*] 或者任何其它你想得出
+来的东西。
+
+=head2 8. 5. 目录句柄引用
+
+用创建对句柄的引用同样的方法, 我可以创建对目录句柄的引用。
+
+
+ opendir my $dh, '. ' or die "Could not open directory: $!";
+
+
+ foreach my $file  ( readdir( $dh ) ) {
+        print "Skipper, I found $file!\n";
+ }
+
+对目录句柄引用遵从我们在之前我们说过的规则.它必须在标量变
+量没有值的情况下才能工作, 跑出范围或变量被另外赋值时, 句柄自
+动关闭。
+
+=head2 8. 5. 1. IO::Dir
+
+我们也是用面向对象的接口来处理目录句柄.从 I<Perl> I<5.6>
+开始, I<IO::Dir> 模块就是标准发行版的一部份了.它并没有添加什
+么新的功能, 无非包装了 I<Perl> 的内建函数而已 I<.[> +] []'
+
+[] 对于每个 I<IO::Dir> 模块名, 加上 I<"dir"> 并用 I<perlf
+unc> 查看其文档。
+
+
+ use IO::Dir;
+
+
+ my $dir_fh = IO::Dir->new( '. ' ) || die "Could not open dirhandle! $!\n";
+
+
+ while( defined( my $file = $dir_fh->read ) ) {
+        print "Skipper, I found $file!\n";
+        }
+
+如果我们要重新查看文件列表的时候（可能在程序的后面）, 我们
+不必重建句柄.我们可以用 I<rewind> 来重用目录句柄：
+
+
+ while( defined( my $file = $dir_fh->read ) ) {
+        print "I found $file!\n";
+ }
+
+
+ # time passes
+ $dir_fh->rewind;
+
+
+ while( defined( my $file = $dir_fh->read ) ) {
+        print "I can still find $file!\n";
+ }
+
+=head2 8. 6. 习题
+
+答案附录找。
+
+=head2 8. 6. 1. 练习1 ［ I<20> 分钟］
+
+写一个程序打印一周的日期, 但要允许用户选择输出到文件或标量
+, 或者同时输出.不论用户如何选择, 都必须用一个打印语句输出.如
+果用户选择打印到标量, 那么在程序结束时, 要将其打印到标准输出
+。
+
+=head2 8. 6. 2. 练习 2 I<[30> 分钟]
+
+教授必须读如下的日志：
+
+
+ Gilligan: 1 coconut
+ Skipper: 3 coconuts
+ Gilligan: 1 banana
+ Ginger: 2 papayas
+ Professor: 3 coconuts
+ MaryAnn: 2 papayas . . .
+
+他要写一系列的文件, 名字是： I<gilligan.info> , I<maryann
+.info> 等等, 以此类推.每个文件必须只有以文件名开始的行.（名字
+以冒号分隔.） 其结果, I<gilligan.info> 应该是如下样子：
+
+
+ Gilligan: 1 coconut
+ Gilligan: 1 banana
+
+现在这个日志文件很大, 而计算机又不快, 所以他要一次读入, 并
+行输出.他该怎么办呢？
+
+提示： 用一个散列, 键用名字, 值是 I<IO::File> 对象提供的每
+个输出文件.按照需要创建他们。
+
+=head2 8. 6. 3. 练习 3 I<[15> 分钟]
+

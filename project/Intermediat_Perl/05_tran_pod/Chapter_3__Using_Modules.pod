@@ -1,290 +1,334 @@
-=head2 Chapter 3. 使用模块
+=head2 Chapter 3. 使用模块 
 
-模块是建造我们程序的代码块。 他提供了可用的子程序，变量或者是面向对象的类。 用我们的方式建造我们自己的模块，我们将向你展示一些你也许感兴趣的地方。 我们也将讲讲一些如何使用别人已经写好的模块的基本常识。
+模块是建造我们程序的代码块。 他提供了可用的子程序，变量或者是面向对象的类。 用我们的方式建造我们自己的模块，我们将向你展示一些你也许感兴趣的地方。 我们也将讲讲一些如何使用别人已经写好的模块的基本常识。  
 
-=head2 3. 1. 标准发行版
+=head2 3. 1. 标准发行版 
 
-I<Perl> 发行版已经自带了最受欢迎的模块。 实际上, 最近的发行版中有超过 I<50> 兆模块。 于 I<1996> 年十月发布的 I<Perl> I<5.003_07> 有 I<98> 个模块.现如今, I<2006> 年的年初发行的 I<Perl> I<5.8.8> 有 I<359> 个模块。 [*] 这实在是 I<Perl> 的优点之一：许多有用且复杂的程序用不着你动手, 发行版里已经给你带来了。
+I<Perl> 发行版已经自带了最受欢迎的模块。 实际上, 最近的发行版中有超过 I<50> 兆模块。 于 I<1996> 年十月发布的 I<Perl> I<5.003_07> 有 I<98> 个模块.现如今, I<2006> 年的年初发行的 I<Perl> I<5.8.8> 有 I<359> 个模块。 [*] 这实在是 I<Perl> 的优点之一：许多有用且复杂的程序用不着你动手, 发行版里已经给你带来了。  
 
-[*] 在读完本书之后, 你就能用 I<Module::CoreList> 模块来自己计算一下共有多少模块。 毕竟, 我们就是用这种方法来得到模块总数。
+[*] 在读完本书之后, 你就能用 I<Module::CoreList> 模块来自己计算一下共有多少模块。 毕竟, 我们就是用这种方法来得到模块总数。  
 
-在这本书里, 我们会向你标出哪些模块是 I<Perl> 自带的（而且在大多数情况下, 会说明是从哪个版本开始收入 I<Perl> 发行版中的）。 我们把它们称为"核心模块", 或者标注它们是在"标准发行版"中的.如果你安装了 I<Perl> , 那你就可以用这些模块。 因为我们写这本书的时候是用的 I<Perl> I<5.8.7> 版, 所以我们也假定这是 I<Perl> 的当前版本。
+在这本书里, 我们会向你标出哪些模块是 I<Perl> 自带的（而且在大多数情况下, 会说明是从哪个版本开始收入 I<Perl> 发行版中的）。 我们把它们称为"核心模块", 或者标注它们是在"标准发行版"中的.如果你安装了 I<Perl> , 那你就可以用这些模块。 因为我们写这本书的时候是用的 I<Perl> I<5.8.7> 版, 所以我们也假定这是 I<Perl> 的当前版本。  
 
-当你在开发你的程序的时候, 你可能要考虑是否你应该仅仅用核心模块.这样的话你就能保证任何用 I<Perl> 的人都能执行你的代码, 只要他们的 I<Perl> 版本同你相同。 [] 这里我们也不多费口舌了, 主要是因为我们太喜欢 I<CPAN> 了, 不用它就舍不得。
+当你在开发你的程序的时候, 你可能要考虑是否你应该仅仅用核心模块.这样的话你就能保证任何用 I<Perl> 的人都能执行你的代码, 只要他们的 I<Perl> 版本同你相同。 [] 这里我们也不多费口舌了, 主要是因为我们太喜欢 I<CPAN> 了, 不用它就舍不得。  
 
-=head2 3. 2. 使用模块
+=head2 3. 2. 使用模块 
 
-几乎所有的 I<Perl> 模块都带有文档说明.所以尽管我们可能不知道那些模块背后的戏法是怎么变的, 如果我们知道如何使用接口, 我们就不必去担心那些细节。 这就是在这里介绍接口的原因, 毕竟：它屏蔽了复杂性。
+几乎所有的 I<Perl> 模块都带有文档说明.所以尽管我们可能不知道那些模块背后的戏法是怎么变的, 如果我们知道如何使用接口, 我们就不必去担心那些细节。 这就是在这里介绍接口的原因, 毕竟：它屏蔽了复杂性。  
 
-在我们的本机当中, 我们可以用 I<perldoc> 命令来调出模块文档。 我们输入我们要查的模块的名字, 然后 I<perldoc> 打印出文档内容：
+在我们的本机当中, 我们可以用 I<perldoc> 命令来调出模块文档。 我们输入我们要查的模块的名字, 然后 I<perldoc> 打印出文档内容：  
 
- $ perldoc File::Basename
 
- NAME
+ $ perldoc File::Basename 
 
-     fileparse - split a pathname into pieces
-     basename - extract just the filename from a path
-     dirname - extract just the directory from a path
 
- SYNOPSIS
+ NAME 
+       fileparse - split a pathname into pieces 
 
-     use File::Basename;
 
-     ($name, $path, $suffix) = fileparse($fullname, @suffixlist)
-     fileparse_set_fstype($os_string);
-     $basename = basename($fullname, @suffixlist);
-     $dirname = dirname($fullname);
+       basename - extract just the filename from a path 
 
-我们在这里列出了文档的一般结构（至少是最重要的部分）。 模块文档是按 I<Unix> 旧文档格式组织的, 以 I<NAME> 和 I<SYNOPSIS> 开始.
 
-I<SYNOPSIS> 节给我们关于这个模块的用法的例子, 这样我们就可以稍微理解了用法就可以使用这个模块。 就是说, 这可以使你在还没有熟悉 I<Perl> 技术和语法的情况下, 仅仅看这些例子, 就可以使程序工作起来。
+       dirname - extract just the directory from a path 
 
-如今, 因为 I<Perl> 成了一个过程的、函数的、面向对象和其它各种语言类型的混合体, I<Perl> 模块文档开始有不同的接口。 我们会在不同的模块使用稍微不同风格的文档, 但是只要我们可以查文档, 我们就不会有问题。
 
-=head2 3. 3. 函数接口
+ SYNOPSIS 
+         use File::Basename; 
 
-为了调用一个模块, 我们可以用 I<Perl> 内置的 I<use> 语句。 这里我们不打算更深入的了解细节问题, 我们会在第 I<10> 章和第 I<15> 章来说这个问题。 目前, 我们只要能调用模块就可以了。 我们就发行版的核心模块中的 I<File::Basename> 模块开始说吧.要把它调入我们的脚本, 我们用：
 
- use File::Basename;
+         ($name, $path, $suffix) = fileparse($fullname, @suffixlist) 
+         fileparse_set_fstype($os_string); 
+         $basename = basename($fullname, @suffixlist); 
+         $dirname = dirname($fullname); 
 
-当我们写上如上的代码后, I<File::Basename> 向你的脚本引入了三个子例程： I<fileparse> , I<basename> 和 I<dirname.> [] 自此之后, 我们就可以用如下语句了：
+我们在这里列出了文档的一般结构（至少是最重要的部分）。 模块文档是按 I<Unix> 旧文档格式组织的, 以 I<NAME> 和 I<SYNOPSIS> 开始.  
 
-[*] 以及实用例程, I<fileparse_set_fstype.>
+I<SYNOPSIS> 节给我们关于这个模块的用法的例子, 这样我们就可以稍微理解了用法就可以使用这个模块。 就是说, 这可以使你在还没有熟悉 I<Perl> 技术和语法的情况下, 仅仅看这些例子, 就可以使程序工作起来。  
 
-[] 事实上他们被它引入当前的包, 只不过我们没有告诉你这些而已。
+如今, 因为 I<Perl> 成了一个过程的、函数的、面向对象和其它各种语言类型的混合体, I<Perl> 模块文档开始有不同的接口。 我们会在不同的模块使用稍微不同风格的文档, 但是只要我们可以查文档, 我们就不会有问题。  
 
- my $basename = basename( $some_full_path );
- my $dirname  = dirname(  $some_full_path );
+=head2 3. 3. 函数接口 
 
-就象我们曾经在我们自己代码里写过 I<basename> 和 I<dirname> 这两个子例程一样, 或者他们就像是 I<Perl> 的内置函数似的。 这些例程的功能是从一个路径名中抽出文件名和目录名。 比如, 如果变量 I<$some_full_path> 的内容是 I<D:\Projects\Island> I<Rescue\plan7.> I<rtf(> 我们假定是在 I<Windows> 环境下), 那么 I<$basename> 的内容将会是 I<plan7.rtf> 而 I<$dirname> 的内容将会是 I<D:\Projects\Island> I<Rescue.>
+为了调用一个模块, 我们可以用 I<Perl> 内置的 I<use> 语句。 这里我们不打算更深入的了解细节问题, 我们会在第 I<10> 章和第 I<15> 章来说这个问题。 目前, 我们只要能调用模块就可以了。 我们就发行版的核心模块中的 I<File::Basename> 模块开始说吧.要把它调入我们的脚本, 我们用： 
 
-I<File::Basename> 会自己"感知"它所处的是哪种操作系统, 并且因此针对所遇到的操作系统, 用不同的分隔符来解析字串。
 
-然而, 假定我们曾经在程序里写过一个同名的 I<dirname> 函数的话, 那么 I<File::Basename> 提供的同名函数会把你的覆盖! 如果我们打开 I<warnings> 报警, 我们会看到一条警告信息;否则的话 I<Perl> 不会关心这种情况。
+ use File::Basename; 
 
-=head2 3. 4. 选择性地引入函数
+当我们写上如上的代码后, I<File::Basename> 向你的脚本引入了三个子例程： I<fileparse> , I<basename> 和 I<dirname.> [] 自此之后, 我们就可以用如下语句了： 
 
-很幸运, 我们可以告诉 I<use> 操作符, 通过只导入需要的子例程来限制它的行为.称为"函数导入清单", 如：
+[*] 以及实用例程, I<fileparse_set_fstype.>  
 
- use File::Basename ('fileparse', 'basename');
+[] 事实上他们被它引入当前的包, 只不过我们没有告诉你这些而已。  
 
-这样的话, 模块只会将两个例程导入我们的程序, 让我们自己写的 I<dirname> 留在程序中。 当然, 上述的写法输入起来太麻烦, 所以一般我们会看如下用引用操作符的写法：
 
- use File::Basename qw( fileparse basename );
+ my $basename = basename( $some_full_path ); 
+ my $dirname  = dirname(  $some_full_path ); 
 
-实际上, 即便只有一个参数, 我们为了维护起来的一致性, 也倾向于用 I<qw()> 这样的形式。; 因为我们往往过后再回来找到这段代码说："得在这里再加个参数", 如果我们一开始用 I<qw()> 来写的话, 维护起来会更简单。
+就象我们曾经在我们自己代码里写过 I<basename> 和 I<dirname> 这两个子例程一样, 或者他们就像是 I<Perl> 的内置函数似的。 这些例程的功能是从一个路径名中抽出文件名和目录名。 比如, 如果变量 I<$some_full_path> 的内容是 I<D:\Projects\Island> I<Rescue\plan7.> I<rtf(> 我们假定是在 I<Windows> 环境下), 那么 I<$basename> 的内容将会是 I<plan7.rtf> 而 I<$dirname> 的内容将会是 I<D:\Projects\Island> I<Rescue.>  
 
-这样我们当然保护了本地的 I<dirname> 例程, 但是, 如果我们想用 I<File::Basename> 模块的 I<dirname> 提供的功能怎么办？没问题！我们只要打出这个例程的全名就可以了：
+I<File::Basename> 会自己"感知"它所处的是哪种操作系统, 并且因此针对所遇到的操作系统, 用不同的分隔符来解析字串。  
 
- my $dirname = File::Basename::dirname($some_path);
+然而, 假定我们曾经在程序里写过一个同名的 I<dirname> 函数的话, 那么 I<File::Basename> 提供的同名函数会把你的覆盖! 如果我们打开 I<warnings> 报警, 我们会看到一条警告信息;否则的话 I<Perl> 不会关心这种情况。  
 
-I<use> 关键字后面的名字列表并不会使模块里(在这个例子中是 I<File::Basename)> 的子例程的定义有任何改变.我们可以忽略导入清单, 直接用全名, 像下面一样:[*]
+=head2 3. 4. 选择性地引入函数 
 
-[*] 你不必在这些调用的子例程的前面加"＆"符号, 因为编译器已经知道子例程的名字了。
+很幸运, 我们可以告诉 I<use> 操作符, 通过只导入需要的子例程来限制它的行为.称为"函数导入清单", 如： 
 
- my $basename = File::Basename::basename($some_path);
 
-在一种极端的情况（但也极端有用）, 我们可能为导入列表指定一个空列表, 就像下面一样:
+ use File::Basename ('fileparse', 'basename'); 
 
- use File::Basename ();              # no import
- my $base = File::Basename::basename($some_path);
+这样的话, 模块只会将两个例程导入我们的程序, 让我们自己写的 I<dirname> 留在程序中。 当然, 上述的写法输入起来太麻烦, 所以一般我们会看如下用引用操作符的写法： 
 
-空列表和没有列表的概念是不一样的。 空列表的意思是说"不要导入任何子例程", 而没有列表的意思是说："请导入缺省的子例程 I<".>. " 如果模块的作者干得出色的话, 他缺省导出的例程正是你想要的。
 
-=head2 3. 5. 面向对象的接口
+ use File::Basename qw( fileparse basename ); 
 
-相比于 I<File::Basename> 导出的子例程, 在核心模块中有另外一个 I<File::Spec> 模块也提供类似的功能。 I<File::Spec> 被设计来支持对文件属性的一般操作。 (一个文件属性指文件或目录的名字, 但它可能并不是实际存在的名子, 是这样吗？)
+实际上, 即便只有一个参数, 我们为了维护起来的一致性, 也倾向于用 I<qw()> 这样的形式。; 因为我们往往过后再回来找到这段代码说："得在这里再加个参数", 如果我们一开始用 I<qw()> 来写的话, 维护起来会更简单。  
 
-与 I<File::Basename> 模块不同的是, I<File::Spec> 模块接口是被设计成面向对象的.我们也用 I<use> 来调入模块, 象往常一样：
+这样我们当然保护了本地的 I<dirname> 例程, 但是, 如果我们想用 I<File::Basename> 模块的 I<dirname> 提供的功能怎么办？没问题！我们只要打出这个例程的全名就可以了： 
 
- use File::Spec;
 
-然而, 因为这个模块有面向对象的接口,[] 它并不导入任何子例程。 取而代之的是, 接口要我们通过访问类的方法来使用其功能。 如 I<catfile> 方法用来把一个字串列表用适当的目录分隔符连接起来：
+ my $dirname = File::Basename::dirname($some_path); 
 
-[] 如果我们想要专门的接口的话, 可以用 I<use> I<File::Spec::Functions> 的办法。
+I<use> 关键字后面的名字列表并不会使模块里(在这个例子中是 I<File::Basename)> 的子例程的定义有任何改变.我们可以忽略导入清单, 直接用全名, 像下面一样:[*] 
 
- my $filespec = File::Spec->catfile( $homedir{gilligan},
-         'web_docs', 'photos', 'USS_Minnow. gif' );
+[*] 你不必在这些调用的子例程的前面加"＆"符号, 因为编译器已经知道子例程的名字了。  
 
-上例就是调用了 I<File::Spec> 类中的一个叫 I<catfile> 的类方法.这个方法使用本地操作系统的目录分隔符建立合适的路径字患并返回单个字串。 [] 对于 I<File::Spec> 提供的其它方法, 调用的语法都是相似的。
 
-[] 返回的的字段结果, 如果在 I<UNIX> 系统, 那么多半是： I</home/gilligan/web_docs/photos/USS_Minnow> I<gif.> 如果在 I<windows> 系统里, 就会用代表目录分隔符的反斜杠。 这个模块让我们可以写出可移植的代码, 至少在文件描述上是这样的。
+ my $basename = File::Basename::basename($some_path); 
 
-I<File::Spec> 模块还提供了许多其它的方法来用可移植的方式处理路径。 你可以通过 I<perlport> 文档了解更多有关移植方面的专题。
+在一种极端的情况（但也极端有用）, 我们可能为导入列表指定一个空列表, 就像下面一样: 
 
-=head2 3. 6. 一个更典型的面向对象模块: I<Math::BigInt>
 
-不要因为 I<File::Spec> 模块没有任何对象, 所以看上去比较像"非面对象的"的模块而失望.让我们看一下另外一个核心模块, I<Math::BigInt> , 它用来处理超出 I<Perl> 内置精度的整数值 I<.[> *] [*]
+ use File::Basename (  );              # no import 
+ my $base = File::Basename::basename($some_path); 
 
-[*] 在幕后, I<Perl> 实际上要被其宿主的操作系统架构所限制。 这是少数硬件环境限制之一。
+空列表和没有列表的概念是不一样的。 空列表的意思是说"不要导入任何子例程", 而没有列表的意思是说："请导入缺省的子例程 I<".>. " 如果模块的作者干得出色的话, 他缺省导出的例程正是你想要的。  
 
- use Math::BigInt;
- my $value = Math::BigInt->new(2); # start with 2
- $value->bpow(1000);               # take 2**1000
- print $value->bstr(  ), "\n";     # print it out
+=head2 3. 5. 面向对象的接口 
 
-如前所述, 这个模块没有导入任何东西。 其全部的接口使用对象的方法, 如用 I<new> 跟在类名之后, 来建立实例.然后调用实例的方法, 如跟在实例名字后的 I<bpow> 和 I<bstr>.
+相比于 I<File::Basename> 导出的子例程, 在核心模块中有另外一个 I<File::Spec> 模块也提供类似的功能。 I<File::Spec> 被设计来支持对文件属性的一般操作。 (一个文件属性指文件或目录的名字, 但它可能并不是实际存在的名子, 是这样吗？) 
 
-=head2 3. 7. I<CPAN> 模块仓库
+与 I<File::Basename> 模块不同的是, I<File::Spec> 模块接口是被设计成面向对象的.我们也用 I<use> 来调入模块, 象往常一样：  
 
-I<CPAN> 是众多志愿者协同工作的产物.志愿者中的许多人用他们自己的 I<FTP> 站点来维持前台的 I<CPAN> I<Web> 页面。 直到 I<1993> 年底, 他们还是用 I<perl-packrats> 邮件列表来协调他们的工作.之后, 因为磁盘空间越来越便宜, 所以相同信息可以在所有的站点复制, 而不必放在专门的站点上。 这种想法酝酿了一年左右, 以 I<Jarkko> I<Hietaniemi> (芬兰人, 详见： I<http://users.tkk.fi/jhi/jarkko.html.> 中文名：沙雅可, 日文名：奴稗谷笑)在芬兰建立的 I<FTP> 站点为母站, 其它的镜相站点可以以此来进行及时的更新。
 
-这个站点的一部份工作是重新编排和组织分离的 I<Perl> 文档.建立起放置为非 I<UNIX> 系统的二进制文件、脚本、和 I<Perl> 源代码的空间。 然而, I<CPAN> 当然最关心的是占空间大部份的 I<Perl> 模块部分。
+ use File::Spec; 
 
-按模块的功能编目, I<CPAN> 把模块用符号连接组织起来, 指向他们的作者目录－－实际文件所在的地方。 模块还包含以易于 I<Perl> 分析的格式索引, 如 I<Data::Dumper> 这样的输出来丰富模块索引的内容。 自然啦, 这一切编目索引都是有主服务器的 I<Perl> 程序自动从数据库生成的。 一般来说, I<CPAN> 中从一个服务器同步到另一个服务器的工作是由 I<mirror.pl> 这个古老的 I<Perl> 程序完成的。
+然而, 因为这个模块有面向对象的接口,[] 它并不导入任何子例程。 取而代之的是, 接口要我们通过访问类的方法来使用其功能。 如 I<catfile> 方法用来把一个字串列表用适当的目录分隔符连接起来： 
 
-从屈指可数的几台镜相服务器开始, I<CPAN> 如今已经成长为超过 I<200> 公共服务器, 至少每天（有时是每小时）刷新一次的网络。 无论你在世界的哪头, 我们总是可以找到最近的 I<CPAN> 镜相站。
+[] 如果我们想要专门的接口的话, 可以用 I<use> I<File::Spec::Functions> 的办法。  
 
-I<CPAN> I<Search> I<(http://search.cpan.org)> 的难以置信的易用性, 一定会成为你最喜欢的搜寻界面。 从那个网页, 你可以搜寻模块、看它的文档、浏览它有哪些版本、查询他们的 I<CPAN> 测试者的报告以及许多其它事情。
 
-=head2 3. 8. 安装从 I<CPAN> 下载的模块
+ my $filespec = File::Spec->catfile( $homedir{gilligan},  
+         'web_docs', 'photos', 'USS_Minnow. gif' ); 
 
-安装从 I<CPAN> 获得的简单模块可以很直接：先从 I<CPAN> 下载发布的文档, 解压到一个目录。 下例中我们用 I<wget> 下载文档, 当然, 你可以用你习惯的工具下载。
+上例就是调用了 I<File::Spec> 类中的一个叫 I<catfile> 的类方法.这个方法使用本地操作系统的目录分隔符建立合适的路径字患并返回单个字串。 [] 对于 I<File::Spec> 提供的其它方法, 调用的语法都是相似的。  
 
- $ wget http://www. cpan. org/. . . /HTTP-Cookies-Safari-1. 10. tar. gz
- $ tar -xzf HTTP-Cookies-Safari-1. 10. tar. gz
- $ cd HTTP-Cookies-Safari-1. 10s
+[] 返回的的字段结果, 如果在 I<UNIX> 系统, 那么多半是： I</home/gilligan/web_docs/photos/USS_Minnow> I<gif.> 如果在 I<windows> 系统里, 就会用代表目录分隔符的反斜杠。 这个模块让我们可以写出可移植的代码, 至少在文件描述上是这样的。  
 
-然后我们可以以两种办法安装（我们将会在第 I<16> 章介绍）. 如果我们找到一个叫 I<makefile.pl> 的文件, 我们可以运行如下的命令来编译, 测试和最终安装源码：
+I<File::Spec> 模块还提供了许多其它的方法来用可移植的方式处理路径。 你可以通过 I<perlport> 文档了解更多有关移植方面的专题。  
 
- $ perl Makefile. PL
- $ make
- $ make test
- $ make install
+=head2 3. 6. 一个更典型的面向对象模块: I<Math::BigInt> 
 
-如果你因为没有权限而不能在系统级的目录里建立目录,[*] 我们可以用 I<PREFIX> 参数告诉 I<Perl> 安装在你另外指定的路径：
+不要因为 I<File::Spec> 模块没有任何对象, 所以看上去比较像"非面对象的"的模块而失望.让我们看一下另外一个核心模块, I<Math::BigInt> , 它用来处理超出 I<Perl> 内置精度的整数值 I<.[> *] [*] 
 
-[*] 这些目录由管理员安装 I<Perl> 时建立, 我们可以用 I<perl> I<-V> 看到是哪些目录。
+[*] 在幕后, I<Perl> 实际上要被其宿主的操作系统架构所限制。 这是少数硬件环境限制之一。  
 
- $ perl Makefile. PL PREFIX=/Users/home/Ginger
 
-为了让 I<Perl> 在目录中查找到模块, 我们可以设置 I<PERL5LIB> 环境变量。 I<Perl> 会把这些目录加到模块搜寻清单里去。
+ use Math::BigInt; 
 
- $ export PERL5LIB=/Users/home/Ginger
 
-我们也可以用 I<lib> 编译提示符来加模块搜寻路径, 尽管这并不友好－－因为这不仅要修改代码, 而且在其它的机器上不一定要相同的目录。
+ my $value = Math::BigInt->new(2); # start with 2 
 
- #!/usr/bin/perl
- use lib qw(/Users/home/Ginger);
 
-不过, 等一下, 如果我们找到了 I<Build.PL> 文件, 而不是 I<Makefile.PL> , 那我们可以用它, 过程是一样的。 这种发布用了 I<Module::Build> 模块来建立和安装包.因为 I<Module::Build> 并非 I<Perl> 的核心模块（至少现在还不是）, 所以我们使用时先要安装一下。
+ $value->bpow(1000);               # take 2**1000 
 
-[*] 尽管它可能成为 I<Perl> I<5.10> 的一部分.（［的确成为 I<Perl> I<5.10> 的一部分： I<http://perldoc.perl.org/Module/Build.html> ］）
 
- $ perl Build. PL
- $ perl Build
- $ perl Build test
- $ perl Build install
+ print $value->bstr(  ), "\n";     # print it out 
 
-如果要把 I<Module::Build> 安装在你自己的目录, 我们可以加上 I<install_base> 安装参数.就像我们以前安装 I<Perl> 时用的参数：
+如前所述, 这个模块没有导入任何东西。 其全部的接口使用对象的方法, 如用 I<new> 跟在类名之后, 来建立实例.然后调用实例的方法, 如跟在实例名字后的 I<bpow> 和 I<bstr>.  
 
- $ perl Build. PL --install_base /Users/home/Ginger
+=head2 3. 7. I<CPAN> 模块仓库 
 
-不过有时候我们在发布的安装包里看到有 I<Makefile.PL> 也有 I<Build.PL.> 我们该用哪一个呢？ 都可以。 请便。
+I<CPAN> 是众多志愿者协同工作的产物.志愿者中的许多人用他们自己的 I<FTP> 站点来维持前台的 I<CPAN> I<Web> 页面。 直到 I<1993> 年底, 他们还是用 I<perl-packrats> 邮件列表来协调他们的工作.之后, 因为磁盘空间越来越便宜, 所以相同信息可以在所有的站点复制, 而不必放在专门的站点上。 这种想法酝酿了一年左右, 以 I<Jarkko> I<Hietaniemi> (芬兰人, 详见： I<http://users.tkk.fi/jhi/jarkko.html.> 中文名：沙雅可, 日文名：奴稗谷笑)在芬兰建立的 I<FTP> 站点为母站, 其它的镜相站点可以以此来进行及时的更新。  
 
-=head2 3. 9. 适时地打开路径
+这个站点的一部份工作是重新编排和组织分离的 I<Perl> 文档.建立起放置为非 I<UNIX> 系统的二进制文件、脚本、和 I<Perl> 源代码的空间。 然而, I<CPAN> 当然最关心的是占空间大部份的 I<Perl> 模块部分。  
 
-I<Perl> 会从一个专门的 I<Perl> 数组 I<:@INC> 中包含的目录条目中查找程序调用的模块 I<.use> 语句会在编译时执行, 所以它会在编译时在 I<@INC> 数组所包含的路径中查找模块.所以, 除非我们把 I<@INC> 的因素考虑进去, 否则我们就很难理解有时我们的程序会莫明其妙地中断。
+按模块的功能编目, I<CPAN> 把模块用符号连接组织起来, 指向他们的作者目录－－实际文件所在的地方。 模块还包含以易于 I<Perl> 分析的格式索引, 如 I<Data::Dumper> 这样的输出来丰富模块索引的内容。 自然啦, 这一切编目索引都是有主服务器的 I<Perl> 程序自动从数据库生成的。 一般来说, I<CPAN> 中从一个服务器同步到另一个服务器的工作是由 I<mirror.pl> 这个古老的 I<Perl> 程序完成的。  
 
-举个例子, 假定我们有个目录 I</home/gilligan/lib> , 并且把模块 I<Navigation::SeatOfPants> 放到这个目录下面的 I<Navigation> 目录中的 I<SeatOfPants.pm> 文件中.但 I<Perl> 在用如下语句调用我们的模块时是不会找到它的。
+从屈指可数的几台镜相服务器开始, I<CPAN> 如今已经成长为超过 I<200> 公共服务器, 至少每天（有时是每小时）刷新一次的网络。 无论你在世界的哪头, 我们总是可以找到最近的 I<CPAN> 镜相站。  
 
- use Navigation::SeatOfPants;
+I<CPAN> I<Search> I<(http://search.cpan.org)> 的难以置信的易用性, 一定会成为你最喜欢的搜寻界面。 从那个网页, 你可以搜寻模块、看它的文档、浏览它有哪些版本、查询他们的 I<CPAN> 测试者的报告以及许多其它事情。  
 
-I<Perl> 会向我们报怨在 I<@INC> 中找不到需要的模块, 并且向我们展示数组中包含的所有目录。
+=head2 3. 8. 安装从 I<CPAN> 下载的模块 
 
- Can't locate Navigation/SeatofPants. pm in @INC (@INC contains:. . . )
+安装从 I<CPAN> 获得的简单模块可以很直接：先从 I<CPAN> 下载发布的文档, 解压到一个目录。 下例中我们用 I<wget> 下载文档, 当然, 你可以用你习惯的工具下载。  
 
-我们可能会想在调用模块之前, 把路径加进 I<@INC> 不就成了？然而, 当我们加入如下语句：
 
- unshift @INC, '/home/gilligan/lib';   # broken
- use Navigation::SeatOfPants;
+ $ wget http://www. cpan. org/. . . /HTTP-Cookies-Safari-1. 10. tar. gz 
+ $ tar -xzf HTTP-Cookies-Safari-1. 10. tar. gz 
+ $ cd HTTP-Cookies-Safari-1. 10s 
 
-这样做不对, 为什么？因为 I<unshift> 是在运行时发生的, 远在 I<use> 来调用模块的编译时之后.两条语句虽然在词法上紧挨着但并不表示在编辑时间上靠近.仅仅因为次序上一句挨着另一句并不意味着执行上也按相同的次序.我们得让 I<@INC> 在 I<use> 语句执行之前改变.一种解决办法是加上 I<BEGIN> 块：
+然后我们可以以两种办法安装（我们将会在第 I<16> 章介绍）. 如果我们找到一个叫 I<makefile.pl> 的文件, 我们可以运行如下的命令来编译, 测试和最终安装源码： 
 
- BEGIN { unshift @INC, '/home/gilligan/lib'; }
- use Navigation::SeatOfPants;
 
-这下 I<BEGIN> 块会在编译时被执行, 在用 I<use> 调用模块之前设置好适当的路径。
+ $ perl Makefile. PL 
+ $ make 
+ $ make test 
+ $ make install 
 
-不过, 这样做看上去很烦琐, 不容易去解释, 特别是以后向那些维护你代码的同事去解释.这样, 我们用一个简洁的编译提示来换掉原来用的那些乱七八糟的东西。
+如果你因为没有权限而不能在系统级的目录里建立目录,[*] 我们可以用 I<PREFIX> 参数告诉 I<Perl> 安装在你另外指定的路径： 
 
- use lib '/home/gilligan/lib';
- use Navigation::SeatOfPants;
+[*] 这些目录由管理员安装 I<Perl> 时建立, 我们可以用 I<perl> I<-V> 看到是哪些目录。  
 
-这样, I<lib> 编译提示取一个或多个参数, 并且把他们加入数组 I<@INC> 开头, 就像前面所说的用 I<unshift> 的效果一样。
 
-[*] 之所以有效是因为它在编译期间执行而不是在运行时执行.接下来正是时候立即用 I<use> 了。
+ $ perl Makefile. PL PREFIX=/Users/home/Ginger 
 
-因为 I<use> I<lib> 编译提示总是包含站点相关的路径名, 所以一般来说我们推荐你把它写在文件的开头。 这样当你需要为新系统移动文件, 或库目录名字变化时比较容易更新。 (当然, 还有一种办法, 我们压根去掉 I<use> I<lib> 编译提示, 如果我们可以把我们的模块直接安装在 I<@INC> 包括的标准路径下, 但这不是总是可行的。 )
+为了让 I<Perl> 在目录中查找到模块, 我们可以设置 I<PERL5LIB> 环境变量。 I<Perl> 会把这些目录加到模块搜寻清单里去。  
 
-要注意到： I<use> I<lib> 不是指"用这个库", 而是指"用这个路径可以找到我的库（以及模块） I<."> 很多情况下, 我们会看到代码被写成这样：
 
- use lib '/home/gilligan/lib/Navigation/SeatOfPants. pm'; # WRONG
+ $ export PERL5LIB=/Users/home/Ginger 
 
-这样程序员会迷惑为什么没有把定义加进去.还要注意 I<use> I<lib> 实际上是在编译时执行的, 所以如下代码同样不能工作：
+我们也可以用 I<lib> 编译提示符来加模块搜寻路径, 尽管这并不友好－－因为这不仅要修改代码, 而且在其它的机器上不一定要相同的目录。  
 
- my $LIB_DIR = '/home/gilligan/lib'; . . .
- use lib $LIB_DIR;     # BROKEN
- use Navigation::SeatOfPants;
 
-当然, I<Perl> 声明 I<$LIB_DIR> 变量的确是在编译期（所以我们用 I<use> I<strict> 也不会收到出错信息, 尽管实际 I<use> I<lib> 时会报错）, 但给变量赋上 I<'/home/gilligan/lib'> 这个值却直到运行时才发生, 真是的, 又晚了一步！
+ #!/usr/bin/perl 
+ use lib qw(/Users/home/Ginger); 
 
-这个时候, 你就需要把它放在 I<BEGIN> 块中, 或依赖另一个编译期操作：设置一个常量：
+不过, 等一下, 如果我们找到了 I<Build.PL> 文件, 而不是 I<Makefile.PL> , 那我们可以用它, 过程是一样的。 这种发布用了 I<Module::Build> 模块来建立和安装包.因为 I<Module::Build> 并非 I<Perl> 的核心模块（至少现在还不是）, 所以我们使用时先要安装一下。  
 
- use constant LIB_DIR => '/home/gilligan/lib'; . . .
- use lib LIB_DIR;
- use Navigation::SeatOfPants;
+[*] 尽管它可能成为 I<Perl> I<5.10> 的一部分.（［的确成为 I<Perl> I<5.10> 的一部分： I<http://perldoc.perl.org/Module/Build.html> ］）  
 
-好, 又解决问题了.就是说, 直到我们需要的库取决于计算的结果 I<.(> 要到哪里算是个头啊？停下来吧！)我们 I<99> ％的需求可以满足了。
 
-=head2 3. 9. 1. 处理模块依赖
+ $ perl Build. PL 
+ $ perl Build 
+ $ perl Build test 
+ $ perl Build install 
 
-我们刚才看到如果我们要安装一个模块, 并且这个模块要引用 I<Module::Build> 模块的话, 我们要事先装好 I<Module::Build> 模块.这就是个稍稍让人头痛的有关一般模块依赖性的例子.那我们的 I<castaways> 岛的所有的椰子应该如何处理呢？我们要安装另一些模块, 而这些模块各自又依赖更多的其它不同的模块。
+如果要把 I<Module::Build> 安装在你自己的目录, 我们可以加上 I<install_base> 安装参数.就像我们以前安装 I<Perl> 时用的参数：  
 
-幸而, 我们有工具来助一臂之力.自从 I<Perl> I<5.004> 版开始, I<CPAN.pm> 模块成为核心发布的一部份.它给我们提供了一个交互式的模块安装环境。
 
- $ perl -MCPAN -e shell
- cpan shell -- CPAN exploration and modules installation (v1. 7601)
- ReadLine support available (try 'install Bundle::CPAN')
+ $ perl Build. PL --install_base /Users/home/Ginger 
 
- cpan>
+不过有时候我们在发布的安装包里看到有 I<Makefile.PL> 也有 I<Build.PL.> 我们该用哪一个呢？ 都可以。 请便。  
 
-要装一个模块和它所依赖的模块, 我们只要发出一个带模块名字的安装命令即可。 如此, I<CPAN.pm> 会处理所有下载、解包、编译、测试以及安装模块的工作, 并且它会递归处理所有的依赖关系。
+=head2 3. 9. 适时地打开路径 
 
- cpan> install CGI::Prototype
+I<Perl> 会从一个专门的 I<Perl> 数组 I<:@INC> 中包含的目录条目中查找程序调用的模块 I<.use> 语句会在编译时执行, 所以它会在编译时在 I<@INC> 数组所包含的路径中查找模块.所以, 除非我们把 I<@INC> 的因素考虑进去, 否则我们就很难理解有时我们的程序会莫明其妙地中断。  
 
-如果觉得用上面的方法还烦琐, I<brian> 写了个 I<cpan> 脚本放在 I<Perl> 的发行包里.我们只要简单的列出要安装的模块, 由脚本来处理余下的事情。
+举个例子, 假定我们有个目录 I</home/gilligan/lib> , 并且把模块 I<Navigation::SeatOfPants> 放到这个目录下面的 I<Navigation> 目录中的 I<SeatOfPants.pm> 文件中.但 I<Perl> 在用如下语句调用我们的模块时是不会找到它的。  
 
- $ cpan CGI::Prototype HTTP::Cookies::Safari Test::Pod
 
-还有一个工具： I<CPANPLUS> , 是对 I<CPAN.pm> 完全的重写.但它不是 I<Perl> 核心包的一部份, 如下：
+ use Navigation::SeatOfPants; 
 
- $ perl -MCPANPLUS -e shell
- CPANPLUS::Shell::Default -- CPAN exploration and modules installation (v0. 03)
- *** Please report bugs to <cpanplus-bugs@lists. sourceforge. net>.
- *** Using CPANPLUS::Backend v0. 049.
- *** ReadLine support available (try 'i Term::ReadLine::Perl').
+I<Perl> 会向我们报怨在 I<@INC> 中找不到需要的模块, 并且向我们展示数组中包含的所有目录。  
 
- CPAN Terminal>
 
-我们用i命令来安装模块：
+ Can't locate Navigation/SeatofPants. pm in @INC (@INC contains:. . . ) 
 
- CPAN Terminal> i CGI::Prototype
+我们可能会想在调用模块之前, 把路径加进 I<@INC> 不就成了？然而, 当我们加入如下语句： 
 
-I<CPANPLUS> 模块同样有一个方便的脚本, 叫做 I<cpanp.> 执行起来用i开关并列出要安装的模块列表, 像如下那样：
 
- $ cpanp i CGI::Prototype HTTP::Cookies::Safari Test::Pod
+ unshift @INC, '/home/gilligan/lib';   # broken 
+ use Navigation::SeatOfPants; 
 
-=head2 3. 10. 习题
+这样做不对, 为什么？因为 I<unshift> 是在运行时发生的, 远在 I<use> 来调用模块的编译时之后.两条语句虽然在词法上紧挨着但并不表示在编辑时间上靠近.仅仅因为次序上一句挨着另一句并不意味着执行上也按相同的次序.我们得让 I<@INC> 在 I<use> 语句执行之前改变.一种解决办法是加上 I<BEGIN> 块： 
 
-在附录找答案。
 
-=head2 3. 10. 1. 练习 1 I<[25> 分钟]
+ BEGIN { unshift @INC, '/home/gilligan/lib'; } 
+ use Navigation::SeatOfPants; 
 
-读当前目录的文件列表并转换成全路径.不能用 I<shell> 命令或外部程序读当前目录 I<.Perl> 的 I<File::Spec> 和 I<Cwd> 两个模块对这个程序有帮助.每个路径条目前加四个空格并每个条目开个新行, 就像第二章的练习一做的那样.你可以重用原来的程序吗？
+这下 I<BEGIN> 块会在编译时被执行, 在用 I<use> 调用模块之前设置好适当的路径。  
 
-=head2 3. 10. 2. 练习 2 I<[35> 分钟]
+不过, 这样做看上去很烦琐, 不容易去解释, 特别是以后向那些维护你代码的同事去解释.这样, 我们用一个简洁的编译提示来换掉原来用的那些乱七八糟的东西。 
 
-分析一下这本书的国际标准书号（ I<0596102062> ）.从 I<CPAN> 里安装一下 I<Business::ISBN> 模块, 并且用它来从 I<ISBN> 数字中抽取国家代码和发行商代码。
 
+ use lib '/home/gilligan/lib'; 
+ use Navigation::SeatOfPants; 
+
+这样, I<lib> 编译提示取一个或多个参数, 并且把他们加入数组 I<@INC> 开头, 就像前面所说的用 I<unshift> 的效果一样。  
+
+[*] 之所以有效是因为它在编译期间执行而不是在运行时执行.接下来正是时候立即用 I<use> 了。  
+
+因为 I<use> I<lib> 编译提示总是包含站点相关的路径名, 所以一般来说我们推荐你把它写在文件的开头。 这样当你需要为新系统移动文件, 或库目录名字变化时比较容易更新。 (当然, 还有一种办法, 我们压根去掉 I<use> I<lib> 编译提示, 如果我们可以把我们的模块直接安装在 I<@INC> 包括的标准路径下, 但这不是总是可行的。 ) 
+
+要注意到： I<use> I<lib> 不是指"用这个库", 而是指"用这个路径可以找到我的库（以及模块） I<."> 很多情况下, 我们会看到代码被写成这样： 
+
+
+ use lib '/home/gilligan/lib/Navigation/SeatOfPants. pm'; # WRONG 
+
+这样程序员会迷惑为什么没有把定义加进去.还要注意 I<use> I<lib> 实际上是在编译时执行的, 所以如下代码同样不能工作： 
+
+
+ my $LIB_DIR = '/home/gilligan/lib'; . . .  
+ use lib $LIB_DIR;     # BROKEN 
+ use Navigation::SeatOfPants; 
+
+当然, I<Perl> 声明 I<$LIB_DIR> 变量的确是在编译期（所以我们用 I<use> I<strict> 也不会收到出错信息, 尽管实际 I<use> I<lib> 时会报错）, 但给变量赋上 I<'/home/gilligan/lib'> 这个值却直到运行时才发生, 真是的, 又晚了一步！ 
+
+这个时候, 你就需要把它放在 I<BEGIN> 块中, 或依赖另一个编译期操作：设置一个常量： 
+
+
+ use constant LIB_DIR => '/home/gilligan/lib'; . . .  
+ use lib LIB_DIR; 
+ use Navigation::SeatOfPants; 
+
+好, 又解决问题了.就是说, 直到我们需要的库取决于计算的结果 I<.(> 要到哪里算是个头啊？停下来吧！)我们 I<99> ％的需求可以满足了。  
+
+=head2 3. 9. 1. 处理模块依赖 
+
+我们刚才看到如果我们要安装一个模块, 并且这个模块要引用 I<Module::Build> 模块的话, 我们要事先装好 I<Module::Build> 模块.这就是个稍稍让人头痛的有关一般模块依赖性的例子.那我们的 I<castaways> 岛的所有的椰子应该如何处理呢？我们要安装另一些模块, 而这些模块各自又依赖更多的其它不同的模块。  
+
+幸而, 我们有工具来助一臂之力.自从 I<Perl> I<5.004> 版开始, I<CPAN.pm> 模块成为核心发布的一部份.它给我们提供了一个交互式的模块安装环境。  
+
+
+ $ perl -MCPAN -e shell 
+ cpan shell -- CPAN exploration and modules installation (v1. 7601) 
+ ReadLine support available (try 'install Bundle::CPAN') 
+
+
+ cpan> 
+
+要装一个模块和它所依赖的模块, 我们只要发出一个带模块名字的安装命令即可。 如此, I<CPAN.pm> 会处理所有下载、解包、编译、测试以及安装模块的工作, 并且它会递归处理所有的依赖关系。  
+
+
+ cpan> install CGI::Prototype 
+
+如果觉得用上面的方法还烦琐, I<brian> 写了个 I<cpan> 脚本放在 I<Perl> 的发行包里.我们只要简单的列出要安装的模块, 由脚本来处理余下的事情。  
+
+
+ $ cpan CGI::Prototype HTTP::Cookies::Safari Test::Pod 
+
+还有一个工具： I<CPANPLUS> , 是对 I<CPAN.pm> 完全的重写.但它不是 I<Perl> 核心包的一部份, 如下：  
+
+
+ $ perl -MCPANPLUS -e shell 
+ CPANPLUS::Shell::Default -- CPAN exploration and modules installation (v0. 03) 
+ *** Please report bugs to <cpanplus-bugs@lists. sourceforge. net>.  
+ *** Using CPANPLUS::Backend v0. 049.  
+ *** ReadLine support available (try 'i Term::ReadLine::Perl').  
+
+
+ CPAN Terminal> 
+
+我们用i命令来安装模块：  
+
+
+ CPAN Terminal> i CGI::Prototype 
+
+I<CPANPLUS> 模块同样有一个方便的脚本, 叫做 I<cpanp.> 执行起来用i开关并列出要安装的模块列表, 像如下那样：  
+
+
+ $ cpanp i CGI::Prototype HTTP::Cookies::Safari Test::Pod 
+
+=head2 3. 10. 习题 
+
+在附录找答案。  
+
+=head2 3. 10. 1. 练习 1 I<[25> 分钟] 
+
+读当前目录的文件列表并转换成全路径.不能用 I<shell> 命令或外部程序读当前目录 I<.Perl> 的 I<File::Spec> 和 I<Cwd> 两个模块对这个程序有帮助.每个路径条目前加四个空格并每个条目开个新行, 就像第二章的练习一做的那样.你可以重用原来的程序吗？ 
+
+=head2 3. 10. 2. 练习 2 I<[35> 分钟] 
+
+分析一下这本书的国际标准书号（ I<0596102062> ）.从 I<CPAN> 里安装一下 I<Business::ISBN> 模块, 并且用它来从 I<ISBN> 数字中抽取国家代码和发行商代码。  
 

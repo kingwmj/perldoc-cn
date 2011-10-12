@@ -1,0 +1,583 @@
+=head2 Chapter 11. 介绍对象
+
+面向对象编程（ I<OOP> ）帮助程序员把代码到他们可以命名的对
+象里的办法使代码运行起来更快和维护起来更方便。 我们需要一点
+功夫来找出对象, 但对于长远来说是值得的。
+
+当程序超过N行的时候, 面向对象的好处就显露出来了。 不过, 对
+于这个N到底是多少, 各有各的持法, 但对于 I<Perl> 程序来说, I
+<1000> 行左右代码是比较能被接受的。 如果我们的程序就区区几百
+行, 用面向对象编程可能就太过了。
+
+如同引用, I<Perl> 的对象架构也是从一些现存的前 I<Perl> 5已
+经用的代码移植过来的.所以我们必须保证不对现有的语法有影响。
+令人惊奇的是, 实现向面向对象重生的只用了一个附加的语法, 就是
+简单引入了方法调用。 但其语不意义需要我们一些研究, 所以让我
+们开始吧。
+
+I<Perl> 的对象结构严重依赖于包, 子例程和引用, 所以如果你已
+经跳过书中的这些章节, 请回到开始的部份好好看完.准备好了吗？
+我们开始。
+
+=head2 11. 1. If We Could Talk to the Animals. . .
+
+显然, I<castaways> 船员不可能仅仅靠椰子和菠萝活下来.幸运的
+是, 一船满载农场牲畜的驳船在他们来此不久也在小岛搁浅了.于是
+船员们开始牧养这些牲畜。
+
+让我们听一下那些动物的叫声：
+
+
+ sub Cow::speak {
+   print "a Cow goes moooo!\n";
+ }
+ sub Horse::speak {
+   print "a Horse goes neigh!\n";
+ }
+ sub Sheep::speak {
+   print "a Sheep goes baaaah!\n";
+ }
+
+
+ Cow::speak;
+ Horse::speak;
+ Sheep::speak;
+
+其输出结果如下：
+
+
+ a Cow goes moooo!
+ a Horse goes neigh!
+ a Sheep goes baaaah!
+
+这里没有什么特别的：简单的子程序, 虽然来自不同的包, 但用完
+整的包名.让我们来建立整个牧场：
+
+
+ sub Cow::speak {
+   print "a Cow goes moooo!\n";
+ }
+ sub Horse::speak {
+   print "a Horse goes neigh!\n";
+ }
+ sub Sheep::speak {
+   print "a Sheep goes baaaah!\n";
+ }
+
+
+ my @pasture = qw(Cow Cow Horse Sheep Sheep);
+ foreach my $beast (@pasture) {
+   &{$beast. "::speak"};                # Symbolic coderef
+ }
+
+其输出结果如下：
+
+
+ a Cow goes moooo!
+ a Cow goes moooo!
+ a Horse goes neigh!
+ a Sheep goes baaaah!
+ a Sheep goes baaaah!
+
+哇, 在 I<loop> 中有代码的符号引用还原操作是够糟的.我们需要
+指望没有严格的 I<'refs'> 模式.当然, 在大型程序中不建议这样.
+为什么要这样做？因为包名与我们包里我们要调用的子程序名字是不
+能分开的。
+
+[*] 尽管书中所有的例子都是有效的 I<Perl> 程序, 但是有些章
+节的例子会打破由 I<strict> 定义的规则, 来使其看上去易懂.在章
+节的结尾, 我们会展示如用 I<strict> 兼容的例子。
+
+或者, 如何才好呢？
+
+=head2 11. 2. 介绍方法调用符
+
+一个类是一组具有相同很行为性状的事物的集合.对于 I<Perl> ,
+我们就认为类 I<->> 方法就是 I<Class> 包调用 I<method> 子程序
+.一个方法就是面向对象版本的子程序, 所以从现在开始, 我们会说
+"方法 I<"[> *] 这不是特别准确, 但是第一步.让我们像下面那样使
+用：
+
+[*] 在 I<Perl> , 实际上子程序和方法没什么差别.他们都以 I<
+@_> 作参数, 我们来决定什么是对的。
+
+
+ sub Cow::speak {
+   print "a Cow goes moooo!\n";
+ }
+ sub Horse::speak {
+   print "a Horse goes neigh!\n";
+ }
+ sub Sheep::speak {
+   print "a Sheep goes baaaah!\n";
+ }
+
+
+ Cow->speak;
+ Horse->speak;
+ Sheep->speak;
+
+同样, 其输出是：
+
+
+ a Cow goes moooo!
+ a Horse goes neigh!
+ a Sheep goes baaaah!
+
+不好玩是不是？ 我们得到了相同的输出结果, 都是常量, 没有变
+量.然而, 现在被拆开了：
+
+
+ my $beast = 'Cow';
+ $beast->speak;                # invokes Cow->speak
+
+哈！既然包名和子程序的名字分开, 我们就可用一个变量包名.这
+次, 我们就可以得到我们用 I<use> I<strict> I<'refs'> 时也可以
+工作的东西。
+
+我们用箭头调用来看前面农场的例子：
+
+
+ sub Cow::speak {
+   print "a Cow goes moooo!\n";
+ }
+ sub Horse::speak {
+   print "a Horse goes neigh!\n";
+ }
+ sub Sheep::speak {
+   print "a Sheep goes baaaah!\n";
+ }
+
+
+ my @pasture = qw(Cow Cow Horse Sheep Sheep);
+ foreach my $beast (@pasture) {
+   $beast->speak;
+ }
+
+如此！ 现在所有的动物都能安全地交谈, 不必使用符号代码引用
+。
+
+但查看一般代码.每个 I<speak> 方法都相似结构：一个打印操作
+符和一个包含一般文本的字串, 除了两个字不同 I<.OOP> 的一个核心
+原则就是把通用的代码最小化：如果我们仅写一次, 我们就节约了时
+间.如果我们调试一次就可以了, 我们就节省了更多时间。
+
+即然我们已经知道了箭头调用符是如何工作的, 我们就得到了入门
+的捷径。
+
+=head2 11. 3. 方法调用的额外参数
+
+调用：
+
+
+ Class->method(@args)
+
+会以如下方式调用子程序 I<Class::method>：
+
+
+ Class::method('Class', @args);
+
+（如果它找不到方法, 那么继承者会介入, 我们会在以后的章节中
+展示.）这意味着我们以类名作为第一个参数, 或者说在没有参数的
+情况下是仅有的一个参数.我们可以将其重写为：
+
+
+ sub Sheep::speak {
+   my $class = shift;
+   print "a $class goes baaaah!\n";
+ }
+
+另外两只动物的代码也一样写：
+
+
+ sub Cow::speak {
+   my $class = shift;
+   print "a $class goes moooo!\n";
+ }
+ sub Horse::speak {
+   my $class = shift;
+   print "a $class goes neigh!\n";
+ }
+
+在以上例子中, I<$class> 类为那个方法取到适当的值。 可是又
+一次, 我们又看到许多相似的结构。 我们能不能更进一步, 求出最大
+公约数呢？ Yesby calling another method in the same class.
+
+=head2 11. 4. 调用第二个方法来简化操作
+
+我们可以从 I<speak> 调一个方法叫 I<sound.> 这个方法提供一
+个常量做为声音的内容：
+
+
+ { package Cow;
+   sub sound { 'moooo' }
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+
+现在, 当我们调用 I<Cow->speak> , 我们会在 I<speak> 中获得
+一个 I<Cow> 的 I<$class.> 这样, 选择 I<Cow->sound> 方法, 返回
+I<moooo.> 马会怎么样呢？
+
+
+ { package Horse;
+   sub sound { 'neigh' }
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+
+只有包名和声音变了.那么我们可以把牛和马的 I<speak> 定义共
+享吗？ 是的, 用继承！
+
+现在, 让我们定义一个共享的方法的包, 叫 I<Animal> , 其 I<s
+peak> 定义如下：
+
+
+ { package Animal;
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+
+这样, 对于每个动物, 我们说它继承自 I<Animal> , 并有此动物
+专有的叫声：
+
+
+ { package Cow;
+   @ISA = qw(Animal);
+   sub sound { "moooo" }
+ }
+
+注意我们加了 I<@ISA> 数组.我们后面会介绍的。
+
+现在我们调用 I<Cow->speak> 会发生什么？
+
+首先, I<Perl> 创建参数列表.在这个例子中, 就是 I<Cow.> 然后
+I<Perl> 找 I<Cow::speak.> 当前包没有, 所以 I<Perl> 就在其祖
+先数组里找 I<@Cow::ISA.> 这里面有 I<Animal> 包。
+
+然后 I<Perl> 就用 I<Animal> 里的 I<speak> 来代替了, 就是
+I<Animal::speak.> 找到后, I<Perl> 用已经不变的参数列表来调用
+, 就像我们这样写的一样：
+
+
+ Animal::speak('Cow');
+
+在 I<Animal::speak> 方法里, I<$class> 变成 I<Cow> , 作为第
+一个参数传入.当我们打印时就调用 I<$class->sound> , 它会找到
+I<Cow->sound:>
+
+
+ print "a $class goes ", $class->sound, "!\n";
+ # but $class is Cow, so. . .
+ print 'a Cow goes ', Cow->sound, "!\n";
+ # which invokes Cow->sound, returning 'moooo', so
+ print 'a Cow goes ', 'moooo', "!\n";
+
+这样就得到我们需要的输出结果。
+
+=head2 11. 5. 有关 I<@ISA> 的一些说明
+
+这个神奇的 I<@ISA> 变量（发音是 I<"is> I<a"> 不是 I<"ice-
+uh"> ）声明了 I<Cow"> 是一个"动物 I<.[> *] 注意它是一个数组,
+不是一个简单的标量值, 因为在罕有的情况下它可能有多重祖先, 我
+们将会在下面讨论这个问题。
+
+[*] I<ISA> 实际上是一个语言学上的术语.再提醒一次, I<Larry
+> I<Wall> 的语言学家的背景又在反过来影响了 I<Perl.>
+
+如果 I<Animal> 同样也有一个 I<@ISA> 数组, I<Perl> 也会再去
+查找 I<.[> +] 一般来说, 每个 I<@ISA> 只有一个元素（多个元素
+意味着多重继承及多重"头痛"）, 这样我们就可以得到一个清楚的继
+承树 I<.[> +] []
+
+[] 查找是递归的, 在每个 I<@ISA> 数组中是从上到下, 从左到右
+。
+
+[] 同样可以从 I<UNIVERSAL> 和 I<AUTOLOAD> 继承;可以查看 I
+<perlobj> 手册页来得到它的身世。
+
+当我们打开 I<strict> 后, 我们会有关于 I<@ISA> 的警告信息,
+因为它既不是一个有明确包名的变量, 也不是一个词法（ I<my> 声
+明)的变量.我们不能把它定义为词法变量, 因为它属于它所继承的那
+个包。
+
+有两个简单方法来处理对 I<@ISA> 的声明和设置.最简单的方法是
+指出包名：
+
+
+ @Cow::ISA = qw(Animal);
+
+我们也允许它作为一个隐含命名的包变量：
+
+
+ package Cow;
+ use vars qw(@ISA);
+ @ISA = qw(Animal);
+
+如果你用的是比较新版本的 I<Perl> , 你可以用如下的简短形式
+：
+
+
+ package Cow;
+ our @ISA = qw(Animal);
+
+当然, 如果你需要你的代码让那些执着于 I<Perl> I<5.005> 或更
+早的版本的人, 最好避免使用 I<our.>
+
+如果我们要用从外面(通过一个面对对象的模块)带进来的类, 我们
+可以改成：
+
+
+ package Cow;
+ use Animal;
+ use vars qw(@ISA);
+ @ISA = qw(Animal);
+
+或者：
+
+
+ package Cow;
+ use base qw(Animal);
+
+这是非常简短的形式了.此外, I<use> I<base> 有个优点是它是在
+编译时执行的, 这样消除了在运行时设置 I<@ISA> 可能发生的潜在
+错误, 就像先前的一些解决方案那样。
+
+=head2 11. 6. 重载方法
+
+让我们来加一种少有耳闻的老鼠：
+
+
+ { package Animal;
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+ { package Mouse;
+   @ISA = qw(Animal);
+   sub sound { 'squeak' }
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+     print "[but you can barely hear it!]\n";
+   }
+ }
+
+
+ Mouse->speak;
+
+其输出是：
+
+
+ a Mouse goes squeak!
+ [but you can barely hear it!]
+
+这里, 老鼠有自己的发声程序, 所以 I<Mouse->speak> 不会立即
+调用 I<Animal->speak.> 这被称为重载.我们用重载来在继承类（ I
+<Mouse> ）中重写方法, 因为我们有个特别版本的子程序来代替原来
+基础类里更一般化的类方法（在 I<Animal> 类中）.实际上, 我们甚
+至根本不需要初始化 I<@Mouse::ISA> 来声明 I<Mouse> 是动物, 因
+为所有有关发声的方法都已经在 I<Mouse> 中定义了。
+
+我们现在已经在 I<Animal->speak> 重复写了些代码了; 这会引起
+维护上的问题.比如, 某人认为 I<Animal> 类的输出的词不对, 是个
+错误.现在代码维护者改变了程序.而我们的老鼠仍旧说原来的话, 意
+味着错误仍旧存在.问题是我们采用剪切和粘贴来复制代码, 在面向
+对象编程中, 这是不可饶恕的罪过.我们应该通过继承来重用代码, 而
+不是靠剪切和粘贴。
+
+我们能避免吗？ 我们可以做到一只老鼠能做其它动物能做的, 然
+后有其自己的特殊的情况吗？当然可以！
+
+像我们首先尝试的, 当我们直接调用 I<Animal::speak:>
+
+
+ { package Animal;
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+ { package Mouse;
+   @ISA = qw(Animal);
+   sub sound { 'squeak' }
+   sub speak {
+     my $class = shift;
+     Animal::speak($class);
+     print "[but you can barely hear it!]\n";
+   }
+ }
+
+注意, 因为我们已经不用方法箭头, 我们必须用 I<$class> 参数
+（当然其值是 I<Mouse> ）作为 I<Animal::speak> 的第一个参数。
+
+为什么我们不用方法箭头？哦, 如果我们在那里用 I<Animal->sp
+eak> , 那给方法的第一个参数就是 I<Animal> 而不是 I<Mouse> ,
+而且当程序调用 I<sound> 的时候, 它不会选用正确的类。
+
+然而, 调用直接调用 I<Animal::speak> 是一个错误.如果 I<Ani
+mal::speak> 事先不存在呢？ 它会从 I<@Animal::ISA> 继承？如：
+
+
+ { package LivingCreature;
+   sub speak {. . . } . . .
+ }
+ { package Animal;
+   @ISA = qw(LivingCreature);
+   # no definition for speak(  ) . . .
+ }
+ { package Mouse;
+   @ISA = qw(Animal);
+   sub speak { . . .
+     Animal::speak(. . . );
+   } . . .
+ }
+
+因为我们不用方法箭头, 我们有一个且只有一个机会命中正确的方
+法, 因为我们对待它就像是一般的, 没有继承特色的子程序.我们会
+在 I<Animal> 类中找, 没找到它, 程序就停止。
+
+现在 I<Animal> 类名被硬编码用于方法选择.这对维护代码的人很
+不方便, 为 I<Mouse> 改 I<@ISA> , 并不会注意到 I<Speak> 中的
+I<Animal> 类.所以, 这并非最好的解决方法。
+
+=head2 11. 7. 从不同的地方查找
+
+一个更好的解决方案是告诉 I<Perl> 在继承链中从不同的地方去
+查找。
+
+
+ { package Animal;
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+ { package Mouse;
+   @ISA = qw(Animal);
+   sub sound { 'squeak' }
+   sub speak {
+     my $class = shift;
+     $class->Animal::speak(@_);
+     print "[but you can barely hear it!]\n";
+   }
+ }
+
+啊.虽然丑陋, 但是能用啊.用这个语法, 如果没有立即找到方法,
+就会从继承链中去找方法。 第一个参数是 I<$class> （因为我们再
+次使用了箭头）, 所以找到的 I<speak> 方法象是 I<Mouse> 的第一
+个条目, 回到 I<Mouse::sound.>
+
+然而, 这也并非最终的解决方法。 我们还是要使 I<@ISA> 和初始
+包同步（改了一个句就必须考虑另一个）。 更糟的是, 如果在 I<@
+ISA> 中 I<Mouse> 类有多个条目, 我们不知道哪个实际上定义了 I<
+speak.>
+
+那么, 还有更好的方法吗？
+
+=head2 11. 8. 用 I<SUPER> 方法来处理问题
+
+在调用时, 把 I<Animal> 类改成 I<SUPER> 类, 我们可以自动查
+到我们的所有的超级类（在 I<@ISA> 列表中的类）：
+
+
+ { package Animal;
+   sub speak {
+     my $class = shift;
+     print "a $class goes ", $class->sound, "!\n";
+   }
+ }
+ { package Mouse;
+   @ISA = qw(Animal);
+   sub sound { 'squeak' }
+   sub speak {
+     my $class = shift;
+     $class->SUPER::speak;
+     print "[but you can barely hear it!]\n";
+   }
+ }
+
+所以, I<SUPER::speak> 表示在当前包的 I<@ISA> 查找 I<speak
+> , 如果找到多个, 则调用第一个被找到的。 在这个例子中, 我们找
+到仅有的一个基础类： I<Aniaml> , 找到方法： I<Animal::speak
+> , 并将其作为参数传给 I<Mouse> 类。
+
+=head2 11. 9. I<@_> 的作用
+
+在上一个例子中, 没有任何额外的参数给 I<speak> 方法（如多少
+次, 或者唱什么调）, 参数将会被 I<Mouse::speak> 方法忽略。 如
+果我们要把他们未经解释的传给父类, 我们可以把它作为参数加进去
+：
+
+
+ $class->SUPER::speak(@_);
+
+这句调用父因的方法, 包括所有我们还没有传入的参数列表。
+
+哪个方法是对的? 这要按情况看。 如果我们写一个类, 只加到父
+类的行为, 那么最好就是把我们没能处理的参数传给他。 然而, 如果
+我们要精确控制父类的行为, 我们应该明确决定参数列表, 并传给它
+。
+
+=head2 11. 10. 我们已经到哪了. . .
+
+至此, 我们已经用了方法箭头这个语法：
+
+
+ Class->method(@args);
+
+或者等价的：
+
+
+ my $beast = 'Class';
+ $beast->method(@args);
+
+创建一个参数列表：
+
+
+ ('Class', @args)
+
+尝试调用：
+
+
+ Class::method('Class', @args);
+
+然而, 如果 I<Perl> 没有找到 I<Class::method> , 它会去查 I
+<@Class::ISA(> 以递归的方式)来定位实际包含执行方法的包, 并调
+用。
+
+第 I<12> 章展示如何给出相关的属性来区分不同的动物, 所谓实
+例变量。
+
+=head2 11. 11. 习题
+
+答案附录找。
+
+=head2 11. 11. 1. 练习1 ［ I<20> 分钟］
+
+输入 I<Animal> , I<Cow> , I<Horse> , I<Sheep> , 和 I<Mous
+e> 类的定义.在 I<use> I<strict> 下可以工作。 如果你的 I<Perl
+> 版本很新, 那么你可以用 I<our> 关键字。 你的程序要问用户输入
+一个或多个农场动物的名字。 然后以这些动物创建整个农场, 每个
+动物都有自己的叫声。
+
+=head2 11. 11. 2. 练习2 ［ I<40> 分钟］
+
+在 I<Aniaml> 同一层加上 I<Person> 类, 而且他们两个都继承自
+一个新类： I<LivingCreature.> 写一个 I<speak> 方法, 它取一个
+参数作为说话内容, 如果没有给参数, 则使用 I<sound> （对于 I<
+Person> 类来说是 I<humming> ）。 因为这不是怪医杜立德, 所以要
+保证动物们不能对话。 (就是说 I<speak> 对于动物来说没有任何参
+数 ) 不要写重复代码, 但是要保证捕获到相似的错误, 如忘了为某
+个动物定义叫声。
+
+用调用 I<Person> 类, 然后再调用 I<Person> 类, 并让他说些话
+。
+

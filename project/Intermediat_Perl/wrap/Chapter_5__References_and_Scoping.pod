@@ -1,0 +1,822 @@
+=head2 Chapter 5. 引用和范围
+
+我们可以像任何其它标量变量那样拷贝和传递引用.在任何给定的
+时间, I<Perl> 会知道有多少引用指向一个特定的数据项。 I<Perl>
+也会为匿名数据结构（所谓没有名字的数据结构）创建引用, 以及在
+为了满足一定的操作自动的创建引用。 让我们来看一下引用的拷贝
+以及其对范围和内存使用方面的影响。
+
+=head2 5. 1. 更多有关对数据进行引用的故事
+
+在第四章里, 我们了解了如何取一个数组 I<@skipper> 的引用,
+并把它放到一个新建的标量变量中:
+
+
+ my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+ my $reference_to_skipper = \@skipper;
+
+我们现在就可以拷贝这个引用或把它传给另外一些引用, 并且, 它
+们全都指向同一数据, 并且是互相可替换的：
+
+
+ my $second_reference_to_skipper = $reference_to_skipper;
+ my $third_reference_to_skipper  = \@skipper;
+
+现在, 我们有四种途径来访问保存在 I<@skipper> 中的数据：
+
+
+ @skipper
+ @$reference_to_skipper
+ @$second_reference_to_skipper
+ @$third_reference_to_skipper
+
+I<Perl> 跟踪有多少途径在访问数据的机制叫做"引用计数 I<".>
+原来的名字计数为1, 其它我们创建的每一个引用（包括对引用的拷
+贝）同样被计数.就目前的例子, 装备清单数组的目前引用数是 I<4.
+>
+
+我们可以任意添加和删除引用, 并且, 只要引用计算不减到0, I<
+Perl> 就会在内存中保留这个数组, 并且能通过任何其它的途径来访
+问这个数组.比如, 我们可能有一个临时引用：
+
+
+ check_provisions_list(\@skipper)
+
+当这个子程序执行的时候, I<Perl> 会创建指向这个数组的第五个
+引用, 并将其拷贝到这个子程序的特殊变量 I<@_> 中.子程序可以很
+自由的为那个引用创建更多的拷贝, 而 I<Perl> 则会适时的关注.一
+般来说, 当子程序返回的时候, I<Perl> 会自动扔掉所有这些子程序
+创建的引用, 这样你又回到了4个引用。
+
+我们用给引用赋任何一个与指向 I<@skipper> 引用无关的其它的
+变量就可以切断引用关系了.比如, 我们可以给变量分配一个 I<unde
+f> 给变量：
+
+
+ $reference_to_skipper = undef;
+
+或者, 我们可以仅仅让变量跑出范围就可以了：
+
+
+ my @skipper =. . . ;
+
+
+ { # naked block . . .
+ my $ref = \@skipper; . . .  . . .
+ } # $ref goes out of scope at this point
+
+要指出的是, 在一个子程序的私有（词法）变量保存的一个引用,
+会在子程序结束时被释放。
+
+不管是我们改变变量的值, 或者变量跑出范围, I<Perl> 会注意到
+这些, 并且适当的减少对数据的引用计数。
+
+只有这个数组的所有引用（包括数组名）都没有了, I<Perl> 才会
+回收这个数组占用的内存. 在上例中, 只有在 I<@skipper> 数组及
+我们所有对它的引用全消失后, I<Perl> 才会回收内存.
+
+这些被释放的内存会被 I<Perl> 安排用在程序中之后的其它数据
+的调用, 一般来说 I<Perl> 不会把这些内存还给操作系统。
+
+=head2 5. 2. 假若它曾经有一个名字
+
+一般来说, 引用总是比其指向的变量之前被释放.但是如果引用比
+其指向的变量活得长会发生什么情况？比如, 考虑下面的情况：
+
+
+ my $ref;
+
+
+ {
+  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+  $ref        = \@skipper;
+
+
+  print "$ref->[2]\n"; # prints jacket\n
+ }
+
+
+ print "$ref->[2]\n"; # still prints jacket\n
+
+在我们声明 I<@skipper> 数组之后, 我们有了一个指向这个五个
+元素的列表的引用。 在 I<$ref> 被初始化后, 到块结束的地方, 我
+们会有两个引用。 到块结束, I<@skipper> 名子消失了。 然而, 这
+不过是仅仅访问数据的一个途径而已! 这样, 这个五个元素的列表依
+旧在内存里, 而且 I<$ref> 变量仍然指向这块数据。
+
+这个时候, 这个五个元素的列表是个匿名数组－－为没有名字的数
+组起的一个漂亮名字。
+
+直到 I<$ref> 的值改变, 或者 I<$ref> 自己消失, 我们依旧可以
+使用任何我们在前面学到的还原方法, 尽管数组的名字已经不存在了
+.实际上, 它仍然是一个不折不扣的数组, 我们可以像对待其它任何
+I<Perl> 数组那样把它拉长和缩小：
+
+
+ push @$ref, 'sextant'; # add a new provision
+ print "$ref->[-1]\n"; # prints sextant\n
+
+此时我们甚至还可以增加引用计数：
+
+
+ my $copy_of_ref = $ref;
+
+下面也一样：
+
+
+ my $copy_of_ref = \@$ref;
+
+数据一直会存在, 直到我们销毀最后一个引用：
+
+
+ $ref = undef; # not yet. . .
+ $copy_of_ref = undef; # poof!
+
+=head2 5. 3. 引用计数和数据结构嵌套
+
+只要最后一个引用没有被销毁, 数据就一直存在.甚至引用包含在
+一个大的数据结构时也是如此.有可能数组本身的一个元素就是一个引
+用.我们回想一下第四章见到过的例子：
+
+
+ my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+ my @skipper_with_name   = ('The Skipper', \@skipper);
+
+
+ my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
+ my @professor_with_name = ('The Professor', \@professor);
+
+
+ my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
+ my @gilligan_with_name  = ('Gilligan', \@gilligan);
+
+
+ my @all_with_names = (
+        \@skipper_with_name,
+        \@professor_with_name,
+        \@gilligan_with_name,
+        );
+
+想像一下中间变量全是子程序一部份的情况：
+
+
+ my @all_with_names;
+
+
+ sub initialize_provisions_list {
+  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+  my @skipper_with_name = ('The Skipper', \@skipper);
+
+
+       my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
+  my @professor_with_name = ('The Professor', \@professor);
+
+
+  my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
+  my @gilligan_with_name = ('Gilligan', \@gilligan);
+
+
+  @all_with_names = ( # set global
+    \@skipper_with_name,
+    \@professor_with_name,
+    \@gilligan_with_name,
+  );
+ }
+
+
+ initialize_provisions_list(  );
+
+我们用数组 I<@all_with_names> 的值来放三个引用。 在子程序
+里, 我们命名了一些数组, 而这些数组指向了事先命名的另外的数组
+。 最终, 这些值最后放到一个全局的数组 I<@all_with_names> 中.
+然而, 当子程序返回时, 这些六个数组的名字被锁毁。 正因为每个数
+组都有另外一个引用指向它, 所以导致引用计数临时是2, 但当数组
+名字销毁后, 计数又回到 I<1.> 因为引用计数没有回到零, 数据仍然
+在, 尽管它向在仅仅被当做数组 I<@all_with_names> 的元素。
+
+与分配一个全局变量不同, 我们还可以重写这个程序, 去掉全局变
+量 I<@all_with_names> , 直接从程序中返回列表：
+
+
+ sub get_provisions_list {
+  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+  my @skipper_with_name = ('The Skipper', \@skipper);
+
+
+  my @professor = qw(sunscreen water_bottle slide_rule batteries radio);
+  my @professor_with_name = ('The Professor', \@professor);
+
+
+  my @gilligan = qw(red_shirt hat lucky_socks water_bottle);
+  my @gilligan_with_name = ('Gilligan', \@gilligan);
+
+
+  return (
+    \@skipper_with_name,
+    \@professor_with_name,
+    \@gilligan_with_name,
+  );
+ }
+
+
+ my @all_with_names = get_provisions_list(  );
+
+上例中, 我们创建的那个最终保存在 I<@all_with_names> 中的值
+是用子程序的最后一个表达式求值得到的.子程序返回一个三个元素
+的列表.只要子程序中的命名数组曾经至少有一个引用指向他们, 他们
+就仍旧是返回值的一部份, 数据仍旧存在。 [*] 如果我们改变或者
+丢弃 I<@all_with_names> 中的引用, I<Perl> 会减少相应的数组的
+引用计数.如果那意味着引用计数降为零（在例中）, I<Perl> 一样会
+把数组销毁.因为 I<@all_with_names> 数组中包含的其它数组同样
+包含一个引用（如对 I<@skipper> 的引用）, I<Perl> 会把那个引用
+的计数降为 I<1.> 一样, 一旦引用计数降为零, I<Perl> 会连锁地
+释放内存。
+
+[*] 比较一下这与C函数中必须返回一个数组.我们要么返回一个指
+向静态内存区域的指针, 使子程序非重入, 或者我们必需分配新内存
+, 需要调用程序知道释放内存 I<.Perl> 正好做了对的事情。
+
+一般来说, 如果删除了一个复杂数据结构的根数据, 会把其包含的
+子数据全删除.一个例外就是当我们对其嵌套数据进行了引用.比如说
+, 如果我们拷贝了 I<Gilligan> 的装备：
+
+
+ my $gilligan_stuff = $all_with_names[2][1];
+
+然后我们删除了 I<@all_with_names> , 我们有一个活的引用指向
+之前的 I<@gilligan> , 其下的数据也依然在。
+
+底线很清楚： I<Perl> 总是做对的事情.如果我们依然有指向数据
+的引用, 我们就仍旧拿着数据。
+
+=head2 5. 4. 当引用计数出问题了
+
+用引用计数的办法来管理内存长久以来一直很受欢迎.的确使用了
+很长一段时间.引用计数有一个缺点, 就是在数据结构不是单向引用的
+时候, 它会有问题.所谓非单向引用的数据结构就是：这个数据结构
+中的一些部份引用与其指向的数据存在循环引用.比如：这两块数据结
+构中都有互相指向对方的引用（参考图 I<5-1)>：
+
+
+ my @data1 = qw(one won);
+ my @data2 = qw(two too to);
+
+
+ push @data2, \@data1;
+ push @data1, \@data2;
+
+图 I<5-1.> 当一个数据结构中的引用出现循环调用的时候, I<Pe
+rl> 的引用计数系统可能不能识别出来, 从而不能回收不再需要的内
+存空间
+
+像这种情况, 我们会有两个名字为 I<@data1> 中的数据块命名：
+I<@data1> 自身和 I<@{$data2[3]}> , 另外有两个名字为 I<@data
+2> 中的数据块命名： I<@data2> 自身和 I<@{$data1[2]}.> 我们创
+建了一个循环.实际上我们可以用可怕多的下标来访问这块数据： I<
+$data1[2][3][2][3][2][3][1].>
+
+那这两个数组跑出范围会发生什么事？ 噢, 这两个数组的引用计
+数会从2降为1, 但不是 I<0.> 正因为没有归到零, I<Perl> 会认为仍
+有引用会指向这些数据, 尽管已经没有了.所以, 我们已经创建了一
+个内存泄漏.一个程序有内存泄漏会导致消耗越来越多的内存, 噢！
+
+现在, 你会想例子总是有意设计出来的.当然, 我们不会在真实的
+程序中有意设计一个引用循环.而实际上, 程序员经常在用双向链表、
+循环列表或其它一些数据结构时创建这些引用循环.问题是 I<Perl>
+的程序员罕有犯这种错误的, 重要的原因是 I<Perl> 不太会用到这
+些数据结构.大多数处理内存操作及连接内存碎片的操作已经被 I<Pe
+rl> 自动处理了.如果你曾使用过其它的语言, 你可能会注意到在 I<
+Perl> 中的编程相对比较容易.比如, 对列表中的元素排序或（甚至在
+列表中间）添加、删除元素都很方便.同样的任务在其它语言中会很
+困难, 而用循环数据结构是绕开这些语言限制的常用方法。
+
+那为什么要在这儿提这些呢？ 是这样的, 因为有些 I<Perl> 程序
+员有时也会从其它程序语言中把算法拷贝过来.这样做当然不会继承
+错误, 尽管考虑一下原来作者用"循环"数据结构是为什么, 然后用 I
+<Perl> 的强项来处理这什算法.可能你要用个散列, 或用数组, 然后
+以后进行排序。
+
+另外, 经后的 I<Perl> 可能会使用垃圾收集器来代替计数引用 I
+<.[> *] 不过到现在, 我们必须注意不要建立循环引用, 或者, 如果
+我们做的话, 在变量跑出范围时, 要去掉循环引用.比如, 下面的代码
+不会造成内存泄漏：
+
+[*] 不要问我们为什么, 在你有机会读到此书时, 相对我们写书的
+时间已经是很长久了.所以我能不能肯定。
+
+
+ {
+  my @data1 = qw(one won);
+  my @data2 = qw(two too to);
+  push @data2, \@data1;
+  push @data1, \@data2; . . . use @data1, @data2. . .
+  # at the end:
+  @data1 = (  );
+  @data2 = (  );
+ }
+
+我们在 I<@data1> 中对 I<@data2> 的引用, 相反也一样.现在两
+块数据只有一个引用, 在跑出块范围的时候, 引用计数会归零.实际上
+, 我们清除任何一个引用就可以了, 程序一样工作得很好.第 I<13>
+章会展示如何建立弱引用, 可以对这些问题有些帮助。
+
+=head2 5. 5. 直接建立匿名数组
+
+在早前的 I<get_provisions_list> 子程序中（参考 I<5.3> 节）
+, 我们建立了半打数组, 而且创建的目的仅仅是为了后面马上要给他
+们建立引用.当子程序退出的时候, 所有数组名将销毁, 但引用还留
+着。
+
+临时命名的数组, 在简单环境中还可以工作, 但这些名字在数据结
+构开始越来越复杂的情况下会变得比较繁琐.我们应该想到, 正确地
+处理这些数组的名字, 这样我们可以很快就忘掉它。
+
+我们可以用缩小不同数组名的范围的方法来降低命名空间的繁杂性
+.代替在子程序范围内声明变量, 我们可以建立一个临时块：
+
+
+ my @skipper_with_name;
+ {
+  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);
+  @skipper_with_name = ('The Skipper', \@skipper);
+ }
+
+上例中, I<@skipper_with_name> 第二个元素是个指向先前命令的
+数组 I<@skipper.> 然而, 那个名字现在与程序不再有关系了。
+
+为了仅仅说明"第二个元素应该是个指向一个包括这些元素的引用
+", 而编上例中这些代码, 好像太麻烦了.我们可以创建一个直接使用
+匿名数组的结构, 即方括号的另一种用法：
+
+
+ my $ref_to_skipper_provisions =
+  [ qw(blue_shirt hat jacket preserver sunscreen) ];
+
+方括号把内中（相当一在一个列表环境）元素取出来;为这些元素
+建立一个新的, 匿名的数组;并且（这里很重要）返回一个对这个匿名
+数组的引用.就好像我们说过的：
+
+
+ my $ref_to_skipper_provisions;
+ {
+  my @temporary_name =
+  ( qw(blue_shirt hat jacket preserver sunscreen) );
+  $ref_to_skipper_provisions = \@temporary_name;
+ }
+
+这里, 我们不必需要提供临时变量名字, 也不要讨厌的临时代码块
+.用方括号返回的匿名数组结构就是一个对数组的引用, 并且用在任
+何标量环境中都合适。
+
+现在, 我们可以用它来构建一个更大的列表：
+
+
+ my $ref_to_skipper_provisions =
+  [ qw(blue_shirt hat jacket preserver sunscreen) ];
+ my @skipper_with_name = ('The Skipper', $ref_to_skipper_provisions);
+
+甚至, 我们也根本不要那个临时标量.我们可以直接把临时标量替
+换成数组引用, 作为一个更大列表的一部份：
+
+
+ my @skipper_with_name = (
+  'The Skipper',
+  [ qw(blue_shirt hat jacket preserver sunscreen) ]
+ );
+
+来, 我们回顾一下.我们已经声明了 I<@skipper_with_name> , 它
+的第一个元素是 I<Skipper> 的名字字串, 第二个元素是一个对数组
+的引用, 它是由把五个元素放到一个数组, 并且取其引用得到的.所
+以, I<@skipper_with_name> 数组仅有两个元素长。
+
+别把这里的方括号和小括号搞混了.它们各有不同的目的.如果我们
+用小括号代替方括号, 我们结果会得到一个六个元素的列表.如果我
+们将外圈的（第一行和最后一行）的小括号用方括号代替, 我们就构
+建了一个两个元素长的匿名数组的引用, 并将其返回给 I<@skipper_
+with_name> 数组 I<.[> *] 这样, 总之, 如果我们有以下的代码：
+
+[*] 在教学中, 我们经常会看到在使用引用时犯的直接（或不那么
+直接）的错误。
+
+
+ my $fruits;
+ {
+  my @secret_variable = ('pineapple', 'papaya', 'mango');
+  $fruits = \@secret_variable;
+ }
+
+我们可以以此代替：
+
+
+ my $fruits = ['pineapple', 'papaya', 'mango'];
+
+那么在更复杂的结构中, 这个原则还工作吗？当然！只要是需要一
+个指向数组的引用, 我们就可以创建指向匿名数组的引用.实际上,
+我们还可以嵌套使用：
+
+
+ sub get_provisions_list {
+  return (
+    ['The Skipper', [qw(blue_shirt hat jacket preserver sunscreen)] ],
+    ['The Professor', [qw(sunscreen water_bottle slide_rule radio)  ] ],
+    ['Gilligan', [qw(red_shirt hat lucky_socks water_bottle)   ] ],
+  );
+ }
+
+
+ my @all_with_names = get_provisions_list(  );
+
+我们由外而内地看一下上面的代码, 我们返回了三个元素.每个元
+素是一个数组引用, 并且是指向有两个元素的匿名数组的引用.内中每
+个数组第一个元素是名字字串, 而第一个元素又是一个变长的匿名数
+组的引用.而且变长数组包括了所有的装备清单, 并且我们不必再提
+供临时名字作为中间变量。
+
+对于调用它的子程序来说, 现在的返回值对于前一个版本是一样的
+.然而, 从代码维护的角度来看, 去掉那些中间名字, 这样降低了复
+杂性也节省了代码占用屏幕空间。
+
+我们也可以将引用指现空的匿名数组.比如, 如果我们加一个 I<M
+rs.Howell> 到一个遊客列表, 并且它没带多少装备, 我们可以简单的
+这样写：
+
+
+ ['Mrs. Howell',
+   [  ]
+ ],
+
+这是一个只有一个元素的大列表.这是一个指向一个具有两个元素
+的数组的引用, 第一个元素是名字字串, 第二个元素自身是个指向空
+的匿名数组的引用.这个数组是空的, 因为 I<Howell> 先生为他的旅
+程什么也没有带。
+
+=head2 5. 6. 创建匿名散列
+
+同创建匿名数组类似, 你也可以建立一个匿名散列.考虑一下第四
+章的船员注册程序：
+
+
+ my %gilligan_info = (
+  name     => 'Gilligan',
+  hat      => 'White',
+  shirt    => 'Red',
+  position => 'First Mate',
+ );
+
+
+ my %skipper_info = (
+  name     => 'Skipper',
+  hat      => 'Black',
+  shirt    => 'Blue',
+  position => 'Captain',
+ );
+
+
+ my @crew = (\%gilligan_info, \%skipper_info);
+
+散列变量 I<%gilligan_info> 和 I<%skipper_info> 是为了最终
+数据结构而建立的临时变量.下面我们就构造一个对匿名散列的直接引
+用, 正像我们看到的, 花括号的另一项功能.替代代码如下：
+
+
+ my $ref_to_gilligan_info;
+
+
+ {
+  my %gilligan_info = (
+    name     => 'Gilligan',
+    hat      => 'White',
+    shirt    => 'Red',
+    position => 'First Mate',
+  );
+  $ref_to_gilligan_info = \%gilligan_info;
+ }
+
+如果用匿名散列的话：
+
+
+ my $ref_to_gilligan_info = {
+  name     => 'Gilligan',
+  hat      => 'White',
+  shirt    => 'Red',
+  position => 'First Mate',
+ };
+
+被花括号括起来的是八个元素的列表.八个元素的列表也就变成了
+四个元素的匿名数组（四个键／值对） I<.Perl> 会取这个散列的引
+用, 并返回一个标量值, 并送给一个标量变量.所以我们可以改写程序
+如下：
+
+
+ my $ref_to_gilligan_info = {
+  name     => 'Gilligan',
+  hat      => 'White',
+  shirt    => 'Red',
+  position => 'First Mate',
+ };
+
+
+ my $ref_to_skipper_info = {
+  name     => 'Skipper',
+  hat      => 'Black',
+  shirt    => 'Blue',
+  position => 'Captain',
+ };
+
+
+ my @crew = ($ref_to_gilligan_info, $ref_to_skipper_info);
+
+同前面一样, 我们还是可以避免使用临时变量, 把散列值直接放到
+列表里：
+
+
+ my @crew = (
+  {
+    name     => 'Gilligan',
+    hat      => 'White',
+    shirt    => 'Red',
+    position => 'First Mate',
+  },
+
+
+  {
+    name     => 'Skipper',
+    hat      => 'Black',
+    shirt    => 'Blue',
+    position => 'Captain',
+  },
+ );
+
+注意列表结束时的元素并非马上连着关闭的花括号, 方括号或小括
+号, 而是以逗号结尾.这是很好的编程风格, 因为这样做有利于代码
+维护.我们可以很方便的添加或重排行, 或者不破坏列表完整性的情况
+下注释掉代码。
+
+现在 I<@crew> 里所包含的值同先前是一样的, 但不再需要为中间
+数据结构起名字了.就像上一个版本一样, I<@crew> 包含两个元素,
+每个元素都是一个指向一个包含以键为基础的散列, 表示了船上成员
+的特殊信息。
+
+匿名散列构造器总是把内容放在列表环境, 并把他们以键／值对的
+形式输出, 就像我们分配那个列表给命名散列一样 I<.Perl> 返回一
+个那个散列的引用, 并将其作为标量值, 并适合任何标量合适的地方
+。
+
+现在, 下面一些话是从我们的解释器那里来： 因为代码块和匿名
+散列构造器都用花括号, 在语法树中大致相同的位置, 编译器不得不
+即时判断你到底是要用哪一个。 如果编译器没法决定, 就需要你给个
+暗示, 你到底是用哪个。 如果你是要用匿名散列, 那你要在花括号
+前加一个正号：+{… I<}.> 如果你是用代码块, 则要在花括号后加上
+分号：{; … I<}.>
+
+=head2 5. 7. 自生成
+
+我们重顾一下装备清单.假定我们从一个文件中读取这些数据, 格
+式如下：
+
+
+ The Skipper
+  blue_shirt
+  hat
+  jacket
+  preserver
+  sunscreen
+ Professor
+  sunscreen
+  water_bottle
+  slide_rule
+ Gilligan
+  red_shirt
+  hat
+  lucky_socks
+  water_bottle
+
+我们把装备用空格缩进表示, 没有缩进的行是旅客名字.我们来建
+立一个装备清单.索引键是旅客名字, 其值是一个指向装备列表的引用
+。
+
+起先, 我们用一个简单的循环收集数据：
+
+
+ my %provisions;
+ my $person;
+
+
+ while (<>) {
+  if (/^(\S. *)/) { # a person's name (no leading whitespace)
+    $person = $1;
+    $provisions{$person} = [  ] unless exists $provisions{$person};
+  } elsif (/^\s+(\S. *)/) { # a provision
+    die 'No person yet!' unless defined $person;
+    push @{ $provisions{$person} }, $1;
+  } else {
+    die "I don't understand: $_";
+  }
+ }
+
+首先, 我们定义一个变量来保存结果散列中的乘客及他们的清单.
+对于读出的每一行, 我们先判断它是乘客还是装备.如果是乘客, 我们
+记下姓名并为那个乘客创建散列元素 I<.unless> I<exists> 测试来
+保证在一个乘客的装备在文件中分两块地方放的时候, 我们不会把他
+的装备清单删掉。
+
+例如, 假定 I<"The> I<skipper"> 和 I<"sextant"(> 注意前导空
+格) 放在文件末尾, 作为增补的项目。
+
+如果把乘客的名字作为键, 值是指向一个空数组的引用.如果读入
+的行是装备, 则使用引用数组, 把它推入当前的数组。
+
+这样的代码运行得很好, 但实际上它不需要写那么多.为什么？ 因
+为我们可以把初始化指向数据的散列引用的地方去掉：
+
+
+ my %provisions;
+ my $person;
+
+
+ while (<>) {
+  if (/^(\S. *)/) { # a person's name (no leading whitespace)
+    $person = $1;
+    ## $provisions{$person} = [  ] unless exists $provisions{$person};
+  } elsif (/^\s+(\S. *)/) { # a provision
+    die 'No person yet!' unless defined $person;
+    push @{ $provisions{$person} }, $1;
+  } else {
+    die "I don't understand: $_";
+  }
+ }
+
+那现在, 我们要把蓝衬衣放到 I<Skipper> 的装备清单时会发生什
+么呢？ 当查看第二项输入时, 我们结果可以看到如下的效果：
+
+
+ push @{ $provisions{'The Skipper'} }, "blue_shirt";
+
+在这时候, I<$provisions{"The> I<Skipper"}> 并不存在, 但我
+们正在把它作为一个数组引用来处理.为了解决这种情况, I<Perl> 自
+动为我们创建一个指向家的匿名数组的引用来继续操作.在此例中,
+新的指向空数组的引用被创建, 并被还原, 我们再把蓝衬衫放进去,
+生成了一个装备清单。
+
+这样的处理叫做：自生成.任何一个不存在的变量, 或个存有 I<u
+ndef> 的变量, 当被用来查找一个变量的时候（技术上被称为左值环
+境）, 会自动被适当的生成空项引用, I<Perl> 然后再让处理继续。
+
+实际上, 我们在使用 I<Perl> 时, 到处都会有相似的行为.只要有
+需要, I<Perl> 会自动创建变量.在这之前, I<$provisions{"The>
+I<Skipper"}> 不存在, 所以 I<Perl> 就创建它.后来 I<@{> I<$pro
+visions{"The> I<Skipper"}> }不存在, 所以 I<Perl> 故伎重演。
+
+比如, 下面在代码是工作的：
+
+
+ my $not_yet;                # new undefined variable
+ @$not_yet = (1, 2, 3);
+
+这儿, 我们还原了 I<$not_yet> 这个值, 好像它原先是一个指向
+数组的引用一样.但因为它初始化是 I<undef> , I<Perl> 的行为好像
+我们说过的：
+
+
+ my $not_yet;
+ $not_yet = [  ]; # inserted through autovivification
+ @$not_yet = (1, 2, 3);
+
+换句话说, 一个初始化的空的数组成为一个有三个元素的数组。
+
+在多层赋值时, 自生成也起作用：
+
+
+ my $top;
+ $top->[2]->[4] = 'lee-lou';
+
+初始时, I<$top> 含有一个 I<undef> , 但因为我们还原它, 就像
+它是一个数组引用一样, I<Perl> 往里插了一个空的匿名数组的引用
+I<.Perl> 然后访问第三个元素(索引为 I<2)> , 这导致 I<Perl>
+撑大数组到三个元素长.那个元素同样是 I<undef> , 所以 I<Perl>
+用另外一个指向空的匿名数组的引用放进去.我们然后分拆那个新建的
+数组, 把第五个元素放 I<lee-lou> 这个字串。
+
+=head2 5. 8. 自生成功能与散列
+
+在散列引用中, 自生成功能也起作用.如果我们还原一个含有 I<u
+ndef> 的变量, 就好像它是一个散列引用一样, 那么一个指向空的匿
+名散列的引用就会被插入, 让操作继续下去。
+
+自生成功能一大用处是在那些典型的单向读取的任务（消防水带）
+。 比如说, 假设教授要建立一个岛间的网络.现在他要跟踪主机与主
+机之间的流量。 他现在开始把之间传输的字间记录到日志文件.记录
+源主机, 目标主机和传输的字节数:
+
+
+ professor. hut gilligan. crew. hut 1250
+ professor. hut lovey. howell. hut 910
+ thurston. howell. hut lovey. howell. hut 1250
+ professor. hut lovey. howell. hut 450
+ professor. hut laser3. copyroom. hut 2924
+ ginger. girl. hut professor. hut 1218
+ ginger. girl. hut maryann. girl. hut 199 . . .
+
+现在, 教授要生成一个有关源主机,目标主机和总传输字节数的报
+表。 把数据列表显示出来：
+
+
+ my %total_bytes;
+ while (<>) {
+   my ($source, $destination, $bytes) = split;
+   $total_bytes{$source}{$destination} += $bytes;
+ }
+
+让我们看第一行如何生成的：
+
+
+ $total_bytes{'professor. hut'}{'gilligan. crew. hut'} += 1250;
+
+因为散列 I<%total_bytes> 初始时是空的, I<Perl> 没有找到第
+一个以 I<professor.hut> 命名的键, 但它会为了还原而建立一个未
+定义值作为散列引用.（记住, 这里在花括号间有隐含的箭头.） I<P
+erl> 会在那个元素里放个指向空值的匿名散列, 这样它可以立即扩展
+数组, 将把 I<gilligan.crew.hut> 作为一个元素放入.它的初始值
+是未定义值, 与零等同, 而当你把 I<1250> 与它相加的时候, 其相加
+的结果 I<1250> 也放回散列。
+
+任何后来的数据行, 如果有相同的源主机和目标主机, 都会重用原
+来的值, 并加上新读入的值, 再计算出总数.但是新的目标主机会扩
+展散列来包括一个新的初始未定义值, 重新计数, 每个新的源主机会
+用自生成功能建立目标主机散列.换句话说, I<Perl> 总是做对的事情
+, 就像它一直表现的那样。
+
+一旦我们处理完文件, 应该是显示总计的时候了.首先, 我们取源
+主机：
+
+
+ for my $source (keys %total_bytes) { . . .
+
+好, 现在我们取所有的目标主机.这里的语法有些"搞 I<".> 我们
+用散列元素还原出来的值作为键来取目标主机, 比如：
+
+
+ for my $source (keys %total_bytes) {
+   for my $destination (keys %{ $total_bytes{$source} }) { . . . .
+
+为了好的效率, 我们应该对列表进行排序, 以保持一致性：
+
+
+ for my $source (sort keys %total_bytes) {
+  for my $destination (sort keys %{ $total_bytes{$source} }) {
+    print "$source => $destination:",
+     " $total_bytes{$source}{$destination} bytes\n";
+  }
+  print "\n";
+ }
+
+这是一个典型的"消防水带"式的报表生成策略.［＊］简单地建立
+一个散列引用的散列（还可以嵌套更深, 后面你就可以看到）, 运用
+自生成功能, 根据需要填充数据结构, 然后遍历结果数据, 打印输出
+结果。
+
+=head2 5. 9. 习题
+
+附录部份可以找到答案
+
+=head2 5. 9. 1. 练习 1 I<[5> 分钟]
+
+先不要运行程序, 看看你能否判断出这程序的哪部份出了问题？如
+果你看不出来, 就可以运行一相程序, 得到些暗示, 来看是否能修改
+好：
+
+
+ my %passenger_1 = {
+  name       => 'Ginger',
+  age        => 22,
+  occupation => 'Movie Star',
+  real_age   => 35,
+  hat        => undef,
+ };
+
+
+ my %passenger_2 = {
+  name          => 'Mary Ann',
+  age           => 19,
+  hat           => 'bonnet',
+  favorite_food => 'corn',
+ };
+
+
+ my @passengers = (\%passenger_1, \%passenger_2);
+
+=head2 5. 9. 2. 练习2 ［ I<40> 分钟］
+
+教授的数据文件（注意早先这章提到的）叫 I<coconet.dat> , 保
+存在 I<O'Reilly> 的网站上, 你可以下载.有些行可能被注释了一些
+行（用前导＃号）;跳过这些行.（就是说, 你的程序可以跳过他们,
+不过你阅读这些行还有很有益的！）
+
+修改一下这章的那段程序, 使每个源主机显示所有从它那里输出的
+字节数.以字节数从大到小排.对于每一组中, 以所有目标主机, 也以
+传输到此目标主机的字节数以大到小排。
+
+其最终的结果就是列出传输最多的源主机, 然后以此源主机为组,
+接收最多的目标主机排在最前。 教授可以以此报表来重新安排网络
+效率.
+
