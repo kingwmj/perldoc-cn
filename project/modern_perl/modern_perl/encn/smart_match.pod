@@ -1,0 +1,194 @@
+=head1 Smart Matching
+
+Z<smart_match>
+
+X<smart match>
+X<operators; smart match>
+X<C<~~>; smart match operator>
+X<operators; C<~~>>
+X<builtins; C<given>>
+
+The smart match operator, C<~~>, compares two operands and returns a true value
+if they match each other. The fuzziness of the definition demonstrates the
+smartness of the operator: the type of comparison depends on the type of both
+operands. C<given> (L<given_when>) performs an implicit smart match.
+
+X<operators; C<~~>>
+X<C<~~>; smart match operator>
+
+The smart match operator is an infix operator:
+
+=begin programlisting
+
+    say 'They match (somehow)' if $loperand ~~ $roperand;
+
+=end programlisting
+
+The type of comparison generally depends first on the type of the right operand
+and then on the left operand. For example, if the right operand is a scalar
+with a numeric component, the comparison will use numeric equality. If the
+right operand is a regex, the comparison will use a grep or a pattern match.
+If the right operand is an array, the comparison will perform a grep or a
+recursive smart match. If the right operand is a hash, the comparison will
+check the existence of one or more keys.
+
+For example:
+
+=begin programlisting
+
+    # scalar numeric comparison
+    my $x = 10;
+    my $y = 20;
+    say 'Not equal numerically' unless $x ~~ $y;
+
+    # scalar numeric-ish comparison
+    my $x = 10;
+    my $y = '10 little endians';
+    say 'Equal numeric-ishally' if $x ~~ $y;
+
+=end programlisting
+
+... or:
+
+=begin programlisting
+
+    my $needlepat = qr/needle/;
+
+    say 'Pattern match'          if $needle   ~~ $needlepat;
+    say 'Grep through array'     if @haystack ~~ $needlepat;
+    say 'Grep through hash keys' if %hayhash  ~~ $needlepat;
+
+=end programlisting
+
+... or:
+
+=begin programlisting
+
+    say 'Grep through array'                 if $needlepat  ~~ @haystack;
+    say 'Array elements exist as hash keys'  if %hayhash    ~~ @haystack;
+    say 'Array elements smart match'         if @strawstack ~~ @haystack;
+
+=end programlisting
+
+.... or:
+
+=begin programlisting
+
+    say 'Grep through hash keys'            if $needlepat ~~ %hayhash;
+    say 'Array elements exist as hash keys' if @haystack  ~~ %hayhach;
+    say 'Hash keys identical'               if %hayhash   ~~ %haymap;
+
+=end programlisting
+
+These comparisons work correctly if one operand is a I<reference> to the given
+data type. For example:
+
+=begin programlisting
+
+    say 'Hash keys identical' if %hayhash ~~ \%hayhash;
+
+=end programlisting
+
+A large and intimidating chart in C<perldoc perlsyn> gives far more details
+about all the comparisons smart match can perform. A serious proposal for 5.16
+suggests simplifying smart match substantially. The more complex your operands,
+the more likely the results will confuse the readers of your program. If you
+avoid comparing objects and stick to simple operations with scalars or one
+scalar and one aggregate, you will have better results.
+=encoding utf8
+
+=head1 智能匹配
+
+Z<smart_match>
+
+X<smart match>
+X<operators; smart match>
+X<~~>
+X<operators; ~~>
+
+智能匹配操作符，C<~~>，对两个操作符进行比较并在互相匹配时返回真值。定义的模糊恰
+好反映了此操作符的智能程度：比较操作由操作数两者共同决定。之前你已经见识了这种行
+为────C<given>（L<given_when>）进行的就是隐式智能匹配。
+
+=begin sidebar
+
+参见 C<perldoc perlsyn> 中“智能匹配细节”一段以了解更多细节。一些智能匹配的语义
+在 Perl 5.10.0 和 Perl 5.10.1 之间已经做出修改，因此在可能时，仅在 5.10.1 及更
+高版本中使用智能匹配。
+
+=end sidebar
+
+智能匹配操作符是一个中缀操作符：
+
+=begin programlisting
+
+    say 'They match (somehow)' if $loperand ~~ $roperand;
+
+=end programlisting
+
+比较的类型大致先由右操作符的类型决定然后再是左操作符。例如，如果右操作符是一个
+带数值成分的标量，则比较将使用数值等于。如果右操作符是一个正则表达式，则比较将
+是一个 grep 操作或模式匹配。如果右操作符是一个数组，比较将是 grep 操作或递归的
+智能匹配。如果右操作符是一个哈希，比较操作将检查一个或多个键是否存在。
+
+例如：
+
+=begin programlisting
+
+    # 标量数值比较
+    my $x = 10;
+    my $y = 20;
+    say 'Not equal numerically' unless $x ~~ $y;
+
+    # 标量类数值比较
+    my $x = 10;
+    my $y = '10 little endians';
+    say 'Equal numeric-ishally' if $x ~~ $y;
+
+=end programlisting
+
+……以及：
+
+=begin programlisting
+
+    my $needlepat = qr/needle/;
+
+    say 'Pattern match'          if $needle   ~~ $needlepat;
+    say 'Grep through array'     if @haystack ~~ $needlepat;
+    say 'Grep through hash keys' if %hayhash  ~~ $needlepat;
+
+=end programlisting
+
+……再及：
+
+=begin programlisting
+
+    say 'Grep through array'                 if $needlepat  ~~ @haystack;
+    say 'Array elements exist as hash keys'  if %hayhash    ~~ @haystack;
+    say 'Array elements smart match'         if @strawstack ~~ @haystack;
+
+=end programlisting
+
+……又及：
+
+=begin programlisting
+
+    say 'Grep through hash keys'            if $needlepat ~~ %hayhash;
+    say 'Array elements exist as hash keys' if @haystack  ~~ %hayhach;
+    say 'Hash keys identical'               if %hayhash   ~~ %haymap;
+
+=end programlisting
+
+这些比较操作在某操作数是给出数据类型的 I<引用> 时也能正常工作。举例来说：
+
+=begin programlisting
+
+    say 'Hash keys identical' if %hayhash ~~ \%hayhash;
+
+=end programlisting
+
+你可以在对象上重载（L<overloading>）智能匹配操作符。如果你不这样做，智能匹配
+操作符在你尝试将某对象用作操作数时会抛出异常。
+
+你也可以使用如 C<undef> 等其他数据类型，以及函数引用作为智能匹配操作数。请参
+考 C<perldoc perlsyn> 中的表格来获取更多细节。

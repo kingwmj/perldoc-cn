@@ -1,0 +1,419 @@
+=head1 Context
+
+Z<context_philosophy>
+
+X<context>
+
+In spoken languages, the meaning of a word or phrase may depend on how you use
+it; the local I<context> helps clarify the intent. For example, the
+inappropriate pluralization of "Please give me one hamburgers!"N<The
+pluralization of the noun differs from the amount.> sounds wrong, just as the
+incorrect gender of "la gato"N<The article is feminine, but the noun is
+masculine.> makes native speakers chuckle. Consider also the pronoun "you" or
+the noun "sheep" which can be singular or plural depending on context.
+
+Context in Perl is similar. It governs the amount as well as the kind of data
+to use. Perl will happily attempt to provide exactly what you ask for--provided
+you do so by choosing the appropriate context.
+
+Certain Perl operations produce different behaviors when you want zero, one, or
+many results. A specific construct in Perl may do something different if you
+write "Do this, but I don't care about any results" compared to "Do this, and I
+expect multiple results." Other operations allow you to specify whether you
+expect to work with numeric data, textual data, or true or false data.
+
+Context can be tricky if you try to write or read Perl code as a series of
+single expressions extracted from their environments. You may find yourself
+slapping your forehead after a long debugging session when you discover that
+your assumptions about context were incorrect. If instead you're cognizant of
+context, your code will be more correct--and cleaner, flexible, and more
+concise.
+
+=head2 Void, Scalar, and List Context
+
+Z<amount_context>
+
+X<context; amount>
+X<amount context>
+
+I<Amount context> context governs I<how many> items you expect from an
+operation. The English language's subject-verb number agreement is a close
+parallel. Even without knowing the formal description of this linguistic
+principle, you probably understand the error in the sentence "Perl are a fun
+language". In Perl, the number of items you request determines how many you
+get.
+
+X<void context>
+X<context; void>
+
+Suppose you have a function (L<functions>) called C<find_chores()> which sorts
+your household todo list in order of task priority. The means by which you call
+this function determines what it will produce. You may have no time to do
+chores, in which case calling the function is an attempt to look industrious.
+You may have enough time to do one task, or you could have a burst of energy on
+a free weekend and desire to accomplish as much as possible.
+
+If you call the function on its own and never use its return value, you've
+called the function in I<void context>:
+
+=begin programlisting
+
+    find_chores();
+
+=end programlisting
+
+X<context; scalar>
+X<scalar context>
+
+Assigning the function's return value to a single item (L<scalars>) evaluates
+the function in I<scalar context>:
+
+=begin programlisting
+
+    my $single_result = find_chores();
+
+=end programlisting
+
+X<list context>
+X<context; list>
+
+Assigning the results of calling the function to an array (L<arrays>) or a
+list, or using it in a list, evaluates the function in I<list context>:
+
+=begin programlisting
+
+    my @all_results             = find_chores();
+    my ($single_element, @rest) = find_chores();
+    process_list_of_results( find_chores() );
+
+=end programlisting
+
+The parentheses in the second line of the previous example group the two
+variable declarations (L<lexical_scope>) so that assignment will behave as you
+expect. If C<@rest> were to go unused, you could also correctly write:
+
+=begin programlisting
+
+    my B<(>$single_elementB<)>   = find_chores();
+
+=end programlisting
+
+.... in which case the parentheses give a hint to the Perl 5 parser that you
+intend list context for the assignment even though you assign only one element
+of a list. This is subtle, but now that you know about it, the difference of
+amount context between these two statements should be obvious:
+
+=begin programlisting
+
+    my $scalar_context = find_chores();
+    my B<(>$list_contextB<)> = find_chores();
+
+=end programlisting
+
+Evaluating a function or expression--except for assignment--in list context can
+produce confusion. Lists propagate list context to the expressions they
+contain. Both of these calls to C<find_chores()> occur in list context:
+
+=begin programlisting
+
+    process_list_of_results( find_chores() );
+
+    my %results =
+    (
+        cheap_operation     => $cheap_operation_results,
+        expensive_operation => find_chores(), # OOPS!
+    );
+
+=end programlisting
+
+The latter example often surprises novice programmers who expect scalar context
+for the function call. Initializing a hash (L<hashes>) with a list of values
+imposes list context on C<expensive_operation>.
+
+X<builtins; C<scalar>>
+
+Use the C<scalar> operator to impose scalar context:
+
+=begin programlisting
+
+    my %results =
+    (
+        cheap_operation     => $cheap_operation_results,
+        expensive_operation => B<scalar> find_chores(),
+    );
+
+=end programlisting
+
+Why does context matter? A context-aware function can examine its calling
+context and decide how much work it needs to do before returning its results.
+In void context, C<find_chores()> may legitimately do nothing. In scalar
+context, it can find only the most important task. In list context, it must
+sort and return the entire list.
+
+=head2 Numeric, String, and Boolean Context
+
+Z<value_contexts>
+
+X<value context>
+X<context; value>
+
+Perl's other context--I<value context>--governs how Perl interprets a piece of
+data.  You've probably already noticed that Perl's flexible about figuring out
+if you have a number or a string and converting between the two as you want
+them. In exchange for not having to declare (or at least track) explicitly what
+I<type> of data a variable contains or a function produces, Perl's type
+contexts that tell the compiler how to treat data.
+
+X<builtins; C<eq>>
+
+Perl will do its best to coerce values to the proper type (L<coercion>),
+depending on the operators you use. Be sure to use the proper operator for the
+type of context you want. Suppose you want to compare the contents of two
+strings. The C<eq> operator tells you if the strings contain the same
+information I<as strings>:
+
+=begin programlisting
+
+    say "Catastrophic crypto fail!" if $alice eq $bob;
+
+=end programlisting
+
+You may have had a baffling experience where you I<know> that the strings are
+different, but they still compare the same:
+
+=begin programlisting
+
+    my $alice = 'alice';
+    say "Catastrophic crypto fail!" if $alice == 'Bob';  # OOPS
+
+=end programlisting
+
+X<string context>
+X<numeric context>
+X<context; string>
+X<context; numeric>
+
+X<builtins; C<==>>
+
+The C<eq> operator treats its operands as strings by enforcing I<string
+context> on them.  The C<==> operator imposes I<numeric context>. In numeric
+context, both strings evaluate to C<0> (L<numeric_coercion>).
+
+X<boolean context>
+X<context; boolean>
+
+I<Boolean context> occurs when you use a value in a conditional statement. In
+the previous examples, C<if> evaluated the results of the C<eq> and C<==>
+operators in boolean context.
+
+X<context; explicit>
+
+In rare circumstances, you may need to force an explicit context where no
+appropriately typed operator exists. To force a numeric context, add zero to a
+variable. To force a string context, concatenate a variable with the empty
+string. To force a boolean context, double the negation operator:
+
+=begin programlisting
+
+    my $numeric_x =  0 + $x;  # forces numeric context
+    my $stringy_x = '' . $x;  # forces string  context
+    my $boolean_x =    !!$x;  # forces boolean context
+
+=end programlisting
+
+Type contexts are less difficult to identify than amount contexts. Once you
+understand that they exist and know which operators provide which contexts
+(L<operator_types>), you'll rarely make mistakes with them.
+=encoding utf8
+
+=head1 上下文
+
+Z<context_philosophy>
+
+X<context>
+
+［当阅读这个小节的时候，我意识到 Perl 中的上下文的基础是“用什么操作符”以及“在哪里用它”。
+在本小节和 operator_types.pod 中，你决不会直接地说出来。但这是真的。我试图在这个小节的
+某处中直接地说出来，但是我还无法决定在哪里已经怎样说，因此这只是一个提议。］
+口语中有 I<上下文> 的概念，即某词汇或短语的正确用法和含义由语境所决定。理解一下在口语中的情况，
+“Please give me one hamburgers!” 中不合适的复数用法 N<名词的复数形式和数量不符>，
+听上去就不对，或者 “la gato” 中不正确的性别 N<冠词为阴性，但是名称为阳性> 使得母语人士轻声窃笑。
+同样考虑代词 “you” 或者名词 “sheep” ，是单数是复数还得由句子的余下部分决定。
+
+Perl 中的上下文是类似的，这门语言理解对数据数量上的期望同时也知道应该提供什么样的数据。
+Perl 将高兴地尝试提供给你恰好合你心意的数据。
+
+Perl 中上下文的每一种类型，都和你所需某操作符结果的个数（零个、一个、或许多个）相对应，
+同一个操作符在（不同的上下文中）有着不同的行为。在 Perl 中，如果你要求：“给我零个结果，
+我不在乎有没有”或是“给我一个结果”再或是“给我多个结果”，那么一个特定的结构按这些不同的要
+求做不同的事情是完全可能的。
+
+同样，特定上下文将你所需明朗化：是数值，是字符串值、或是一个为真或假的值。
+
+如果你打算把 Perl 代码当成一系列独立于环境的单一表达式来读写，那么上下文将会变得十足狡猾。
+在一次长时间的调试后，你也许会一拍脑门，发现你对程序上下文的假设是错误的。然而在对上下文
+了如指掌后，它们会使你的代码更清晰、更简洁、更灵活。
+
+=head2 空、标量和列表上下文
+
+Z<amount_context>
+
+X<context; amount>
+X<amount context>
+
+上下文之一掌控着你期望事物的 I<多少>。这就是 I<数量上下文>。这个上下文和英语中“主谓一致”
+相当。即使尚未了解这条规则的正式定义，你很有可能理解句子 "Perl are a fun language" 中的错误。
+Perl 中的规则是，你所要求事物的数量决定了你得到的。
+
+X<void context>
+X<context; void>
+
+假设你有一个称为 C<some_expensive_operation()> 的函数 (L<functions>)，它进行一昂贵的计算并
+产生许多许多结果。如果你直接调用该函数且对返回值不加利用，那么就称你在 I<空上下文> 中调用了
+这个函数：
+
+=begin programlisting
+
+    some_expensive_operation();
+
+=end programlisting
+
+X<scalar context>
+
+将函数的返回值赋值给单个元素使得函数在 I<标量上下文> 中求值：
+
+=begin programlisting
+
+    my $single_result = some_expensive_operation();
+
+=end programlisting
+
+X<list context>
+
+将调用函数的结果赋值给一个数组（L<arrays>）或是列表，或者在一个列表中使用该结果，使
+得函数在 I<列表上下文> 中求值：
+
+=begin programlisting
+
+    my @all_results        = some_expensive_operation();
+    my ($single_element)   = some_expensive_operation();
+    process_list_of_results( some_expensive_operation() );
+
+=end programlisting
+
+前例的第二行可能看上去有些迷惑，这里的括号给了编译器一点提示：尽管这里只有一个
+标量，该赋值应在列表上下文中发生。在语义上等同于将列表中的第一个元素赋值给一个
+标量，并将列表的其余部分赋值给一个临时数组，随即丢弃该数组。除非真的发生（类似于
+后例的）数组赋值：
+
+=begin programlisting
+
+    my ($single_element, @rest) = some_expensive_operation();
+
+=end programlisting
+
+=begin sidebar
+
+为什么对函数来说上下文是有趣的？假如 C<some_expensive_operation()> 计算的是按优先
+级排序过的家务事。如果只有做一件事的时间，你可以在标量上下文中调用它，获得一项有用的
+任务────也许并不一定是最重要的，但是不会是排在最底下的那一项。在列表上下文中，该函数
+能完成所有的排序、搜索和比较，可以给你一份顺序合适且详尽的列表。如果你想所有事情都做，
+但是只有那么些时间，你可以用一个一两个元素的列表（来接受该函数在列表上下文中的返回值）。
+
+=end sidebar
+
+在列表上下文中对函数或表达式────除赋值外────求值，可能造成迷惑性结果。列表会把列表
+上下文散播到其所包含的表达式中。下列对 C<some_expensive_operation()> 的调用都发生于
+列表上下文：
+
+=begin programlisting
+
+    process_list_of_results( some_expensive_operation() );
+
+    my %results =
+    (
+        cheap_operation     => $cheap_operation_results,
+        expensive_operation => some_expensive_operation(), # OOPS!
+    );
+
+=end programlisting
+
+上例 C<expensive_operation> 位于列表上下文，因为它被赋值到一个哈希中，而哈希赋值需要一
+键值对列表，导致在哈希赋值内的所有表达式在列表上下文中求值。
+
+X<operators; scalar>
+X<scalar>
+
+后一个例子通常使期望该调用为标量上下文的新手程序员吃惊。相反，这是列表上下文，因为该上
+下文为哈希赋值所强制。使用 C<scalar> 操作符可以迫使其在标量上下文求值：
+
+=begin programlisting
+
+    my %results =
+    (
+        cheap_operation     => $cheap_operation_results,
+        expensive_operation => scalar some_expensive_operation(),
+    );
+
+=end programlisting
+
+=head2 数值、字符串及布尔上下文
+
+Z<value_contexts>
+
+X<value context>
+X<context; value>
+
+另一类型的上下文决定了 Perl 如何理解某块数据────不是你要 I<多少> 数据，而是数据的意义。
+你也许早已觉察到 Perl 可以灵活地指出你所有的是数字还是字符串并在按需在两者之间转换。这就是
+I<值上下文>，有助解释 Perl 是如何做这些事情的。不必明确声明（至少是跟踪）某变量包含（或产
+生自某函数）的数据的 I<类型>，作为交换，Perl 提供了特定类型的上下文，由它们告知编译器在某项
+操作期间如何对待一个给定的值。
+
+假设你想比较两个字符串的内容。C<eq> 操作符能告诉你这些字符串中是否包含相同的信息：
+
+=begin programlisting
+
+    say "Catastrophic crypto fail!" if $alice eq $bob;
+
+=end programlisting
+
+当 I<明明知道> 字符串内容不同，但是比较结果却是相同时，你可能会感到莫名其妙：
+
+=begin programlisting
+
+    my $alice = 'alice';
+    say "Catastrophic crypto fail!" if $alice == 'Bob';  # 啊呀
+
+=end programlisting
+
+X<string context>
+X<numeric context>
+X<context; string>
+X<context; numeric>
+
+C<eq> 操作符通过强制 I<字符串上下文>，按字符串对待它的操作数。C<==> 操作符则强制 I<数值上下文>。
+示例代码出错的原因在于，两个字符串在用作数字时候的值是 C<0>（L<numeric_coercion>）。
+
+X<boolean context>
+X<context; boolean>
+
+I<布尔上下文> 发生在当你在条件语句中使用某值时。在前面的例子中，C<if> 语句在布尔上下文中求出 C<eq> 
+和 C<==> 操作的结果。
+
+Perl 会尽最大努力将值强制转换成正确的类型 (L<coercion>)，并依赖于所用的操作符。一定要针对你所需的
+上下文使用正确的操作符。
+
+在极少数情况下，没有合适类型的操作符存在，你也许需要明确地强制上下文。强制数值上下文，在变量前加零。
+强制字符串上下文，将变量和空字符串拼接起来。强制布尔上下文，使用双重否定操作符。
+
+=begin programlisting
+
+    my $numeric_x =  0 + $x;  # 强制数值上下文
+    my $stringy_x = '' . $x;  # 强制字符串上下文
+    my $boolean_x =    !!$x;  # 强制布尔上下文
+
+=end programlisting
+
+大体上说，相比数量上下文，类型上下文较易理解和识别。一旦你理解它们的存在，并知道什么操作符提供什
+么上下文 (L<operator_types>)，你很少会因为它们而犯错。

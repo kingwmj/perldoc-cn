@@ -1,0 +1,335 @@
+=head1 Distributions
+
+Z<distributions>
+
+X<distribution>
+
+A I<distribution> is a collection of one or more modules (L<modules>) which
+forms a single redistributable, testable, and installable unit.  Effectively
+it's a collection of module and metadata.
+
+The easiest way to manage software configuration, building, distribution,
+testing, and installation even within your organization is to create
+distributions compatible with the CPAN.  The conventions of the CPAN--how to
+package a distribution, how to resolve its dependencies, where to install
+software, how to verify that it works, how to display documentation, how to
+manage a repository--have all arisen from the rough consensus of thousands of
+contributors working on tens of thousands of projects.
+
+In particular, the copious amount of testing and reporting and dependency
+checking achieved by CPAN developers exceeds the available information and
+quality of work in any other language community.  A distribution built to CPAN
+standards can be tested on several versions of Perl 5 on several different
+hardware platforms within a few hours of its uploading--all without human
+intervention.
+
+You may choose never to release any of your code as public CPAN distributions,
+but you can reuse existing CPAN tools and designs as possible.  The combination
+of intelligent defaults and customizability are likely to meet your specific
+needs.
+
+=head2 Attributes of a Distribution
+
+A distribution obviously includes one or more modules.  It also includes
+several other files and directories:
+
+=over 4
+
+=item * F<Build.PL> or F<Makefile.PL>, the program used to configure, build,
+test, bundle, and install the distribution.
+
+=item * F<MANIFEST>, a list of all files contained in the distribution.  This
+helps packaging tools produce an entire tarball and helps to verify that
+recipients of the tarball have all of the necessary files.
+
+=item * F<META.yml> and/or F<META.json>, a file containing metadata about the distribution and its
+dependencies.
+
+=item * F<README>, a description of the distribution, its intent, and its
+copyright and licensing information.
+
+=item * F<lib/>, the directory containing Perl modules.
+
+=item * F<t/>, a directory containing test files.
+
+=item * F<Changes>, a log of every change to the distribution.
+
+=back
+
+X<CPAN; CPANTS>
+
+Additionally, a well-formed distribution must contain a unique name and single
+version number (often taken from its primary module).  Any well-formed
+distribution you download from the public CPAN should conform to these
+standards--and the CPANTS service evaluates the kwaliteeN<Quality is difficult
+to measure with heuristics.  Kwalitee is the machine measurable relative of
+quality.> of all CPAN distributions and recommends packaging improvements.
+
+=head2 CPAN Tools for Managing Distributions
+
+The Perl 5 core includes several tools to manage distributions--not just
+installing them from the CPAN, but developing and managing your own:
+
+X<C<CPAN>>
+
+=over 4
+
+=item * C<CPAN.pm> is the official CPAN client.  While by default it installs
+distributions from the public CPAN, you can point it to your own repository
+instead of or in addition to the public repository.
+
+X<C<CPANPLUS>>
+
+=item * C<CPANPLUS> is an alternate CPAN client with a different design
+approach.  It does some things better than C<CPAN.pm>, but they are largely
+equivalent at this point.  Use whichever you prefer.
+
+X<C<Module::Build>>
+
+=item * C<Module::Build> is a pure-Perl tool suite for configuring, building,
+installing, and testing distributions.  It works with the F<Build.PL> file
+mentioned earlier.
+
+X<C<ExtUtils::MakeMaker>>
+
+=item * C<ExtUtils::MakeMaker> is an older, legacy tool which C<Module::Build>
+intends to replace.  It is still in wide use, though it is in maintenance mode
+and receives only the most critical bug fixes.  It works with the
+F<Makefile.PL> file mentioned earlier.
+
+X<C<Test::More>>
+
+=item * C<Test::More> (L<testing>) is the basic and most widely used testing
+module used to write automated tests for Perl software.
+
+X<C<Test::Harness>>
+X<C<prove>>
+
+=item * C<Test::Harness> and C<prove> (L<running_tests>) are the tools used to
+run tests and to interpret and report their results.
+
+=back
+
+In addition, several non-core CPAN modules make your life easier as a
+developer:
+
+X<C<App::cpanminus>>
+
+=over 4
+
+=item * C<App::cpanminus> is a new utility which provides almost
+configuration-free use of the public CPAN.  It fulfills 90% of your needs to
+find and install modules.
+
+X<C<App::perlbrew>>
+
+=item * C<App::perlbrew> helps you to manage multiple installations of Perl 5.
+This is very useful to use a newer version than the system version or to
+isolate distributions you've installed for one application from distributions
+you've installed for another.
+
+X<CPAN; C<CPAN::Mini>>
+X<CPAN; C<cpanmini>>
+
+=item * C<CPAN::Mini> and the C<cpanmini> command allow you to create your own
+(private) mirror of the public CPAN.  You can inject your own distributions
+into this repository and manage which versions of the public modules are
+available in your organization.
+
+X<C<Dist::Zilla>>
+X<C<Module::Build>>
+X<C<ExtUtils::MakeMaker>>
+
+=item * C<Dist::Zilla> is a toolkit for managing distributions by automating
+away common tasks.  While it can use either C<Module::Build> or
+C<ExtUtils::MakeMaker>, it can replace I<your> use of them directly.
+
+X<CPAN; C<Test::Reporter>>
+
+=item * C<Test::Reporter> allows you to report the results of running the
+automated test suites of distributions you install, giving their authors more
+data on any failures.
+
+=back
+
+=head2 Designing Distributions
+
+The process of designing a distribution could fill a book (see Sam Tregar's
+I<Writing Perl Modules for CPAN>), but a few design principles will help you.
+Start with a utility such as C<Module::Starter> or C<Dist::Zilla> from the
+CPAN.  The initial cost of learning the configuration and rules may seem like a
+steep investment, but the benefit of having everything set up the right way
+(and in the case of C<Dist::Zilla>, I<never> going out of date) relieves you of
+much tedious bookkeeping.
+
+Then consider several rules.
+
+=over 4
+
+=item * I<Each distribution should have a single, well-defined purpose.>  That
+purpose may be to process a particular type of data file or to gather together
+several related distributions into a single installable bundle.  Decomposing
+your software into individual bundles allows you to manage their dependencies
+appropriately and to respect their encapsulation.
+
+=item * I<Each distribution needs a single version number.>  Version numbers
+must always increase.  The semantic version policy (U<http://semver.org/>) is
+sane and compatible with the Perl 5 approach.
+
+=item * I<Each distribution should have a well-defined API.>  A comprehensive
+automated test suite can verify that you maintain this API across versions.  If
+you use a local CPAN mirror to install your own distributions, you can re-use
+the CPAN infrastructure for testing distributions and their dependencies.  You
+get easy access to integration testing across reusable components.
+
+=item * I<Automate your distribution tests and make them repeatable and
+valuable.>  Managing software effectively requires you to know when it works
+and how it fails if it fails.
+
+=item * I<Present an effective and simple interface.>  Avoid the use of global
+symbols and default exports; allow people to use only what they need and do not
+pollute their namespaces.
+
+=back
+=encoding utf8
+
+=head1 发行模块
+
+Z<distributions>
+
+X<distribution>
+
+I<发行模块（“distribution”）> 是一个或多个模块（L<modules>）的集合，由此组成单
+个可重分发、可测试、可安装的单元。效果上即是模块和元数据的集合。
+
+管理软件配置、构建、分发、测试和安装────甚至是在你的工作组织中────最为简便的方
+法就是创建和 CPAN 兼容的模块。CPAN 的惯例────如何打包发行、如何解决其依赖、将其
+安装至何处、如何验证它是否正常、如何显示文档、如何管理代码仓库────这些问题已经
+由维护万个项目的几千贡献者所共同提出。
+
+特别是，由 CPAN 实现的测试、报告、依赖检查功能非常齐全，已大大超出同类语言社区
+所能提供的信息范围，品质也在其余之上。一个按 CPAN 标准构建的发行模块可以上传后
+几小时内在若干 Perl 5 版本及不同硬件平台上被测试────所有这些无需人工干预。
+
+你可以选择永远不像公共 CPAN 发行模块那样发布你的代码，但你可以在可能时重用现存
+的 CPAN 工具和设计。智能的默认设置和可定制性的组合多少都可以满足你特定的需求。
+
+=head2 发行模块的属性
+
+一个发行模块显然会包括一个或多个模块。它同时也包含其他的文件和目录：
+
+=over 4
+
+=item * F<Build.PL> 或是 F<Makefile.PL>，这些程序用于配置、构建、测试、捆绑及
+安装模块；
+
+=item * F<MANIFEST>，发行模块中包含的所有文件的列表。这有助于打包工具生成完整的
+tar 压缩包并帮助验证压缩包使用者得到所有必需的文件；
+
+=item * F<META.yml> 和/或 F<META.json>，一个包含有关发行模块及其依赖的元数据文件；
+
+=item * F<README>，对发行模块的描述、意图、版权和许可信息；
+
+=item * F<lib/>，含有 Perl 模块的目录；
+
+=item * F<t/>，包含测试文件的目录；
+
+=item * F<Changes>，模块变更的日志。
+
+=back
+
+X<kwalitee>
+X<CPANTS>
+
+额外地，一个良好组织的发行模块必须包含唯一的名称和单个版本号（通常从其主要模块而
+来）。从公共 CPAN 上下载的组织良好的发行模块应遵循这些标准。（CPANTS 服务将评估所
+有 CPAN 发行模块的 “kwalitee” N<质量难以启发式地衡量。Kwalitee 是“质量”的自动化亲
+属。> 并提出改进之处使它们更加易于安装和管理。）
+
+=head2 CPAN 发行模块管理工具
+
+Perl 5 核心包含若干工具来管理发行模块────不仅仅是从 CPAN 安装它们，还有开发和管理
+属于自己的模块：
+
+=over 4
+
+=item * C<CPAN.pm> 是官方的 CPAN 客户端。虽然它默认从公共 CPAN 安装模块，但你可以
+将其指向自己的 CPAN 仓库以代替或作为公共仓库的补充；
+
+=item * C<CPANPLUS> 是有着不同设计手法的 CPAN 客户端替代品。很多方面它完成得比 C<CPAN.pm>
+更为出色，但是它们的大部分功能相同。可以按你的使用偏好进行选择。
+
+=item * C<Module::Build> 是一个由纯 Perl 编写的工具套件，它可以配置、构建、安装和
+测试发行模块。它和早些提到的 F<Build.PL> 文件配合工作。
+
+=item * C<ExtUtils::MakeMaker> 是一个更老的遗留工具，它是 C<Module::Build> 意图替
+代的目标。虽然它已经进入维护阶段、仅接纳最紧急的缺陷修复，但它仍在大规模地使用中。
+它和早些提到的 F<Makefile.PL> 文件配套。
+
+=item * C<Test::More>（L<testing>）是基本也是被广泛使用的测试模块，用于为 Perl 软
+件编写自动化测试；
+
+=item * C<Test::Harness> 和 C<prove>（L<running_tests>）是用于运行测试和解析、报告
+测试结果的工具。
+
+=back
+
+作为附加，若干非核心 CPAN 模块是你的开发生涯更为轻松：
+
+=over 4
+
+=item * C<App::cpanminus> 是一个新兴的实用工具，它对公共 CPAN 提供了几乎免配
+置的使用方式。它满足了你查找安装模块需求的 90%。
+
+=item * C<CPAN::Mini> 和 C<cpanmini> 命令运行你创建自己（私人的）公共 CPAN 镜
+像。你可以在此仓库中插入你自己的发行模块，并管理在你的组织内可用的公共模块版本。
+
+=item * C<Dist::Zilla> 是通过自动化常规任务来管理发行模块工具集。很多情况下它
+可以替代对C<Module::Build> 或 C<ExtUtils::MakeMaker> 的使用。
+
+=item * C<Test::Reporter> 允许你报告对你安装的发行模块运行自动化测试套件的结果，
+向模块作者提供更详细的失败数据。
+
+=back
+
+=head2 设计发行模块
+
+设计发行模块的过程可以填满一整本书（参见 Sam Tregar 的著作 I<Writing Perl Modules for CPAN>）
+，但是有不少设计原理可以帮助你。以来自 CPAN 的诸如 C<Module::Starter> 或 C<Dist::Zilla>
+等实用工具开始。最初学习配置和规则的代价也许看上去像一笔不合理的投资，但是按部就班地
+配置所有事项（就 C<Dist::Zilla> 一例来说，I<永不> 过时）将你从冗长的记录中释放出来。
+
+接着考虑若干规则。
+
+=over 4
+
+=item * I<每一个发行模块应拥有单一、经良好定义的目的。> 该目的也许是处理某一类
+型的数据文件或是将若干相关发行模块集成为单一的可安装捆绑。将你的软件解耦为单个
+部分允许你正确地管理它们各自依赖并使其更好地封装。
+
+=item * I<每一个发行模块需要单一的版本号。> 版本号必须递增。使用语义版本规则
+（“semantic version policy”（U<http://semver.org/>）是明智的，而且它兼容 Perl
+5 的版本惯例。
+
+=item * I<每一个发行模块必须包含经良好定义的 API。> 一个综合自动化测试套件可以
+验证你是否在版本间保持 API 一致。如果你使用本地 CPAN 镜像来安装你自己的发行模块
+，你可以重用 CPAN 基础设施来测试模块及其依赖。对可重用的组件进行持续测试是很方
+便的。
+
+=item * I<自动化你的发行模块测试并使它们可重复进行且有价值。> 有效管理软件要求
+你明白其工作原理，和在它出错时知道为什么。
+
+=item * I<提供一个有效的简洁的接口。> 避免使用全局符号和默认导出；允许人们按需
+使用并不对他们的名称空间进行污染。
+
+=back
+
+=begin sidebar
+
+X<CPAN::Mini>
+X<cpanmini>
+
+来自 CPAN 的 C<CPAN::Mini> 发行模块允许你创建你自己的本地 CPAN 镜像，你可以向其
+中插入你自己的发行模块。
+
+=end sidebar

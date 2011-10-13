@@ -1,0 +1,23 @@
+=head0 What's Missing
+
+Perl 5 isn't perfect, at least as it behaves by default.  Some options are
+available in the core.  More are available from the CPAN.  Experienced Perl
+developers have their own idea of how an ideal Perl 5 should behave, and they
+often use their own configurations very effectively.
+
+Novices may not know how Perl can help them write programs better.  A handful
+of core modules will make you much more productive.
+
+L<missing_defaults>
+=encoding utf8
+
+=head0 还缺少什么
+
+Perl 5 并不完美，至少其默认行为是如此。核心部分存在一些改变这种状况的选择。更
+多的则来源于 CPAN。有经验的 Perl 开发者对理想状态下 Perl 5 应有的行为有着各自
+的理解，并且他们常常高效地使用他们各自对 Perl 5 的配置。
+
+新手也许并不知道 Perl 如何帮助他们更好地编写程序。一手把核心模块将使你变得更加
+富有成效。
+
+L<missing_defaults>

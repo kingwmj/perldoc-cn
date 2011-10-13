@@ -1,0 +1,264 @@
+Z<perl_community>
+
+=head1 Community Sites
+
+X<perl.org>
+X<websites; perl.org>
+
+Perl's homepage at U<http://www.perl.org/> links to Perl documentation, source
+code, tutorials, mailing lists, and several important community projects. If
+you're new to Perl, the Perl beginners mailing list is a friendly place to ask
+novice questions and get accurate and helpful answers. See
+U<http://learn.perl.org/faq/beginners.html>.
+
+The home of Perl development is is U<http://dev.perl.org/>, which links to
+relevant resources for developing core development of Perl 5, Perl 6N<Though
+see also U<http://www.perl6.org/>>, and even Perl 1.
+
+X<perl.com>
+X<websites; perl.com>
+
+Perl.com publishes articles and tutorials about Perl and its culture. Its
+archives reach back into the 20th century. See U<http://www.perl.com/>.
+
+X<cpan.org>
+X<websites; cpan.org>
+X<MetaCPAN>
+X<websites; MetaCPAN>
+
+The CPAN's (L<cpan>) central location is U<http://www.cpan.org/>, though
+experienced users spend more time on U<http://search.cpan.org/>. This central
+software distribution hub of reusable, free Perl code is an essential part of
+the Perl community. MetaCPAN (U<https://metacpan.org/>) is a recent alternative
+front end to the CPAN.
+
+X<PerlMonks>
+X<websites; PerlMonks>
+
+PerlMonks, at U<http://perlmonks.org/>, is a community site devoted to
+discussions about Perl programming. Its eleven year history makes it one of the
+most venerable question and answer sites for any programming language.
+
+X<blogs.perl.org>
+X<websites; blogs.perl.org>
+
+Several community sites offer news and commentary. U<http://blogs.perl.org/> is
+a free blog platform open to any Perl community member.
+
+X<Enlightened Perl Organization>
+X<Planet Perl>
+X<Planet Perl Iron Man>
+X<websites; Planet Perl>
+X<websites; Planet Perl Iron Man>
+
+Other sites aggregate the musings of Perl hackers, including
+U<http://perlsphere.net/>, U<http://planet.perl.org/>, and
+U<http://ironman.enlightenedperl.org/>. The latter is part of an initiative
+from the Enlightened Perl Organization (U<http://enlightenedperl.org/>) to
+increase the amount and improve the quality of Perl publishing on the web.
+
+X<Perl Buzz>
+X<websites; Perl Buzz>
+X<Perl Weekly>
+X<websites; Perl Weekly>
+
+Perl Buzz (U<http://perlbuzz.com/>) collects and republishes some of the most
+interesting and useful Perl news on a regular basis. Perl Weekly
+(U<http://perlweekly.com/>) offers a weekly take on news from the Perl world.
+
+=head1 Development Sites
+
+X<RT>
+X<Best Practical>
+
+Best Practical Solutions (U<http://bestpractical.com/>) maintains an
+installation of their popular request tracking system, RT, for CPAN authors as
+well as Perl 5 and Perl 6 development. Every CPAN distribution has its own RT
+queue, linked from C<search.cpan.org> and available on U<http://rt.cpan.org/>.
+Perl 5 and Perl 6 have separate RT queues available on U<http://rt.perl.org/>.
+
+X<Perl 5 Porters>
+X<p5p>
+
+The Perl 5 Porters (or I<p5p>) mailing list is the focal point of the
+development of Perl 5 itself. See
+U<http://lists.cpan.org/showlist.cgi?name=perl5-porters>.
+
+X<TPF>
+X<The Perl Foundation>
+X<TPF; wiki>
+X<websites; TPF wiki>
+
+The Perl Foundation (U<http://www.perlfoundation.org/>) hosts a wiki for all
+things Perl 5. See U<http://www.perlfoundation.org/perl5>.
+
+X<Github>
+X<gitpan>
+X<websites; gitpan>
+
+Many Perl hackers use Github (U<http://github.com/>) to host their
+projectsN<...  including the sources of this book at
+U<http://github.com/chromatic/modern_perl_book/>>. See especially Gitpan
+(U<http://github.com/gitpan/>), which hosts Git repositories chronicling the
+complete history of every distribution on the CPAN.
+
+=begin sidebar
+
+X<C<Git::CPAN::Patch>>
+
+If GitPAN is out of date (updating it takes considerable time and resources),
+see Yanick Champoux's wonderful C<Git::CPAN::Patch> module.
+
+=end sidebar
+
+
+=head1 Events
+
+X<YAPC>
+
+The Perl community holds countless conferences, workshops, seminars, and
+meetings. In particular, the community-run YAPC--Yet Another Perl
+Conference--is a successful, local, low-cost conference model held on multiple
+continents. See U<http://yapc.org/>.
+
+The Perl Foundation wiki lists other events at
+U<http://www.perlfoundation.org/perl5/index.cgi?perl_events>.
+
+X<Perl Mongers>
+
+Hundreds of local Perl Mongers groups get together frequently for technical
+talks and social interaction. See U<http://www.pm.org/>.
+
+=head1 IRC
+
+X<IRC>
+X<IRC; #moose>
+X<IRC; #catalyst>
+X<IRC; #perl-help>
+X<IRC; #perl>
+
+When Perl mongers can't meet in person, many collaborate and chat online
+through the textual chat system known as IRC. Many of the most popular and
+useful Perl projects have their own IRC channels, such as I<#moose> and
+I<#catalyst>.
+
+The main server for Perl community is U<irc://irc.perl.org/>. Other notable
+channels include I<#perl-help>, for general assistance on Perl programming, and
+I<#perl-qa>, devoted to testing and other quality issues. Be aware that the
+channel I<#perl> is a general purpose room for discussing whatever its
+participants want to discussN<... and it's not often friendly to people who ask
+basic programming questions.>.
+=encoding utf8
+
+Z<perl_community>
+
+=head1 社区网站
+
+X<perl.org>
+X<websites; perl.org>
+
+Perl 的主页位于 U<http://www.perl.org/>。这个站点提供了文档、源代码、教程、邮件列表
+以及若干重要的社区项目。如果你是 Perl 新手，那么友善的 Perl 新手邮件列表就是你提问并
+得到准确解答的地方。参见 U<http://beginners.perl.org/>。
+
+U<http://dev.perl.org/> 是一个值得一提的子域名，Perl 5、 Perl 6 N<Perl 6 主站为
+U<http://www.perl6.org/>>，甚至是 Perl 1 核心开发的中心站点。
+
+X<Perl Pub>
+
+Perl.com 每月发布若干关于 Perl 编程的文章和教程。其存档可追溯到20世纪。参见
+U<http://www.perl.com/>。
+
+X<cpan.org>
+X<websites; cpan.org>
+
+CPAN (L<cpan>) 的中心位置位于 U<http://www.cpan.org/>，虽然有经验的用户通常在 
+U<http://search.cpan.org/> 上花去更多时间。这个承载着可重用、免费 Perl 代码的
+软件发布中心枢纽是 Perl 社区的基本组成部分。
+
+X<PerlMonks>
+
+PerlMonks，位于 U<http://perlmonks.org/>，这处可敬的社区站点专门用于 Perl 编程问答及
+其他讨论。它于2009年十二月过完十周岁生日，使其成为编程语言专用 Web 社区中持续时间最长
+者之一。
+
+X<use Perl;>
+X<blogs.perl.org>
+
+若干社区网站提供新闻和评论。最古老的是 U<http://use.perl.org/>，它提供自主期刊已有
+许多年头。不少知名 Perl 黑客曾在那里执笔。U<http://blogs.perl.org/> 是一个用于撰写 
+Perl 主题博客的新兴社区站点。
+
+X<Enlightened Perl Organization>
+
+其他一些站点则集中展示了 Perl 黑客们对 Perl 的沉思，包括 U<http://perlsphere.net/>、
+U<http://planet.perl.org/> 以及 U<http://ironman.enlightenedperl.org/>。后者是来自 
+Enlightened Perl Organization (U<http://enlightenedperl.org/>) 倡议的一部分，以期增加
+Perl 在线出版物的数量和质量。
+
+X<Perl Buzz>
+
+Perl Buzz (U<http://perlbuzz.com/>) 定期收集并重新发布一些最有趣、有用的 Perl 新闻。
+
+=head1 开发网站 
+
+X<RT>
+X<Best Practical>
+
+Best Practical Solutions (U<http://bestpractical.com/>) 为 CPAN 作者以及 Perl 5、Perl 6
+的开发维护着一份他们产品────流行的需求跟踪系统────RT的安装。每一个 CPAN 模块的发行版有着
+属于自己的 RT 队列，C<search.cpan.org> 的模块页上有对应的链接，指向 U<http://rt.cpan.org/>。
+Perl 5 和 Perl 6 各自有一个位于 U<http://rt.perl.org/> 的 RT 队列。
+
+X<Perl 5 Porters>
+X<p5p>
+
+Perl 5 Porters（也称 I<p5p>）邮件列表是 Perl 5 开发讨论的中心点。参见
+U<http://lists.cpan.org/showlist.cgi?name=perl5-porters>。
+
+X<TPF>
+X<The Perl Foundation>
+X<TPF wiki>
+
+Perl 基金会（U<http://www.perlfoundation.org/>）为所有有关 Perl 5 的内容提供了一个 Wiki
+参见 U<http://www.perlfoundation.org/perl5>。
+
+X<Github>
+X<Gitpan>
+
+许多 Perl 黑客使用 Github（U<http://github.com/>）来存放他们的项目 N<…… 包括本书的书稿，
+位于 U<http://github.com/chromatic/modern_perl_book/>>。一个特别值得注意的 Github 页便是
+Gitpan，它存有记录每一个 CPAN 模块历史的 Git 代码库。参见 U<http://github.com/gitpan/>。
+
+=head1 活动
+
+X<YAPC>
+
+物理世界同样有着众多活动。Perl 社区每年举办不少会议、workshop和研讨会。特别地，社区运营着 
+YAPC ──── Yet Another Perl Conference （“又一次 Perl 大会”）──── 是一场成功的、地方性、低
+成本且在多个大洲举办的会议模型。参见 U<http://yapc.org/>。
+
+Perl 基金会 Wiki 于 U<http://www.perlfoundation.org/perl5/index.cgi?perl_events> 列举了其它
+社区活动。
+
+X<Perl Mongers>
+
+同样还有本地 Perl Monger 小组（Perl 小贩组？！）不时地碰头举办技术讲座和社会交流。参见
+U<http://www.pm.org/>。
+
+=head1 IRC
+
+X<IRC>
+X<IRC; #moose>
+X<IRC; #catalyst>
+X<IRC; #perl-help>
+X<IRC; #perl>
+
+当 Perl 贩子们不出现在本地会议或大会上或 workshop 中，他们中的许多人会互相协助并在 IRC
+────一种英特网早期发展起来、基于文本的群组聊天系统────上聊天。不少最为出名且有用的 Perl
+项目拥有自己的 IRC 频道，例如 I<#moose> 和 I<#catalyst>。
+
+Perl 社区的主 IRC 服务器是 U<irc://irc.perl.org/>。其他值得一提的频道包括 I<#perl-help>
+──── 为一般性 Perl 编程求助而设，以及 I<#perl-qa> ──── 为测试和质量问题专用。注意 I<#perl> 
+I<不是> 一般性的求助频道，相反，它是一个为讨论其参与者想讨论的任何事情而设的通用聊天室。
+N<…… 而且它对提出编程基础问题的人通常不十分友好>。

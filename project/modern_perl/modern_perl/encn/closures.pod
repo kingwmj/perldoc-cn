@@ -1,0 +1,534 @@
+=head1 Closures
+
+Z<closures>
+X<functions; higher order>
+X<higher order functions>
+
+Every time control flow enters a function, that function gets a new environment
+representing that invocation's lexical scope (L<scope>). That applies equally
+well to anonymous functions (L<anonymous_functions>). The implication is
+powerful. The computer science term I<higher order functions> refers to
+functions which manipulate other functions. Closures show off this power.
+
+=head2 Creating Closures
+
+X<closures>
+X<functions; closures>
+
+A I<closure> is a function that uses lexical variables from an outer scope.
+You've probably already created and used closures without realizing it:
+
+=begin programlisting
+
+    {
+        package Invisible::Closure;
+
+        my $filename = shift @ARGV;
+
+        sub get_filename
+        {
+            return $filename;
+        }
+    }
+
+=end programlisting
+
+If this code seems straightforward to you, good! I<Of course> the
+C<get_filename()> function can see the C<$filename> lexical. That's how scope
+works!
+
+Suppose you want to iterate over a list of items without managing the iterator
+yourself.  You can create a function which returns a function that, when
+invoked, will return the next item in the iteration:
+
+=begin programlisting
+
+    sub make_iterator
+    {
+        my @items = @_;
+        my $count = 0;
+
+        return sub
+        {
+            return if $count == @items;
+            return $items[ $count++ ];
+        }
+    }
+
+    my @cousins = qw( Rick Alex Kaycee Eric Corey Mandy Christine )
+    my $cousins = make_iterator( @cousins );
+
+    say $cousins->() for 1 .. 5;
+
+=end programlisting
+
+Even though C<make_iterator()> has returned, the anonymous function, stored in
+C<$cousins>, has closed over the values of these variables as they existed
+within the invocation of C<make_iterator()>. Their values persist
+(L<reference_counts>).
+
+Because every invocation of C<make_iterator()> creates a separate lexical
+environment, the anonymous sub it creates and returns closes over a unique
+lexical environment:
+
+=begin programlisting
+
+    my @aunts   = qw( Carole Phyllis Wendy Sylvia Monica Lupe );
+    my $cousins = make_iterator( @cousins );
+    my $aunts   = make_iterator( @aunts );
+
+    say $cousins->();
+    say $aunts->();
+    say $cousins->();
+    say $aunts->();
+
+=end programlisting
+
+=begin sidebar
+
+Because C<make_iterator()> does not return these lexicals by value or by
+reference, no other Perl code besides the closure can access them. They're
+encapsulated as effectively as any other lexical encapsulation, although any
+code which shares a lexical environment can access these values. This idiom
+provides better encapsulation of what would otherwise be a file or package
+global variable:
+
+=begin programlisting
+
+    {
+        my $private_variable;
+
+        sub set_private { $private_variable = shift }
+        sub get_private { $private_variable }
+    }
+
+=end programlisting
+
+Be aware that you cannot I<nest> named functions. Named functions have package
+global scope. Any lexical variables shared between nested functions will go
+unshared when the outer function destroys its first lexical environmentN<If
+that's confusing to you, imagine the implementation.>.
+
+=begin sidebar
+
+X<CPAN; C<PadWalker>>
+
+The CPAN module C<PadWalker> lets you violate lexical encapsulation, but anyone
+who uses it and breaks your code earns the right to fix any concomitant bugs
+without your help.
+
+=end sidebar
+
+=head2 Uses of Closures
+
+Iterating over a fixed-sized list with a closure is interesting, but closures
+can do much more, such as iterating over a list which is too expensive to
+calculate or too large to maintain in memory all at once. Consider a function
+to create the Fibonacci series as you need its elements. Instead of
+recalculating the series recursively, use a cache and lazily create the
+elements you need:
+
+=begin programlisting
+
+    sub gen_fib
+    {
+        my @fibs = (0, 1, 1);
+
+        return sub
+        {
+            my $item = shift;
+
+            if ($item >= @fibs)
+            {
+                for my $calc ((@fibs - 1) .. $item)
+                {
+                    $fibs[$calc] = $fibs[$calc - 2] + $fibs[$calc - 1];
+                }
+            }
+
+            return $fibs[$item];
+        }
+    }
+
+=end programlisting
+
+Every call to the function returned by C<gen_fib()> takes one argument, the
+I<n>th element of the Fibonacci series.  The function generates all preceding
+values in the series as necessary, caches them, and returns the requested
+element. It delays computation until absolutely necessary.
+
+Perhaps this is too much work to calculate a simple numeric series, but the
+function C<gen_fib()> is itself amazing. It initializes an array as a cache,
+executes some custom code to populate arbitrary elements of the cache, and
+returns the calculated or cached value. If you extract the behavior specific to
+Fibonacci values, this code can provide any arbitrary code with a
+lazily-iterated cache.
+
+Extract the function C<generate_caching_closure()> and rewrite C<gen_fib()> to
+use it:
+
+=begin programlisting
+
+    sub gen_caching_closure
+    {
+        my ($calc_element, @cache) = @_;
+
+        return sub
+        {
+            my $item = shift;
+
+            $calc_element->($item, \@cache) unless $item < @cache;
+
+            return $cache[$item];
+        };
+    }
+
+
+    sub gen_fib
+    {
+        my @fibs = (0, 1, 1);
+
+        return gen_caching_closure(
+            sub
+            {
+                my ($item, $fibs) = @_;
+
+                for my $calc ((@$fibs - 1) .. $item)
+                {
+                    $fibs->[$calc] = $fibs->[$calc - 2] + $fibs->[$calc - 1];
+                }
+            },
+            @fibs
+        );
+    }
+
+=end programlisting
+
+The program behaves as it did before, but the use of function references and
+closures separates the cache initialization behavior from the calculation of
+the next number in the Fibonacci series. Customizing the behavior of code--in
+this case, C<gen_caching_closure()>--by passing in a function allows tremendous
+flexibility and abstraction.
+
+=begin sidebar
+
+In one sense, you can consider the builtins C<map>, C<grep>, and C<sort>
+higher-order functions, especially if you compare them to
+C<gen_caching_closure()>.
+
+=end sidebar
+
+=head2 Closures and Partial Application
+
+Z<partial_application>
+
+Closures can also I<remove> unwanted genericity. Consider the case of a
+function which takes several parameters:
+
+=begin programlisting
+
+    sub make_sundae
+    {
+        my %args = @_;
+
+        my $ice_cream = get_ice_cream( $args{ice_cream} );
+        my $banana    = get_banana( $args{banana} );
+        my $syrup     = get_syrup( $args{syrup} );
+        ...
+    }
+
+=end programlisting
+
+Myriad customization possibilities might work very well in a full-sized ice
+cream store, but for a drive-through ice cream cart where you only serve French
+vanilla ice cream on Cavendish bananas, every call to C<make_sundae()> passes
+arguments that never change.
+
+X<partial application>
+
+I<Partial application> binds some of the arguments to a function and allows you
+to provide the rest later:
+
+=begin programlisting
+
+    my $make_cart_sundae = sub
+    {
+        return make_sundae( @_,
+            ice_cream => 'French Vanilla',
+            banana    => 'Cavendish',
+        );
+    };
+
+=end programlisting
+
+X<CPAN; C<Sub::Install>>
+
+Instead of calling C<make_sundae()> directly, invoke the function reference in
+C<$make_cart_sundae> and pass only the interesting arguments, without worrying
+about forgetting the invariants or passing them incorrectlyN<You can even use
+C<Sub::Install> from the CPAN to import this function into another namespace
+directly.>.
+
+X<I<Higher Order Perl>>
+
+This is only the start of what you can do with higher order functions. Mark
+Jason Dominus's I<Higher Order Perl> is the canonical reference on first-class
+functions and closures in Perl. Read it online at
+U<http://hop.perl.plover.com/>.
+=encoding utf8
+
+=head1 闭包
+
+Z<closures>
+
+你已经见过了函数（L<functions>）和作用域（L<scope>）是如何工作的。你知道了每次
+控制流程进入函数后，该函数将得到代表本次调用的词法作用域的新环境。你现在可以使
+用函数引用（L<references>）以及匿名函数（L<anonymous_functions>）了。
+
+你已经学到了理解闭包所需的全部知识。
+
+=begin sidebar
+
+Mark Jason Dominus 的著作 I<Higher Order Perl> 是有关第一等函数、闭包和利用它们
+完成令人惊奇的事物的公认参考书。你可以在 U<http://hop.perl.plover.com/> 在线阅读
+这本书。
+
+=end sidebar
+
+=head2 创建闭包
+
+X<closure>
+X<functions; closures>
+
+I<闭包> 是封闭于外部词法环境之上的函数。你也许早已创建并使用了闭包，只是没有意识
+到：
+
+=begin programlisting
+
+    {
+        package Invisible::Closure;
+
+        my $filename = shift @ARGV;
+
+        sub get_filename
+        {
+            return $filename;
+        }
+    }
+
+=end programlisting
+
+这段代码的行为平淡无奇。你也许并未觉察有何特殊之处。I<显然> 函数 C<get_filename()> 
+可以在词法层面见到 C<$filename>。作用域就是这样工作的！闭包还可以封闭于 I<转瞬即逝>
+词法环境上。
+
+假设你想迭代一个列表，而不愿自行管理迭代器。你可以创建一个返回函数的函数，当它被
+调用时，将返回迭代过程中的下一个元素：
+
+=begin programlisting
+
+    sub make_iterator
+    {
+        my @items = @_;
+        my $count = 0;
+
+        return sub
+        {
+            return if $count == @items;
+            return $items[ $count++ ];
+        }
+    }
+
+    my $cousins = make_iterator(qw( Rick Alex Kaycee Eric Corey ));
+
+    say $cousins->() for 1 .. 5;
+
+=end programlisting
+
+即使 C<make_iterator()> 已经返回，但此匿名函数仍将引用词法变量 C<@items> 和
+C<$count>。它们的值会一直保持（L<reference_counts>）。这个匿名函数，存放于 C<$cousins>，
+在调用 C<make_iterator()> 的特别词法环境中闭合于这些值上。
+
+很容易演示词法环境是独立于对 C<make_iterator()> 的调用：
+
+=begin programlisting
+
+    my $cousins = make_iterator(qw( Rick Alex Kaycee Eric Corey ));
+    my $aunts   = make_iterator(qw( Carole Phyllis Wendy ));
+
+    say $cousins->();
+    say $aunts->();
+    say $cousins->();
+    say $aunts->();
+
+=end programlisting
+
+因为对 C<make_iterator()> 的每次调用都为词法量创建分离的词法环境，匿名子过程
+就此产生且返回唯一的词法环境。
+
+因为 C<make_iterator()> 并非按值或按引用返回这些词法量，其他闭包外的 Perl 代
+码无法访问它们。他们和其他词法量一样被有效地封装。
+
+多个闭包可以闭合于同一批词法变量上，这是一个偶尔会用到的惯用语，可以为本将全
+局可见的变量提供一个更好的封装：
+
+=begin programlisting
+
+    {
+        my $private_variable;
+
+        sub set_private { $private_variable = shift }
+        sub get_private { $private_variable }
+    }
+
+=end programlisting
+
+……但注意你不可以 I<嵌套> 具名函数。具名函数有着包全局作用域。任一在嵌套函数间
+共享的词法变量，在外层函数销毁它的第一层词法环境时，将变为非共享 N<如果你还是
+不太清楚，可以想像一下它的实现>。
+
+=begin sidebar
+
+CPAN 模块 C<PadWalker> 可以让你打破词法封装，但是所有利用该模块破坏你代码的人
+应有权在没有你帮助的情况下修复所有伴随产生的软件缺陷。
+
+=end sidebar
+
+=head2 闭包的使用
+
+闭包可以构造针对定长列表的高效迭代器，但是他们在迭代那些不适合直接引用其元素的
+列表时更胜一筹，那写列表不是一次性计算全部元素的代价过于昂贵，就是尺寸太大以至
+于无法直接塞进内存中去。
+
+考虑一个按需创建 Fibonacci 序列的函数。不必递归地重计算这个序列，而应使用缓存并
+惰性地按需要求出各个元素：
+
+=begin programlisting
+
+    sub gen_fib
+    {
+        my @fibs = (0, 1, 1);
+
+        return sub
+        {
+            my $item = shift;
+
+            if ($item >= @fibs)
+            {
+                for my $calc ((@fibs - 1) .. $item)
+                {
+                    $fibs[$calc] = $fibs[$calc - 2] + $fibs[$calc - 1];
+                }
+            }
+
+            return $fibs[$item];
+        }
+    }
+
+=end programlisting
+
+每次调用由 C<gen_fib()> 返回的函数需提供一个参数，即 Fibonacci 序列的第 I<n> 个
+元素。该函数按需要生成序列中所有前导值，缓存起来，并且返回所需的元素。它将延后
+计算过程直到不得不这样做。
+
+如果你所需的全部就是计算 Fibonacci 数的话，这个方法也许太过复杂。然而，考虑到
+函数 C<gen_fib()> 可以变得惊人地通用：它初始化一个数组，用于缓存，执行一些定制
+的代码来填充缓存的各类值，并从缓存中返回已计算的结果。抽掉计算 Fibonacci 值的
+部分，你可以使用这段代码来实行所有带缓存的、惰性迭代器的行为。
+
+换句话说，你可以提取出一个函数，C<generate_caching_closure()>，并按该函数的方
+式重写 C<gen_fib()>：
+
+=begin programlisting
+
+    sub gen_caching_closure
+    {
+        my ($calc_element, @cache) = @_;
+
+        return sub
+        {
+            my $item = shift;
+
+            $calc_element->($item, \@cache) unless $item < @cache;
+
+            return $cache[$item];
+        };
+    }
+
+
+    sub gen_fib
+    {
+        my @fibs = (0, 1, 1);
+
+        return gen_caching_closure(
+            sub
+            {
+                my ($item, $fibs) = @_;
+
+                for my $calc ((@$fibs - 1) .. $item)
+                {
+                    $fibs->[$calc] = $fibs->[$calc - 2] + $fibs->[$calc - 1];
+                }
+            },
+            @fibs
+        );
+    }
+
+=end programlisting
+
+该程序的行为和以往一致，但对高阶函数和闭包的使用允许从 Fibonacci 序列的计算中有
+效分离出缓存的初始化过程。代码行为的定制————就此而言，C<gen_caching_closure()>
+————通过传递高阶函数，带来了极大的抽象性和灵活性。
+
+=begin sidebar
+
+在某种意义上，你可以将内置的 C<map>、C<grep> 以及 C<sort> 比作高阶函数，特别是
+在你拿他们和 C<gen_caching_closure()> 比较时。
+
+=end sidebar
+
+=head2 闭包与部分应用
+
+Z<partial_application>
+
+闭包除了抽象结构化细节外还可以做更多事。它允许你定制特定的行为。从某种意义上讲，
+它还可以 I<去掉> 不必要的泛化。考虑一例接受若干参数的函数：
+
+=begin programlisting
+
+    sub make_sundae
+    {
+        my %args = @_;
+
+        my $ice_cream = get_ice_cream( $args{ice_cream} );
+        my $banana    = get_banana( $args{banana} );
+        my $syrup     = get_syrup( $args{syrup} );
+        ...
+    }
+
+=end programlisting
+
+所有这些定制也许和你那位于购物中心内商品齐全的主力店正相称，但如果你在天桥附近有
+一小辆冰淇淋专卖车，那里只出售安在卡文迪什香蕉上的法式香草冰淇淋，那样在调用 C<make_sundae()> 
+时，你必须每次都传递一个恒久不变的参数。
+
+X<partial application>
+
+一个名为 I<部分应用> 的技巧将一部分参数绑定给函数以便你可以在后续的调用过程中
+填入其他值。用闭包来模拟再简单不过了：
+
+=begin programlisting
+
+    my $make_cart_sundae = sub
+    {
+        return make_sundae( @_,
+            ice_cream => 'French Vanilla',
+            banana    => 'Cavendish',
+        );
+    };
+
+=end programlisting
+
+现在不必调用 C<make_sundae()> 了，你可以直接使用 C<< $make_cart_sundae->() >>
+并只将相关的参数传入，而无需顾及忘传或错传不变量。N<你还可以使用来自 CPAN 的
+C<Sub::Install> 把这个函数直接安装到你的名称空间中。>。

@@ -1,0 +1,245 @@
+=head1 State versus Closures
+
+Z<state>
+
+Closures (L<closures>) take advantage of lexical scope (L<scope>) to mediate
+access to semi-private variables. Even named functions can take advantage of
+lexical bindings:
+
+=begin programlisting
+
+    {
+        my $safety = 0;
+
+        sub enable_safety  { $safety = 1 }
+        sub disable_safety { $safety = 0 }
+
+        sub do_something_awesome
+        {
+            return if $safety;
+            ...
+        }
+    }
+
+=end programlisting
+
+The encapsulation of functions to toggle the safety allows all three functions
+to share state without exposing the lexical variable directly to external code.
+This idiom works well for cases where external code should be able to change
+internal state, but it's clunkier when only one function needs to manage that
+state.
+
+Suppose that you want to count the number of customers at your ice cream
+parlor. Every hundredth person gets free sprinkles:
+
+=begin programlisting
+
+    {
+        my $cust_count = 0;
+
+        sub serve_customer
+        {
+            $cust_count++;
+
+            my $order = shift;
+
+            add_sprinkles($order) if $cust_count % 100 == 0)
+
+            ...
+        }
+    }
+
+=end programlisting
+
+X<state>
+X<builtins; C<state>>
+
+This approach I<works>, but creating a new lexical scope for a single function
+introduces more accidental complexity than is necessary. The C<state> builtin
+allows you to declare a lexically scoped variable with a value that persists
+between invocations:
+
+=begin programlisting
+
+    sub serve_customer
+    {
+        B<state $cust_count = 0;>
+        $cust_count++;
+
+        my $order = shift;
+        add_sprinkles($order) if $cust_count % 100 == 0)
+
+        ...
+    }
+
+=end programlisting
+
+X<C<feature>>
+X<C<feature>; C<state>>
+
+You must enable this feature explicitly by using a module such as
+C<Modern::Perl>, the C<feature> pragma, or requiring a specific version of Perl
+of 5.10 or newer (with C<use 5.010;> or C<use 5.012;>, for example).
+
+C<state> also works within anonymous functions:
+
+=begin programlisting
+
+    sub make_counter
+    {
+        return sub
+        {
+             B<state $count = 0;>
+             return $count++;
+         }
+    }
+
+=end programlisting
+
+... though there are few obvious benefits to this approach.
+
+=head1 State versus Pseudo-State
+
+Perl 5.10 deprecated a technique from previous versions of Perl by which you
+could effectively emulate C<state>. A named function could close over its
+previous lexical scope by abusing a quirk of implementation. Using a postfix
+conditional which evaluates to false with a C<my> declaration avoided
+I<reinitializing> a lexical variable to C<undef> or its initialized value.
+
+Any use of a postfix conditional expression modifying a lexical variable
+declaration now produces a deprecation warning. It's too easy to write
+inadvertently buggy code with this technique; use C<state> instead where
+available, or a true closure otherwise. Rewrite this idiom when you encounter
+it:
+
+=begin programlisting
+
+    sub inadvertent_state
+    {
+        # my $counter  = 1 if 0; # DEPRECATED; do not use
+        state $counter = 1;      # use instead
+
+        ...
+    }
+
+=end programlisting
+=encoding utf8
+
+=head1 状态 VS 闭包
+
+Z<state>
+
+闭包（L<closures>）是除使用全局变量外，在函数调用间保证数据持续性的简易、有效
+且安全的的方法。如果你需要在具名函数间共享变量，你可以仅为这些函数的声明引入
+一个新作用域（L<scope>）：
+
+=begin programlisting
+
+    {
+        my $safety = 0;
+
+        sub enable_safety  { $safety = 1 }
+        sub disable_safety { $safety = 0 }
+
+        sub do_something_awesome
+        {
+            return if $safety;
+            ...
+        }
+    }
+
+=end programlisting
+
+对安全性开关函数进行封装让这三个函数可以共享状态而不必将词法变量直接地暴露给外
+部代码。在外部代码可以更改内部状态时，这个惯用语可以很好的起到作用，但在状态仅
+由单个函数维护时，它就显得有些笨拙了。
+
+假设你想统计一下你的冰淇淋小摊接待了多少客人。逢百的客人可以免费加料：
+
+=begin programlisting
+
+    {
+        my $cust_count = 0;
+
+        sub serve_customer
+        {
+            $cust_count++;
+
+            my $order = shift;
+
+            add_sprinkles($order) if $cust_count % 100 == 0)
+
+            ...
+        }
+    }
+
+=end programlisting
+
+X<state>
+
+这个方法 I<行得通>，但是为单个函数创建新的词法作用域没有那么得必要，它带来了意外的
+复杂度。C<state> 关键字允许你声明一个词法作用域变量，它的值在调用之间是连续的：
+
+=begin programlisting
+
+    sub serve_customer
+    {
+        B<state $cust_count = 0;>
+        $cust_count++;
+
+        my $order = shift;
+        add_sprinkles($order) if $cust_count % 100 == 0)
+
+        ...
+    }
+
+=end programlisting
+
+X<feature>
+X<feature; state>
+
+你必须通过使用类似 C<Modern::Perl> 的模块、C<feature> 编译命令、或是要求 Perl
+的版本必须新于 5.10（例如，C<use 5.010;> 或 C<use 5.012;>）来明确地启用这个特
+性。
+
+你也可以在匿名函数内使用 C<state>，就像这个计数器的典型例子一样：
+
+=begin programlisting
+
+    sub make_counter
+    {
+        return sub
+        {
+             B<state $count = 0;>
+             return $count++;
+         }
+    }
+
+=end programlisting
+
+……虽然没有什么明显的优势让人采用这种方式。
+
+=begin sidebar
+
+Perl 5.10 不推荐为之前版本所用的一种技术，通过它你可以有效地模拟 C<state>。在
+C<my> 声明中使用求值得假的后缀式条件表达式可以避免将一个词法变量 I<重新初始化>
+为 C<undef> 或初始化过的值。通过肆意使用这个实现方式，一个具名函数可以闭合于它
+之前的词法作用域。
+
+现在，任何对改动词法变量声明的后缀条件表达式的使用都会因不推荐而产生警告。采用
+这种技巧时，很容易在无意中写出错误百出的代码；请在可能时用 C<state> 代替，否则
+使用闭包。避免使用这个惯用语，但在遇到时也应该能读懂它：
+
+=begin programlisting
+
+    sub inadvertent_state
+    {
+        # 不推荐；请勿使用
+        my $counter = 1 if 0;
+
+        ...
+    }
+
+=end programlisting
+
+=end sidebar

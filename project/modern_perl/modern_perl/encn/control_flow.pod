@@ -1,0 +1,2270 @@
+=head1 Control Flow
+
+Z<control_flow>
+
+X<control flow>
+
+Perl's basic I<control flow> is straightforward. Program execution starts at
+the beginning (the first line of the file executed) and continues to the end:
+
+=begin programlisting
+
+    say 'At start';
+    say 'In middle';
+    say 'At end';
+
+=end programlisting
+
+X<control flow directives>
+
+Perl's I<control flow directives> change the order of execution--what happens
+next in the program--depending on the values of their expressions.
+
+=head2 Branching Directives
+
+X<control flow directives; C<if>>
+
+The C<if> directive performs the associated action only when its conditional
+expression evaluates to a I<true> value:
+
+=begin programlisting
+
+    say 'Hello, Bob!' if $name eq 'Bob';
+
+=end programlisting
+
+This postfix form is useful for simple expressions. A block form groups
+multiple expressions into a single unit:
+
+=begin programlisting
+
+    if ($name eq 'Bob')
+    {
+        say 'Hello, Bob!';
+        found_bob();
+    }
+
+=end programlisting
+
+While the block form requires parentheses around its condition, the postfix
+form does not.
+
+The conditional expression may consist of multiple subexpressions, as long as
+it evaluates to a single top-level expression:
+
+=begin programlisting
+
+    if ($name eq 'Bob' && not greeted_bob())
+    {
+        say 'Hello, Bob!';
+        found_bob();
+    }
+
+=end programlisting
+
+In the postfix form, adding parentheses can clarify the intent of the code at
+the expense of visual cleanliness:
+
+=begin programlisting
+
+    greet_bob() if ($name eq 'Bob' && not greeted_bob());
+
+=end programlisting
+
+X<control flow directives; C<unless>>
+
+The C<unless> directive is a negated form of C<if>. Perl will perform the
+action when the conditional expression evaluates to I<false>:
+
+=begin programlisting
+
+    say "You're no Bob!" unless $name eq 'Bob';
+
+=end programlisting
+
+Like C<if>, C<unless> also has a block form, though many programmers avoid it,
+as it rapidly becomes difficult to read with complex conditionals:
+
+=begin programlisting
+
+    unless (is_leap_year() and is_full_moon())
+    {
+        frolic();
+        gambol();
+    }
+
+=end programlisting
+
+C<unless> works very well for postfix conditionals, especially parameter
+validation in functions (L<postfix_parameter_validation>):
+
+=begin programlisting
+
+    sub frolic
+    {
+        return unless @_;
+
+        for my $chant (@_)
+        {
+            ...
+        }
+    }
+
+=end programlisting
+
+X<control flow directives; C<else>>
+
+The block forms of C<if> and C<unless> both work with the C<else> directive,
+which provides code to run when the conditional expression does not evaluate to
+true (for C<if>) or false (for C<unless>):
+
+=begin programlisting
+
+    if ($name eq 'Bob')
+    {
+        say 'Hi, Bob!';
+        greet_user();
+    }
+    else
+    {
+        say "I don't know you.";
+        shun_user();
+    }
+
+=end programlisting
+
+C<else> blocks allow you to rewrite C<if> and C<unless> conditionals in terms
+of each other:
+
+=begin programlisting
+
+    unless ($name eq 'Bob')
+    {
+        say "I don't know you.";
+        shun_user();
+    }
+    else
+    {
+        say 'Hi, Bob!';
+        greet_user();
+    }
+
+=end programlisting
+
+However, the implied double negative of using C<unless> with an C<else> block
+can be confusing. This example may be the only place you ever see it.
+
+Just as Perl provides both C<if> and C<unless> to allow you to phrase your
+conditionals in the most readable way, you can choose between positive and
+negative conditional operators:
+
+=begin programlisting
+
+    if ($name B<ne> 'Bob')
+    {
+        say "I don't know you.";
+        shun_user();
+    }
+    else
+    {
+        say 'Hi, Bob!';
+        greet_user();
+    }
+
+=end programlisting
+
+... though the double negative implied by the presence of the C<else> block
+suggests inverting the conditional.
+
+X<control flow directives; C<elsif>>
+
+One or more C<elsif> directives may follow an C<if> block form and may precede
+any single C<else>:
+
+=begin programlisting
+
+    if ($name eq 'Bob')
+    {
+        say 'Hi, Bob!';
+        greet_user();
+    }
+    elsif ($name eq 'Jim')
+    {
+        say 'Hi, Jim!';
+        greet_user();
+    }
+    else
+    {
+        say "You're not my uncle.";
+        shun_user();
+    }
+
+=end programlisting
+
+An C<unless> chain may also use an C<elsif> blockN<Good luck deciphering
+that!>. There is no C<elseunless>.
+
+Writing C<else if> is a syntax errorN<Larry prefers C<elsif> for aesthetic
+reasons, as well the prior art of the Ada programming language.>:
+
+=begin programlisting
+
+    if ($name eq 'Rick')
+    {
+        say 'Hi, cousin!';
+    }
+
+    # warning; syntax error
+    else if ($name eq 'Kristen')
+    {
+        say 'Hi, cousin-in-law!';
+    }
+
+=end programlisting
+
+=head2 The Ternary Conditional Operator
+
+X<ternary conditional>
+X<control flow directives; ternary conditional>
+
+The I<ternary conditional> operator evaluates a conditional expression and
+produces one of two alternatives:
+
+=begin programlisting
+
+    my $time_suffix = after_noon($time) ? 'morning' : 'afternoon';
+
+=end programlisting
+
+The conditional expression precedes the question mark character (C<?>) and the
+colon character (C<:>) separates the alternatives. The alternatives are
+expressions of arbitrary complexity--including other ternary conditional
+expressions.
+
+=begin sidebar
+
+An interesting, though obscure, idiom is to use the ternary conditional to
+select between alternative I<variables>, not only values:
+
+=begin programlisting
+
+    push @{ rand() > 0.5 ? \@red_team : \@blue_team }, Player->new;
+
+=end programlisting
+
+Again, weigh the benefits of clarity versus the benefits of conciseness.
+
+=end sidebar
+
+=head3 Short Circuiting
+
+Z<short_circuiting>
+X<short-circuiting>
+
+Perl exhibits I<short-circuiting> behavior when it encounters complex
+conditional expressions. When Perl can determine that a complex expression
+would succeed or fail as a whole without evaluating every subexpression, it
+will not evaluate subsequent subexpressions. This is most obvious with an
+example:
+
+=begin programlisting
+
+    use Test::More;
+
+    say "Both true!" if ok( 1, 'first subexpression'  )
+                     && ok( 1, 'second subexpression' );
+
+    done_testing();
+
+=end programlisting
+
+=begin sidebar
+
+The return value of C<ok()> (L<testing>) is the boolean value obtained by
+evaluating the first argument.
+
+=end sidebar
+
+This example prints:
+
+=begin screen
+
+    ok 1 - first subexpression
+    ok 2 - second subexpression
+    Both true!
+
+=end screen
+
+When the first subexpression--the first call to C<ok>--evaluates to a true
+value, Perl must evaluate the second subexpression. If the first subexpression
+had evaluated to a false value, there would be no need to check subsequent
+subexpressions, as the entire expression could not succeed:
+
+=begin programlisting
+
+    say "Both true!" if ok( 0, 'first subexpression'  )
+                     && ok( 1, 'second subexpression' );
+
+=end programlisting
+
+This example prints:
+
+=begin screen
+
+    not ok 1 - first subexpression
+
+=end screen
+
+Even though the second subexpression would obviously succeed, Perl never
+evaluates it. The same short-circuiting behavior is evident for logical-or
+operations:
+
+=begin programlisting
+
+    say "Either true!" if ok( 1, 'first subexpression'  )
+                       || ok( 1, 'second subexpression' );
+
+=end programlisting
+
+This example prints:
+
+=begin screen
+
+    ok 1 - first subexpression
+    Either true!
+
+=end screen
+
+With the success of the first subexpression, Perl can avoid evaluating the
+second subexpression. If the first subexpression were false, the result of
+evaluating the second subexpression would dictate the result of evaluating the
+entire expression.
+
+Besides allowing you to avoid potentially expensive computations, short
+circuiting can help you to avoid errors and warnings, as in the case where
+using an undefined value might raise a warning:
+
+=begin programlisting
+
+    if (defined $barbeque and $barbeque eq 'pork shoulder') { ... }
+
+=end programlisting
+
+=head2 Context for Conditional Directives
+
+X<context; conditional>
+X<boolean; true>
+X<true>
+X<false>
+
+The conditional directives--C<if>, C<unless>, and the ternary conditional
+operator--all evaluate an expression in boolean context
+(L<context_philosophy>). As comparison operators such as C<eq>, C<==>, C<ne>,
+and C<!=> all produce boolean results when evaluated, Perl coerces the results
+of other expressions--including variables and values--into boolean forms.
+
+Perl 5 has no single true value, nor a single false value. Any number which
+evaluates to 0 is false. This includes C<0>, C<0.0>, C<0e0>, C<0x0>, and so on.
+The empty string (C<''>) and C<'0'> evaluate to a false value, but the strings
+C<'0.0'>, C<'0e0'>, and so on do not. The idiom C<'0 but true'> evaluates to 0
+in numeric context but true in boolean context, thanks to its string contents.
+
+Both the empty list and C<undef> evaluate to a false value. Empty arrays and
+hashes return the number 0 in scalar context, so they evaluate to a false value
+in boolean context. An array which contains a single element--even
+C<undef>--evaluates to true in boolean context. A hash which contains any
+elements--even a key and a value of C<undef>--evaluates to a true value in
+boolean context.
+
+=begin sidebar
+
+X<C<Want>>
+X<pragmas; C<overloading>>
+
+The C<Want> module available from the CPAN allows you to detect boolean context
+within your own functions.  The core C<overloading> pragma (L<overloading>)
+allows you to specify what your own data types produce when evaluated in
+various contexts.
+
+=end sidebar
+
+=head2 Looping Directives
+
+Z<looping_directives>
+
+Perl provides several directives for looping and iteration.
+
+X<looping directives; C<for>>
+X<looping directives; C<foreach>>
+
+The I<foreach>-style loop evaluates an expression which produces a list and
+executes a statement or block until it has consumed that list:
+
+=begin programlisting
+
+    foreach (1 .. 10)
+    {
+        say "$_ * $_ = ", $_ * $_;
+    }
+
+=end programlisting
+
+This example uses the range operator to produce a list of integers from one to
+ten inclusive. The C<foreach> directive loops over them, setting the topic
+variable C<$_> (L<default_scalar_variable>) to each in turn. Perl executes the
+block for each integer and prints the squares of the integers.
+
+=begin sidebar
+
+X<builtins; C<for>>
+X<builtins; C<foreach>>
+
+Perl treats the builtins C<foreach> and C<for> interchangeably. The remainder
+of the syntax of the loop determines the behavior of the loop. Though
+experienced Perl programmers tend to refer to the loop with automatic iteration
+as a C<foreach> loop, you can use the keyword C<for> safely and clearly any
+place you might want to write C<foreach>.
+
+=end sidebar
+
+Like C<if> and C<unless>, the C<for> loop has a postfix form suitable for
+simple expressions:
+
+=begin programlisting
+
+    say "$_ * $_ = ", $_ * $_ for 1 .. 10;
+
+=end programlisting
+
+A C<for> loop may use a named variable instead of the topic:
+
+=begin programlisting
+
+    for my $i (1 .. 10)
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+=end programlisting
+
+The scope of the variable C<$i> is only valid I<within> the loop. Perl will set
+this lexical to the value of each item in the iteration. Perl will not modify
+the topic variable (C<$_>). If you have declared a lexical C<$i> in an outer
+scope, its value will persist outside the loop:
+
+=begin programlisting
+
+    my $i = 'cow';
+
+    for my $i (1 .. 10)
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+    is( $i, 'cow', 'Lexical variable not overwritten in outer scope' );
+
+=end programlisting
+
+This localization occurs even if you do not redeclare the iteration variable as
+a lexicalN<... but I<do> declare your iteration variables as lexicals to reduce
+their scope.>:
+
+=begin programlisting
+
+    my $i = 'horse';
+
+    for $i (1 .. 10)
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+    is( $i, 'horse', 'Lexical variable still not overwritten in outer scope' );
+
+=end programlisting
+
+=head2 Iteration and Aliasing
+
+X<iteration; aliasing>
+X<aliasing>
+X<aliasing; iteration>
+
+The C<for> loop I<aliases> the iterator variable to the values in the iteration
+such that any modifications to the value of the iterator modifies the iterated
+value in place:
+
+=begin programlisting
+
+    my @nums = 1 .. 10;
+
+    $_ **= 2 for @nums;
+
+    is( $nums[0], 1, '1 * 1 is 1' );
+    is( $nums[1], 4, '2 * 2 is 4' );
+
+    ...
+
+    is( $nums[9], 100, '10 * 10 is 100' );
+
+=end programlisting
+
+This aliasing also works with the block style C<foreach> loop:
+
+=begin programlisting
+
+    for my $num (@nums)
+    {
+        $num **= 2;
+    }
+
+=end programlisting
+
+... as well as iteration with the topic variable:
+
+=begin programlisting
+
+    for (@nums)
+    {
+        $_ **= 2;
+    }
+
+=end programlisting
+
+You cannot use aliasing to modify I<constant> values, however:
+
+=begin programlisting
+
+    for (qw( Huex Dewex Louid ))
+    {
+        $_++;
+        say;
+    }
+
+=end programlisting
+
+Instead Perl will produce an exception about modification of read-only values.
+
+You may occasionally see the use of C<for> with a single scalar variable to
+alias C<$_> to the variable:
+
+=begin programlisting
+
+    for ($user_input)
+    {
+        s/^\s*|\s*$//g;  # trim whitespace
+        s/(\W)/\\$1/g;   # escape non-word characters
+    }
+
+=end programlisting
+
+=head2 Iteration and Scoping
+
+X<iteration; scoping>
+X<scope; iterator>
+X<C<my $_>>
+X<C<$_>; lexical>
+
+Iterator scoping with the topic variable provides one common source of
+confusion. Consider a function C<topic_mangler()> modifies C<$_> on purpose. If
+code iterating over a list called C<topic_mangler()> without protecting C<$_>,
+debugging fun would ensue:
+
+=begin programlisting
+
+    for (@values)
+    {
+        topic_mangler();
+    }
+
+    sub topic_mangler
+    {
+        s/foo/bar/;
+    }
+
+=end programlisting
+
+If you I<must> use C<$_> rather than a named variable, make the topic variable
+lexical with C<my $_>:
+
+=begin programlisting
+
+    sub topic_mangler
+    {
+        # was $_ = shift;
+        B<my> $_ = shift;
+
+        s/foo/bar/;
+        s/baz/quux/;
+
+        return $_;
+    }
+
+=end programlisting
+
+Using a named iteration variable also prevents undesired aliasing behavior
+through C<$_>.
+
+=head2 The C-Style For Loop
+
+X<loops; C<for>>
+
+The C-style I<for loop> requires you to manage the conditions of iteration:
+
+=begin programlisting
+
+    for (my $i = 0; $i <= 10; $i += 2)
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+=end programlisting
+
+You must explicitly assign to an iteration variable in the looping construct,
+as this loop performs neither aliasing nor assignment to the topic variable.
+While any variable declared in the loop construct is scoped to the lexical
+block of the loop, there is no lexicalization of a variable declared outside of
+the loop construct:
+
+=begin programlisting
+
+    my $i = 'pig';
+
+    for ($i = 0; $i <= 10; $i += 2)
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+    isnt( $i, 'pig', '$i overwritten with a number' );
+
+=end programlisting
+
+The looping construct may have three subexpressions. The first
+subexpression--the initialization section--executes only once, before the loop
+body executes.  Perl evaluates the second subexpression--the conditional
+comparison--before each iteration of the loop body. When this evaluates to a
+true value, iteration proceeds. When it evaluates to a false value, iteration
+stops. The final subexpression executes after each iteration of the loop body.
+
+=begin programlisting
+
+    # declared outside to avoid declaration in conditional
+    my $i;
+
+    for (
+        # loop initialization subexpression
+        say 'Initializing' and $i = 0;
+
+        # conditional comparison subexpression
+        say "Iteration: $i" and $i < 10;
+
+        # iteration ending subexpression
+        say 'Incrementing $i' and $i++
+    )
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+=end programlisting
+
+Note the lack of a semicolon after the final subexpression as well as the use
+of the low-precedence C<and>; this syntax is surprisingly finicky. When
+possible, prefer the C<foreach> style loop to the C<for> loop.
+
+All three subexpressions are optional. An infinite C<for> loop might be:
+
+=begin programlisting
+
+    for (;;) { ... }
+
+=end programlisting
+
+=head2 While and Until
+
+X<loops; C<while>>
+
+A I<while> loop continues until the loop conditional expression evaluates to a
+boolean false value. An idiomatic infinite loop is:
+
+=begin programlisting
+
+    while (1) { ... }
+
+=end programlisting
+
+Unlike the iteration C<foreach>-style loop, the C<while> loop's condition has
+no side effects by itself. That is, if C<@values> has one or more elements,
+this code is also an infinite loop:
+
+=begin programlisting
+
+    while (@values)
+    {
+        say $values[0];
+    }
+
+=end programlisting
+
+X<destructive update>
+
+To prevent such an infinite C<while> loop, use a I<destructive update> of the
+C<@values> array by modifying the array with each loop iteration:
+
+=begin programlisting
+
+    while (my $value = shift @values)
+    {
+        say $value;
+    }
+
+=end programlisting
+
+X<loops; C<until>>
+
+The I<until> loop reverses the sense of the test of the C<while> loop.
+Iteration continues while the loop conditional expression evaluates to a false
+value:
+
+=begin programlisting
+
+    until ($finished_running)
+    {
+        ...
+    }
+
+=end programlisting
+
+The canonical use of the C<while> loop is to iterate over input from a
+filehandle:
+
+=begin programlisting
+
+    use autodie;
+
+    open my $fh, '<', $file;
+
+    while (<$fh>)
+    {
+        ...
+    }
+
+=end programlisting
+
+Perl 5 interprets this C<while> loop as if you had written:
+
+=begin programlisting
+
+    while (defined($_ = <$fh>))
+    {
+        ...
+    }
+
+=end programlisting
+
+Without the implicit C<defined>, any line read from the filehandle which
+evaluated to a false value in a scalar context--a blank line or a line which
+contained only the character C<0>--would end the loop. The C<readline> (C<< <>
+>>) operator returns an undefined value only when it has reached the end of the
+file.
+
+=begin sidebar
+
+X<builtins; C<chomp>>
+
+Use the C<chomp> builtin remove line-ending characters from each line. May
+novices forget this.
+
+=end sidebar
+
+Both C<while> and C<until> have postfix forms. Another infinite loop is:
+
+=begin programlisting
+
+    1 while 1;
+
+=end programlisting
+
+Any single expression is suitable for a postfix C<while> or C<until>, such as
+the classic "Hello, world!" example from 8-bit computers of the early 1980s:
+
+=begin programlisting
+
+    print "Hello, world!  " while 1;
+
+=end programlisting
+
+Infinite loops are more useful than they seem, especially for event loops in
+GUI programs, program interpreters, or network servers:
+
+=begin programlisting
+
+    $server->dispatch_results() until $should_shutdown;
+
+=end programlisting
+
+X<loops; C<do>>
+
+Use a C<do> block to group several expressions into a single unit:
+
+=begin programlisting
+
+    do
+    {
+        say 'What is your name?';
+        my $name = <>;
+        chomp $name;
+        say "Hello, $name!" if $name;
+    } until (eof);
+
+=end programlisting
+
+A C<do> block parses as a single expression which may contain several
+expressions. Unlike the C<while> loop's block form, the C<do> block with a
+postfix C<while> or C<until> will execute its body at least once. This
+construct is less common than the other loop forms, but no less powerful.
+
+=head2 Loops within Loops
+
+X<loops; nested>
+
+You may nest loops within other loops:
+
+=begin programlisting
+
+    for my $suit (@suits)
+    {
+        for my $values (@card_values)
+        {
+            ...
+        }
+    }
+
+=end programlisting
+
+When you do so, declare named iteration variables! The potential for confusion
+with the topic variable and its scope is too great otherwise.
+
+A common mistake with nesting C<foreach> and C<while> loops is that it is easy
+to exhaust a filehandle with a C<while> loop:
+
+=begin programlisting
+
+    use autodie;
+
+    open my $fh, '<', $some_file;
+
+    for my $prefix (@prefixes)
+    {
+        # DO NOT USE; likely buggy code
+        while (<$fh>)
+        {
+            say $prefix, $_;
+        }
+    }
+
+=end programlisting
+
+Opening the filehandle outside of the C<for> loop leaves the file position
+unchanged between each iteration of the C<for> loop. On its second iteration,
+the C<while> loop will have nothing to read and will not execute. To solve this
+problem, re-open the file inside the C<for> loop (simple to understand, but not
+always a good use of system resources), slurp the entire file into memory
+(which may not work if the file is large), or C<seek> the filehandle back to
+the beginning of the file for each iteration (an often overlooked option):
+
+=begin programlisting
+
+    use autodie;
+
+    open my $fh, '<', $some_file;
+
+    for my $prefix (@prefixes)
+    {
+        while (<$fh>)
+        {
+            say $prefix, $_;
+        }
+
+        seek $fh, 0, 0;
+    }
+
+=end programlisting
+
+=head2 Loop Control
+
+X<loops; control>
+
+Sometimes you need to break out of a loop before you have exhausted the
+iteration conditions. Perl 5's standard control mechanisms--exceptions and
+C<return>--work, but you may also use I<loop control> statements.
+
+X<loops; C<next>>
+
+The I<next> statement restarts the loop at its next iteration. Use it when
+you've done all you need to in the current iteration. To loop over lines in a
+file but skip everything that starts with the comment character C<#>, write:
+
+=begin programlisting
+
+    while (<$fh>)
+    {
+        B<next> if /\A#/;
+        ...
+    }
+
+=end programlisting
+
+X<loops; C<last>>
+
+The I<last> statement ends the loop immediately. To finish processing a file
+once you've seen the ending token, write:
+
+=begin programlisting
+
+    while (<$fh>)
+    {
+        next if /\A#/;
+        B<last> if /\A__END__/
+        ...
+    }
+
+=end programlisting
+
+X<loops; C<redo>>
+
+The I<redo> statement restarts the current iteration without evaluating the
+conditional again. This can be useful in those few cases where you want to
+modify the line you've read in place, then start processing over from the
+beginning without clobbering it with another line. To implement a silly file
+parser that joins lines which end with a backslash:
+
+=begin programlisting
+
+    while (my $line = <$fh>)
+    {
+        chomp $line;
+
+        # match backslash at the end of a line
+        if ($line =~ s{\\$}{})
+        {
+            $line .= <$fh>;
+            chomp $line;
+            redo;
+        }
+
+        ...
+    }
+
+=end programlisting
+
+X<loops; labels>
+
+Using loop control statements in nested loops can be confusing. If you cannot
+avoid nested loops--by extracting inner loops into named functions--use a
+I<loop label> to clarify:
+
+=begin programlisting
+
+    OUTER:
+    while (<$fh>)
+    {
+        chomp;
+
+        INNER:
+        for my $prefix (@prefixes)
+        {
+            next OUTER unless $prefix;
+            say "$prefix: $_";
+        }
+    }
+
+=end programlisting
+
+=head2 Continue
+
+X<loops; C<continue>>
+
+The C<continue> construct behaves like the third subexpression of a C<for>
+loop; Perl executes its block before subsequent iterations of a loop, whether
+due to normal loop repetition or premature re-iteration from C<next>N<The Perl
+equivalent to C's C<continue> is C<next>.>. You may use it with a C<while>,
+C<until>, C<with>, or C<for> loop. Examples of C<continue> are rare, but it's
+useful any time you want to guarantee that something occurs with every
+iteration of the loop regardless of how that iteration ends:
+
+=begin programlisting
+
+    while ($i < 10 )
+    {
+        next unless $i % 2;
+        say $i;
+    }
+    continue
+    {
+        say 'Continuing...';
+        $i++;
+    }
+
+=end programlisting
+
+Be aware that a C<continue> block does I<not> execute when control flow leaves
+a loop due to C<last> or C<redo>.
+
+=head2 Given/When
+
+Z<given_when>
+
+X<builtins; C<given>>
+
+The C<given> construct is a feature new to Perl 5.10.  It assigns the value of
+an expression to the topic variable and introduces a block:
+
+=begin programlisting
+
+    given ($name)
+    {
+        ...
+    }
+
+=end programlisting
+
+Unlike C<for>, it does not iterate over an aggregate. It evaluates its
+expression in scalar context, and always assigns to the topic variable:
+
+=begin programlisting
+
+    given (my $username = find_user())
+    {
+        is( $username, $_, 'topic assignment happens automatically' );
+    }
+
+=end programlisting
+
+C<given> also lexicalizes the topic variable:
+
+=begin programlisting
+
+    given ('mouse')
+    {
+        say;
+        mouse_to_man( $_ );
+        say;
+    }
+
+    sub mouse_to_man
+    {
+        $_ = shift;
+        s/mouse/man/;
+    }
+
+=end programlisting
+
+X<builtins; C<when>>
+X<topicalization>
+
+C<given> is most useful when combined with C<when>. C<given> I<topicalizes> a
+value within a block so that multiple C<when> statements can match the topic
+against expressions using I<smart-match> semantics. To write the Rock, Paper,
+Scissors game:
+
+=begin programlisting
+
+    my @options = ( \&rock, \&paper, \&scissors );
+
+    do
+    {
+        say "Rock, Paper, Scissors!  Pick one: ";
+        chomp( my $user = <STDIN> );
+        my $computer_match = $options[ rand @options ];
+        $computer_match->( lc( $user ) );
+    } until (eof);
+
+    sub rock
+    {
+        print "I chose rock.  ";
+
+        given (shift)
+        {
+            when (/paper/)    { say 'You win!' };
+            when (/rock/)     { say 'We tie!'  };
+            when (/scissors/) { say 'I win!'   };
+            default           { say "I don't understand your move" };
+        }
+    }
+
+    sub paper
+    {
+        print "I chose paper.  ";
+
+        given (shift)
+        {
+            when (/paper/)    { say 'We tie!'  };
+            when (/rock/)     { say 'I win!'   };
+            when (/scissors/) { say 'You win!' };
+            default           { say "I don't understand your move" };
+        }
+    }
+
+    sub scissors
+    {
+        print "I chose scissors.  ";
+
+        given (shift)
+        {
+            when (/paper/)    { say 'I win!'   };
+            when (/rock/)     { say 'You win!' };
+            when (/scissors/) { say 'We tie!'  };
+            default           { say "I don't understand your move" };
+        }
+    }
+
+=end programlisting
+
+Perl executes the C<default> rule when none of the other conditions match.
+
+=begin sidebar
+
+X<C<MooseX::MultiMethods>>
+
+The CPAN module C<MooseX::MultiMethods> allows another technique to reduce this
+code further.
+
+=end sidebar
+
+The C<when> construct is even more powerful; it can match (L<smart_match>)
+against many other types of expressions including scalars, aggregates,
+references, arbitrary comparison expressions, and even code references.
+
+=head2 Tailcalls
+
+Z<tailcalls>
+X<tailcalls>
+X<builtins; C<goto>>
+
+A I<tailcall> occurs when the last expression within a function is a call to
+another function--the return value of the outer function is the return
+value of the inner function:
+
+=begin programlisting
+
+    sub log_and_greet_person
+    {
+        my $name = shift;
+        log( "Greeting $name" );
+
+        return greet_person( $name );
+    }
+
+=end programlisting
+
+Here returning from C<greet_person()> directly to the caller of
+C<log_and_greet_person()> is more efficient than returning to
+C<log_and_greet_person()> and immediately returning I<from>
+C<log_and_greet_person()>. Returning directly from C<greet_person()> to the
+caller of C<log_and_greet_person()> is a I<tailcall optimization>.
+
+Perl 5 will not detect cases where it could apply this optimization
+automatically.
+
+=begin sidebar
+
+Heavily recursive code (L<recursion>), especially mutually recursive code, can
+consume a lot of memory. Tailcalls reduce the memory needed for internal
+bookkeeping of control flow and can make expensive algorithms tractable.
+
+=end sidebar
+=encoding utf8
+
+=head1 控制流程 
+
+Z<control_flow>
+
+X<control flow>
+
+Perl 的基本 I<控制流程> 相当直截了当。程序执行过程起始于程序开头（被执行文件的第一行）
+然后一直到结尾：
+
+=begin programlisting
+
+    say 'At start';
+    say 'In middle';
+    say 'At end';
+
+=end programlisting
+
+X<control flow directives>
+
+大多数程序需要更为复杂的控制流程。Perl 的 I<控制流程语句> 改变了程序执行的顺序────程序
+中接下来要发生的────依赖于任意复杂的表达式的值。
+
+=head2 分支语句
+
+X<if>
+X<control flow directives; if>
+X<postfix if>
+X<postfix expressions; if>
+
+C<if> 语句对一条件表达式求值并仅在此条件表达式的值为真时执行相关动作：
+
+=begin programlisting
+
+    say 'Hello, Bob!' if $name eq 'Bob';
+
+=end programlisting
+
+这种后缀形式在表达式较简单时很有用。代码块形式则将多个表达式组合成单一单元：
+
+=begin programlisting
+
+    if ($name eq 'Bob')
+    {
+        say 'Hello, Bob!';
+        found_bob();
+    }
+
+=end programlisting
+
+虽然代码块形式要求条件两边有括号，但后缀形式则相反。条件表达式也可以相对复杂：
+
+=begin programlisting
+
+    if ($name eq 'Bob' && not greeted_bob())
+    {
+        say 'Hello, Bob!';
+        found_bob();
+    }
+
+=end programlisting
+
+……虽然在此种情况下，采用后缀形式的括号形式可以使其稍显清晰
+N<同时也会因此对是否使用后缀形式产生争论>：
+
+=begin programlisting
+
+    greet_bob() if ($name eq 'Bob' && not greeted_bob());
+
+=end programlisting
+
+X<unless>
+X<control flow directives; unless>
+X<postfix unless>
+X<postfix expressions; unless>
+
+C<unless> 语句是 C<if> 的否定形式。Perl 在条件表达式的值为 I<假> 时执行
+所需操作：
+
+=begin programlisting
+
+    say "You're no Bob!" unless $name eq 'Bob';
+
+=end programlisting
+
+和 C<if> 类似，C<unless> 也有代码块形式。不同于 C<if>，C<unless> 的代码块形式相比其 
+后缀形式来说很少见：
+
+=begin programlisting
+
+    unless (is_leap_year() and is_full_moon())
+    {
+        frolic();
+        gambol();
+    }
+
+=end programlisting
+
+C<unless> 很适合后缀条件，特别是函数中的参数验证（L<postfix_parameter_validation>）：
+
+=begin programlisting
+
+    sub frolic
+    {
+        return unless @_;
+
+        for my $chant (@_)
+        {
+            ...
+        }
+    }
+
+=end programlisting
+
+条件一多 C<unless> 就会变得难以阅读，这便是它很少以代码块形式出现的原因之一。
+
+X<else>
+X<control flow directives; else>
+
+C<if> 以及 C<unless> 都可以搭配 C<else> 语句，它提供了当条件表达式的值不为真（C<if>）
+或假（C<unless>）时运行的代码：
+
+=begin programlisting
+
+    if ($name eq 'Bob')
+    {
+        say 'Hi, Bob!';
+        greet_user();
+    }
+    else
+    {
+        say "I don't know you.";
+        shun_user();
+    }
+
+=end programlisting
+
+C<else> 代码块允许你按不同于自身的方式重写 C<if> 和 C<unless> 条件语句：
+
+=begin programlisting
+
+    B<unless> ($name eq 'Bob')
+    {
+        say "I don't know you.";
+        shun_user();
+    }
+    else
+    {
+        say 'Hi, Bob!';
+        greet_user();
+    }
+
+=end programlisting
+
+如果你大声读出前面这个例子，你会发现一例不合适的伪代码用词：“除非该名字为 Bob，做这件事。否则
+做那件。”隐含的双重否定可能会很迷惑。Perl 提供了 C<if> 和 C<unless> 使得你可以按最为自然、
+最为上口的方式对条件语句进行组织。同样地，你可以根据比较操作符在肯定和否定断言之间进行选择：
+
+=begin programlisting
+
+    if ($name B<ne> 'Bob')
+    {
+        say "I don't know you.";
+        shun_user();
+    }
+    else
+    {
+        say 'Hi, Bob!';
+        greet_user();
+    }
+
+=end programlisting
+
+因 C<else> 代码块的出现而隐含着的双重否定示意此代码组织方式是不合理的。
+
+X<elsif>
+X<control flow directives; elsif>
+
+在单个 C<else> 之前、C<if> 代码块之后可以跟一个或多个 C<elsif> 语句。C<elsif> 代码块的使用数量不限，
+但你不可以改变块出现的顺序：
+
+=begin programlisting
+
+    if ($name eq 'Bob')
+    {
+        say 'Hi, Bob!';
+        greet_user();
+    }
+    elsif ($name eq 'Jim')
+    {
+        say 'Hi, Jim!';
+        greet_user();
+    }
+    else
+    {
+        say "You're not my uncle.";
+        shun_user();
+    }
+
+=end programlisting
+
+你也可以在 C<unless> 链内使用 C<elsif> 块，但是结果代码会不那么清晰。不存在 C<elseunless> 的说法。
+
+同样也没有 C<else if> 这一语法结构 N<Larry 出于美学原因以及 Ada 编程语言的现有技术选择了 C<elsif>>，
+因此，这段代码含有语法错误：
+
+=begin programlisting
+
+    if ($name eq 'Rick')
+    {
+        say 'Hi, cousin!';
+    }
+
+    # warning; syntax error
+    else if ($name eq 'Kristen')
+    {
+        say 'Hi, cousin-in-law!';
+    }
+
+=end programlisting
+
+=head2 三元条件操作符
+
+X<ternary conditional>
+X<control flow directives; ternary conditional>
+
+I<三元条件> 操作符提供了另一种方法来控制流程。它先将条件表达式求值，并由此对两不同结果之一求值：
+
+=begin programlisting
+
+    my $time_suffix = after_noon($time) ? 'morning' : 'afternoon';
+
+=end programlisting
+
+条件表达式位于问号（C<?>）之前，冒号（C<:>）分隔两种选择。这两个选择分支可以是字面值或者（带括号）
+任意复杂的表达式，包括其他的三元条件表达式（以可读性为代价）。
+
+=begin sidebar
+
+一个有趣但晦涩的惯用语便是使用三元条件语句在两个候选 I<变量> 之间做出选择，而非仅仅对值：
+
+=begin programlisting
+
+    push @{ rand() > 0.5 ? \@red_team : \@blue_team }, Player->new();
+
+=end programlisting
+
+再次提醒，请对清晰和简略各自带来的利益进行权衡。
+
+=end sidebar
+
+=head3 短路求值
+
+X<short circuiting behavior>
+X<short circuiting>
+
+当遇到由多重待求值的表达式组成的复杂表达式时，Perl 将做出名为 I<短路求值> 的行为。如果 Perl
+可以决定一个复杂的表达式整体的值是真还是假，那么它不会对后续子表达式求值。用例子说明会更加明白：
+
+=begin programlisting
+
+    # see preface
+    use Test::More 'no_plan';
+
+    say "Both true!" if ok(1, 'first subexpression')
+                     && ok(1, 'second subexpression');
+
+    done_testing();
+
+=end programlisting
+
+=begin sidebar
+
+C<ok()> 的返回值（L<testing>）是对第一个参数求值得到的。
+
+=end sidebar
+
+这个例子打印出：
+
+=begin screen
+
+    ok 1 - first subexpression
+    ok 2 - second subexpression
+    Both true!
+
+=end screen
+
+当第一个子表达式────对 C<ok> 的第一次调用────求得真值时，Perl 必须对第二个字表达式求值。
+当第一个表达式求得假值时，整个表达式不为真，因此无需检查后续子表达式。
+
+=begin programlisting
+
+    say "Both true!" if ok(0, 'first subexpression')
+                     && ok(1, 'second subexpression');
+
+=end programlisting
+
+这个例子打印出：
+
+=begin screen
+
+    not ok 1 - first subexpression
+
+=end screen
+
+虽然第二个子表达式显然为真，Perl 绝不对其求值。对于“一真即真”复杂条件表达式来说，
+其逻辑也是相似的：
+
+=begin programlisting
+
+    say "Either true!" if ok(1, 'first subexpression')
+                       || ok(1, 'second subexpression');
+
+=end programlisting
+
+这个例子打印出：
+
+=begin screen
+
+    ok 1 - first subexpression
+    Either true!
+
+=end screen
+
+再次，第一个子表达式为真，Perl 可以避免对第二个子表达式求值。如果第一个子表达式为假，
+则对第二个子表达式求值的结果将决定整个表达式的真假。
+
+除了可以让你避免潜在的昂贵计算，短路求值还可以帮助你避免错误和警告：
+
+=begin programlisting
+
+    if (exists $barbeque{pork} and $barbeque{pork} eq 'shoulder') { ... }
+
+=end programlisting
+
+
+=head2 条件语句相关的上下文
+
+X<context; conditional>
+X<truth>
+X<boolean truth>
+X<true value>
+X<false value>
+
+这些条件语句────C<if>、C<unless>，以及三元条件表达式────总是在布尔上下文（L<context_philosophy>）
+中对一个表达式进行求值。由于 C<eq>、C<==>、C<ne> 和 C<!=> 这类操作符在求值时总产生布尔结果，Perl
+将其他表达式的求值结果────包括变量和值────强制转换为布尔形式。对空哈希和数组求值得假。
+
+Perl 5 没有单一的真值、也没有单一的假值。任何求值为 0 的数字为假。包括 C<0>、C<0.0>、C<0e0>、
+C<0x0> 等等。空字符串（C<''>）以及 C<"0"> 求值得假，但是字符串如 C<"0.0">、C<"0e0"> 等则不然。
+惯用语 C<"0 but true"> 在数值上下文中求值得 0，但其值因字符串内容而为真。空列表和 C<undef> 都
+为假。空数组和哈希在标量上下文中返回 0，因此它们在布尔上下文中为假。
+
+带有单个元素的数组────即便该元素是 C<undef>────在布尔上下文中求值得真，含任何元素的哈希────
+即使是一键一值两个 C<undef>────在布尔上下文中也得真。
+
+=begin sidebar
+
+CPAN 模块 C<Want> 允许你在你的函数内检测布尔上下文。核心编译命令 C<overloading>（L<overloading>、
+L<pragmas>）允许你指定自己的数据类型在布尔上下文中求得的值。
+
+=end sidebar
+
+=head2 循环语句
+
+Z<looping_directives>
+
+Perl 也提供了供循环和迭代使用的若干语句。
+
+X<foreach>
+X<for>
+X<looping directives; for>
+X<looping directives; foreach>
+
+I<foreach> 风格的循环对一表达式求值而产生一个列表，接着执行某语句或代码块直到它消耗完该列表：
+
+=begin programlisting
+
+    foreach (1 .. 10)
+    {
+        say "$_ * $_ = ", $_ * $_;
+    }
+
+=end programlisting
+
+这个例子使用范围操作符产生了一个包括一到十在内的整数列表。C<foreach> 语句在其之上循环，依次设置话题变量
+（C<$_>，参见 L<default_scalar_variable>）。Perl 针对每个整数执行代码块并打印该整数的平方。
+
+=begin sidebar
+
+Perl 将 C<foreach> 和 C<for> 可互换地看待。循环余下部分的语句决定了循环的行为。尽管有经验的 Perl 程序员
+倾向于用 C<foreach> 循环来指代自动迭代循环，你可以在任何用到 C<foreach> 的地方安全地用 C<for> 替代。
+
+=end sidebar
+
+如同 C<if> 及 C<unless>，C<for> 循环也有一个后缀形式：
+
+=begin programlisting
+
+    say "$_ * $_ = ", $_ * $_ for 1 .. 10;
+
+=end programlisting
+
+有关清晰、简略的建议同样适用于此。
+
+你可以提供一个用于赋值变量以代替话题变量：
+
+=begin programlisting
+
+    for my $i (1 .. 10)
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+=end programlisting
+
+如果你这样做了，Perl 将不会将话题变量（C<$_>）赋值为迭代值。注意变量 C<$i> 的作用域仅限于循环 I<内部>。
+如果你在循环外定义了词法变量 C<$i>，它的值将不受循环内变量的影响：
+
+=begin programlisting
+
+    my $i = 'cow';
+
+    for my $i (1 .. 10)
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+    is( $i, 'cow', 'Lexical variable not overwritten in outer scope' );
+
+=end programlisting
+
+甚至你不将该迭代变量重新声明为词法变量，它仍会被局部化：
+
+=begin programlisting
+
+    my $i = 'horse';
+
+    for $i (1 .. 10)
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+    is( $i, 'horse', 'Lexical variable still not overwritten in outer scope' );
+
+=end programlisting
+
+=head2 迭代和别名
+
+X<iteration aliasing>
+X<aliasing>
+X<aliasing; foreach>
+X<aliasing; iteration>
+
+C<for> 循环将迭代变量 I<别名化> 为迭代中的值，以便你可以直接在迭代过程中修改：
+
+=begin programlisting
+
+    my @nums = 1 .. 10;
+
+    $_ **= 2 for @nums;
+
+    is( $nums[0], 1, '1 * 1 is 1' );
+    is( $nums[1], 4, '2 * 2 is 4' );
+
+    ...
+
+    is( $nums[9], 100, '10 * 10 is 100' );
+
+=end programlisting
+
+代码块形式的 C<foreach> 循环同样也会别名化：
+
+=begin programlisting
+
+    for my $num (@nums)
+    {
+        $num **= 2;
+    }
+
+=end programlisting
+
+……用话题变量迭代时也会：
+
+=begin programlisting
+
+    for (@nums)
+    {
+        $_ **= 2;
+    }
+
+=end programlisting
+
+你不能通过别名修改 I<常量> 值，然而：
+
+=begin programlisting
+
+    for (qw( Huex Dewex Louie ))
+    {
+        $_++;
+        say;
+    }
+
+=end programlisting
+
+……会抛出有关修改只读值的异常。无论如何，这样并没有什么必要。
+
+你偶尔会碰到 C<for> 搭配别名化为 C<$_> 的单个标量的用法：
+
+=begin programlisting
+
+    for ($user_input)
+    {
+        s/(\w)/\\$1/g;  # 跳过非文字字符
+        s/^\s*|\s$/g;   # 修剪空白
+    }
+
+=end programlisting
+
+=head2 迭代和作用范围
+
+X<iterator scoping>
+X<scope; iterator>
+X<my $_>
+X<$_; lexical>
+
+迭代器的作用范围连同话题变量一起是为常见的困惑之源。这种情况下，C<some_function()> 有意修改 C<$_>。如果
+C<some_function()> 调用了其他未经明确局部化 C<$_> 而对其加以修改的代码，则在 C<@values> 中的迭代值将改变。
+调试这样的问题很麻烦：
+
+=begin programlisting
+
+    for (@values)
+    {
+        some_function();
+    }
+
+    sub some_function
+    {
+        s/foo/bar/;
+    }
+
+=end programlisting
+
+如果你 I<必须> 使用 C<$_> 而非其他具名变量，请使用 C<my $_> 将话题变量词法化：
+
+=begin programlisting
+
+    sub some_function_called_later
+    {
+        # 曾经是 $_ = shift;
+        B<my> $_ = shift;
+
+        s/foo/bar/;
+        s/baz/quux/;
+
+        return $_;
+    }
+
+=end programlisting
+
+使用具名变量同时也避免了通过 C<$_> 别名化的行为。
+
+=head2 C 语言风格的 For 循环
+
+X<for loop>
+
+C 语言风格的 I<for 循环> 允许程序员手动控制迭代：
+
+=begin programlisting
+
+    for (my $i = 0; $i <= 10; $i += 2)
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+=end programlisting
+
+你必须手动给迭代变量赋值，因为现在已经不会自动给话题变量赋值。因此也没有别名化行为。虽然任何
+已声明的词法变量的作用范围是代码块主体部分。一个 I<未> 在迭代控制部分中明确声明的变量的内容
+I<将> 被覆盖：
+
+=begin programlisting
+
+    my $i = 'pig';
+
+    for ($i = 0; $i <= 10; $i += 2)
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+    isnt( $i, 'pig', '$i overwritten with a number' );
+
+=end programlisting
+
+此循环的循环结构中有三个子表达式。第一个子表达式是初始化部分，它在第一次执行循环体前执行一
+次。第二个子表达式是条件比较子表达式。Perl 每次在循环体执行之前对其求值。当此子表达式值为真时
+循环继续。当此子表达式为假时，循环结束。最后一个子表达式在每次完成循环体时执行。
+
+一个例子会使问题更加清晰：
+
+=begin programlisting
+
+    # 在外部声明以避免在条件语句中出现声明
+    my $i;
+
+    for (
+        # 循环初始化子表达式
+        say 'Initializing' and $i = 0;
+
+        # 条件比较子表达式
+        say "Iteration: $i" and $i < 10;
+
+        # 迭代结尾子表达式
+        say 'Incrementing $i' and $i++
+    )
+    {
+        say "$i * $i = ", $i * $i;
+    }
+
+=end programlisting
+
+请注意迭代结尾子表达式后分号的省略以及低优先级 C<and> 的使用。这种语法真是令人惊讶地考究。当可能时，
+尽量使用 C<foreach> 风格的循环来代替 C<for> 循环。
+
+所有这个三个表达式都是可选的。你可以这样编写无限循环：
+
+=begin programlisting
+
+    for (;;) { ... }
+
+=end programlisting
+
+=head2 While 和 Until
+
+X<while loop>
+X<loops; while>
+
+I<while> 循环会一直执行直到循环条件得出布尔假值。一个无限循环可以按如下方式清晰地写出：
+
+=begin programlisting
+
+    while (1) { ... }
+
+=end programlisting
+
+这意味着 C<while> 循环的迭代结束条件和 C<foreach> 循环中的有所不同，即对表达式自身求值并不产生任何
+副作用。如果 C<@values> 拥有一个或多个元素，下列代码也是一个无限循环：
+
+=begin programlisting
+
+    while (@values)
+    {
+        say $values[0];
+    }
+
+=end programlisting
+
+X<destructive update>
+
+为避免此类无限 C<while> 循环，你必须通过每次迭代修改 C<@values> 数组以对其进行 I<析构更新>：
+
+=begin programlisting
+
+    while (my $value = shift @values)
+    {
+        say $value;
+    }
+
+=end programlisting
+
+X<until loop>
+X<loops; until>
+
+I<until> 循环刚好和 C<while> 进行相反的测试。迭代会在循环条件表达式为假时继续：
+
+=begin programlisting
+
+    until ($finished_running)
+    {
+        ...
+    }
+
+=end programlisting
+
+C<while> 循环的典型用法是从一个文件句柄中迭代读取输入：
+
+=begin programlisting
+
+    use autodie;
+
+    open my $fh, '<', $file;
+
+    while (<$fh>)
+    {
+        ...
+    }
+
+=end programlisting
+
+Perl 5 对此 C<while> 循环进行解释时，就好像你编写了如下代码：
+
+=begin programlisting
+
+    while (defined($_ = <$fh>))
+    {
+        ...
+    }
+
+=end programlisting
+
+不用明确写出 C<defined>，任何从该文件句柄读出、且求值得假────空行或只包含字符 C<0>────的行会结束整个循
+环。当完成从文件中读取行的任务后，C<readline>（C<< <> >>）操作符才返回一个未定义的值。
+
+=begin sidebar
+
+一个常见的错误就是忘记从读入的每一行移除行结束符，使用 C<chomp> 关键字可以完成这项工作。
+
+=end sidebar
+
+C<while> 和 C<until> 都可以写成后缀形式。Perl 5 中最简单的无限循环是：
+
+=begin programlisting
+
+    1 while 1;
+
+=end programlisting
+
+任何单个表达式对后缀式的 C<while> 和 C<until> 来说都是合适的，例如来自八十年代早期 8 位计算机的
+经典 "Hello, world!"：
+
+=begin programlisting
+
+    print "Hello, world!  " while 1;
+
+=end programlisting
+
+无限循环可能看上去有点笨拙，但它们实际上很有用。一个简单的 GUI 程序或网络服务器事件循环可以是：
+
+=begin programlisting
+
+    $server->dispatch_results() until $should_shutdown;
+
+=end programlisting
+
+X<do; looping>
+X<looping; do>
+
+对于更加复杂的表达式，使用 C<do> 代码块：
+
+=begin programlisting
+
+    do
+    {
+        say 'What is your name?';
+        my $name = <>;
+        chomp $name;
+        say "Hello, $name!" if $name;
+    } until (eof);
+
+=end programlisting
+
+出于语法分析的目的，虽然可以包含若干表达式，C<do> 代码块本身却是一个单一的表达式。不像 C<while> 循环
+的代码块形式，搭配后缀式 C<while> 或 C<until> 的 C<do> 代码块至少会执行它的主体一次。这个结构相比其他
+循环形式来说较为少见，但在功能上毫不逊色。
+
+=head2 循环中的循环
+
+X<nested loops>
+X<loops; nested>
+
+你可以在循环中嵌套其他循环：
+
+=begin programlisting
+
+    for my $suit (@suits)
+    {
+        for my $values (@card_values)
+        {
+            ...
+        }
+    }
+
+=end programlisting
+
+在这种情况下，明确地声明具名变量对可维护性来说必不可少。就迭代变量的作用范围而言，当使用话题变量时，
+引发混淆的潜在可能太大了。
+
+嵌套使用  C<foreach> 和 C<while> 时，一个常见的错误是：很容易就可以用 C<while> 循环将某文件句柄整
+得筋疲力尽。
+
+=begin programlisting
+
+    use autodie;
+
+    open my $fh, '<', $some_file;
+
+    for my $prefix (@prefixes)
+    {
+        # 不要这样用，很可能是有问题的代码
+        while (<$fh>)
+        {
+            say $prefix, $_;
+        }
+    }
+
+=end programlisting
+
+在 C<for> 循环之外打开文件句柄使得 C<for> 循环在两次迭代间放着文件位置不动。在第二次迭代中，
+C<while> 循环无事可做且不会执行循环体。为解决此问题，你可以在 C<for> 循环内重新打开文件（理解
+上很简单，但是是对系统资源的不恰当使用），将整个文件吸入内存（文件太大可能就不行），或者在每次
+迭代时用 C<seek> 使文件句柄回到文件开头（通常被忽视的选择）：
+
+=begin programlisting
+
+    use autodie;
+
+    open my $fh, '<', $some_file;
+
+    for my $prefix (@prefixes)
+    {
+        while (<$fh>)
+        {
+            say $prefix, $_;
+        }
+
+        seek $fh, 0, 0;
+    }
+
+=end programlisting
+
+=head2 循环控制
+
+X<loop control>
+
+有时你需要在用尽迭代条件前跳出循环。Perl 5 的标准控制机制────异常和 C<return>────可以实现这个目的，但
+你也可以使用 I<循环控制> 语句。
+
+X<next>
+
+I<next> 语句在下一个迭代点重新开始循环。当你已经完成本次迭代的所有任务后可以使用它。要循环读取文件中的每
+一行并跳过所有看上去像注释的内容，即以 C<#> 开始的行，你可能会这样写：
+
+=begin programlisting
+
+    while (<$fh>)
+    {
+        B<next> if /\A#/;
+        ...
+    }
+
+=end programlisting
+
+X<last>
+
+I<last> 语句立即结束循环。想在遇到结束分隔符后结束文件处理，你可能会这样写：
+
+=begin programlisting
+
+    while (<$fh>)
+    {
+        next if /\A#/;
+        B<last> if /\A__END__/
+        ...
+    }
+
+=end programlisting
+
+X<redo>
+
+I<redo> 语句不对条件语句再次求值并重新开始本次迭代。这在少数情况下很有用：比如你想当即修改你读到的行，接着从头
+开始处理而不想影响其他的行时。例如，你可以实现一个把所有以反斜杠结尾的行拼接起来的笨拙的文件分析器：
+
+=begin programlisting
+
+    while (my $line = <$fh>)
+    {
+        chomp $line;
+
+        # 匹配行尾的反斜杠
+        if ($line =~ s{\\$}{})
+        {
+            $line .= <$fh>;
+            redo;
+        }
+
+        ...
+    }
+
+=end programlisting
+
+……虽然这是一个做作的例子。
+
+X<labels>
+X<loops; labels>
+
+嵌套循环可能会使这些循环控制语句的使用变得模棱两可。在这些情况下，I<循环标签> 可以消除歧义：
+
+=begin programlisting
+
+    OUTER:
+    while (<$fh>)
+    {
+        chomp;
+
+        INNER:
+        for my $prefix (@prefixes)
+        {
+            next OUTER unless $prefix;
+            say "$prefix: $_";
+        }
+    }
+
+=end programlisting
+
+如果你发现你自己正编写需要标签来控制流程的嵌套循环，考虑简化你的代码：也许将内层循环压缩为
+函数会更清晰。
+
+=head2 Continue
+
+X<continue>
+
+C<continue> 语法结构的行为类似于 C<for> 循环的第三个子表达式。Perl 会在循环的每一次迭代过程执行
+该代码块，即便你使用 C<next> 来跳出某次迭代。你可以把它和 C<while>、C<until>、C<with> 或 C<for> 循环
+搭配使用。C<continue> 的例子比较罕见，但在想保证每一次迭代某事都会发生一次并无需顾及循环如何结束时很有用：
+
+=begin programlisting
+
+    while ($i < 10 )
+    {
+        next unless $i % 2;
+        say $i;
+    }
+    continue
+    {
+        say 'Continuing...';
+        $i++;
+    }
+
+=end programlisting
+
+=head2 Given/When
+
+Z<given_when>
+
+X<given>
+
+C<given> 语法结构是 Perl 5.10 的新特性。它将某表达式的值赋给话题变量并引入一个代码块：
+
+=begin programlisting
+
+    given ($name)
+    {
+        ...
+    }
+
+=end programlisting
+
+不像 C<for>，它不对某集合类型进行迭代。它在标量上下文中求值，并总是赋值给话题变量：
+
+=begin programlisting
+
+    given (my $username = find_user())
+    {
+        is( $username, $_, 'topic assignment happens automatically' );
+    }
+
+=end programlisting
+
+C<given> 同时对话题变量进行局部化来防止无意的修改：
+
+=begin programlisting
+
+    given ('mouse')
+    {
+        say;
+        mouse_to_man( $_ );
+        say;
+    }
+
+    sub mouse_to_man
+    {
+        $_ = shift;
+        s/mouse/man/;
+    }
+
+=end programlisting
+
+X<when>
+
+X<topicalization>
+X<topicalize>
+
+单独出现时，这个功能看上去没什么用。但 C<when> 和其他功能组合时候就会非常有用。使用 C<given> 来 I<话题化> 某个值。
+在关联的代码块之内，多个 C<when> 语句使用 I<智能匹配> 语义逐表达式匹配话题。因此你可以这样编写石头剪刀布游戏：
+
+=begin programlisting
+
+    my @options = ( \&rock, \&paper, \&scissors );
+
+    do
+    {
+        say "Rock, Paper, Scissors!  Pick one: ";
+        chomp( my $user = <STDIN> );
+        my $computer_match = $options[ rand @options ];
+        $computer_match->( lc( $user ) );
+    } until (eof);
+
+    sub rock
+    {
+        print "I chose rock.  ";
+
+        given (shift)
+        {
+            when (/paper/)    { say 'You win!' };
+            when (/rock/)     { say 'We tie!'  };
+            when (/scissors/) { say 'I win!'   };
+            default           { say "I don't understand your move" };
+        }
+    }
+
+    sub paper
+    {
+        print "I chose paper.  ";
+
+        given (shift)
+        {
+            when (/paper/)    { say 'We tie!'  };
+            when (/rock/)     { say 'I win!'   };
+            when (/scissors/) { say 'You win!' };
+            default           { say "I don't understand your move" };
+        }
+    }
+
+    sub scissors
+    {
+        print "I chose scissors.  ";
+
+        given (shift)
+        {
+            when (/paper/)    { say 'I win!'   };
+            when (/rock/)     { say 'You win!' };
+            when (/scissors/) { say 'We tie!'  };
+            default           { say "I don't understand your move" };
+        }
+    }
+
+=end programlisting
+
+当无一条件匹配时，Perl 执行 C<default> 规则。
+
+=begin sidebar
+
+CPAN 模块 C<MooseX::MultiMethods> 允许利用其他技术来减少这段代码。
+
+=end sidebar
+
+C<when> 语法结构甚至更为强大。它可以匹配（L<smart_match>）其他表达式类型诸如标量、集合、
+引用、任意比较表达式甚至是代码引用。
+
+=head2 Tailcalls
+
+Z<tailcalls>
+X<tailcalls>
+X<goto>
+
+某函数内最后一个表达式是对其他函数的调用时，这种情况称为 I<尾部调用>────外层函数的返回值
+就是内层函数的返回值：
+
+=begin programlisting
+
+    sub log_and_greet_person
+    {
+        my $name = shift;
+        log( "Greeting $name" );
+
+        return greet_person( $name );
+    }
+
+=end programlisting
+
+X<optimization; tailcalls>
+X<tailcall optimization>
+
+此例中，C<greet_person()> 直接返回给 C<log_and_greet_person()> 的调用者要比先返回 C<log_and_greet_person()>
+再立刻 I<从> C<log_and_greet_person()> 中返回要来得高效。直接将 C<greet_person()> 返回给 C<log_and_greet_person()> 
+的调用者，是一种叫做 I<尾部调用优化> 的优化手段。
+
+Perl 5 不会自动检测它是否应该进行这种优化。
+
+=begin sidebar
+
+深度递归的代码（L<recursion>），特别是互相递归的代码，会迅速消耗大量内存。使用尾部调用会减少有关内部
+控制流程记录的内存消耗，这使得某些昂贵的算法变得可行。
+
+=end sidebar

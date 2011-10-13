@@ -1,0 +1,284 @@
+=head1 Pragmas
+
+Z<pragmas>
+
+X<pragmas>
+X<modules; pragmas>
+
+Most Perl 5 extensions are modules which provide new functions or define
+classes (L<moose>). Some modules instead influence the behavior of the language
+itself, such as C<strict> or C<warnings>. Such a module is a I<pragma>. By
+convention, pragmas have lower-case names to differentiate them from other
+modules.
+
+=head2 Pragmas and Scope
+
+X<pragmas; scope>
+
+Pragmas work by exporting specific behavior or information into their caller
+scopes--lexical scopes. Just as declaring a lexical variable makes a symbol
+name available within a scope, using a pragma makes its behavior effective
+within that scope:
+
+=begin programlisting
+
+    {
+        # $lexical is B<not> visible; strict is B<not> in effect
+        {
+            use strict;
+            my $lexical = 'available here';
+            # $lexical B<is> visible; strict B<is> in effect
+            ...
+        }
+        # $lexical is again B<not> visible; strict is B<not> in effect
+    }
+
+=end programlisting
+
+Just as lexical declarations affect inner scopes, pragmas maintain their
+effects within inner scopes:
+
+=begin programlisting
+
+    # file scope
+    use strict;
+
+    {
+        # inner scope, but strict still in effect
+        my $inner = 'another lexical';
+        ...
+    }
+
+=end programlisting
+
+=head2 Using Pragmas
+
+X<pragmas; enabling>
+
+C<use> a pragma as you would any other module. Pragmas take arguments, such as
+a minimum version number to use and a list of arguments to change the pragma's
+behavior:
+
+=begin programlisting
+
+    # require variable declarations; prohibit bareword function names
+    use strict qw( subs vars );
+
+=end programlisting
+
+X<pragmas; disabling>
+X<builtins; C<no>>
+
+Disable all or part of a pragma with the C<no> builtin. This also respects
+lexical scoping:
+
+=begin programlisting
+
+    use strict;
+
+    {
+        # get ready to manipulate the symbol table
+        no strict 'refs';
+        ...
+    }
+
+=end programlisting
+
+=head2 Useful Core Pragmas
+
+X<pragmas; useful core pragmas>
+
+Perl 5 includes several useful core pragmas:
+
+X<pragmas; C<strict>>
+
+=over 4
+
+=item * the C<strict> pragma enables compiler checking of symbolic references,
+bareword use, and variable declaration
+
+X<pragmas; C<warnings>>
+
+=item * the C<warnings> pragma enables optional warnings for deprecated,
+unintended, and awkward behaviors.
+
+X<pragmas; C<utf8>>
+
+=item * the C<utf8> pragma forces the parser to interpret the source code with
+UTF-8 encoding
+
+X<pragmas; C<autodie>>
+
+=item * the C<autodie> pragma enables automatic error checking of system calls
+and builtins
+
+X<pragmas; C<constant>>
+
+=item * the C<constant> pragma allows you to create compile-time constant
+values (see the CPAN's C<Readonly> for an alternative)
+
+X<pragmas; C<vars>>
+
+=item * the C<vars> pragma allows you to declare package global variables, such
+as C<$VERSION> or C<@ISA> (L<blessed_references>)
+
+=back
+
+X<magic variables; C<$^H>>
+X<pragmas; writing>
+
+Perl 5.10.0 added the ability to write your own lexical pragmas in pure Perl
+code. C<perldoc perlpragma> explains how to do so, while the explanation of
+C<$^H> in C<perldoc perlvar> explains how the feature works. The CPAN has begun
+to gather useful pragmas, including:
+
+X<CPAN; C<autobox>>
+X<CPAN; C<perl5i>>
+X<CPAN; C<autovivification>>
+X<CPAN; C<indirect>>
+
+=over 4
+
+=item * C<autobox> enables object-like behavior for Perl 5's core types
+(scalars, references, arrays, and hashes).
+
+=item * C<perl5i> combines and enables many experimental language extensions
+into a coherent whole.
+
+=item * C<autovivification> disables autovivification (L<autovivification>)
+
+=item * C<indirect> prevents the use of indirect invocation
+(L<indirect_objects>)
+
+=back
+
+These tools are not widely used yet. The latter two can help you write more
+correct code, while the former two are worth experimenting with in small
+projects. They represent what Perl 5 might be.
+=encoding utf8
+
+=head1 编译命令
+
+Z<pragmas>
+
+Perl 5 的扩展机制是模块（L<modules>）。大部分模块提供了函数可供调用的函数，或定义
+了一些类（L<moose>），但有部分模块则不同，它们对语言自身的行为产生了影响。
+
+X<pragma>
+X<modules; pragmas>
+
+影响编译器行为的模块称为一条 I<编译命令（pragma）>。按照惯例，编译命令的名称为小写，
+以示与其他模块的区别。你已经听说过的一些编译命令有：C<strict> 和 C<warnings>。
+
+=head2 编译命令和作用域
+
+X<pragmas; scope>
+
+编译命令的工作方式是向闭合的静态作用域导出特定行为或信息。编译命令的作用域与词法变
+量相同。在某种程度上你可以将词法变量声明看做是一种带有可笑语法的编译命令。用例子说
+明编译命令的作用域会更加清楚：
+
+=begin programlisting
+
+    {
+        # $lexical B<不> 可见；strict B<未> 生效
+        {
+            use strict;
+            my $lexical = 'available here';
+            # $lexical B<可见>；strict B<有效>
+            ...
+        }
+        # $lexical 再次 B<不> 可见；strict B<不> 起作用
+    }
+
+=end programlisting
+
+=begin sidebar
+
+一个潜能被充分激发的 Perl 大师可以实现一个无视作用域的行为不良的编译命令，
+但这太不友善了。
+
+=end sidebar
+
+如同词法声明影响内层作用域那样，编译命令也会如此：
+
+=begin programlisting
+
+    # 整个文件范围
+    use strict;
+
+    {
+        # 内层作用域；但是仍在 strict 生效的范围内
+        my $inner = 'another lexical';
+        ...
+    }
+
+=end programlisting
+
+=head2 使用编译命令
+
+X<pragmas; enabling>
+X<pragmas; customizing>
+
+编译命令与模块的使用机制相同。和使用模块时相同，你可以指定所需编译命令的版本，也
+可以向编译命令传递参数列表以便更好地控制其行为：
+
+=begin programlisting
+
+    # 要求变量声明；防止裸字函数名称
+    use strict qw( subs vars );
+
+=end programlisting
+
+X<pragmas; disabling>
+
+在作用域内你可以用 C<no> 关键字禁用全部或部分编译命令：
+
+=begin programlisting
+
+    use strict;
+
+    {
+        # 准备修改符号表
+        no strict 'refs';
+        ...
+    }
+
+=end programlisting
+
+=head2 常用核心编译命令
+
+X<pragmas; useful>
+
+Perl 5 包含了一些有用的核心编译命令：
+
+=over 4
+
+=item * C<strict> 编译命令启用编译器对符号引用、裸字、变量声明的检查
+
+=item * C<warnings> 编译命令为不推荐的、出人意料的、古怪的行为启用可选的警告。
+它们 I<不一定> 是错误，但可能产生多余的行为
+
+=item * C<utf8> 编译命令对源代码启用 UTF-8 编码
+
+=item * C<autodie> 编译命令（5.10.1 新增）对系统调用和关键字启用自动错误检查，
+减少手动检查之需
+
+=item * C<constant> 编译命令允许你创建编译期常量（也请参见来自 CPAN 的 C<Readonly> 替代）
+
+=item * C<vars> 编译命令允许你声明包全局变量，诸如 C<$VERSION>、导出变量（L<exporting>）
+以及来自 Perl 文档的 OO（L<blessed_references>）
+
+=back
+
+另有一些来自 CPAN 的实用编译命令。两个值得细看的是 C<autobox>，它为 Perl 5 核心类型
+（标量、引用、数组和哈希）启用了类对象行为；以及 C<perl5i>，它组合并启用了许多实验性
+质的语言扩展，使之成为一个有机的整体。这两个编译命令不经大量测试和慎重考虑可能不会出
+现在你的产品代码中，但它们展示了编译命令的实用和强大。
+
+=begin sidebar
+
+Perl 5.10.0 新增了用纯 Perl 代码编写你自己的词法编译命令的能力。C<perldoc perlpragma>
+阐述了如何去做，同时，C<perldoc perlvar> 内对 C<$^H> 的解释说明了此特性的工作原理。
+
+=end sidebar

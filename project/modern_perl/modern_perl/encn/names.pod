@@ -1,0 +1,313 @@
+=head1 Names
+
+Z<names>
+
+X<names>
+X<identifiers>
+
+I<Names> (or I<identifiers>) are everywhere in Perl programs: variables,
+functions, packages, classes, and even filehandles. These names all begin with
+a letter or an underscore and may optionally include any combination of
+letters, numbers, and underscores.  When the C<utf8> pragma (L<unicode>) is in
+effect, you may use any valid UTF-8 characters in identifiers. These are all
+valid Perl identifiers:
+
+=begin programlisting
+
+    my $name;
+    my @_private_names;
+    my %Names_to_Addresses;
+
+    sub anAwkwardName3;
+
+    # with use utf8; enabled
+    package Ingy::DE<ouml>t::Net;
+
+=end programlisting
+
+These are invalid Perl identifiers:
+
+=begin programlisting
+
+    my $invalid name;
+    my @3;
+    my %~flags;
+
+    package a-lisp-style-name;
+
+=end programlisting
+
+X<symbolic lookups>
+
+I<Names exist primarily for the benefit of the programmer>. These rules apply
+only to literal names which appear as-is in your source code, such as C<sub
+fetch_pie> or C<my $waffleiron>. Only Perl's parser enforces the rules about
+indentifier names.
+
+Perl's dynamic nature allows you to refer to entities with names generated at
+runtime or provided as input to a program. These I<symbolic lookups> provide
+flexibility at the expense of some safety. In particular, invoking functions or
+methods indirectly or looking up symbols in a namespace lets you bypass Perl's
+parser.
+
+Doing so can produce confusing code. As Mark Jason Dominus recommends so
+effectivelyN<U<http://perl.plover.com/varvarname.html>>, use a hash (L<hashes>)
+or nested data structure (L<nested_data_structures>).
+
+=head2 Variable Names and Sigils
+
+X<variables; names>
+X<scalar variables>
+X<variables; scalars>
+X<scalars>
+X<arrays>
+X<variables; arrays>
+X<hashes>
+X<variables; hashes>
+X<sigil>
+
+I<Variable names> always have a leading I<sigil> (or symbol) which indicates
+the type of the variable's value. I<Scalar variables> (L<scalars>) use the
+dollar sign (C<$>) character. I<Array variables> (L<arrays>) use the at sign
+(C<@>) character. I<Hash variables> (L<hashes>) use the percent sign (C<%>)
+character:
+
+=begin programlisting
+
+    my $scalar;
+    my @array;
+    my %hash;
+
+=end programlisting
+
+These sigils provide a visual namespacing for variable names. It's
+possible--though confusing--to declare multiple variables of the same name with
+different types:
+
+=begin programlisting
+
+    my ($bad_name, @bad_name, %bad_name);
+
+=end programlisting
+
+Again, names exist to help programmers. Perl won't get confused. People reading
+this code will.
+
+X<variant sigils>
+
+Perl 5's sigils are I<variant sigils>. As context determines how many items you
+expect from an operation or what type of data you expect to get, so the sigil
+governs how you manipulate the data of a variable.  For example, to access a
+single element of an array or a hash, you must use the scalar sigil (C<$>):
+
+=begin programlisting
+
+    my $hash_element  = $hash{ $key };
+    my $array_element = $array[ $index ]
+
+    $hash{ $key }     = 'value';
+    $array[ $index ]  = 'item';
+
+=end programlisting
+
+X<lvalue>
+X<rvalue>
+
+The parallel with amount context is important. Using a scalar element of an
+aggregate as an I<lvalue> (the target of an assignment, on the left side of the
+C<=> character) imposes scalar context (L<context_philosophy>) on the I<rvalue>
+(the value assigned, on the right side of the C<=> character).
+
+X<slices>
+
+Similarly, accessing multiple elements of a hash or an array--an operation
+known as I<slicing>--uses the at symbol (C<@>) and imposes list contextN<...
+even if the list itself has zero or one elements>:
+
+=begin programlisting
+
+    my @hash_elements  = @hash{ @keys };
+    my @array_elements = @array[ @indexes ];
+
+    my %hash;
+    @hash{ @keys }     = @values;
+
+=end programlisting
+
+The most reliable way to determine the type of a variable--scalar, array, or
+hash--is to look at the operations performed on it. Scalars support all basic
+operations, such as string, numeric, and boolean manipulations. Arrays support
+indexed access through square brackets. Hashes support keyed access through
+curly brackets.
+
+=head2 Namespaces
+
+X<fully-qualified name>
+X<namespaces>
+
+Perl provides a mechanism to group similar functions and variables into their
+own unique named spaces--I<namespaces> (L<packages>). A namespace is a
+collection of one or more names joined by double colons (C<::>), such that
+C<DessertShop::IceCream> refers to a logical collection of related variables and
+functions, such as C<scoop()> and C<pour_hot_fudge()>.
+
+Within a namespace, you may use the short name of its members. Outside of the
+namespace, refer to a member using its I<fully-qualified name>, which includes
+the namespace, as in C<DessertShop::IceCream::add_sprinkles()>.
+
+While standard naming rules apply to package names, by convention user-defined
+packages all start with uppercase letters. The Perl core reserves lowercase
+package names for core pragmas (L<pragmas>), such as C<strict> and C<warnings>.
+This is a policy enforced primarily by community guidelines.
+
+Namespaces do not nest in Perl 5. The relationship between
+C<DessertShop::IceCream> and C<DessertShop::IceCream::Freezer> is only a
+storage mechanism, with no further implications on the relationships between
+parent and child or sibling packages. When Perl looks up a symbol in
+C<DessertShop::IceCream::Freezer>, it looks in the C<main::> symbol table for a
+symbol representing the C<DessertShop::> namespace, then in there for the
+C<IceCream::> namespace, and so on. Only a programmer can make I<logical>
+relationships between entities obvious--by choosing good names and organizing
+them well.
+=encoding utf8
+
+=head1 名称 
+
+Z<names>
+
+X<names>
+X<identifiers>
+
+Perl 程序中，I<名称>（或 I<标识符>）无处不在：变量、函数、包、类甚至是文件句柄也
+有名称。这些名称都以字母或下划线开头。他们可以选择性包含任何字母、数字和下划线的
+组合。当 C<utf8> 编译命令（L<pragmas>、L<unicode>）生效时，你可以在标识符中使用
+任意合法的 UTF-8 字符。这些都是合法的 Perl 标识符：
+
+=begin programlisting
+
+    my $name;
+    my @_private_names;
+    my %Names_to_Addresses;
+
+    sub anAwkwardName3;
+
+    # 启用 C<use utf8;> 时
+    package Ingy::DE<ouml>t::Net;
+
+=end programlisting
+
+这些是不合法的 Perl 标识符：
+
+=begin programlisting
+
+    my $invalid name;
+    my @3;
+    my %~flags;
+
+    package a-lisp-style-name;
+
+=end programlisting
+
+X<symbolic lookups>
+
+这些规则仅适用于源代码中以字面形式出现的名称，就是说，直接键入 C<sub fetch_pie>
+或是 C<my $waffleiron>。
+
+Perl 动态的本质使得它可以按名称引用在运行时生成或者以输入的方式提供给程序的那些
+实体。这称为 I<符号查找>。 你可以通过这种方式获得更多的灵活性，但以牺牲安全性作
+为代价。特别地，间接调用函数或方法或是查找名称空间内的符号让你绕过 Perl 的语法
+分析器──── Perl 中唯一强制执行语法规则的部分。请注意这样做可能会生成迷惑性的代码，
+一个哈希（L<hashes>）或嵌套数据结构（L<nested_data_structures>）（相比符号引用）
+会使代码更加清晰。
+
+=head2 变量名和印记(sigil)
+
+X<variables; names>
+X<scalar variables>
+X<variables; scalars>
+X<scalars>
+X<array variables>
+X<variables; arrays>
+X<hash variables>
+X<variables; hashes>
+
+I<变量名> 的开头总有一个标明其值类型的印记。I<标量变量>（L<scalars>）开头是美元符
+号（C<$>）。I<数组变量>（L<arrays>）开头是“at”符号（C<@>）。I<哈希变量>（L<hashes>）
+的开头则是一个百分号（C<%>）。
+
+=begin programlisting
+
+    my $scalar;
+    my @array;
+    my %hash;
+
+=end programlisting
+
+这些印记多少为变量提供了一些名称空间，使得拥有同名不同型的变量成为可能（虽然通常
+具有迷惑性）：
+
+=begin programlisting
+
+    my ($bad_name, @bad_name, %bad_name);
+
+=end programlisting
+
+Perl 不会因此犯迷糊，但是阅读代码的人则会。
+
+X<variant sigils>
+
+Perl 5 使用 I<变化印记> ──── 变量的印记可能会随使用情况的不同而不同。例如，访问数组
+或哈希中的（标量）元素，印记就变成了美元符号（C<$>）：
+
+=begin programlisting
+
+    my $hash_element  = $hash{ $key };
+    my $array_element = $array[ $index ]
+
+    $hash{ $key }     = 'value';
+    $array[ $index ]  = 'item';
+
+=end programlisting
+
+X<lvalue>
+X<rvalue>
+
+在最后两行中，将集合类型的标量成员用作 I<左值>（赋值的目标，位于 C<=> 符号的左侧）会
+向 I<右值>（所赋之值，位于 C<=> 符号的右侧）施加标量上下文（L<context_philosophy>）。
+
+X<slicing>
+
+类似地，访问数组或哈希中的多个元素────一个被称为 I<分片> 的操作────使用“at”符号（C<@>）
+作为印记并施加列表上下文：
+
+=begin programlisting
+
+    my @hash_elements  = @hash{ @keys };
+    my @array_elements = @array[ @indexes ];
+
+    my %hash;
+    @hash{ @keys }     = @values;
+
+=end programlisting
+
+决定一个变量────标量、数组或哈希────类型最可靠的方法是看对它进行何种操作。标量支持所
+有基本的操作，诸如字符串、数值、布尔处理。数组通过中括号支持对元素的下标访问。哈希通
+过大括号支持对元素的按键访问。
+
+=head2 包限定名称
+
+X<fully-qualified name>
+
+你偶尔会需要引用其他名称空间中的函数或变量。通常你需要通过类的 I<完全限定名称> 来引
+用它。这些名称由双冒号（C<::>）分隔的包名组成。就是说，C<My::Fine::Package> 指向一个
+逻辑上的函数以及变量的集合。
+
+虽然标准命名规则也适用于包名，照惯例，用户定义的包的名称通常以大写字母开头。Perl 核心
+为内建编译命令（L<pragmas>）保留了小写包名，如 C<strict> 和 C<warnings>。这是由社区指南
+而非 Perl 自身强制的规矩。
+
+Perl 5 没有嵌套名称空间。C<Some::Package> 和 C<Some::Package::Refinement> 的关系仅仅是
+存储机制上的，并无第二重暗示指出在包关系上它们是父子还是兄弟。当 Perl 在 C<Some::Package::Refinement>
+中查找某一符号时，它向 C<main::> 符号表查找代表 C<Some::> 名称空间的符号，接着再在其中
+查找 C<Package::> 名称空间，如此等等。当你选择名称和组织代码时，使实体之间的 I<逻辑> 关
+系明显是你的责任。

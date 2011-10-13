@@ -1,0 +1,442 @@
+=head1 Exceptions
+
+Z<exceptions>
+X<exceptions>
+
+Programming well means anticipating the unexpected. Files that should exist
+don't. That huge disk that will never fill up does. The always-on network
+isn't. The unbreakable database breaks. Exceptions happen, and robust software
+must handle them.  If you can recover, great! If you can't, log the relevant
+information and retry.
+
+Perl 5 handles exceptional conditions through I<exceptions>: a
+dynamically-scoped control flow mechanism designed to raise and handle errors.
+
+=head2 Throwing Exceptions
+
+Z<throwing_exceptions>
+
+Suppose you want to write a log file. If you can't open the file, something has
+gone wrong. Use C<die> to throw an exception:
+
+=begin programlisting
+
+    sub open_log_file
+    {
+        my $name = shift;
+        open my $fh, '>>', $name
+            B<or die "Can't open logging file '$name': $!";>
+        return $fh;
+    }
+
+=end programlisting
+
+X<builtins; C<die>>
+X<exceptions; throwing>
+X<exceptions; throwing strings>
+X<exceptions; C<die>>
+X<C<$@>>
+X<exceptions; C<$@>>
+
+C<die()> sets the global variable C<$@> to its operand and immediately exits
+the current function I<without returning anything>. This thrown exception will
+continue up the call stack (L<call_stack>) until something catches it. If
+nothing catches the exception, the program will exit with an error.
+
+=begin sidebar
+
+Exception handling uses the same dynamic scope (L<dynamic_scope>) as C<local>
+symbols.
+
+=end sidebar
+
+=head2 Catching Exceptions
+
+Z<catching_exceptions>
+
+X<exceptions; catching>
+
+Sometimes an exception exiting the program is useful. A program run as a timed
+process might throw an exception when the error logs have filled, causing an
+SMS to go out to administrators. Yet not all exceptions should be fatal. Good
+programs can recover from some, or at least save their state and exit cleanly.
+
+X<builtins; C<eval>>
+X<C<eval>; block>
+
+Use the block form of the C<eval> operator to catch an exception:
+
+=begin programlisting
+
+    # log file may not open
+    my $fh = eval { open_log_file( 'monkeytown.log' ) };
+
+=end programlisting
+
+If the file open succeeds, C<$fh> will contain the filehandle. If it fails,
+C<$fh> will remain undefined, and program flow will continue.
+
+The block argument to C<eval> introduces a new scope, both lexical and dynamic.
+If C<open_log_file()> called other functions and something eventually threw an
+exception, this C<eval> could catch it.
+
+X<magic variables; C<$@>>
+
+An exception handler is a blunt tool. It will catch all exceptions in its
+dynamic scope. To check which exception you've caught (or if you've caught an
+exception at all), check the value of C<$@>. As C<$@> is a I<global> variable,
+you should C<local>ize it before you attempt to catch an exception:
+
+=begin programlisting
+
+    B<local $@;>
+
+    # log file may not open
+    my $fh = eval { open_log_file( 'monkeytown.log' ) };
+
+    # caught exception
+    B<if (my $exception = $@) { ... }>
+
+=end programlisting
+
+X<exceptions; rethrowing>
+
+Copy C<$@> to a lexical variable immediately to avoid the possibility of
+subsequent code clobbering the global variable C<$@>. You never know what else
+has used an C<eval> block elsewhere and reset C<$@>.
+
+C<$@> usually contains a string describing the exception. You can inspect its
+contents to see whether you can handle the exception:
+
+=begin programlisting
+
+    if (my $exception = $@)
+    {
+        die $exception unless $exception =~ /^Can't open logging file/;
+        $fh = log_to_syslog();
+    }
+
+=end programlisting
+
+Rethrow an exception by calling C<die()> again. Pass the existing exception or
+a new one as necessary.
+
+X<exceptions; throwing objects>
+X<exceptions; custom classes with C<Exception::Class>>
+X<C<Exception::Class>>
+
+You may C<die> with either a string or a reference--even an I<object>. Applying
+regular expressions to string exceptions can be fragile. Objects are more
+robust; they contain more information. You can throw any object as an
+exception, but consider using the CPAN distribution C<Exception::Class> to
+define your own class or classes of exceptions:
+
+=begin programlisting
+
+    package Zoo::Exceptions
+    {
+        use Exception::Class
+            'Zoo::AnimalEscaped',
+            'Zoo::HandlerEscaped';
+    }
+
+    sub cage_open
+    {
+        my $self = shift;
+        Zoo::AnimalEscaped->throw unless $self->contains_animal;
+        ...
+    }
+
+    sub breakroom_open
+    {
+        my $self = shift;
+        Zoo::HandlerEscaped->throw unless $self->contains_handler;
+        ...
+    }
+
+=end programlisting
+
+Catch these exceptions as you would any other exception.
+
+=head2 Exception Caveats
+
+Z<exception_caveats>
+
+X<exceptions; caveats>
+
+Using C<$@> correctly requires you to navigate several subtle risks:
+
+=over 4
+
+=item * UnC<local>ized uses further down the dynamic scope may modify C<$@>
+
+=item * It may contain an object which overrides its boolean value to return
+false
+
+=item * A signal handler (especially the C<DIE> signal handler) may change
+C<$@>
+
+=item * The destruction of an object during scope exit may call C<eval> and
+change C<$@>
+
+=back
+
+X<exceptions; handling safely with C<Try::Tiny>>
+X<C<Try::Tiny>>
+
+Perl 5.14 improves the safety of exception handling. The C<Try::Tiny> CPAN
+distribution improves the safety of exception handling I<and> the syntax. It's
+easy to use:
+
+=begin programlisting
+
+    use Try::Tiny;
+
+    my $fh = try   { open_log_file( 'monkeytown.log' ) }
+             catch { log_exception( "Something went wrong: '$_'" };
+
+=end programlisting
+
+C<try> replaces C<eval>. The optional C<catch> block executes only when C<try>
+catches an exception. C<catch> receives the caught exception as the topic
+variable C<$_>.
+
+=head2 Built-in Exceptions
+
+Z<builtin_exceptions>
+
+X<exceptions; core>
+
+Perl 5 itself throws several exceptional conditions. C<perldoc perldiag> lists
+several "trappable fatal errors". While some are syntax errors thrown during
+the compilation process, you can catch the others during runtime. The most
+interesting are:
+
+=over 4
+
+=item * Using a disallowed key in a locked hash (L<locked_hashes>)
+
+=item * Blessing a non-reference (L<blessed_references>)
+
+=item * Calling a method on an invalid invocant (L<moose>)
+
+=item * Failing to find a method of the given name on the invocant
+
+=item * Using a tainted value in an unsafe fashion (L<taint>)
+
+=item * Modifying a read-only value
+
+=item * Performing an invalid operation on a reference (L<references>)
+
+=back
+
+X<C<autodie>>
+
+Of course you can also catch exceptions produced by C<autodie> (L<autodie>) and
+any lexical warnings promoted to exceptions (L<registering_warnings>).
+=encoding utf8
+
+=head1 异常
+
+Z<exceptions>
+
+如果一切都像预期的那样工作，编程就会变得简单些。不幸的是，要处理的文件可不一定。
+有时候你还会碰到磁盘空间不足、网络连接不稳、数据库拒绝写入数据等等。
+
+X<exceptions>
+
+异常总会发生，健壮的软件必须处理这些异常状况。如果可以从中回复，那太好了！如果不
+行，有时候能做的也只能是重试或至少为进一步调试将相关信息记入日志。Perl 5 以 I<异常>
+的方式处理非正常状况：一个动态作用域的控制流程语法形式，让你可以在最合适的地方处理
+错误。
+
+=head2 抛出异常
+
+Z<throwing_exceptions>
+
+考虑你需要为记日志打开文件这种情况。如果你不能打开该文件，就说明有错误发生。你
+可以用 C<die> 来抛出一个异常：
+
+=begin programlisting
+
+    sub open_log_file
+    {
+        my $name = shift;
+        open my $fh, '>>', $name
+            B<or die "Can't open logging file '$name': $!";>
+        return $fh;
+    }
+
+=end programlisting
+
+X<die>
+X<keywords; die>
+X<exceptions; throwing>
+X<exceptions; die>
+X<$@>
+X<global variables; $@>
+X<exceptions; $@>
+
+C<die()> 设置全局变量 C<$@> 为其参数并立即退出当前函数而 I<不返回任何值>。如果函数调用方
+不明确地处理此异常，则此异常将向上传播至所有的调用者，直到有东西处理它，或者程序以一条错
+误信息退出。
+
+=begin sidebar
+
+异常抛出和处理的动态作用域与 C<local> 符号（L<dynamic_scope>）一致。
+
+=end sidebar
+
+=head2 捕获异常
+
+Z<catching_exceptions>
+
+X<exceptions; catching>
+
+未捕获的异常最终将结束程序。有时候这是有用的；一个从 cron (一个 Unix 作业调度器）
+运行的系统管理程序可以在填写错误日志后抛出异常；这样便可以将错误通知给系统管理员。
+而另一些异常并非致命的；优秀的程序可以从中恢复，或者至少保存状态并更为体面地退出。
+
+X<keywords; eval>
+X<keywords; eval block>
+X<eval>
+X<eval; block>
+
+要捕获一个异常，可以使用 C<eval> 操作符的代码块形式：
+
+=begin programlisting
+
+    # 也许无法打开日志文件
+    my $fh = eval { open_log_file( 'monkeytown.log' ) };
+
+=end programlisting
+
+就像所有的代码块，C<eval> 的代码块参数引入了新的作用域。如果文件打开成功，C<$fh> 将
+包含此文件的文件句柄。如果失败，C<$fh> 将维持未定义，且 Perl 将继续执行程序中的下一
+行语句。
+
+如果 C<open_log_file()> 调用了一个调用了其他函数的函数，如果其中某函数抛出了自身的异
+常，这条 C<eval> 语句会捕获到，否则什么也不做。没什么要求异常处理器只处理你希望处理的
+异常。
+
+要检查捕获的内容（或检查究竟有没有捕获到异常），检查 C<$@> 的值：
+
+=begin programlisting
+
+    # 也许无法打开日志文件
+    my $fh = eval { open_log_file( 'monkeytown.log' ) };
+
+    # 捕获异常 
+    B<if ($@) { ... }>
+
+=end programlisting
+
+当然，C<$@> 是一个 I<全局> 变量。为了安全起见，你应该在意图捕获异常之前，用 C<local>
+本地化的它的值：
+
+=begin programlisting
+
+    B<local $@;>
+
+    # 也许无法打开日志文件
+    my $fh = eval { open_log_file( 'monkeytown.log' ) };
+
+    # 捕获异常
+    if ($@) { ... }
+
+=end programlisting
+
+X<exceptions; rethrowing>
+
+你可以按可能的异常逐条检查 C<$@> 字符串值，看看是否能够处理或者是否应该重新抛出
+这条异常：
+
+=begin programlisting
+
+    if (my $exception = $@)
+    {
+        die $exception unless $exception =~ /^Can't open logging file/;
+        $fh = log_to_syslog();
+    }
+
+=end programlisting
+
+=begin sidebar
+
+将 C<$@> 复制到 C<$exception> 可以避免后续代码破坏全局变量 C<$@> 值的可能。你绝对不会知道
+有什么在其他地方用 C<eval> 代码块重置了 C<$@> 的值。
+
+=end sidebar
+
+你可以通过向 C<die()> 传入 C<$@> 再次抛出异常。
+
+X<die; object>
+X<exceptions; exception objects>
+
+你会发现对 C<$@> 的值使用正则表达式令人讨厌；你还可以对 C<die> 使用 I<对象>。诚然，这比较
+少见。C<$@> I<可能> 包含任意引用，但是就实际来说差不多 95% 是字符串 5% 是对象。
+
+作为自行编写异常处理机制的替代，参见 CPAN 发行模块 C<Exception::Class>。
+
+=head2 异常注意事项
+
+Z<exception_caveats>
+
+正确使用 C<$@> 很讲究技巧；全局变量的本质为其带来了不少微妙的缺陷：
+
+=over 4
+
+=item * 动态作用域下使用未经 C<local> 处理的变量值可能会导致其被重置
+
+=item * 在异常捕获作用域内的对象析构可能调用 C<eval> 并改变它的值
+
+=item * 它可能包含一个覆盖自身布尔值的对象，使其返回假
+
+=item * 一个信号处理器（特别是 C<DIE> 信号处理器）可能在你不经意时修改它的值
+
+=back
+
+编写非常安全和合理的异常处理器非常困难。来自 CPAN C<Try::Tiny> 发行模块非常简短，易于安装，
+易于理解，同时也易于使用：
+
+=begin programlisting
+
+    use Try::Tiny;
+
+    my $fh = try   { open_log_file( 'monkeytown.log' ) }
+             catch { ... };
+
+=end programlisting
+
+不仅是语法比 Perl 5 默认的更加友好，而且该模块在你不知情的情况下处理了所有边边角角的情况。
+
+=head2 内置异常
+
+Z<builtin_exceptions>
+
+X<exceptions; core>
+
+Perl 5 有部分异常状况可以通过 C<eval> 块捕获。C<perldoc perldiag> 把它们列为 “trappable fatal errors”。
+大多数是在编译期抛出的语法错误。其他一些是运行时错误。有些异常也许值得捕获；语法错误则不值得。
+最有趣或者很可能因如下原因发生异常：
+
+=over 4
+
+=item * 在上锁的哈希里使用不允许的键 (L<locked_hashes>)
+
+=item * 对非引用进行 bless (L<blessed_references>)
+
+=item * 在非法的调用物上调用方法 (L<moose>)
+
+=item * 在调用物上无法找到对应名称的方法
+
+=item * 以不安全的方式使用污点（taint）值 (L<taint>)
+
+=item * 修改只读值
+
+=item * 在类型错误的引用上使用错误的操作 (L<references>)
+
+=back
+
+如果你启用了致命词法警告（L<registering_warnings>），你可以捕获因它们而起的异常。
+对来自 C<autodie> 的异常同样适用（L<autodie>）。

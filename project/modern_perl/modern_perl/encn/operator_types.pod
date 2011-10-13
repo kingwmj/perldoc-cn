@@ -1,0 +1,604 @@
+=head1 Operator Types
+
+Z<operator_types>
+
+Perl operators provide value contexts (L<value_contexts>) to their operands.
+To choose the appropriate operator, understand the values of the operands you
+provide as well as the value you expect to receive.
+
+=head2 Numeric Operators
+
+Z<numeric_operators>
+
+X<operators; numeric>
+X<operators; arithmetic>
+X<operators; C<+>>
+X<C<+>; numeric operator>
+X<operators; C<->>
+X<C<->; numeric operator>
+X<operators; C<*>>
+X<C<*>; numeric operator>
+X<operators; C</>>
+X<C</>; numeric operator>
+X<operators; C<**>>
+X<C<**>; numeric operator>
+X<operators; C<%>>
+X<C<%>; numeric operator>
+X<operators; C<+=>>
+X<C<+=>; numeric operator>
+X<operators; C<-=>>
+X<C<-=>; numeric operator>
+X<operators; C<*=>>
+X<C<*=>; numeric operator>
+X<operators; C</=>>
+X<C</=>; numeric operator>
+X<operators; C<**=>>
+X<C<**=>; numeric operator>
+X<operators; C<%=>>
+X<C<%=>; numeric operator>
+X<operators; C<-->>
+X<C<-->; numeric operator>
+
+Numeric operators impose numeric contexts on their operands. These operators
+are the standard arithmetic operators such as addition (C<+>), subtraction
+(C<->), multiplication (C<*>), division (C</>), exponentiation (C<**>), modulo
+(C<%>), their in-place variants (C<+=>, C<-=>, C<*=>, C</=>, C<**=>, and
+C<%=>), and both postfix and prefix auto-decrement (C<-->).
+
+The auto-increment operator has special string behavior
+(L<auto_increment_operator>).
+
+X<operators; C<==>>
+X<operators; C<!=>>
+X<<< operators; C<< E<lt> >> >>>
+X<<< operators; C<< E<gt> >> >>>
+X<<< operators; C<< E<lt>= >> >>>
+X<<< operators; C<< E<gt>= >> >>>
+X<<< operators; C<< E<lt>=E<gt> >> >>>
+
+X<C<!=>; numeric comparison operator>
+X<C<==>; numeric comparison operator>
+X<<< C<< E<gt> >>; numeric comparison operator >>>
+X<<< C<< E<lt> >>; numeric comparison operator >>>
+X<<< C<< E<gt>= >>; numeric comparison operator >>>
+X<<< C<< E<lt>= >>; numeric comparison operator >>>
+X<<< C<< E<lt>=E<gt> >>; numeric comparison operator >>>
+
+Several comparison operators impose numeric contexts upon their operands.
+These are numeric equality (C<==>), numeric inequality (C<!=>), greater than
+(C<< E<gt> >>), less than (C<< E<lt> >>), greater than or equal to (C<< E<gt>=
+>>), less than or equal to (C<< E<lt>= >>), and the sort comparison operator
+(C<< E<lt>=E<gt> >>).
+
+=head2 String Operators
+
+X<operators; string>
+X<strings; operators>
+X<operators; C<=~>>
+X<C<=~>; string operator>
+X<operators; C<!~>>
+X<C<!~>; string operator>
+X<operators; C<.>>
+X<C<.>; string operator>
+
+String operators impose string contexts on their operands. These operators are
+positive and negative regular expression binding (C<=~> and C<!~>,
+respectively), and concatenation (C<.>).
+
+X<operators; C<eq>>
+X<operators; C<ne>>
+X<operators; C<gt>>
+X<operators; C<lt>>
+X<operators; C<ge>>
+X<operators; C<le>>
+X<operators; C<cmp>>
+X<C<eq>; string comparison operator>
+X<C<ne>; string comparison operator>
+X<C<gt>; string comparison operator>
+X<C<lt>; string comparison operator>
+X<C<ge>; string comparison operator>
+X<C<le>; string comparison operator>
+X<C<cmp>; string comparison operator>
+
+Several comparison operators impose string contexts upon their operands. These
+are string equality (C<eq>), string inequality (C<ne>), greater than (C<gt>),
+less than (C<lt>), greater than or equal to (C<ge>), less than or equal to
+(C<le>), and the string sort comparison operator (C<cmp>).
+
+=head2 Logical Operators
+
+X<operators; logical>
+X<operators; C<&&>>
+X<operators; C<and>>
+X<operators; C<||>>
+X<operators; C<or>>
+X<operators; C<//>>
+X<operators; C<?:>>
+X<operators; C<!>>
+X<operators; C<not>>
+X<operators; C<xor>>
+X<C<&&>; logical operator>
+X<C<and>; logical operator>
+X<C<||>; logical operator>
+X<C<or>; logical operator>
+X<C<//>; logical operator>
+X<C<?:>; logical operator>
+X<C<!>; logical operator>
+X<C<not>; logical operator>
+X<C<xor>; logical operator>
+X<operators; defined-or>
+X<defined-or; logical operator>
+X<short-circuiting>
+
+Logical operators impose a boolean context on their operands. These operators
+are C<&&>, C<and>, C<||>, and C<or>. All are infix and all exhibit
+I<short-circuiting> behavior (L<short_circuiting>). The word variants have
+lower precedence than their punctuation forms.
+
+The defined-or operator, C<//>, tests the I<definedness> of its operand. Unlike
+C<||> which tests the I<truth> of its operand, C<//> evaluates to a true value
+even if its operand evaluates to a numeric zero or the empty string. This is
+especially useful for setting default parameter values:
+
+=begin programlisting
+
+    sub name_pet
+    {
+        my $name = shift // 'Fluffy';
+        ...
+    }
+
+=end programlisting
+
+X<C<?:>; ternary conditional operator>
+
+The ternary conditional operator (C<?:>) takes three operands. It evaluates the
+first in boolean context and evaluates to the second if the first is true and
+the third otherwise:
+
+=begin programlisting
+
+    my $truthiness = $value ? 'true' : 'false';
+
+=end programlisting
+
+The prefix C<!> and C<not> operators return the logical opposite of the boolean
+value of their operands. C<not> is a lower precedence version of C<!>.
+
+The C<xor> operator is an infix operator which evaluates to the exclusive-or of
+its operands.
+
+=head2 Bitwise Operators
+
+X<operators; bitwise>
+X<<< operators; C<< E<lt>E<lt> >> >>>
+X<<< operators; C<< E<gt>E<gt> >> >>>
+X<operators; C<&>>
+X<operators; C<|>>
+X<operators; C<^>>
+X<operators; C<&=>>
+X<operators; C<|=>>
+X<operators; C<^=>>
+X<<< operators; C<< E<lt>E<lt>= >> >>>
+X<<< operators; C<< E<gt>E<gt>= >> >>>
+
+X<<< C<< E<lt>E<lt> >>; bitwise operator >>>
+X<<< C<< E<gt>E<gt> >>; bitwise operator >>>
+
+X<C<&>; bitwise operator>
+X<C<|>; bitwise operator>
+X<C<^>; bitwise operator>
+X<C<&=>; bitwise operator>
+X<C<|=>; bitwise operator>
+X<C<^=>; bitwise operator>
+X<<< C<< E<lt>E<lt>= >>; bitwise operator >>>
+X<<< C<< E<gt>E<gt>= >>; bitwise operator >>>
+
+Bitwise operators treat their operands numerically at the bit level. These
+operations are uncommon. They consist of left shift (C<< << >>), right shift
+(C<< >> >>), bitwise and (C<&>), bitwise or (C<|>), and bitwise xor (C<^>), as
+well as their in-place variants (C<< <<= >>, C<< >>= >>, C<&=>, C<|=>, and
+C<^=>).
+
+=head2 Special Operators
+
+Z<auto_increment_operator>
+
+X<operators; auto-increment>
+X<auto-increment>
+X<operators; C<++>>
+X<C<++>; auto-increment operator>
+
+The auto-increment operator has special behavior. When used on a value with a
+numeric component (L<cached_coercions>), the operator increments that numeric
+component. If the value is obviously a string (and has no numeric component),
+the operator increments that string value such that C<a> becomes C<b>, C<zz>
+becomes C<aaa>, and C<a9> becomes C<b0>.
+
+=begin programlisting
+
+    my $num = 1;
+    my $str = 'a';
+
+    $num++;
+    $str++;
+    is( $num,   2, 'numeric autoincrement should stay numeric' );
+    is( $str, 'b', 'string autoincrement should stay string'   );
+
+    no warnings 'numeric';
+    $num += $str;
+    $str++;
+
+    is( $num, 2, 'adding $str to $num should add numeric value of $str'   );
+    is( $str, 1, '... but $str should now autoincrement its numeric part' );
+
+=end programlisting
+
+X<operators; repetition>
+X<operators; C<x>>
+X<C<x>; repetition operator>
+
+The repetition operator (C<x>) is an infix operator with complex behavior. In
+list context, when given a list, it evaluates to that list repeated the number
+of times specified by its second operand. In list context when given a scalar,
+it produces a string consisting of the string value of its first operand
+concatenated to itself the number of times specified by its second operand.
+
+In scalar context, the operator always produces a concatenated string repeated
+appropriately.
+
+For example:
+
+=begin programlisting
+
+    my @scheherazade = ('nights') x 1001;
+    my $calendar     =  'nights'  x 1001;
+
+    is( @scheherazade,                      1001, 'list repeated' );
+    is( length $calendar, 1001 * length 'nights', 'word repeated' );
+
+    my @schenolist   =  'nights'  x 1001;
+    my $calscalar    = ('nights') x 1001;
+
+    is( @schenolist,                            1, 'no lvalue list'      );
+    is( length $calscalar, 1001 * length 'nights', 'word still repeated' );
+
+=end programlisting
+
+X<operators; range>
+X<range>
+X<operators; C<..>>
+X<C<..>; range operator>
+
+The infix I<range> operator (C<..>) produces a list of items in list context:
+
+=begin programlisting
+
+    my @cards = ( 2 .. 10, 'J', 'Q', 'K', 'A' );
+
+=end programlisting
+
+It can produce simple, incrementing ranges (both as integers or strings), but
+it cannot intuit patterns or more complex ranges.
+
+X<operators; flip-flop>
+X<flip-flop>
+X<C<..>; flip-flop operator>
+
+In boolean context, the range operator becomes the I<flip-flop> operator. This
+operator produces a false value until its left operand is true. That value
+stays true until the right operand is true, after which the value is false
+again until the left operand is true again. Imagine parsing the text of a
+formal letter with:
+
+=begin programlisting
+
+    while (/Hello, $user/ .. /Sincerely,/)
+    {
+        say "> $_";
+    }
+
+=end programlisting
+
+X<operators; comma>
+X<operators; C<,>>
+X<C<,>; operator>
+X<<< operators; C<< =E<gt> >> >>>
+X<<< C<< =E<gt> >>; fat comma operator >>>
+
+The I<comma> operator (C<,>) is an infix operator. In scalar context it
+evaluates its left operand then returns the value produced by evaluating its
+right operand. In list context, it evaluates both operands in left-to-right
+order.
+
+The fat comma operator (C<< => >>) also automatically quotes any bareword used
+as its left operand (L<hashes>).
+=encoding utf8
+
+=head1 操作符类型
+
+Z<operator_types>
+
+Perl 无孔不入的上下文────特别是值上下文（L<value_contexts>）────大大扩展了操作符
+的行为。Perl 操作符对它们的操作数提供了值上下文。为给定的情况选择最合适的操作符
+要求你对所求值和所用值的类型都要有所理解。
+
+=head2 数值操作符
+
+Z<numeric_operators>
+
+X<operators; numeric>
+X<operators; arithmetic>
+X<operators; +>
+X<+>
+X<operators; ->
+X<->
+X<operators; *>
+X<*>
+X<operators; />
+X</>
+X<operators; **>
+X<**>
+X<operators; %>
+X<%>
+X<operators; +=>
+X<+=>
+X<operators; -=>
+X<-=>
+X<operators; *=>
+X<*=>
+X<operators; /=>
+X</=>
+X<operators; **=>
+X<**=>
+X<operators; %=>
+X<%=>
+X<operators; -->
+X<-->
+
+数值操作符对其操作数强制数值上下文。它们由标准算术操作符构成：加（C<+>）、减
+（C<->）、乘（C<*>）、除（C</>）、指数（C<**>）、取模（C<%>）以及变种（C<+=>、
+C<-=>、C<*=>、C</=>、C<**=> 和 C<%=>）外加前后缀自减（C<-->）。
+
+虽然自增操作符看上去像数值操作符，它有着特殊的字符串行为（L<auto_increment_operator>）。
+
+X<operators; ==>
+X<==>
+X<operators; !=>
+X<!=>
+X<< operators; E<gt> >>
+X<< E<gt> >>
+X<< operators; E<lt> >>
+X<< E<lt> >>
+X<< operators; E<gt>= >>
+X<< E<gt>= >>
+X<< operators; E<lt>= >>
+X<< E<lt>= >>
+X<< operators; E<lt>=E<gt> >>
+X<< E<lt>=E<gt> >>
+
+若干比较操作符对其操作数强制数值上下文。它们是数值等于（C<==>）、数值不等于（C<!=>）、
+大于（C<< E<gt> >>）、小于（C<< E<lt> >>）、大于等于（C<< E<gt>= >>）、小于等于（C<< E<lt>= >>），
+以及排序比较操作符（C<< E<lt>=E<gt> >>）。
+
+=head2 字符串操作符
+
+X<operators; string>
+X<strings; operators>
+X<operators; =~>
+X<=~>
+X<operators; !~>
+X<!~>
+X<operators; .>
+X<.>
+
+字符串操作符对其操作数强制字符串上下文。它们由肯定和否定正则表达式绑定操作符
+（C<=~> 和 C<!~>，对应地），和拼接操作符（C<.>）组成。
+
+X<operators; eq>
+X<eq>
+X<operators; ne>
+X<ne>
+X<operators; gt>
+X<gt>
+X<operators; lt>
+X<lt>
+X<operators; ge>
+X<ge>
+X<operators; le>
+X<le>
+X<operators; cmp>
+X<cmp>
+
+若干比较操作符对其操作数强制数值上下文。它们是字符串等（C<eq>）、字符串不等于（C<ne>）、
+大于（C<gt>）、小于（C<lt>）、大于等于（C<ge>）、小于等于（C<le>）以及字符串排序比较操
+作符（C<cmp>）。
+
+=head2 逻辑操作符
+
+X<operators; logical>
+X<operators; &&>
+X<&&>
+X<operators; and>
+X<and>
+X<operators; ||>
+X<||>
+X<operators; or>
+X<or>
+X<operators; //>
+X<//>
+X<operators; defined-or>
+X<defined-or>
+X<operators; ?:>
+X<?:>
+X<operators; !>
+X<!>
+X<operators; not>
+X<not>
+X<operators; xor>
+X<xor>
+X<short-circuiting>
+
+逻辑操作符在布尔上下文中处理其操作数。C<&&> 和 C<and> 操作符测试两边表达式是否都为
+逻辑真，C<||> 和 C<or> 操作符则测试两边的表达式是否有一个为真。这四个全部是中缀操作
+符。这四个全部执行 I<短路> 测试：如果一个表达式的求值结果使得整个表达式为假，Perl 不
+会继续对其他表达式求值。单词形式比符号形式的优先级低。
+
+已定义-或操作符，C<//>，测试其操作数的 I<定义性>。不像 C<||> 测试其操作数的为真性，如
+果操作数求值为数值零或空字符串，C<//> 还是会返回真值。这对设置默认参数的值尤其有用。
+
+=begin programlisting
+
+    sub name_pet
+    {
+        my $name = shift // 'Fluffy';
+        ...
+    }
+
+=end programlisting
+
+三元条件操作符，C<?:>，接受三个操作数。它对第一个操作符在布尔上下文中求值，并在
+结果为真时对第二个操作数求值，否则求值第三个：
+
+=begin programlisting
+
+    my $truthiness = $value ? 'true' : 'false';
+
+=end programlisting
+
+C<!> 和 C<not> 操作符返回其操作数的逻辑反值。C<not> 的优先级比 C<!> 低。它们是前
+缀操作符。
+
+C<xor> 操作符是中缀操作符，对其操作数进行异或操作。
+
+=head2 按位操作符
+
+X<operators; bitwise>
+X<< operators; E<lt>E<lt> >>
+X<< E<lt>E<lt> >>
+X<< operators; E<gt>E<gt> >>
+X<< E<gt>E<gt> >>
+X<operators; &>
+X<&>
+X<operators; |>
+X<|>
+X<operators; ^>
+X<^>
+X<operators; &=>
+X<&=>
+X<operators; |=>
+X<|=>
+X<operators; ^=>
+X<^=>
+X<< operators; <<= >>
+X<< <<= >>
+X<<< operators; >>= >>>
+X<<< >>= >>>
+
+按位操作符在位级别按数值形式处理它们的操作数。这些操作符在大多数 Perl 5 程序中
+并不常见。它们由左移（C<< << >>）、右移（C<< >> >>）、按位与（C<&>）、按位或（C<|>）、
+以及按位异或（C<^>）以及它们“就地”变种（C<&=>、C<|=>、C<^=>、C<< <<= >> 和 C<< >>= >>）
+组成。
+
+=head2 特殊操作符
+
+Z<auto_increment_operator>
+
+X<operators; auto-increment>
+X<auto-increment>
+X<operators; ++>
+
+自增操作符有一个特例。如果任何变量在数值上下文中使用过（L<cached_coercions>），自
+增操作符将增加它的数值部分。如果这个变量明显地是一个字符串（且尚未在数值上下文中求
+值）则此字符串将会带进位地自增，因此 C<a> 增加为 C<b>、C<zz> 增为 C<aaa>，以及 C<a9> 
+增为 C<b0>。
+
+=begin programlisting
+
+    my $num = 1;
+    my $str = 'a';
+
+    $num++;
+    $str++;
+    is( $num,   2, 'numeric autoincrement should stay numeric' );
+    is( $str, 'b', 'string autoincrement should stay string' );
+
+    no warnings 'numeric';
+    $num += $str;
+    $str++;
+
+    is( $num, 2, 'adding $str to $num should add numeric value of $str' );
+    is( $str, 1, '... but $str should now autoincrement its numeric part' );
+
+=end programlisting
+
+X<operators; repetition>
+X<operators; x>
+X<x>
+
+重复操作符（C<x>）是一个中缀操作符。在列表上下文中，它的行为按它的第一个操作数改变。
+当给与列表时，它的求值结果是一个重复列表，次数由第二个操作数给出。当给以一标量，它
+产生的值是将第一个操作数的字符串部分重复拼接到自身，次数由第二个操作数给出。在标量
+上下文中操作符总是产生重复拼接合适次数的字符串。
+
+例如：
+
+=begin programlisting
+
+    my @scheherazade = ('nights') x 1001;
+    my $calendar     =  'nights'  x 1001;
+
+    is( @scheherazade,                      1001, 'list repeated' );
+    is( length $calendar, 1001 * length 'nights', 'word repeated' );
+
+    my @schenolist   =  'nights'  x 1001;
+    my $calscalar    = ('nights') x 1001;
+
+    is( @schenolist,                            1, 'no lvalue list'      );
+    is( length $calscalar, 1001 * length 'nights', 'word still repeated' );
+
+=end programlisting
+
+X<operators; range>
+X<range>
+X<operators; ..>
+X<..>
+
+I<范围> 操作符（C<..>）是一个中缀操作符，它在列表上下文中产生一个列表：
+
+=begin programlisting
+
+    my @cards = ( 2 .. 10, 'J', 'Q', 'K', 'A' );
+
+=end programlisting
+
+它可以产生简单的、递增的范围（无论是整数还是自增字符串），但是它不能感知模式
+和更复杂的范围。
+
+X<operators; flip-flop>
+X<flip-flop>
+
+在布尔上下文中，范围操作符变为 I<翻斗> （flip-flop）操作符。如果它的左操作数为假，
+这个操作符返回假值，然后当它的右操作符一直为真时返回真。因此你可以这样引述一封格
+式迂腐邮件的正文：
+
+=begin programlisting
+
+    while (/Hello, $user/ .. /Sincerely,/)
+    {
+        say "> $_";
+    }
+
+=end programlisting
+
+X<operators; comma>
+X<operators; ,>
+X<,>
+X<< operators; => >>
+X<< => >>
+
+I<逗号> 操作符（C<,>）是一个中缀操作符。在标量上下文中它先求值它的左操作数然后返回
+对其右操作数求值的结果。在列表上下文中，它按从左到右的顺序对两边的操作数求值。
+
+胖逗号操作符（C<< => >>）的行为与此类似，除了它自动对用做其左操作数的裸字加上引号。
+（参见 L<hashes>）。

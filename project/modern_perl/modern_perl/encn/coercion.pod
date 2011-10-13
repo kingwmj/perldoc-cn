@@ -1,0 +1,286 @@
+=head1 Coercion
+
+Z<coercion>
+
+X<DWIM>
+X<dwimmery>
+X<coercion>
+
+A Perl variable can hold at various times values of different types--strings,
+integers, rational numbers, and more. Rather than attaching type information to
+variables, Perl relies on the context provided by operators (L<value_contexts>)
+to know what to do with values. By design, Perl attempts to do what you
+meanN<Called I<DWIM> for I<do what I mean> or I<dwimmery>.>, though you must be
+specific about your intentions. If you treat a variable which happens to
+contain a number as a string, Perl will do its best to I<coerce> that number
+into a string.
+
+=head2 Boolean Coercion
+
+Z<boolean_coercion>
+X<coercion; boolean>
+X<truthiness>
+
+Boolean coercion occurs when you test the I<truthiness> of a value, such as in
+a C<if> or C<while> condition. Numeric 0, C<undef>, the empty string, and the
+string C<'0'> all evaluate as false. All other values--including strings which
+may be I<numerically> equal to zero (such as C<'0.0'>, C<'0e'>, and C<'0 but
+true'>)--evaluate as true.
+
+When a scalar has I<both> string and numeric components (L<dualvars>), Perl 5
+prefers to check the string component for boolean truth. C<'0 but true'>
+evaluates to zero numerically, but it is not an empty string, thus it evaluates
+to a true value in boolean context.
+
+=head2 String Coercion
+
+X<coercion; string>
+X<stringification>
+
+String coercion occurs when using string operators such as comparisons (C<eq>
+and C<cmp>), concatenation, C<split>, C<substr>, and regular expressions, as
+well as when using a value as a hash key. The undefined value stringifies to an
+empty string, produces a "use of uninitialized value" warning. Numbers
+I<stringify> to strings containing their values, such that the value C<10>
+stringifies to the string C<10>. You can even C<split> a number into individual
+digits with:
+
+=begin programlisting
+
+    my @digits = split '', 1234567890;
+
+=end programlisting
+
+=head2 Numeric Coercion
+
+Z<numeric_coercion>
+X<coercion; numeric>
+X<numification>
+
+Numeric coercion occurs when using numeric comparison operators (such as C<==>
+and C<< <=> >>), when performing mathematic operations, and when using a value
+as an array or list index. The undefined value I<numifies> to zero and produces
+a "Use of uninitialized value" warning. Strings which do not begin with numeric
+portions also numify to zero and produce an "Argument isn't numeric" warning.
+Strings which begin with characters allowed in numeric literals numify to those
+values and produce no warnings, such that C<10 leptons leaping> numifies to
+C<10> and C<6.022e23 moles marauding> numifies to C<6.022e23>.
+
+X<Scalar::Util>
+X<Scalar::Util; looks_like_number>
+
+The core module C<Scalar::Util> contains a C<looks_like_number()> function
+which uses the same parsing rules as the Perl 5 grammar to extract a number
+from a string.
+
+=begin sidebar
+
+The strings C<Inf> and C<Infinity> represent the infinite value and behave as
+numbers. The string C<NaN> represents the concept "not a number". Numifying
+them produces no "Argument isn't numeric" warning. Mathematicians, rejoice.
+
+=end sidebar
+
+=head2 Reference Coercion
+
+X<coercion; reference>
+X<autovivification>
+
+Using a dereferencing operation on a non-reference turns that value I<into> a
+reference. This process of autovivification (L<autovivification>) is handy when
+manipulating nested data structures (L<nested_data_structures>):
+
+=begin programlisting
+
+    my %users;
+
+    $users{Bradley}{id} = 228;
+    $users{Jack}{id}    = 229;
+
+=end programlisting
+
+Although the hash never contained values for C<Bradley> and C<Jack>, Perl
+helpfully created hash references for them, then assigned each a key/value pair
+keyed on C<id>.
+
+=head2 Cached Coercions
+
+Z<cached_coercions>
+
+X<coercion; cached>
+
+Perl 5's internal representation of values stores both string and numeric
+values. Stringifying a numeric value does not I<replace> the numeric value.
+Instead, it I<attaches> a stringified value, so that the representation
+contains I<both> components. Similarly, numifying a string value populates the
+numeric component while leaving the string component untouched.
+
+Certain Perl operations prefer to use one component of a value over
+another--boolean checks prefer strings, for example. If a value has a cached
+representation in a form you do not expect, relying on an implicit conversion
+may produce surprising results. You almost never need to be explicit about what
+you expectN<Your author can recall doing so twice in over a decade of
+programming Perl 5>, but knowing that this caching occurs may someday help you
+diagnose an odd situation.
+
+=head2 Dualvars
+
+Z<dualvars>
+
+X<coercion; dualvars>
+X<C<dualvar()>>
+X<C<Scalar::Util>>
+X<dualvars>
+
+The multi-component nature of Perl values is available to users in the form of
+I<dualvars>. The core module C<Scalar::Util> provides a function C<dualvar()>
+which allows you to bypass Perl coercion and manipulate the string and numeric
+components of a value separately:
+
+=begin programlisting
+
+    use Scalar::Util 'dualvar';
+    my $false_name = dualvar 0, 'Sparkles & Blue';
+
+    say 'Boolean true!'  if        !! $false_name;
+    say 'Numeric false!' unless  0  + $false_name;
+    say 'String true!'   if     ''  . $false_name;
+
+=end programlisting
+=encoding utf8
+
+=head1 强制转换
+
+Z<coercion>
+X<coercion>
+
+不像其他语言中一个变量只能存放一个特定类型的值（字符串、浮点数、对象），Perl 依赖
+操作符的上下文来决定如何对值进行解释（L<value_contexts>）。如果你将数字作为字符串，
+Perl 将尽最大努力将该数字转换为字符串（反之亦然）。这个过程就是 I<强制转换>。
+
+X<DWIM>
+
+植根于设计，Perl 就试图按你的意思办事（I<DWIM> 代表 I<do what I mean>），虽然你必须对
+你的意图进行较为具体的描述。
+
+=head2 布尔强制转换
+
+Z<boolean_coercion>
+X<coercion; boolean>
+X<truthiness>
+
+布尔强制转换发生于测试某值 I<为真性> 的时候 N<为真性和真假性有些类似，设想你
+斜着眼睛说“啊，那是真的，但是……”>，就是 C<if> 或 C<while> 语句中的测试条件。数
+值 0 是假。未定义值是假。空字符串和字符串 C<'0'> 是假。然而字符串 C<'0.0'> 和 
+C<'0e'> 是 I<真>。
+
+所有其他的值是真的，包括惯用语字符串 C<'0 but true'>。对于诸如有着字符串和数值
+两面的标量这种情况（L<dualvars>），Perl 5 选择字符串部分作为检查布尔真假的依据。
+C<'0 but true'> 在数值上下文中求值得零，但不是一个空字符串，因此它在布尔上下文
+中求值得真。
+
+=head2 字符串强制转换
+
+X<coercion; string>
+X<stringify>
+
+字符串强制转换发生于使用字符串操作符之时，例如比较（C<eq> 和 C<cmp>，比方说）、拼
+接、C<split>、C<substr> 以及正则表达式。它也发生在将某值作为哈希键时。未定义值字
+符串化得到空字符串，但会引发 “use of uninitialized value（使用未初始化值）” 的警告。
+数值 I<字符串化> 得到包含其值的字符串，就是说，值 C<10> 字符串化得到字符串 C<10>，
+如此你便可以用 C<split> 将某数值分割成组成它的各个数字：
+
+=begin programlisting
+
+    my @digits = split '', 1234567890;
+
+=end programlisting
+
+=head2 数值强制转换
+
+Z<numeric_coercion>
+X<coercion; numeric>
+X<numify>
+
+数值强制转换发生于使用数值比较操作符（诸如 C<==> 和 C<< <=> >>）、进行数学计算操作以
+及将某值作为数组或列表的下标时。未定义值 I<数值化> 得零，虽然这会产生一个“Use of uninitialized 
+value（使用未初始化的值）”的警告。不以数值部分开头的字符串数值化为零，并产生“Argument isn't
+numeric（参数不是数值）” 的警告。以数值字面值中允许出现的字符开头的字符串将数值化为对应的值，
+就是说 C<10 leptons leaping> 数值化为 C<10>，同样地，C<6.022e23 moles marauding> 数值化为 C<6.022e23>。
+
+X<Scalar::Util>
+X<Scalar::Util; looks_like_number>
+
+核心模块 C<Scalar::Util> 包含一个名为 C<looks_like_number()> 的函数，它使用和
+Perl 5 语法一样的语法分析规则从字符串中提取数字。
+
+=begin sidebar
+
+字符串 C<Inf> 和 C<Infinity> 表示无穷值，并且出于在数值化时不会产生“Argument 
+isn't numeric（参数不是数值）”的警告，它们行为和数字一致。字符串 C<NaN> 表示
+“不是一个数字（英语：not a number）”的概念。除非你是数学家，否则一般不会关心
+这些。
+
+=end sidebar
+
+=head2 引用强制转换
+
+X<coercion; reference>
+X<autovivification>
+
+在某些的情况下，将一个值作为引用对待将使该值 I<转变为> 一个引用。这个自生
+（L<autovivification>）的过程对于嵌套数据结构来说比较有用。它发生在当你对
+非引用进行解引用操作时：
+
+=begin programlisting
+
+    my %users;
+
+    $users{Bradley}{id} = 228;
+    $users{Jack}{id}    = 229;
+
+=end programlisting
+
+虽然上例中的哈希从未包含对应 C<Bradley> 和 C<Jack> 的值，Perl 5 热心地为这
+些值创建了哈希引用，接着将以 C<id> 为键的键值对赋值给它们。
+
+=head2 强制转换的缓存
+
+Z<cached_coercions>
+
+X<coercion; cached>
+
+Perl 5 对值的内部存储机制允许每个值拥有字符串化和数值化的结果 N<这是一种简化，但
+残酷的现实真的很残酷>。字符串化一个数值并不将数值替换为字符串。取而代之的是，它将
+字符串化后的值作为对数值的补充 I<附着> 到该值上。类似的操作还发生于数值化一个字符
+串值时。
+
+你几乎不必知道发生了这种转换────如果传闻证据可信的话，也许十年内会有个一两次。
+
+Perl 5 也许会偏向于使用某种形式的转换。如果一个值拥有一个缓存了的、但不是你
+期望的表示方式，依赖于隐式的转换可能会产生令人惊讶的结果。你几乎不必明确提出
+你的期望，但是明白这种缓存确实存在，你可以对某些奇怪的情况做出诊断。
+
+=head2 双重变量
+
+Z<dualvars>
+
+X<coercion; dualvars>
+X<dualvar()>
+X<Scalar::Util>
+X<dualvar>
+
+对数值和字符串值的缓存允许你使用一个“罕见但有用”的特性，称为 I<双重变量>，
+或者说一个同时拥有数值和字符串表示的值。核心模块 C<Scalar::Util> 
+提供了一个名为 C<dualvar()> 的函数，它允许你创建一个拥有两种不同形式的值：
+
+=begin programlisting
+
+    use Scalar::Util 'dualvar';
+    my $false_name = dualvar 0, 'Sparkles & Blue';
+
+    say 'Boolean true!'  if        !! $false_name;
+    say 'Numeric false!' unless  0  + $false_name;
+    say 'String true!'   if     ''  . $false_name;
+
+=end programlisting

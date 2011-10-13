@@ -33,7 +33,7 @@
 =EN Now we get back the list of 1, 16, and 32. These numbers have a digit sum with a remainder of "1" in the last line of the subroutine, which counts as true. 
 =CN 对于这个例子, 我们得到的输出是1, 16和32. 程序把这些数据的数位加起来后, 因为最后一行返回的余数都是"1", 所以返回值为"真". 
 =EN The syntax comes in two forms, though: we just showed you the expression form, and now here's the block form. Rather than define an explicit subroutine that we'd use for only a single test, we can put the body of a subroutine directly in line in the grep operator, using the block forms:
-=CN 所以, grep语法有两种形式：前面秀给你们看的表达式形式和下面要展示给你们看的代码块形式. 因为代码只用一次, 我们现在不把代码放到子例程中, 而是以代码块的形式直接放在grep语法里, 所谓的块形式：[*]
+=CN 所以, grep语法有两种形式：前面秀给你们看的表达式形式和下面要展示给你们看的代码块形式. 因为代码只用一次, 我们现在不把代码放到子例程中, 而是以代码块的形式直接放在grep语法里, 所谓的块形式：
 =EN In the block form of grep, there's no comma between the block and the input list. In the expression form of grep, there must be a comma between the expression and the list. 
 =CN 在grep的块形式中, 代码块和输入数组中间是没有逗号的. 而在grep的表达式形式中, 表达式和输入数组中间必须要有一个逗号. 区别如下：
 =EN Just like the expression form, grep temporarily places each element of the input list into $_. Next, it evaluates the entire block of code. The last evaluated expression in the block is the testing expression. (And like all testing expressions, it's evaluated in a scalar context. ) Because it's a full block, we can introduce variables that are scoped to the block. Let's rewrite that last example to use the block form

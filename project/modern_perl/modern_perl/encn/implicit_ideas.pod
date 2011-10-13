@@ -1,0 +1,522 @@
+=head1 Implicit Ideas
+
+Z<implicit_ideas>
+
+Context is only one linguistic shortcut in Perl. Programmers who understand
+these shortcuts can glance at code and instantly understand its most important
+characteristics. Another important linguistic feature is the Perl equivalent of
+pronouns.
+
+=head2 The Default Scalar Variable
+
+Z<default_scalar_variable>
+
+X<default variables; scalar>
+X<default variables; C<$_>>
+X<< variables; C<$_> >>
+X<< C<$_>; default scalar variable >>
+
+The I<default scalar variable> (also called the I<topic variable>), C<$_>, is
+most notable in its I<absence>: many of Perl's builtin operations work on the
+contents of C<$_> in the absence of an explicit variable. You can still use
+C<$_> as the variable, but it's often unnecessary.
+
+X<builtins; C<chomp>>
+
+For example, the C<chomp> builtin removes any trailing newline sequence from
+the given stringN<See C<$/> for more precise details of its behavior.>:
+
+=begin programlisting
+
+    my $uncle = "Bob\n";
+    say "'$uncle'";
+    chomp $uncle;
+    say "'$uncle'";
+
+=end programlisting
+
+Without an explicit variable, C<chomp> removes the trailing newline sequence
+from C<$_>. These two lines of code are equivalent:
+
+=begin programlisting
+
+    chomp $_;
+    chomp;
+
+=end programlisting
+
+C<$_> has the same function in Perl as the pronoun I<it> in English. Read the
+first line as "C<chomp> I<it>" and the second as "C<chomp>". Perl understands
+what you mean when you say "C<chomp>"; Perl will always chomp I<it>.  I<it>.
+
+X<builtins; C<say>>
+X<builtins; C<print>>
+
+Similarly, C<say> and C<print> operate on C<$_> in the absence of other
+arguments:
+
+=begin programlisting
+
+    print;  # prints $_ to the currently selected filehandle
+    say;    # prints $_ to the currently selected filehandle
+            # with a trailing newline
+
+=end programlisting
+
+X<C<s///>; subsitution operator>
+X<C<m//>; match operator>
+X<C<tr//>; transliteration operator>
+
+Perl's regular expression facilities (L<regex>) default to C<$_> to match,
+substitute, and transliterate:
+
+=begin programlisting
+
+    $_ = 'My name is Paquito';
+    say if /My name is/;
+
+    s/Paquito/Paquita/;
+
+    tr/A-Z/a-z/;
+    say;
+
+=end programlisting
+
+X<builtins; C<chr>>
+X<builtins; C<ord>>
+X<builtins; C<lc>>
+X<builtins; C<length>>
+X<builtins; C<reverse>>
+X<builtins; C<uc>>
+
+Many of Perl's scalar operators (including C<chr>, C<ord>, C<lc>, C<length>,
+C<reverse>, and C<uc>) work on the default scalar variable if you do not
+provide an alternative.
+
+X<builtins; C<for>>
+
+Perl's looping directives (L<looping_directives>) default to C<$_> is the
+iteration variable. Consider C<for> iterating over a list:
+
+=begin programlisting
+
+    say "#B<$_>" for 1 .. 10;
+
+    for (1 .. 10)
+    {
+        say "#B<$_>";
+    }
+
+=end programlisting
+
+X<builtins; C<while>>
+
+... or C<while>:
+
+=begin programlisting
+
+    while (<STDIN>)
+    {
+        chomp;
+        say scalar reverse;
+    }
+
+=end programlisting
+
+X<builtins; C<map>>
+
+... or C<map> transforming a list:
+
+=begin programlisting
+
+    my @squares = map { B<$_> * B<$_> } 1 .. 10;
+    say for @squares;
+
+=end programlisting
+
+X<builtins; C<grep>>
+
+... or C<grep> filtering a list:
+
+=begin programlisting
+
+    say 'Brunch time!' if grep { /pancake mix/ } @pantry;
+
+=end programlisting
+
+As English gets confusing when you have too many pronouns and antecedents, you
+must take care mixing uses of C<$_> implicitly or explicitly. Uncautious
+simultaneous use of C<$_> may lead to one piece of code silently overwriting
+the value written by another. If you write a function which uses C<$_>, you
+may clobber a caller function's use of C<$_>.
+
+As of Perl 5.10, you may declare C<$_> as a lexical variable (L<lexical_scope>)
+to prevent this clobbering behavior:
+
+=begin programlisting
+
+    while (<STDIN>)
+    {
+        chomp;
+
+        # BAD EXAMPLE
+        my $munged = calculate_value( $_ );
+        say "Original: $_";
+        say "Munged  : $munged";
+    }
+
+=end programlisting
+
+If C<calculate_value()> or any other function changed C<$_>, that change would
+persist through that iteration of the loop. Adding a C<my> declaration prevents
+clobbering an existing instance of C<$_>:
+
+=begin programlisting
+
+    while (my $_ = <STDIN>)
+    {
+        ...
+    }
+
+=end programlisting
+
+Of course, using a named lexical can be just as clear:
+
+=begin programlisting
+
+    while (my $line = <STDIN>)
+    {
+        ...
+    }
+
+=end programlisting
+
+Use C<$_> as you would the word "it" in formal writing: sparingly, in small and well-defined scopes.
+
+=head2 The Default Array Variables
+
+Z<default_array_variables>
+
+X<default variables; array>
+X<default variables; C<@_>>
+X<variables; C<@_>>
+X<C<@_>>
+
+Perl also provides two implicit array variables. Perl passes arguments to
+functions (L<functions>) in an array named C<@_>. Array manipulation operations
+(L<arrays>) inside functions affect this array by default, so these two
+snippets of code are equivalent:
+
+=begin programlisting
+
+    sub foo
+    {
+        my $arg = shift;
+        ...
+    }
+
+    sub foo_explicit_args
+    {
+        my $arg = shift @_;
+        ...
+    }
+
+=end programlisting
+
+X<builtins; C<shift>>
+X<builtins; C<pop>>
+
+Just as C<$_> corresponds to the pronoun I<it>, C<@_> corresponds to the
+pronouns I<they> and I<them>. I<Unlike> C<$_>, Perl automatically localizes
+C<@_> for you when you call other functions. The builtins C<shift> and C<pop>
+operate on C<@_> with no other operands provided.
+
+X<default variables; C<@ARGV>>
+X<variables; C<@ARGV>>
+X<C<@ARGV>>
+
+Outside of all functions, the default array variable C<@ARGV> contains the
+command-line arguments to the program. Perl's array operations (including
+C<shift> and C<pop>) operate on C<@ARGV> implicitly outside of functions. You
+cannot use C<@_> when you mean C<@ARGV>.
+
+X<null filehandle>
+
+C<ARGV> has one special case. If you read from the null filehandle C<< <> >>,
+Perl will treat every element in C<@ARGV> as the I<name> of a file to open for
+reading. (If C<@ARGV> is empty, Perl will read from standard input.) This
+implicit C<@ARGV> behavior is useful for writing short programs, such as this
+command-line filter which reverses its input:
+
+=begin programlisting
+
+    while (<>)
+    {
+        chomp;
+        say scalar reverse;
+    }
+
+=end programlisting
+
+=begin sidebar
+
+Why C<scalar>? C<say> imposes list context on its operands. C<reverse> passes
+its context on to its operands, treating them as a list in list context and a
+concatenated string in scalar context. If the behavior of C<reverse> sounds
+confusing, your instincts are correct. Perl 5 arguably should have separated
+"reverse a string" from "reverse a list".
+
+=end sidebar
+
+If you run it with a list of files:
+
+=begin screen
+
+    $ B<perl reverse_lines.pl encrypted/*.txt>
+
+=end screen
+
+... the result will be one long stream of output.  Without any arguments, you
+can provide your own standard input by piping in from another program or typing
+directly. Yet Perl is good for far more than small command-line programs....
+=encoding utf8
+
+=head1 隐式理念
+
+Z<implicit_ideas>
+
+像不少口语一样，Perl 提供了语言学捷径。上下文即是这样一个特性。阅读代码的无论是
+编译器还是程序员，都可以通过现有信息了解到所期望结果的数量和操作符的类型，而不必
+额外添加明确信息来消歧。Perl 中也存在其他类似的特性，包括本质上是代词的默认变量。
+
+=head2 默认标量变量
+
+Z<default_scalar_variable>
+
+X<default scalar variable>
+X<variables; $_>
+X<$_>
+
+I<默认标量变量>（也称为I<话题变量>）C<$_>，是 Perl 中语言学捷径的最佳例证。它最显眼的地方
+就是它的 I<“缺席”>：当缺少一明确变量时，Perl 中许多内置操作是针对 C<$_> 的内容进行的。
+你仍可以将 C<$_> 填入所缺变量的位置，但是这通常是多此一举。
+
+举例来说，C<chomp> 操作符移去任何尾随字符串的换行符序列：
+
+=begin programlisting
+
+    my $uncle = "Bob\n";
+    say "'$uncle'";
+    chomp $uncle;
+    say "'$uncle'";
+
+=end programlisting
+
+在没有指明变量时，C<chomp> 移去 C<$_> 尾部的换行符，因此下列两行代码是等价的：
+
+=begin programlisting
+
+    chomp $_;
+    chomp;
+
+=end programlisting
+
+C<$_> 在 Perl 中的功能等同于汉语中的代词I<“它”>（英语中的代词 I<it>）。第一行
+读作 “C<chomp> I<它>”，第二行则读作“C<chomp>”。当你不指明对什么做 chomp 操作时，
+Perl 理解你的意思，Perl 总是 chomp I<它>。
+
+类似的，内置函数 C<say> 和 C<print> 在缺少参数时作用于 C<$_> 之上：
+
+=begin programlisting
+
+    print;  # 将 $_ 打印到当前所选文件句柄
+    say;    # 将 $_ 打印到当前所选文件句柄
+            # 外加结尾换行符
+
+=end programlisting
+
+Perl 的这套正则表达式装备 (L<regular_expressions>) 同样可以在 C<$_> 上进行匹配、
+替换和转译操作：
+
+=begin programlisting
+
+    $_ = 'My name is Paquito';
+    say if /My name is/;
+
+    s/Paquito/Paquita/;
+
+    tr/A-Z/a-z/;
+    say;
+
+=end programlisting
+
+X<chr>
+X<keywords; chr>
+X<ord>
+X<keywords; ord>
+X<lc>
+X<keywords; lc>
+X<length>
+X<keywords; length>
+X<reverse>
+X<keywords; reverse>
+X<uc>
+X<keywords; uc>
+
+Perl 中许多标量操作符（包括 C<chr>、C<ord>、C<lc>、C<length>、C<reverse> 及 C<uc>）
+在你不提供替代选项时，作用于默认标量变量上。
+
+Perl 的循环指令 (L<looping_directives>) 同样设置 C<$_> 变量，比如用 C<for> 遍历一个列表：
+
+=begin programlisting
+
+    say "#B<$_>" for 1 .. 10;
+
+    for (1 .. 10)
+    {
+        say "#B<$_>";
+    }
+
+=end programlisting
+
+……或者是 C<while>：
+
+=begin programlisting
+
+    while (<STDIN>)
+    {
+        chomp;
+        say scalar reverse;
+    }
+
+=end programlisting
+
+……再或者是用 C<map> 转换列表：
+
+=begin programlisting
+
+    my @squares = map { B<$_> * B<$_> } 1 .. 10;
+    say for @squares;
+
+=end programlisting
+
+……又或者是用 C<grep> 过滤列表：
+
+=begin programlisting
+
+    say 'Brunch time!' if grep { /pancake mix/ } @pantry;
+
+=end programlisting
+
+如果你在用到 C<$_> 的代码内调用函数，无论是隐式还是显式，可能导致 C<$_> 的值被覆盖。
+相似地，如果你编写了一个使用 C<$_> 的函数，就有可能搅乱调用者对 C<$_> 的利用。Perl 5.10 
+允许你用 C<my> 将 C<$_> 作为词法变量来声明，这样便可以避免上述行为。明智一点。
+
+=begin programlisting
+
+    while (<STDIN>)
+    {
+        chomp;
+
+        # 一例反面教材
+        my $munged = calculate_value( $_ );
+        say "Original: $_";
+        say "Munged  : $munged";
+    }
+
+=end programlisting
+
+在本例子中，若 C<calculate_value()> 或它偶然调用了其他函数导致 C<$_> 的值改变，则在
+整一次 C<while> 循环中，此值将保持被改后的状态。用 C<my> 来声明可以避免此类情况：
+
+=begin programlisting
+
+    while (my $_ = <STDIN>)
+    {
+        ...
+    }
+
+=end programlisting
+
+当然，使用带有具体名字的变量会比较清晰：
+
+=begin programlisting
+
+    while (my $line = <STDIN>)
+    {
+        ...
+    }
+
+=end programlisting
+
+你可以在书面写作中用到“它”（英语："it"）的地方使用 C<$_>： 适度地、在小且精心圈定的范围内。
+
+=head2 默认数组变量
+
+X<default array variables>
+X<variables; @_>
+X<@_>
+
+在 Perl 拥有一个隐式的标量变量的同时，它也有两个隐式数组变量。Perl 通过一个名为 C<@_> 的数
+组向函数传递参数。函数内部处理数组的操作符 (L<arrays>) 默认影响这个数组。因此，以下二例代码
+是等价的：
+
+=begin programlisting
+
+    sub foo
+    {
+        my $arg = shift;
+        ...
+    }
+
+    sub foo_explicit
+    {
+        my $arg = shift @_;
+        ...
+    }
+
+=end programlisting
+
+正如 C<$_> 对应代词 I<它>，C<@_> 对应代词 I<它们>。I<不同于> C<$_>，当你调用其他函数时，
+Perl 自动地为你局部化 C<@_>。数组操作符 C<shift> 和 C<pop> 在没有提供其他操作数时作用于 C<@_>。
+
+X<variables; @ARGV>
+X<@ARGV>
+
+在所有函数之外，默认数组变量 C<@ARGV> 存有传递给程序的命令行参数。在函数 I<内> 隐式用到 C<@_> 的
+同一批数组操作符，在函数外隐式地使用 C<@ARGV>。你不可以将 C<@_> 用作 C<@ARGV>。
+
+X<null filehandle>
+
+C<ARGV> 有一个特殊的用法。如果你从空文件句柄 C<< <> >> 读入，则 Perl 会将 C<@ARGV> 中的每一个元素当作 
+文件的 I<名字> 而打开。（如果 C<@ARGV> 为空，Perl 会从标准输入读取。）这个隐含的 C<@ARGV> 行为在编写
+短小的程序（例如将输入逆序输出的命令行过滤器）时很有用：
+
+=begin programlisting
+
+    while (<>)
+    {
+        chomp;
+        say scalar reverse;
+    }
+
+=end programlisting
+
+=begin sidebar
+
+为什么用到 C<scalar>？C<say> 对其操作数施加列表上下文。而 C<reverse> 又将它的上下文传递给自己的操作数，
+在列表上下文中它将它们作为列表对待，在标量上下文中则看作拼接字符串。这听上去有点迷糊，因为的确如此。
+Perl 5 应将不同的操作用不同的操作符处理。
+
+=end sidebar
+
+如果你用一列文件作参数运行这个程序：
+
+=begin screen
+
+    $ B<perl reverse_lines.pl encrypted/*.txt>
+
+=end screen
+
+……结果应该会是一系列冗长的输出。不带参数运行时，你可以提供自己的标准输入：通过管道的方式接通其他程序，
+或者直接从键盘打字。

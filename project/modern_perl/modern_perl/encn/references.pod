@@ -1,0 +1,1020 @@
+=head1 References
+
+Z<references>
+
+Perl usually does what you expect, even if what you expect is subtle. Consider
+what happens when you pass values to functions:
+
+=begin programlisting
+
+    sub reverse_greeting
+    {
+        my $name = reverse shift;
+        return "Hello, $name!";
+    }
+
+    my $name = 'Chuck';
+    say reverse_greeting( $name );
+    say $name;
+
+=end programlisting
+
+Outside of the function, C<$name> contains C<Chuck>, even though the value
+passed into the function gets reversed into C<kcuhC>. You probably expected
+that. The value of C<$name> outside the function is separate from the C<$name>
+inside the function. Modifying one has no effect on the other.
+
+Consider the alternative. If you had to make copies of every value before
+anything could possibly change them out from under you, you'd have to write
+lots of extra defensive code.
+
+Yet sometimes it's useful to modify values in place. If you want to pash a hash
+full of data to a function to modify, creating and returning a new hash for
+each change could be troublesome (to say nothing of inefficient).
+
+X<references>
+
+Perl 5 provides a mechanism by which to refer to a value without making a copy.
+Any changes made to that I<reference> will update the value in place, such that
+I<all> references to that value can reach the new value. A reference is a
+first-class scalar data type in Perl 5 which refers to another first-class data
+type.
+
+=head2 Scalar References
+
+Z<scalar_references>
+
+X<operators; C<\>>
+X<references; C<\> operator>
+
+X<references; scalar>
+X<scalars; references>
+
+The reference operator is the backslash (C<\>). In scalar context, it creates a
+single reference which refers to another value. In list context, it creates a
+list of references. To take a reference to C<$name>:
+
+=begin programlisting
+
+    my $name     = 'Larry';
+    my $name_ref = B<\>$name;
+
+=end programlisting
+
+X<dereferencing>
+X<references; dereferencing>
+
+You must I<dereference> a reference to evaluate the value to which it refers.
+Dereferencing requires you to add an extra sigil for each level of
+dereferencing:
+
+=begin programlisting
+
+    sub reverse_in_place
+    {
+        my $name_ref = shift;
+        B<$$name_ref>   = reverse B<$$name_ref>;
+    }
+
+    my $name = 'Blabby';
+    reverse_in_place( B<\>$name );
+    say $name;
+
+=end programlisting
+
+The double scalar sigil dereferences a scalar reference.
+
+=begin sidebar
+
+In this case, why not have the function return the modified value directly?
+Scalar references are useful when processing I<large> scalars, as copying their
+contents can cost much time and memory.
+
+=end sidebar
+
+Complex references may require a curly-brace block to disambiguate portions of
+the expression. You may always use this syntax, though sometimes it clarifies
+and other times it obscures:
+
+=begin programlisting
+
+    sub reverse_in_place
+    {
+        my $name_ref   = shift;
+        B<${ $name_ref }> = reverse B<${ $name_ref }>;
+    }
+
+=end programlisting
+
+If you forget to dereference a scalar reference, Perl will likely coerce the
+reference. The string value will be of the form C<SCALAR(0x93339e8)>, and the
+numeric value will be the C<0x93339e8> portion. This value encodes the type of
+reference (in this case, C<SCALAR>) and the location in memory of the
+reference.
+
+=begin sidebar
+
+Perl does not offer native access to memory locations. The address of the
+reference is a value used as an identifier. Unlike pointers in a language such
+as C, you cannot modify the address or treat it as an address into memory.
+These addresses are only I<mostly> unique because Perl may reuse storage
+locations as it reclaims unused memory.
+
+=end sidebar
+
+=head2 Array References
+
+Z<array_references>
+
+X<arrays; references>
+X<references; arrays>
+
+I<Array references> are useful in several circumstances:
+
+=over 4
+
+=item * To pass and return arrays from functions without flattening
+
+=item * To create multi-dimensional data structures
+
+=item * To avoid unnecessary array copying
+
+=item * To hold anonymous data structures
+
+=back
+
+Use the reference operator to create a reference to a declared array:
+
+=begin programlisting
+
+    my @cards     = qw( K Q J 10 9 8 7 6 5 4 3 2 A );
+    my $cards_ref = B<\>@cards;
+
+=end programlisting
+
+Any modifications made through C<$cards_ref> will modify C<@cards> and vice
+versa. You may access the entire array as a whole with the C<@> sigil, whether
+to flatten the array into a list or count its elements:
+
+=begin programlisting
+
+    my $card_count = B<@$cards_ref>;
+    my @card_copy  = B<@$cards_ref>;
+
+=end programlisting
+
+X<<< C<< -E<gt> >>; dereferencing arrow >>>
+X<<< operators; C<< -E<gt> >> >>>
+
+Access individual elements by using the dereferencing arrow (C<< -> >>):
+
+=begin programlisting
+
+    my $first_card = B<< $cards_ref->[0]  >>;
+    my $last_card  = B<< $cards_ref->[-1] >>;
+
+=end programlisting
+
+The arrow is necessary to distinguish between a scalar named C<$cards_ref> and
+an array named C<@cards_ref>. Note the use of the scalar sigil (L<sigils>) to
+access a single element.
+
+=begin sidebar
+
+An alternate syntax prepends another scalar sigil to the array reference. It's
+shorter, if uglier, to write C<< my $first_card = B<$$cards_ref[0]>; >>.
+
+=end sidebar
+
+Use the curly-brace dereferencing syntax to slice (L<array_slices>) an array
+reference:
+
+=begin programlisting
+
+    my @high_cards = B<@{ $cards_ref }>[0 .. 2, -1];
+
+=end programlisting
+
+You I<may> omit the curly braces, but their grouping often improves
+readability.
+
+X<references; anonymous arrays>
+X<arrays; anonymous>
+
+To create an anonymous array--without using a declared array--surround a list
+of values with square brackets:
+
+=begin programlisting
+
+    my $suits_ref = [qw( Monkeys Robots Dinosaurs Cheese )];
+
+=end programlisting
+
+This array reference behaves the same as named array references, except that
+the anonymous array brackets I<always> create a new reference. Taking a
+reference to a named array always refers to the I<same> array with regard to
+scoping. For example:
+
+=begin programlisting
+
+    my @meals      = qw( waffles sandwiches pizza );
+    my $sunday_ref = \@meals;
+    my $monday_ref = \@meals;
+
+    push @meals, 'ice cream sundae';
+
+=end programlisting
+
+... both C<$sunday_ref> and C<$monday_ref> now contain a dessert, while:
+
+=begin programlisting
+
+    my @meals      = qw( waffles sandwiches pizza );
+    my $sunday_ref = [ @meals ];
+    my $monday_ref = [ @meals ];
+
+    push @meals, 'berry pie';
+
+=end programlisting
+
+... neither C<$sunday_ref> nor C<$monday_ref> contains a dessert. Within the
+square braces used to create the anonymous array, list context flattens the
+C<@meals> array into a list unconnected to C<@meals>.
+
+=head2 Hash References
+
+Z<hash_references>
+
+X<hashes; references>
+X<references; hashes>
+
+Use the reference operator on a named hash to create a I<hash reference>:
+
+=begin programlisting
+
+    my %colors = (
+        black  => 'negro',
+        blue   => 'azul',
+        gold   => 'dorado',
+        red    => 'rojo',
+        yellow => 'amarillo',
+        purple => 'morado',
+    );
+
+    my $colors_ref = B<\%>colors;
+
+=end programlisting
+
+Access the keys or values of the hash by prepending the reference with the hash
+sigil C<%>:
+
+=begin programlisting
+
+    my @english_colors = keys   B<%$colors_ref>;
+    my @spanish_colors = values B<%$colors_ref>;
+
+=end programlisting
+
+Access individual values of the hash (to store, delete, check the existence of,
+or retrieve) by using the dereferencing arrow:
+
+=begin programlisting
+
+    sub translate_to_spanish
+    {
+        my $color = shift;
+        return B<< $colors_ref->{$color} >>;
+    }
+
+=end programlisting
+
+=begin sidebar
+
+As with array references, you may eschew the dereferencing arrow for a
+prepended scalar sigil, such as C<$$colors_ref{$color}>.
+
+=end sidebar
+
+Use the array sigil (C<@>) and disambiguation braces to slice a hash reference:
+
+=begin programlisting
+
+    my @colors  = qw( red blue green );
+    my @colores = B<@{ $colors_ref }{@colors}>;
+
+=end programlisting
+
+Create anonymous hashes in place with curly braces:
+
+=begin programlisting
+
+    my $food_ref = B<{>
+        'birthday cake' => 'la torta de cumpleaE<ntilde>os',
+        candy           => 'dulces',
+        cupcake         => 'bizcochito',
+        'ice cream'     => 'helado',
+    B<}>;
+
+=end programlisting
+
+As with anonymous arrays, anonymous hashes create a new anonymous hash on every
+execution.
+
+=begin sidebar
+
+The common novice error of assigning an anonymous hash to a standard hash
+produces a warning about an odd number of elements in the hash. Use parentheses
+for a named hash and curly brackets for an anonymous hash.
+
+=end sidebar
+
+=head2 Function References
+
+Z<function_references>
+
+X<functions; references>
+X<references; functions>
+X<functions; first-class>
+
+Perl 5 supports I<first-class functions> in that a function is a data type just
+as is an array or hash. This is most obvious with I<function references>, and
+enables many advanced features (L<closures>). Create a function reference by
+using the reference operator on the name of a function:
+
+=begin programlisting
+
+    sub bake_cake { say 'Baking a wonderful cake!' };
+
+    my $cake_ref = B<\&>bake_cake;
+
+=end programlisting
+
+X<functions; sigil>
+X<sigils; C<&>>
+X<C<&>; sigil>
+
+Without the I<function sigil> (C<&>), you will take a reference to the
+function's return value or values.
+
+Create anonymous functions with the bare C<sub> keyword:
+
+=begin programlisting
+
+    my $pie_ref = B<sub { say 'Making a delicious pie!' }>;
+
+=end programlisting
+
+X<builtins; C<sub>>
+
+The use of the C<sub> builtin I<without> a name compiles the function as
+normal, but does not install it in the current namespace. The only way to
+access this function is via the reference returned from C<sub>. Invoke the
+function reference with the dereferencing arrow:
+
+=begin programlisting
+
+    $cake_ref->();
+    $pie_ref->();
+
+=end programlisting
+
+Think of the empty parentheses as denoting an invocation dereferencing
+operation in the same way that square brackets indicate an indexed lookup and
+curly brackets cause a hash lookup. Pass arguments to the function within the
+parentheses:
+
+=begin programlisting
+
+    $bake_something_ref->( 'cupcakes' );
+
+=end programlisting
+
+You may also use function references as methods with objects (L<moose>). This
+is useful when you've already looked up the method (L<reflection>):
+
+=begin programlisting
+
+    my $clean = $robot_maid->can( 'cleanup' );
+    $robot_maid->$clean( $kitchen );
+
+=end programlisting
+
+=begin sidebar
+
+An alternate invocation syntax for function references uses the function sigil
+(C<&>) instead of the dereferencing arrow. Avoid this syntax; it has subtle
+implications for parsing and argument passing.
+
+=end sidebar
+
+=head2 Filehandle References
+
+Z<lexical_filehandles>
+
+X<filehandles; references>
+X<references; filehandles>
+
+When you use C<open>'s (and C<opendir>'s) lexical filehandle form, you deal
+with filehandle references. Internally, these filehandles are objects of the
+class C<IO::Handle>.  When you load that module, you can call methods on
+filehandles:
+
+=begin programlisting
+
+    use IO::Handle;
+    use autodie;
+
+    open my $out_fh, '>', 'output_file.txt';
+    $out_fh->say( 'Have some text!' );
+
+=end programlisting
+
+You may see old code which takes references to typeglobs, such as:
+
+=begin programlisting
+
+    my $fh = do {
+        local *FH;
+        open FH, "> $file" or die "Can't write to '$file': $!\n";
+        B<\*FH>;
+    };
+
+=end programlisting
+
+This idiom predates lexical filehandles, introduced as part of Perl 5.6.0 in
+March 2000. You may still use the reference operator on typeglobs to take
+references to package-global filehandles such as C<STDIN>, C<STDOUT>,
+C<STDERR>, or C<DATA>--but these are all global names anyhow.
+
+Prefer lexical filehandles when possible. With the benefit of explicit scoping,
+lexical filehandles allow you to manage the lifespan of filehandles. This is a
+nice feature of how Perl 5 manages memory.
+
+=head2 Reference Counts
+
+Z<reference_counts>
+
+X<lexicals; lifecycle>
+
+How does Perl know when it can safely release the memory for a variable? How
+does Perl know when it's safe to close the file opened in this inner scope:
+
+=begin programlisting
+
+    use autodie;
+    use IO::Handle;
+
+    sub show_off_scope
+    {
+        say 'file not open';
+
+        {
+            open my $fh, '>', 'inner_scope.txt';
+            $fh->say( 'file open here' );
+        }
+
+        say 'file closed here';
+    }
+
+=end programlisting
+
+X<references; reference counting>
+
+Perl 5 uses a memory management technique known as I<reference counting>.
+Every Perl value has a counter attached. Perl increases this counter every time
+something takes a reference to the value, whether implicitly or explicitly.
+Perl decreases that counter every time a reference goes away. When the counter
+reaches zero, Perl can safely recycle that value.
+
+Within the inner block in the example, there's one C<$fh>. (Multiple lines in
+the source code refer to it, but only one variable refers to it: C<$fh>.)
+C<$fh> is only in scope in the block. Its value never leaves the block. When
+execution reaches the end of the block, Perl recycles the variable C<$fh> and
+decreases the reference count of the contained filehandle. The filehandle's
+reference count reaches zero, so Perl recycles it to reclaim memory, and calls
+C<close()> implicitly.
+
+You don't have to understand the details of how all of this works. You only
+need to understand that your actions in taking references and passing them
+around affect how Perl manages memory (see L<circular_references>).
+
+=head2 References and Functions
+
+When you use references as arguments to functions, document your intent
+carefully. Modifying the values of a reference from within a function may
+surprise the calling code, which expects no modifications.
+
+To modify the contents of a reference without affecting the reference itself,
+copy its values to a new variable:
+
+=begin programlisting
+
+    my @new_array = @{ $array_ref };
+    my %new_hash  = %{ $hash_ref  };
+
+=end programlisting
+
+X<C<Storable>>
+X<C<dclone()>>
+
+This is only necessary in a few cases, but explicit cloning helps avoid nasty
+surprises for the calling code. If you use nested data structures or other
+complex references, consider the use of the core module C<Storable> and its
+C<dclone> (I<deep cloning>) function.
+=encoding utf8
+
+=head2 引用
+
+Z<references>
+
+即便你的期望相当微妙，Perl 通常也能实现它。考虑当你将值传递给函数时候会发生什么：
+
+=begin programlisting
+
+    sub reverse_greeting
+    {
+        my $name = reverse shift;
+        return "Hello, $name!";
+    }
+
+    my $name = 'Chuck';
+    say reverse_greeting( $name );
+    say $name;
+
+=end programlisting
+
+你也许会期望，虽然该值曾传递给函数并且逆序为 C<kcuhC>，但在函数之外，C<$name> 
+仍包含值 C<Chuck>────确实，这就是所发生的事。在函数之外的 C<$name> 和函数内部的
+C<$name> 是两个分离的标量，各有一份独立的字符串拷贝。修改一个不会影响另一个。
+
+这是有用且合意的默认行为。如果你每次执行可能引发修改的操作之前都必须明确地复制
+这些值，将导致编写大量多余的、不必要的代码来抵抗善意而错误的修改。
+
+有些时候，直接对值进行修改也有不少用处。试想仅为更新某值或删除一个键值对就将一
+个装满数据的哈希传递给函数，导致每次更改都要创建和返回新哈希────这是一个麻烦的
+过程（毫无效率可言）。
+
+X<reference>
+X<references>
+
+Perl 5 提供了一种机制，通过它你可以间接使用某值而不必为此创建一份拷贝。任何对该
+I<引用> 做出的修改将就地对值进行更新，如此，I<所有> 对该值的引用都将见到最新的值。
+引用是 Perl 5 中的一等公民，是一种内置的标量数据类型。它不是字符串、不是数组、也
+不是哈希。它就是一个引用其他第一等数据类型的标量。
+
+=head3 标量引用
+
+X<references; operator>
+X<operators; reference>
+X<operators; \>
+X<reference operator>
+
+X<references; scalar>
+X<scalar references>
+
+引用操作符是反斜杠（C<\>）。在标量上下文中，它创建对另一个值的单一引用。在列表上
+下文中，它创建一个引用列表。因此，你可以按如下方式引用前例中的 C<$name>：
+
+=begin programlisting
+
+    my $name     = 'Larry';
+    my $name_ref = B<\>$name;
+
+=end programlisting
+
+X<dereference>
+X<dereferencing>
+X<references; dereferencing>
+
+要访问引用指向的值，你必须对其 I<解引用>。解引用需要你在解开每一重引用时加上额外
+的印记：
+
+=begin programlisting
+
+    sub reverse_in_place
+    {
+        my $name_ref = shift;
+        B<$$name_ref>   = reverse B<$$name_ref>;
+    }
+
+    my $name = 'Blabby';
+    reverse_in_place( B<\>$name );
+    say $name;
+
+=end programlisting
+
+双标量印记对一个标量引用进行解引用。
+
+=begin sidebar
+
+这个例子看上去不怎么有用，为什么不让函数直接返回修改后的值？标量引用在处理 I<大型> 
+标量时很有用────复制这些标量的内容会花去大量的时间和内存。
+
+=end sidebar
+
+复杂的引用需要加上一对大括号以消除表达式断句上的歧义。这对于简单解引用来说是可选的，加
+上它会变得很臃肿：
+
+=begin programlisting
+
+    sub reverse_in_place
+    {
+        my $name_ref   = shift;
+        B<${ $name_ref }> = reverse B<${ $name_ref }>;
+    }
+
+=end programlisting
+
+如果你忘记对一个标量引用解引用，它将会字符串化或数值化。字符串值将拥有 C<SCALAR(0x93339e8)>
+的形式，数值则为 C<0x93339e8> 这部分。该值将引用的类型（此例为标量，即 C<SCALAR>）以及引用在
+内存中的位置编码在一起。
+
+=begin sidebar
+
+Perl 不提供对内存位置的原生访问。因为引用不一定有名称，引用的地址是一个可用作唯一标识符的值。
+不像一些语言（如：C）中的指针，你不能修改该地址或将其作为对应于内存的地址。
+
+这些地址仅在 I<大致上> 唯一， 因为在垃圾回收器回收某未引用的引用后， Perl 可能重用此存储位置。
+
+=end sidebar
+
+=head3 数组引用
+
+X<array references>
+X<references; arrays>
+
+你也可以创建对数组的引用，或称 I<数组引用>。说它有用有如下几个理由：
+
+=over 4
+
+=item * 不加平整地向函数传递及从函数中返回数组；
+
+=item * 创建多维数据结构；
+
+=item * 避免不必要的数组复制；
+
+=item * 持有匿名数据结构。
+
+=back
+
+X<array references; creating>
+
+对已声明的数组创建引用，使用引用操作符：
+
+=begin programlisting
+
+    my @cards     = qw( K Q J 10 9 8 7 6 5 4 3 2 A );
+    my $cards_ref = B<\>@cards;
+
+=end programlisting
+
+现在 C<$cards_ref> 包含了对该数组的引用。所有通过 C<$cards_ref> 做出的修改
+将同样影响 C<@cards>，反之亦然。
+
+X<array references; dereferencing>
+
+你可以通过 C<@> 已经对数组进行整体访问，可能会使数组平整为列表，或者得到其中包含
+的元素个数：
+
+=begin programlisting
+
+    my $card_count = B<@$cards_ref>;
+    my @card_copy  = B<@$cards_ref>;
+
+=end programlisting
+
+X<references; dereferencing arrow>
+X<< -> >>
+X<< operators; -> >>
+X<operators; dereferencing arrow>
+
+你也可以通过解引用箭头（C<< -> >>）访问数组中的独立元素：
+
+=begin programlisting
+
+    my $first_card = B<< $cards_ref->[0]  >>;
+    my $last_card  = B<< $cards_ref->[-1] >>;
+
+=end programlisting
+
+访问单个元素时候，为区分名为 C<$cards_ref> 的标量和名为 C<@cards_ref> 数组，箭头是必需的。
+
+=begin sidebar
+
+还有另外一种写法，你可以在数组引用之前加上标量印记。它更简短，但是可读性较差：
+C<< my $first_card = B<$$cards_ref[0]>; >>.
+
+=end sidebar
+
+通过大括号解引用和分组语法，可以通过引用对数组分片：
+
+=begin programlisting
+
+    my @high_cards = B<@{ $cards_ref }>[0 .. 2, -1];
+
+=end programlisting
+
+这种情况下，你 I<可以> 忽略大括号，但是它（和空白）带来的视觉上的分组有助于可读性的提高。
+
+X<references; anonymous arrays>
+X<anonymous arrays>
+X<arrays; anonymous>
+
+你可以不用命名就地创建匿名数组。在一个值或表达式列表的周围加上中括号：
+
+=begin programlisting
+
+    my $suits_ref = [qw( Monkeys Robots Dinosaurs Cheese )];
+
+=end programlisting
+
+这个数组引用的行为和具名数组引用一样，除了匿名数组引用 I<总是> 创建新引用，而具名数组的
+引用总是在作用域内指向 I<同一个> 数组。就是说：
+
+=begin programlisting
+
+    my @meals      = qw( waffles sandwiches pizza );
+    my $sunday_ref = \@meals;
+    my $monday_ref = \@meals;
+
+    push @meals, 'ice cream sundae';
+
+=end programlisting
+
+……C<$sunday_ref> 和 C<$monday_ref> 现在包含了一份甜点，但是：
+
+=begin programlisting
+
+    my @meals      = qw( waffles sandwiches pizza );
+    my $sunday_ref = [ @meals ];
+    my $monday_ref = [ @meals ];
+
+    push @meals, 'berry pie';
+
+=end programlisting
+
+……无论 C<$sunday_ref> 还是 C<$monday_ref> 都不包含甜点。在用于创建匿名数组引用的中括号内，
+C<@meals> 数组在列表上下文中被展开。
+
+=head3 哈希引用
+
+X<hash references>
+X<references; hashes>
+
+要创建一个 I<哈希引用>，可以在具名哈希上使用引用操作符：
+
+=begin programlisting
+
+    my %colors = (
+        black  => 'negro',
+        blue   => 'azul',
+        gold   => 'dorado',
+        red    => 'rojo',
+        yellow => 'amarillo',
+        purple => 'morado',
+    );
+
+    my $colors_ref = B<\%>colors;
+
+=end programlisting
+
+按如下方法在引用前加上哈希印记 C<%> 可以访问其中的键和值：
+
+=begin programlisting
+
+    my @english_colors = keys   B<%$colors_ref>;
+    my @spanish_colors = values B<%$colors_ref>;
+
+=end programlisting
+
+你可以通过解引用箭头访问哈希中独立的值（存储、删除、检查存在性或取值）：
+
+=begin programlisting
+
+    sub translate_to_spanish
+    {
+        my $color = shift;
+        return B<< $colors_ref->{$color} >>;
+    }
+
+=end programlisting
+
+=begin sidebar
+
+虽然箭头有时更为清晰，和数组引用一样，你可以避开解引用箭头转用前缀标量印记：
+C<$$colors_ref{$color}>。
+
+=end sidebar
+
+你也可以通过引用对哈希分片：
+
+=begin programlisting
+
+    my @colors = qw( red blue green );
+    my @colores = B<@{ $colors_ref }{@colors}>;
+
+=end programlisting
+
+注意大括号标示了哈希下标操作，数组印记标示了对引用进行的列表操作。
+
+你可以通过大括号就地创建匿名哈希：
+
+=begin programlisting
+
+    my $food_ref = B<{>
+        'birthday cake' => 'la torta de cumpleaE<ntilde>os',
+        candy           => 'dulces',
+        cupcake         => 'pancuecitos',
+        'ice cream'     => 'helado',
+    B<}>;
+
+=end programlisting
+
+和匿名数组一样，每次执行都会创建一个匿名哈希。
+
+=begin sidebar
+
+一个常见的新手错误就是将匿名哈希赋值给标准哈希。这会产生一个有关哈希元素个数为
+奇数的警告。请对具名哈希使用小括号，对匿名哈希使用大括号。
+
+=end sidebar
+
+=head3 函数引用
+
+Z<function_references>
+
+X<function references>
+X<references; functions>
+X<subroutine references>
+X<references; subroutines>
+X<functions; first-class>
+X<first-class functions>
+
+Perl 5 支持 I<第一级函数>。至少在你使用 I<函数引用> 时，函数和数组、哈希一样，是
+一种数据类型。这个特性启用了许多高级功能（L<closures>）。和其他数据类型一样，你可
+以通过在函数名称上使用引用操作符来创建函数引用：
+
+=begin programlisting
+
+    sub bake_cake { say 'Baking a wonderful cake!' };
+
+    my $cake_ref = B<\&>bake_cake;
+
+=end programlisting
+
+X<function sigil>
+X<sigils; &>
+
+没有了 I<函数印记>（C<&>），你将得到的是函数返回值的引用。
+
+你也可以创建匿名函数：
+
+=begin programlisting
+
+    my $pie_ref = B<sub { say 'Making a delicious pie!' }>;
+
+=end programlisting
+
+使用 C<sub> 关键字 I<不用> 函数名称也可以使得函数正常编译，但是它不会被安装到当前
+的名称空间中。访问此函数的唯一方法就是通过引用。 
+
+你可以通过解引用箭头调用引用指向的函数：
+
+=begin programlisting
+
+    $cake_ref->();
+    $pie_ref->();
+
+=end programlisting
+
+将空小括号的解引用作用想成和中括号对数组进行下标查找、大括号进行哈希查找一样。你可以
+在小括号内将函数的参数传递进去：
+
+=begin programlisting
+
+    $bake_something_ref->( 'cupcakes' );
+
+=end programlisting
+
+你也可以将函数引用用作对象的方法（L<moose>），当你已经完成方法查找时它最有用：
+
+=begin programlisting
+
+    my $clean = $robot_maid->can( 'cleanup' );
+    $robot_maid->$clean( $kitchen );
+
+=end programlisting
+
+=begin sidebar
+
+你会看到另外一种调用函数引用的语法，它使用函数印记（C<&>）而非解引用箭头。请避免使用这种语法；
+它暗示隐式参数传递。
+
+=end sidebar
+
+=head3 文件句柄引用
+
+Z<lexical_filehandles>
+
+X<filehandle references>
+X<references; filehandles>
+
+文件句柄也可以是引用。当你使用 C<open> 的（以及 C<opendir> 的）词法文件句柄形式，你就在处理文
+件句柄引用。对此文件句柄进行字符串化可以得到类似 C<GLOB(0x8bda880)> 形式的东西。
+
+说到内部机制，这些文件句柄都是 C<IO::Handle> 类的对象。当你加载这个模块时，你可以调用文件句柄
+上的方法：
+
+=begin programlisting
+
+    use IO::Handle;
+    use autodie;
+
+    open my $out_fh, '>', 'output_file.txt';
+    $out_fh->say( 'Have some text!' );
+
+=end programlisting
+
+你会碰到使用型团（typeglob）引用的陈旧代码，例如：
+
+=begin programlisting
+
+    my $fh = do {
+        local *FH;
+        open FH, "> $file" or die "Can't write to '$file': $!\n";
+        B<\*FH>;
+    };
+
+=end programlisting
+
+这个惯用语出现于词法文件句柄之前，是在 2000 年 3 月作为 Perl 5.6.0 的一部分引入的
+N<……你现在知道那段代码有多老了>。你仍可以在型团上使用引用操作符得到包全局文件句柄
+如 C<STDIN>、C<STDOUT>、C<STDERR> 和 C<DATA> 的引用────无论如何，这些仅代表全局数
+据，对于其他情况，请使用词法文件句柄。
+
+除了使用词法作用域代替包或全局作用域所带来的好处，词法文件句柄允许你管理文件句柄的
+生存期限。这是一个 Perl 5 如何管理内存和作用域的优秀特性。
+
+=head3 引用计数
+
+Z<reference_counts>
+
+X<lexicals; lifecycle>
+
+Perl 怎么知道它何时可以安全地释放一个变量所占内存以及何时需要继续保留？Perl 怎么知
+道它何时可以安全地关闭在内层作用域内打开的文件：
+
+=begin programlisting
+
+    use autodie;
+    use IO::Handle;
+
+    sub show_off_scope
+    {
+        say 'file not open';
+
+        {
+            open my $fh, '>', 'inner_scope.txt';
+            $fh->say( 'file open here' );
+        }
+
+        say 'file closed here';
+    }
+
+=end programlisting
+
+X<reference counting>
+X<references; counts>
+
+Perl 5 使用一种名为 I<引用计数> 的内存管理技术。程序中的每一个值都有附加的计数器。
+每次被其他东西引用时，Perl 增加计数器的值，无论隐式还是显式。每次引用消失后，Perl
+将减少计数器的值。当计数器减至零，Perl 就可以安全地回收这个值。
+
+上例中，在内层代码块内，有一个 C<$fh>。（源代码中有多行提及它，但只有一处 I<引用>
+它，即 C<$fh> 自己。）C<$fh> 的作用域仅限于此代码块，并且没有被赋值到代码块外，因
+此，当此代码块结束时候，它的引用计数减为零。对 C<$fh> 的回收隐式地调用了该文件句柄
+上的 C<close()> 方法，使得文件最终被关闭。
+
+你不需要了解全部这些是如何工作的。你只需理解你对值的引用和传递将影响 Perl 如何管理
+内存。（请参考 L<circular_references> 获得有关循环引用的告诫。）
+
+=head3 引用和函数
+
+当你使用引用作为函数的参数时，请小心地记录你的意图。在函数内部修改引用指向的值可能
+会是调用它的代码感到意外，因为调用者其实并不期望这种修改。
+
+如果你需要对引用的内容做出破坏性改动，请将其所含的值复制到一个新的变量中：
+
+=begin programlisting
+
+    my @new_array = @{ $array_ref };
+    my %new_hash  = %{ $hash_ref  };
+
+=end programlisting
+
+X<Storable>
+X<dclone; Storable>
+
+这仅在少数情况是必须的，同时为了避免调用者感到诧异，在这些情况下最好明确地复制。如果
+引用更加复杂（L<nested_data_structures>），请考虑使用核心模块 C<Storable> 和它的 C<dclone>
+（I<deep cloning>）函数。

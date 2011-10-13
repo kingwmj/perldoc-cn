@@ -1,0 +1,352 @@
+=head1 Packages
+
+Z<packages>
+X<packages>
+X<namespaces>
+
+A Perl I<namespace> associates and encapsulates various named entities within a
+named category, like your family name or a brand name. Unlike a real-world
+name, a namespace implies no direct relationship between entities. Such
+relationships may exist, but do not have to.
+
+A I<package> in Perl 5 is a collection of code in a single namespace. The
+distinction is subtle: the package represents the source code and the namespace
+represents the entity created when Perl parses that code.
+
+X<builtins; C<package>>
+
+The C<package> builtin declares a package and a namespace:
+
+=begin programlisting
+
+    package MyCode;
+
+    our @boxes;
+
+    sub add_box { ... }
+
+=end programlisting
+
+X<namespaces; fully qualified>
+
+All global variables and functions declared or referred to after the package
+declaration refer to symbols within the C<MyCode> namespace. You can refer to
+the C<@boxes> variable from the C<main> namespace only by its I<fully
+qualified> name, C<@MyCode::boxes>. Similarly, you can call the C<add_box()>
+function only by C<MyCode::add_box()>. A fully qualified name includes a
+complete package name.
+
+X<scope; packages>
+
+The scope of a package continues until the next C<package> declaration or the
+end of the file, whichever comes first. Perl 5.14 enhanced C<package> that you
+may provide a block which explicitly delineates the scope of the declaration:
+
+=begin programlisting
+
+    package Pinball::Wizard
+    {
+        our $VERSION = 1969;
+    }
+
+=end programlisting
+
+The default package is the C<main> package. Without a package declaration, the
+current package is C<main>. This rule applies to one-liners, standalone
+programs, and even F<.pm> files.
+
+X<packages; versions>
+X<C<$VERSION>>
+
+Besides a name, a package has a version and three implicit methods,
+C<VERSION()>, C<import()> (L<importing>), and C<unimport()>.
+
+C<VERSION()> returns the package's version number. This number is a series of
+numbers contained in a package global named C<$VERSION>. By rough convention,
+versions tend to be a series of integers separated by dots, as in C<1.23> or
+C<1.1.10>, where each segment is an integer.
+
+X<version numbers>
+
+Perl 5.12 introduced a new syntax intended to simplify version numbers, as
+documented in C<perldoc version::Internals>. These stricter version numbers
+must have a leading C<v> character and at least three integer components
+separated by periods:
+
+=begin programlisting
+
+    package MyCode v1.2.1;
+
+=end programlisting
+
+With Perl 5.14, the optional block form of a C<package> declaration is:
+
+=begin programlisting
+
+    package Pinball::Wizard v1969.3.7
+    {
+        ...
+    }
+
+=end programlisting
+
+In 5.10 and earlier, the simplest way to declare the version of a package is:
+
+=begin programlisting
+
+    package MyCode;
+
+    our $VERSION = 1.21;
+
+=end programlisting
+
+X<C<UNIVERSAL>>
+X<C<VERSION()>>
+
+Every package inherits a C<VERSION()> method from the C<UNIVERSAL> base class.
+You may override C<VERSION()>, though there are few reasons to do so. This
+method returns the value of C<$VERSION>:
+
+=begin programlisting
+
+    my $version = Some::Plugin->VERSION();
+
+=end programlisting
+
+If you provide a version number as an argument, this method will throw an
+exception unless the version of the module is equal to or greater than the
+argument:
+
+=begin programlisting
+
+    # require at least 2.1
+    Some::Plugin->VERSION( 2.1 );
+
+=end programlisting
+
+    die "Your plugin $version is too old"
+        unless $version > 2;
+
+=head2 Packages and Namespaces
+
+X<namespaces>
+X<packages; namespaces>
+
+Every C<package> declaration creates a new namespace if necessary and causes
+the parser to put all subsequent package global symbols (global variables and
+functions) into that namespace.
+
+X<namespaces; open>
+
+Perl has I<open namespaces>. You can add functions or variables to a namespace
+at any point, either with a new package declaration:
+
+=begin programlisting
+
+    package Pack
+    {
+        sub first_sub { ... }
+    }
+
+    Pack::first_sub();
+
+    package Pack
+    {
+        sub second_sub { ... }
+    }
+
+    Pack::second_sub();
+
+=end programlisting
+
+... or by fully qualifying function names at the point of declaration:
+
+
+=begin programlisting
+
+    # implicit
+    package main;
+
+    sub Pack::third_sub { ... }
+
+=end programlisting
+
+You can add to a package at any point during compilation or runtime, regardless
+of the current file, though building up a package from multiple separate
+declarations can make code difficult to spelunk.
+
+X<namespaces; multi-level>
+
+Namespaces can have as many levels as your organizational scheme requires,
+though namespaces are not hierarchical. The only relationship between packages
+is semantic, not technical. Many projects and businesses create their own
+top-level namespaces. This reduces the possibility of global conflicts and
+helps to organize code on disk. For example:
+
+=over 4
+
+=item * C<StrangeMonkey> is the project name
+
+=item * C<StrangeMonkey::UI> contains top-level user interface code
+
+=item * C<StrangeMonkey::Persistence> contains top-level data management code
+
+=item * C<StrangeMonkey::Test> contains top-level testing code for the project
+
+=back
+
+... and so on.
+=encoding utf8
+
+=head2 包 
+
+Z<packages>
+X<package>
+X<namespace>
+
+Perl 中的 I<名称空间> 是一种机制，它将若干具名实体关联并封装于某具名分类之下。它就
+像你的姓或是某种品牌，只能反映出命名归类上的关系而非其他。（这类关系可以存在，但不
+是必须的。）
+
+Perl 5 中的 I<包> 是单一名称空间下代码的集合。在某种意义上，包和名称空间是等价的；
+包代表源代码而名称空间代表当 Perl 分析这段代码时创建的实体。N<这是个微妙的区别>
+
+X<keywords; package>
+
+C<package> 关键字声明一个包和一个名称空间：
+
+=begin programlisting
+
+    package MyCode;
+
+    our @boxes;
+
+    sub add_box { ... }
+
+=end programlisting
+
+X<namespaces; fully qualified>
+
+所有在包声明语句之后的对全局变量和函数的声明或引用，都指向位于 C<MyCode> 名称空间
+内的符号。如果代码是这样写的，那么你只能通过 I<完全限定> 名称────C<@MyCode::boxes>
+────来从 C<main> 名称空间访问 C<@boxes> 变量。相似地，你仅可以通过 C<MyCode::add_box()>
+来调用 C<add_box()> 函数。一个完全限定名称包括了完整包名。
+
+默认包是 C<main> 包。如果你不明确声明一个包，无论是在命令行 one-liner 或在独立的
+Perl 程序甚至是磁盘上的 F<.pm> 文件，那么当前包就是 C<main> 包。
+
+X<packages; version>
+X<$VERSION>
+
+除包名（C<main> 或是 C<MyCode> 或其他任何允许的标识符）外，一个包还拥有一个版本以及
+三个隐含的方法，分别是 C<VERSION()>、C<import()>（L<importing>）和 C<unimport()>。
+C<VERSION()> 返回一个包的版本。
+
+包版本是包含在名为 C<$VERSION> 的包全局变量中的一系列数字。按照惯例，版本号倾向于写
+成一系列由点分隔整数的形式，例如 C<1.23> 和 C<1.1.10>，其中每一段是一个整数，但通常
+就这样写。
+
+Perl 5.12 引入了一种简化版本号的新语法。如果你编写的代码不会在早先版本的 Perl 5 上
+运行，你可以避免不少不必要的复杂性：
+
+=begin programlisting
+
+    package MyCode 1.2.1;
+
+=end programlisting
+
+在 5.10 以及早期的版本中，声明包版本最简单的方式是：
+
+=begin programlisting
+
+    package MyCode;
+
+    our $VERSION = 1.21;
+
+=end programlisting
+
+X<UNIVERSAL>
+X<VERSION()>
+
+每个包都有 C<VERSION()> 方法；它们继承自 C<UNIVERSAL> 基类。它返回 C<$VERSION> 中
+的值。虽然没有什么理由这样做，但你还是可以按需重写此方法。使用 C<VERSION()> 方法
+是获取一个包版本号最简便的办法：
+
+=begin programlisting
+
+    my $version = Some::Plugin->VERSION();
+
+    die "Your plugin $version is too old"
+        unless $version > 2;
+
+=end programlisting
+
+=head3 包和名称空间
+
+X<namespaces>
+
+每一句 C<package> 声明都会使 Perl 完成两件任务。如果名称空间不存在则创建它。
+它还告诉语法分析器将后续的包全局符号（全局变量和函数）放入该名称空间下。
+
+X<namespaces; open>
+X<open namespaces>
+
+Perl 有 I<开放式名称空间>。通过使用包声明语句，你在任何时候向一个名称空间添
+加函数和变量： 
+
+=begin programlisting
+
+    package Pack;
+
+    sub first_sub { ... }
+
+    package main;
+
+    Pack::first_sub();
+
+    package Pack;
+
+    sub second_sub { ... }
+
+    package main;
+
+    Pack::second_sub();
+
+=end programlisting
+
+……或者在声明时使用完全限定的函数名称：
+
+=begin programlisting
+
+    # 隐式
+    package main;
+
+    sub Pack::third_sub { ... }
+
+=end programlisting
+
+Perl 5 是那么的开放以至于你可以在编译期、运行时的任何时刻或从其他文件向其中
+添加内容。当然，这样做使人迷惑，因此应尽量避免。
+
+X<multi-level namespaces>
+X<namespaces; multi-level>
+
+名称空间可以按组织需要分为多个级别。这并不意味着继承关系，包与包之间也没有什
+么技术上的联系────仅对于这段代码的 I<阅读者> 来说有语义上的关系罢了。
+
+常见的做法是为业务或项目创建一个顶层名称空间。这对于阅读代码和发现组件间关系
+来说变得方便，同时也为代码和包在磁盘上的组织提供便利。因此：
+
+=over 4
+
+=item * C<StrangeMonkey> 是项目名称；
+
+=item * C<StrangeMonkey::UI> 包含顶层用户接口的代码；
+
+=item * C<StrangeMonkey::Persistence> 包含顶层数据管理代码；
+
+=item * C<StrangeMonkey::Test> 包含为项目编写的顶层测试代码；
+
+=back
+
+……等等。

@@ -1,0 +1,802 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>D:\Git\perldoc-cn\project\Intermediat_Perl\wrap\Chapter_7__Subroutine_References.pod.html</title>
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
+<meta name="syntax" content="pod">
+<meta name="settings" content="use_css,number_lines">
+<style type="text/css">
+<!--
+pre { font-family: monospace; color: #a0ffa0; background-color: #000000; }
+body { font-family: monospace; color: #a0ffa0; background-color: #000000; }
+.lnr { color: #ffff00; }
+.Identifier { color: #00ffff; }
+.Statement { color: #ffff00; }
+.PreProc { color: #f5deb3; }
+.Comment { color: #ffa500; }
+.Constant { color: #ffffff; }
+-->
+</style>
+</head>
+<body>
+<pre>
+<span class="lnr">  1 </span><span class="Constant">第七章. 对子程序的引用</span>
+<span class="lnr">  2 </span>
+<span class="lnr">  3 </span>目前, 你已经看到了对 <span class="Comment">Perl</span> 三种数据类型的引用：标量, 数组和散
+<span class="lnr">  4 </span>列同样, 我们也可以对一个子程序进行引用 (有时候我们把它叫作代码
+<span class="lnr">  5 </span>引用)。
+<span class="lnr">  6 </span>
+<span class="lnr">  7 </span>但我们为什么要做那个呢？与我们用指向数组的引用来实现用同一代码
+<span class="lnr">  8 </span>块在不同时间处理不同数组相同, 我们也可以使用指向子程序的引用实现
+<span class="lnr">  9 </span>在不同时间调用不同的子程序。一样, 引用充许复杂的数据结构。一个指
+<span class="lnr"> 10 </span>向子程序的引用使子程序成为复杂数据结构的一部份成为可能。
+<span class="lnr"> 11 </span>
+<span class="lnr"> 12 </span>换一种说法, 一个变量或者一个复杂数据结构是一个程序中的数据的仓
+<span class="lnr"> 13 </span>库。一个对子程序的引用可以被想像成为一个程序动作（方法）的仓库。
+<span class="lnr"> 14 </span>本节中的例子可以向你揭示这一点。
+<span class="lnr"> 15 </span>
+<span class="lnr"> 16 </span><span class="Constant">7. 1. 对命名子程序的引用</span>
+<span class="lnr"> 17 </span>
+<span class="lnr"> 18 </span><span class="Comment">Skipper</span> 和 <span class="Comment">Gilligan</span> 之间有一通对话：
+<span class="lnr"> 19 </span>
+<span class="lnr"> 20 </span><span class="PreProc"> sub skipper_greets {</span>
+<span class="lnr"> 21 </span><span class="PreProc">  my $person = shift;</span>
+<span class="lnr"> 22 </span><span class="PreProc">  print &quot;Skipper: Hey there, $person!\n&quot;;</span>
+<span class="lnr"> 23 </span><span class="PreProc"> }</span>
+<span class="lnr"> 24 </span>
+<span class="lnr"> 25 </span><span class="PreProc"> sub gilligan_greets {</span>
+<span class="lnr"> 26 </span><span class="PreProc">  my $person = shift;</span>
+<span class="lnr"> 27 </span><span class="PreProc">  if ($person eq &quot;Skipper&quot;) {</span>
+<span class="lnr"> 28 </span><span class="PreProc">    print &quot;Gilligan: Sir, yes, sir, $person!\n&quot;;</span>
+<span class="lnr"> 29 </span><span class="PreProc">  } else {</span>
+<span class="lnr"> 30 </span><span class="PreProc">    print &quot;Gilligan: Hi, $person!\n&quot;;</span>
+<span class="lnr"> 31 </span><span class="PreProc">  }</span>
+<span class="lnr"> 32 </span><span class="PreProc"> }</span>
+<span class="lnr"> 33 </span>
+<span class="lnr"> 34 </span><span class="PreProc"> skipper_greets(&quot;Gilligan&quot;);</span>
+<span class="lnr"> 35 </span><span class="PreProc"> gilligan_greets(&quot;Skipper&quot;);</span>
+<span class="lnr"> 36 </span>
+<span class="lnr"> 37 </span>其输出结果如下：
+<span class="lnr"> 38 </span>
+<span class="lnr"> 39 </span><span class="PreProc"> Skipper: Hey there, Gilligan!</span>
+<span class="lnr"> 40 </span><span class="PreProc"> Gilligan: Sir, yes, sir, Skipper!</span>
+<span class="lnr"> 41 </span>
+<span class="lnr"> 42 </span>到现在为止, 一切正常。然而, 你要注意, <span class="Comment">Gilligan</span> 有两个不同的行
+<span class="lnr"> 43 </span>为, 这依赖于它是否对 <span class="Comment">Skipper</span> 说话, 还是对其它人说。
+<span class="lnr"> 44 </span>
+<span class="lnr"> 45 </span>现在, 教授到屋子里来了。这两个 <span class="Comment">Minnow</span> 船员都向新来者问候：
+<span class="lnr"> 46 </span>
+<span class="lnr"> 47 </span><span class="PreProc"> skipper_greets('Professor');</span>
+<span class="lnr"> 48 </span><span class="PreProc"> gilligan_greets('Professor');</span>
+<span class="lnr"> 49 </span>
+<span class="lnr"> 50 </span>其输出是：
+<span class="lnr"> 51 </span>
+<span class="lnr"> 52 </span><span class="PreProc"> Skipper: Hey there, Professor!</span>
+<span class="lnr"> 53 </span><span class="PreProc"> Gilligan: Hi, Professor!</span>
+<span class="lnr"> 54 </span>
+<span class="lnr"> 55 </span>这下轮到教授要作出反映了：
+<span class="lnr"> 56 </span>
+<span class="lnr"> 57 </span><span class="PreProc"> sub professor_greets {</span>
+<span class="lnr"> 58 </span><span class="PreProc">   my $person = shift;</span>
+<span class="lnr"> 59 </span><span class="PreProc">   print &quot;Professor:By my calculations,you must be $person!\n&quot;;</span>
+<span class="lnr"> 60 </span><span class="PreProc"> }</span>
+<span class="lnr"> 61 </span>
+<span class="lnr"> 62 </span><span class="PreProc"> professor_greets('Gilligan');</span>
+<span class="lnr"> 63 </span><span class="PreProc"> professor_greets('Skipper');</span>
+<span class="lnr"> 64 </span>
+<span class="lnr"> 65 </span>输出结果是：
+<span class="lnr"> 66 </span>
+<span class="lnr"> 67 </span><span class="PreProc"> Professor: By my calculations, you must be Gilligan!</span>
+<span class="lnr"> 68 </span><span class="PreProc"> Professor: By my calculations, you must be Skipper!</span>
+<span class="lnr"> 69 </span>
+<span class="lnr"> 70 </span>咻！这程序写得真费事, 而且一点也不抽象。如果每个乘客的行为以不
+<span class="lnr"> 71 </span>同的子程序命名, 而且每个乘客都进来的话, 我们要不得不写多少程序来
+<span class="lnr"> 72 </span>对付啊。当然, 我们可以用这样难以维护的代码来处理这件事, 但是, 就
+<span class="lnr"> 73 </span>像我们在数组和散列上做的那样, 我们只要加一些小技巧, 就可以简化处理
+<span class="lnr"> 74 </span>过程。
+<span class="lnr"> 75 </span>
+<span class="lnr"> 76 </span>首先, 让我们用<span class="Statement">取引用</span>操作符。实际上这也不用介绍, 因为它与之前
+<span class="lnr"> 77 </span>的反斜杠长得非常像：
+<span class="lnr"> 78 </span>
+<span class="lnr"> 79 </span><span class="PreProc"> my $ref_to_greeter = \&amp;skipper_greets;</span>
+<span class="lnr"> 80 </span>
+<span class="lnr"> 81 </span>我们现在取子程序 <span class="Comment">skipper_greets()</span> 的引用。注意, 前导的&amp;字符
+<span class="lnr"> 82 </span>在这里是强制必须的, 而其后的小括号也不要加。<span class="Comment">Perl</span> 会把对这个子
+<span class="lnr"> 83 </span>程序的引用放到变量 <span class="Comment">$ref_to_greeter</span> 中, 而且, 同对其它的引用一
+<span class="lnr"> 84 </span>样, 它适合于任何可以使用标量的地方。
+<span class="lnr"> 85 </span>
+<span class="lnr"> 86 </span>还原一个对子程序的引用的惟一目的就是：为了调用它还原对代码的
+<span class="lnr"> 87 </span>引用同还原对其它数据类型的引用是相似的首先, 我们可以采用我们在
+<span class="lnr"> 88 </span>听说引用以前写过的方法来处理（包括前导的&amp;号）
+<span class="lnr"> 89 </span>
+<span class="lnr"> 90 </span><span class="PreProc"> &amp; skipper_greets ( 'Gilligan' )</span>
+<span class="lnr"> 91 </span>
+<span class="lnr"> 92 </span>下一步, 我们把子程序的名字用引用变量名字外套花括号代替：
+<span class="lnr"> 93 </span>
+<span class="lnr"> 94 </span><span class="PreProc"> &amp; { $ref_to_greeter } ( 'Gilligan' )</span>
+<span class="lnr"> 95 </span>
+<span class="lnr"> 96 </span>就是它了。这个方法调用了当前 <span class="Comment">$ref_to_greeter</span> 变量中保存的那个
+<span class="lnr"> 97 </span>对子程序的引用, 并给它传了一个字串参数： <span class="Comment">Gilligan</span>。
+<span class="lnr"> 98 </span>
+<span class="lnr"> 99 </span>不过, 这样子是不是太丑陋了？ 幸运的是同样的简化规则也能应用于对
+<span class="lnr">100 </span>子程序的引用如果花括号里是简单的标量变量的话, 花括号可以去掉：
+<span class="lnr">101 </span>
+<span class="lnr">102 </span><span class="PreProc"> &amp; $ref_to_greeter ( 'Gilligan' )</span>
+<span class="lnr">103 </span>
+<span class="lnr">104 </span>我们也可以把它转换成带箭头的格式：
+<span class="lnr">105 </span>
+<span class="lnr">106 </span><span class="PreProc"> $ref_to_greeter -&gt; ( 'Gilligan' )</span>
+<span class="lnr">107 </span>
+<span class="lnr">108 </span>最后一种形式特别适用于在一个大数据结构中进行代码引用, 你一会儿
+<span class="lnr">109 </span>就会看到。
+<span class="lnr">110 </span>
+<span class="lnr">111 </span>如果让 <span class="Comment">Gilligan</span> 和 <span class="Comment">Skipper</span> 向教授问好, 我们只需要迭代调用
+<span class="lnr">112 </span>子程序就可以了：
+<span class="lnr">113 </span>
+<span class="lnr">114 </span><span class="PreProc"> for my $greet (\&amp;skipper_greets, \&amp;gilligan_greets) {</span>
+<span class="lnr">115 </span><span class="PreProc">  $greet-&gt;('Professor');</span>
+<span class="lnr">116 </span><span class="PreProc"> }</span>
+<span class="lnr">117 </span>
+<span class="lnr">118 </span>首先, 在小括号里面, 我们建立一个两个元素的列表, 而且这两个元素
+<span class="lnr">119 </span>各保存一个对代码块的引用而每个对代码的引用都各自被还原, 调用相
+<span class="lnr">120 </span>应的子程序并传入&quot;教授&quot;字串。
+<span class="lnr">121 </span>
+<span class="lnr">122 </span>我们已经看到了把代码引用作为一个列表中的元素那我们是否可以把
+<span class="lnr">123 </span>代码引用放到一个大的数据结构中呢? 当然可以。我们可以创建一个表,
+<span class="lnr">124 </span>来让乘客与其向他们问候动作对应, 我们可以重写之前的例子：
+<span class="lnr">125 </span>
+<span class="lnr">126 </span><span class="PreProc"> sub skipper_greets {</span>
+<span class="lnr">127 </span><span class="PreProc">  my $person = shift;</span>
+<span class="lnr">128 </span><span class="PreProc">  print &quot;Skipper: Hey there, $person!\n&quot;;</span>
+<span class="lnr">129 </span><span class="PreProc"> }</span>
+<span class="lnr">130 </span>
+<span class="lnr">131 </span><span class="PreProc"> sub gilligan_greets {</span>
+<span class="lnr">132 </span><span class="PreProc">  my $person = shift;</span>
+<span class="lnr">133 </span><span class="PreProc">  if ($person eq 'Skipper') {</span>
+<span class="lnr">134 </span><span class="PreProc">    print &quot;Gilligan: Sir, yes, sir, $person!\n&quot;;</span>
+<span class="lnr">135 </span><span class="PreProc">  } else {</span>
+<span class="lnr">136 </span><span class="PreProc">    print &quot;Gilligan: Hi, $person!\n&quot;;</span>
+<span class="lnr">137 </span><span class="PreProc">  }</span>
+<span class="lnr">138 </span><span class="PreProc"> }</span>
+<span class="lnr">139 </span>
+<span class="lnr">140 </span><span class="PreProc"> sub professor_greets {</span>
+<span class="lnr">141 </span><span class="PreProc">  my $person = shift;</span>
+<span class="lnr">142 </span><span class="PreProc">  print &quot;Professor:By my calculations,you must be $person!\n&quot;;</span>
+<span class="lnr">143 </span><span class="PreProc"> }</span>
+<span class="lnr">144 </span>
+<span class="lnr">145 </span><span class="PreProc"> my %greets = (</span>
+<span class="lnr">146 </span><span class="PreProc">  Gilligan  =&gt; \&amp;gilligan_greets,</span>
+<span class="lnr">147 </span><span class="PreProc">  Skipper   =&gt; \&amp;skipper_greets,</span>
+<span class="lnr">148 </span><span class="PreProc">  Professor =&gt; \&amp;professor_greets,</span>
+<span class="lnr">149 </span><span class="PreProc"> );</span>
+<span class="lnr">150 </span>
+<span class="lnr">151 </span><span class="PreProc"> for my $person (qw(Skipper Gilligan)) {</span>
+<span class="lnr">152 </span><span class="PreProc">  $greets{$person}-&gt;('Professor');</span>
+<span class="lnr">153 </span><span class="PreProc"> }</span>
+<span class="lnr">154 </span>
+<span class="lnr">155 </span>注意, 变量 <span class="Comment">$person</span> 是字名, 他们以前在散列中查找代码引用然
+<span class="lnr">156 </span>后我们还原那个代码引用, 并传给他要问候的人名, 获得正确的问候行为
+<span class="lnr">157 </span>, 输出结果如下：
+<span class="lnr">158 </span>
+<span class="lnr">159 </span><span class="PreProc"> Skipper: Hey there, Professor!</span>
+<span class="lnr">160 </span><span class="PreProc"> Gilligan: Hi, Professor!</span>
+<span class="lnr">161 </span>
+<span class="lnr">162 </span>现在我们可以让大家互相问候了, 在一个十分友好的房间：
+<span class="lnr">163 </span>
+<span class="lnr">164 </span><span class="PreProc"> sub skipper_greets {</span>
+<span class="lnr">165 </span><span class="PreProc">  my $person = shift;</span>
+<span class="lnr">166 </span><span class="PreProc">  print &quot;Skipper: Hey there, $person!\n&quot;;</span>
+<span class="lnr">167 </span><span class="PreProc"> }</span>
+<span class="lnr">168 </span>
+<span class="lnr">169 </span><span class="PreProc"> sub gilligan_greets {</span>
+<span class="lnr">170 </span><span class="PreProc">  my $person = shift;</span>
+<span class="lnr">171 </span><span class="PreProc">  if ($person eq 'Skipper') {</span>
+<span class="lnr">172 </span><span class="PreProc">    print &quot;Gilligan: Sir, yes, sir, $person!\n&quot;;</span>
+<span class="lnr">173 </span><span class="PreProc">  } else {</span>
+<span class="lnr">174 </span><span class="PreProc">    print &quot;Gilligan: Hi, $person!\n&quot;;</span>
+<span class="lnr">175 </span><span class="PreProc">  }</span>
+<span class="lnr">176 </span><span class="PreProc"> }</span>
+<span class="lnr">177 </span>
+<span class="lnr">178 </span><span class="PreProc"> sub professor_greets {</span>
+<span class="lnr">179 </span><span class="PreProc">  my $person = shift;</span>
+<span class="lnr">180 </span><span class="PreProc">  print &quot;Professor:By my calculations,you must be $person!\n&quot;;</span>
+<span class="lnr">181 </span><span class="PreProc"> }</span>
+<span class="lnr">182 </span>
+<span class="lnr">183 </span><span class="PreProc"> my %greets = (</span>
+<span class="lnr">184 </span><span class="PreProc">  Gilligan  =&gt; \&amp;gilligan_greets,</span>
+<span class="lnr">185 </span><span class="PreProc">  Skipper   =&gt; \&amp;skipper_greets,</span>
+<span class="lnr">186 </span><span class="PreProc">  Professor =&gt; \&amp;professor_greets,</span>
+<span class="lnr">187 </span><span class="PreProc"> );</span>
+<span class="lnr">188 </span>
+<span class="lnr">189 </span><span class="PreProc"> my @everyone = sort keys %greets;</span>
+<span class="lnr">190 </span><span class="PreProc"> for my $greeter (@everyone) {</span>
+<span class="lnr">191 </span><span class="PreProc">  for my $greeted (@everyone) {</span>
+<span class="lnr">192 </span><span class="PreProc">    $greets{$greeter}-&gt;($greeted)</span>
+<span class="lnr">193 </span><span class="PreProc">      unless $greeter eq $greeted; # no talking to yourself</span>
+<span class="lnr">194 </span><span class="PreProc">  }</span>
+<span class="lnr">195 </span><span class="PreProc"> }</span>
+<span class="lnr">196 </span>
+<span class="lnr">197 </span>其输出结果如下：
+<span class="lnr">198 </span>
+<span class="lnr">199 </span><span class="PreProc"> Gilligan: Hi, Professor!</span>
+<span class="lnr">200 </span><span class="PreProc"> Gilligan: Sir, yes, sir, Skipper!</span>
+<span class="lnr">201 </span><span class="PreProc"> Professor: By my calculations, you must be Gilligan!</span>
+<span class="lnr">202 </span><span class="PreProc"> Professor: By my calculations, you must be Skipper!</span>
+<span class="lnr">203 </span><span class="PreProc"> Skipper: Hey there, Gilligan!</span>
+<span class="lnr">204 </span><span class="PreProc"> Skipper: Hey there, Professor!</span>
+<span class="lnr">205 </span>
+<span class="lnr">206 </span>呣。这里有些复杂。让我们使他们一个个进来。
+<span class="lnr">207 </span>
+<span class="lnr">208 </span><span class="PreProc"> sub skipper_greets {</span>
+<span class="lnr">209 </span><span class="PreProc">  my $person = shift;</span>
+<span class="lnr">210 </span><span class="PreProc">  print &quot;Skipper: Hey there, $person!\n&quot;;</span>
+<span class="lnr">211 </span><span class="PreProc"> }</span>
+<span class="lnr">212 </span>
+<span class="lnr">213 </span><span class="PreProc"> sub gilligan_greets {</span>
+<span class="lnr">214 </span><span class="PreProc">  my $person = shift;</span>
+<span class="lnr">215 </span><span class="PreProc">  if ($person eq 'Skipper') {</span>
+<span class="lnr">216 </span><span class="PreProc">    print &quot;Gilligan: Sir, yes, sir, $person!\n&quot;;</span>
+<span class="lnr">217 </span><span class="PreProc">  } else {</span>
+<span class="lnr">218 </span><span class="PreProc">    print &quot;Gilligan: Hi, $person!\n&quot;;</span>
+<span class="lnr">219 </span><span class="PreProc">  }</span>
+<span class="lnr">220 </span><span class="PreProc"> }</span>
+<span class="lnr">221 </span>
+<span class="lnr">222 </span><span class="PreProc"> sub professor_greets {</span>
+<span class="lnr">223 </span><span class="PreProc">  my $person = shift;</span>
+<span class="lnr">224 </span><span class="PreProc">  print &quot;Professor:By my calculations,you must be $person!\n&quot;;</span>
+<span class="lnr">225 </span><span class="PreProc"> }</span>
+<span class="lnr">226 </span>
+<span class="lnr">227 </span><span class="PreProc"> my %greets = (</span>
+<span class="lnr">228 </span><span class="PreProc">  Gilligan  =&gt; \&amp;gilligan_greets,</span>
+<span class="lnr">229 </span><span class="PreProc">  Skipper   =&gt; \&amp;skipper_greets,</span>
+<span class="lnr">230 </span><span class="PreProc">  Professor =&gt; \&amp;professor_greets,</span>
+<span class="lnr">231 </span><span class="PreProc"> );</span>
+<span class="lnr">232 </span>
+<span class="lnr">233 </span><span class="PreProc"> my @room; # initially empty</span>
+<span class="lnr">234 </span><span class="PreProc"> for my $person (qw(Gilligan Skipper Professor)) {</span>
+<span class="lnr">235 </span><span class="PreProc">  print &quot;\n&quot;;</span>
+<span class="lnr">236 </span><span class="PreProc">  print &quot;$person walks into the room. \n&quot;;</span>
+<span class="lnr">237 </span><span class="PreProc">  for my $room_person (@room) {</span>
+<span class="lnr">238 </span><span class="PreProc">    $greets{$person}-&gt;($room_person); # speaks</span>
+<span class="lnr">239 </span><span class="PreProc">    $greets{$room_person}-&gt;($person); # gets reply</span>
+<span class="lnr">240 </span><span class="PreProc">  }</span>
+<span class="lnr">241 </span><span class="PreProc">  push @room, $person; # come in, get comfy</span>
+<span class="lnr">242 </span><span class="PreProc"> }</span>
+<span class="lnr">243 </span>
+<span class="lnr">244 </span>输出结果如下, 岛上典型的一天是这样的：
+<span class="lnr">245 </span>
+<span class="lnr">246 </span><span class="PreProc"> Gilligan walks into the room.</span>
+<span class="lnr">247 </span>
+<span class="lnr">248 </span><span class="PreProc"> Skipper walks into the room.</span>
+<span class="lnr">249 </span><span class="PreProc"> Skipper: Hey there, Gilligan!</span>
+<span class="lnr">250 </span><span class="PreProc"> Gilligan: Sir, yes, sir, Skipper!</span>
+<span class="lnr">251 </span>
+<span class="lnr">252 </span><span class="PreProc"> Professor walks into the room.</span>
+<span class="lnr">253 </span><span class="PreProc"> Professor: By my calculations, you must be Gilligan!</span>
+<span class="lnr">254 </span><span class="PreProc"> Gilligan: Hi, Professor!</span>
+<span class="lnr">255 </span><span class="PreProc"> Professor: By my calculations, you must be Skipper!</span>
+<span class="lnr">256 </span><span class="PreProc"> Skipper: Hey there, Professor!</span>
+<span class="lnr">257 </span>
+<span class="lnr">258 </span><span class="Constant">7. 2. 匿名子程序</span>
+<span class="lnr">259 </span>
+<span class="lnr">260 </span>在最后那个例子中, 我们并没有显式的调用子程序, 如 <span class="Comment">profressor_</span>
+<span class="lnr">261 </span><span class="Comment">greets(</span> ), 我们只是间接通过代码引用来调用它。所以, 为了初始化一个
+<span class="lnr">262 </span>数据结构, 我们仅仅因为在其它地方使用而给子程序提供名字纯属浪费脑筋
+<span class="lnr">263 </span>。但是, 就像我们可以建立匿名数组和匿名散列一样, 我们也可能建立一个
+<span class="lnr">264 </span>匿名的子程序！
+<span class="lnr">265 </span>
+<span class="lnr">266 </span>让我们再添加一个岛上的居民： <span class="Comment">Ginger</span>。 但是不同于用命名子程序
+<span class="lnr">267 </span>来给她定义行为, 我们可能建立一个匿名子程序：
+<span class="lnr">268 </span>
+<span class="lnr">269 </span><span class="PreProc"> my $ginger = sub {</span>
+<span class="lnr">270 </span><span class="PreProc">   my $person = shift;</span>
+<span class="lnr">271 </span><span class="PreProc">   print &quot;Ginger: (in a sultry voice) Well hello, $person!\n&quot;;</span>
+<span class="lnr">272 </span><span class="PreProc"> };</span>
+<span class="lnr">273 </span><span class="PreProc"> $ginger-&gt;('Skipper');</span>
+<span class="lnr">274 </span>
+<span class="lnr">275 </span>一个匿名子程序看上去像一个平常的子程序声明, 只是没有名字（或原
+<span class="lnr">276 </span>型声明）在 <span class="Comment">sub</span> 关键字和紧随的代码块之间。这同样是声明的一部份,
+<span class="lnr">277 </span>所以在大多数情况下, 我们需要结尾的分号, 或者其它的表达式分隔符。
+<span class="lnr">278 </span>
+<span class="lnr">279 </span><span class="PreProc"> sub { ...body of subroutine... };</span>
+<span class="lnr">280 </span>
+<span class="lnr">281 </span><span class="Comment">$ginger</span> 的值是一个代码引用, 就像我们在其后定义了子程序一样,
+<span class="lnr">282 </span>然后返回引用给它。当我们到达最后一行, 我们看到：
+<span class="lnr">283 </span>
+<span class="lnr">284 </span><span class="PreProc"> Ginger: (in a sultry voice) Well hello, Skipper!</span>
+<span class="lnr">285 </span>
+<span class="lnr">286 </span>尽管我们可以把代码引用作为标量值保存, 但我们也可以直接把
+<span class="lnr">287 </span><span class="Comment">sub</span> <span class="Comment">{...}</span> 代码块直接放在初始化的 <span class="Comment">greetings</span> 散列中：
+<span class="lnr">288 </span>
+<span class="lnr">289 </span><span class="PreProc"> my %greets = (</span>
+<span class="lnr">290 </span>
+<span class="lnr">291 </span><span class="PreProc">  Skipper =&gt; sub {</span>
+<span class="lnr">292 </span><span class="PreProc">    my $person = shift;</span>
+<span class="lnr">293 </span><span class="PreProc">    print &quot;Skipper: Hey there, $person!\n&quot;;</span>
+<span class="lnr">294 </span><span class="PreProc">  },</span>
+<span class="lnr">295 </span>
+<span class="lnr">296 </span><span class="PreProc">  Gilligan =&gt; sub {</span>
+<span class="lnr">297 </span><span class="PreProc">    my $person = shift;</span>
+<span class="lnr">298 </span><span class="PreProc">    if ($person eq 'Skipper') {</span>
+<span class="lnr">299 </span><span class="PreProc">      print &quot;Gilligan: Sir, yes, sir, $person!\n&quot;;</span>
+<span class="lnr">300 </span><span class="PreProc">    } else {</span>
+<span class="lnr">301 </span><span class="PreProc">      print &quot;Gilligan: Hi, $person!\n&quot;;</span>
+<span class="lnr">302 </span><span class="PreProc">    }</span>
+<span class="lnr">303 </span><span class="PreProc">  },</span>
+<span class="lnr">304 </span>
+<span class="lnr">305 </span><span class="PreProc">  Professor =&gt; sub {</span>
+<span class="lnr">306 </span><span class="PreProc">    my $person = shift;</span>
+<span class="lnr">307 </span><span class="PreProc">    print &quot;Professor:By my calculations,you must be $person!\n&quot;;</span>
+<span class="lnr">308 </span><span class="PreProc">  },</span>
+<span class="lnr">309 </span>
+<span class="lnr">310 </span><span class="PreProc">  Ginger =&gt; sub {</span>
+<span class="lnr">311 </span><span class="PreProc">    my $person = shift;</span>
+<span class="lnr">312 </span><span class="PreProc">    print &quot;Ginger: (in a sultry voice) Well hello, $person!\n&quot;;</span>
+<span class="lnr">313 </span><span class="PreProc">  },</span>
+<span class="lnr">314 </span>
+<span class="lnr">315 </span><span class="PreProc"> );</span>
+<span class="lnr">316 </span>
+<span class="lnr">317 </span><span class="PreProc"> my @room; # initially empty</span>
+<span class="lnr">318 </span><span class="PreProc"> for my $person (qw(Gilligan Skipper Professor Ginger)) {</span>
+<span class="lnr">319 </span><span class="PreProc">  print &quot;\n&quot;;</span>
+<span class="lnr">320 </span><span class="PreProc">  print &quot;$person walks into the room. \n&quot;;</span>
+<span class="lnr">321 </span><span class="PreProc">  for my $room_person (@room) {</span>
+<span class="lnr">322 </span><span class="PreProc">    $greets{$person}-&gt;($room_person); # speaks</span>
+<span class="lnr">323 </span><span class="PreProc">    $greets{$room_person}-&gt;($person); # gets reply</span>
+<span class="lnr">324 </span><span class="PreProc">  }</span>
+<span class="lnr">325 </span><span class="PreProc">  push @room, $person; # come in, get comfy</span>
+<span class="lnr">326 </span><span class="PreProc"> }</span>
+<span class="lnr">327 </span>
+<span class="lnr">328 </span>注意我们简化了多少行代码。子程序的定义现在直接放在数据结构中。
+<span class="lnr">329 </span>结果相当直观：
+<span class="lnr">330 </span>
+<span class="lnr">331 </span><span class="PreProc"> Gilligan walks into the room.</span>
+<span class="lnr">332 </span>
+<span class="lnr">333 </span><span class="PreProc"> Skipper walks into the room.</span>
+<span class="lnr">334 </span><span class="PreProc"> Skipper: Hey there, Gilligan!</span>
+<span class="lnr">335 </span><span class="PreProc"> Gilligan: Sir, yes, sir, Skipper!</span>
+<span class="lnr">336 </span>
+<span class="lnr">337 </span><span class="PreProc"> Professor walks into the room.</span>
+<span class="lnr">338 </span><span class="PreProc"> Professor: By my calculations, you must be Gilligan!</span>
+<span class="lnr">339 </span><span class="PreProc"> Gilligan: Hi, Professor!</span>
+<span class="lnr">340 </span><span class="PreProc"> Professor: By my calculations, you must be Skipper!</span>
+<span class="lnr">341 </span><span class="PreProc"> Skipper: Hey there, Professor!</span>
+<span class="lnr">342 </span>
+<span class="lnr">343 </span><span class="PreProc"> Ginger walks into the room.</span>
+<span class="lnr">344 </span><span class="PreProc"> Ginger: (in a sultry voice) Well hello, Gilligan!</span>
+<span class="lnr">345 </span><span class="PreProc"> Gilligan: Hi, Ginger!</span>
+<span class="lnr">346 </span><span class="PreProc"> Ginger: (in a sultry voice) Well hello, Skipper!</span>
+<span class="lnr">347 </span><span class="PreProc"> Skipper: Hey there, Ginger!</span>
+<span class="lnr">348 </span><span class="PreProc"> Ginger: (in a sultry voice) Well hello, Professor!</span>
+<span class="lnr">349 </span><span class="PreProc"> Professor: By my calculations, you must be Ginger!</span>
+<span class="lnr">350 </span>
+<span class="lnr">351 </span>添加更多的旅客就变成了简单的把问候行为放到散列中, 并把他们加入
+<span class="lnr">352 </span>到进入房间的人名清单中。我们在效率上得到扩展, 因为我们把程序行为保
+<span class="lnr">353 </span>存为数据, 并通过它可以查找和迭代, 这要感谢友好的子程序引用。
+<span class="lnr">354 </span>
+<span class="lnr">355 </span><span class="Constant">7.3. 回调</span>
+<span class="lnr">356 </span>
+<span class="lnr">357 </span>一个对子程序的引用, 经常被用来做回调。一个回调定义了在一个算法中
+<span class="lnr">358 </span>当子程序运行到了一个特定地点时, 程序应该做什么。
+<span class="lnr">359 </span>
+<span class="lnr">360 </span>举个例子来说, <span class="Comment">File::Find</span> 模块导出一个 <span class="Comment">find</span> 子程序, 它被用
+<span class="lnr">361 </span>来以非常可移植的方式高效地遍历给定文件系统的层次结构。在这个简单的
+<span class="lnr">362 </span>例子中, 我们传给 <span class="Comment">find</span> 子程序两个参数：一个表示目录搜索开始点的
+<span class="lnr">363 </span>字串, 另一个是对子程序引用。这子程序会对从给定的起始目录开始, 通过
+<span class="lnr">364 </span>递归搜索的方法, 找到其下的每个文件或目录, 并对它们&quot;干些什么&quot;：
+<span class="lnr">365 </span>
+<span class="lnr">366 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">367 </span><span class="PreProc"> sub what_to_do {</span>
+<span class="lnr">368 </span><span class="PreProc">   print &quot;$File::Find::name found\n&quot;;</span>
+<span class="lnr">369 </span><span class="PreProc"> }</span>
+<span class="lnr">370 </span><span class="PreProc"> my @starting_directories = qw(.);</span>
+<span class="lnr">371 </span>
+<span class="lnr">372 </span><span class="PreProc"> find(\&amp;what_to_do, @starting_directories);</span>
+<span class="lnr">373 </span>
+<span class="lnr">374 </span>在例子中, <span class="Comment">find</span> 程序开始于当前目录（.）, 并且向下找到所有的目
+<span class="lnr">375 </span>录和文件。对于找到的每个项目, 我们会调用那个子程序 <span class="Comment">what_to_do()</span>,
+<span class="lnr">376 </span>把一些全局变量传进去。一般来说全局变量 <span class="Comment">:$File::Find::name</span> 是
+<span class="lnr">377 </span>项目的全路径名（以开始搜索的目录为起点）
+<span class="lnr">378 </span>
+<span class="lnr">379 </span>在此例中, 我们传了两项数据（开始搜索的目录）和给 <span class="Comment">find</span> 子程序
+<span class="lnr">380 </span>的行为子程序作为参数。
+<span class="lnr">381 </span>
+<span class="lnr">382 </span>在这里, 子程序只使用一次, 为此而起个名字的做法好像有些蠢, 所以
+<span class="lnr">383 </span>我们还可以把子程序做成匿名子程序, 如：
+<span class="lnr">384 </span>
+<span class="lnr">385 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">386 </span><span class="PreProc"> my @starting_directories = qw(. );</span>
+<span class="lnr">387 </span>
+<span class="lnr">388 </span><span class="PreProc"> find(</span>
+<span class="lnr">389 </span><span class="PreProc">  sub {</span>
+<span class="lnr">390 </span><span class="PreProc">    print &quot;$File::Find::name found\n&quot;;</span>
+<span class="lnr">391 </span><span class="PreProc">  },</span>
+<span class="lnr">392 </span><span class="PreProc">  @starting_directories,</span>
+<span class="lnr">393 </span><span class="PreProc"> );</span>
+<span class="lnr">394 </span>
+<span class="lnr">395 </span><span class="Constant">7. 4. 闭包</span>
+<span class="lnr">396 </span>
+<span class="lnr">397 </span>我们还可以用 <span class="Comment">File::Find</span> 来查其它一些文件属性, 比如它们的文件
+<span class="lnr">398 </span>大小.为了回调方便, 当前目录被设为文件所在的目录, 目录中的文件名也
+<span class="lnr">399 </span>放在缺省变量 <span class="Comment">$_</span> 中：
+<span class="lnr">400 </span>
+<span class="lnr">401 </span>刚才你可能已经注意到了, 在前面的代码中, 我们用 <span class="Comment">$File::Find::name</span>
+<span class="lnr">402 </span>来返回文件的名字。所以现在哪个名字是真实的呢？ <span class="Comment">$_</span> 或者
+<span class="lnr">403 </span><span class="Comment">$File::Find::name</span>？ <span class="Comment">$File::Find::name</span> 是给出文件自起始搜索目
+<span class="lnr">404 </span>录的相对路径名, 而在回调程序中, 工作目录就是项目所在目录。比如, 假
+<span class="lnr">405 </span>定我们要在当前目录找些文件, 所以我们给出它（<span class="Comment">&quot;.&quot;</span>）作为要搜索的
+<span class="lnr">406 </span>目录。如果我们当前目录是 <span class="Comment">/usr</span> , 则程序会往下找这个目录。然后程序
+<span class="lnr">407 </span>找到 <span class="Comment">/usr/bin/perl</span> , 此时当前目录（在回调程序中）是 <span class="Comment">/usr/bin</span>。
+<span class="lnr">408 </span>变量 <span class="Comment">$_</span> 保存了 <span class="Comment">perl</span> , 而 <span class="Comment">$File::Find::name</span> 保存 <span class="Comment">./bin/perl</span>,
+<span class="lnr">409 </span>就是相对起始搜索目录的相对路径。
+<span class="lnr">410 </span>
+<span class="lnr">411 </span>这一切说明对文件的查验, 如 <span class="Comment">-s</span> , 是自动应用在即时找到的那个文
+<span class="lnr">412 </span>件上的。尽管这很方便, 回调程序里的当前目录还是与搜索目录不同。
+<span class="lnr">413 </span>
+<span class="lnr">414 </span>如果我们要用 <span class="Comment">File::Find</span> 来累加所找到的所有文件的大小的话, 应
+<span class="lnr">415 </span>该如何做呢？回调子程序不能有参数, 而调用者也忽略回调子程序返回的
+<span class="lnr">416 </span>结果。但这没有关系。在还原后, 一个子程序引用可以看到所有指向子程序的
+<span class="lnr">417 </span>引用的可见词法变量。例如：
+<span class="lnr">418 </span>
+<span class="lnr">419 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">420 </span>
+<span class="lnr">421 </span><span class="PreProc"> my $total_size = 0;</span>
+<span class="lnr">422 </span><span class="PreProc"> find(sub { $total_size += -s if -f }, '.');</span>
+<span class="lnr">423 </span><span class="PreProc"> print $total_size, &quot;\n&quot;;</span>
+<span class="lnr">424 </span>
+<span class="lnr">425 </span>同以前一样, 我们调用 <span class="Comment">find</span> 子程序时传给它两个参数：一个指向匿
+<span class="lnr">426 </span>名子程序的引用和一个起始搜索目录。在它找到文件在目录中时（或其子目
+<span class="lnr">427 </span>录中时）, 它会调用匿名子程序。
+<span class="lnr">428 </span>
+<span class="lnr">429 </span>注意, 匿名子程序会访问 <span class="Comment">$total_size</span> 变量。我们定义这个变量是在
+<span class="lnr">430 </span>匿名子程序范围之外的, 但是对于匿名子程序来说还是可见的。所以, 尽管
+<span class="lnr">431 </span><span class="Comment">find</span> 调用那个回调的匿名子程序（并且不会直接访问 <span class="Comment">$total_size</span>）,
+<span class="lnr">432 </span>回调的匿名子程序会访问并且更新变量。
+<span class="lnr">433 </span>
+<span class="lnr">434 </span>那种能访问所有我们声明的在运行时存在的词法变量的子程序, 我们叫
+<span class="lnr">435 </span>它闭包（一个从数字世界借过一的词）。在 <span class="Comment">Perl</span> 术语中, 一个闭包就是
+<span class="lnr">436 </span>指一种能引用在程序范围之外的词法变量的子程序。
+<span class="lnr">437 </span>
+<span class="lnr">438 </span>更有甚者, 在闭包内部访问变量能保证只要匿名子程序引用存在, 变量
+<span class="lnr">439 </span>的值就能保留。比如, 让我们对输出文件计数：
+<span class="lnr">440 </span>
+<span class="lnr">441 </span>这里的代码好像在行尾给 <span class="Comment">$callback</span> 赋值时多出一个分号, 不
+<span class="lnr">442 </span>是吗？ 但是请记住, <span class="Statement">sub { ... }</span> 结构是一个表达式。
+<span class="lnr">443 </span>值（一段代码引用）赋给变量 <span class="Comment">$callback</span> , 所以语句后面有分号在
+<span class="lnr">444 </span>花括号定义的匿名子程序后面加上适当的标点符号是很容易被遗忘的。
+<span class="lnr">445 </span>
+<span class="lnr">446 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">447 </span>
+<span class="lnr">448 </span><span class="PreProc"> my $callback;</span>
+<span class="lnr">449 </span><span class="PreProc"> {</span>
+<span class="lnr">450 </span><span class="PreProc">  my $count = 0;</span>
+<span class="lnr">451 </span><span class="PreProc">  $callback = sub { print ++$count, &quot;: $File::Find::name\n&quot; };</span>
+<span class="lnr">452 </span><span class="PreProc"> }</span>
+<span class="lnr">453 </span><span class="PreProc"> find($callback, '.');</span>
+<span class="lnr">454 </span>
+<span class="lnr">455 </span>这儿, 我们定义了一个保存有回调子程序引用的变量。我们不能在裸块中
+<span class="lnr">456 </span>定义这个变量（其后的块并非 <span class="Comment">Perl</span> 语法构建的一部份）, 或者 <span class="Comment">Pe rl</span>
+<span class="lnr">457 </span>在块结束时会回收它。之后, 词法变量 <span class="Comment">$count</span> 变量会初始化为 <span class="Comment">0</span>
+<span class="lnr">458 </span>我们声明一个匿名子程序并把其引用给 <span class="Comment">$callback</span>。这个子程序就
+<span class="lnr">459 </span>是个闭包, 因它指向词法变量 <span class="Comment">$count</span>。
+<span class="lnr">460 </span>
+<span class="lnr">461 </span>在裸块的结尾, 变量 <span class="Comment">$count</span> 跑出程序范围。然而, 因为这个变量仍
+<span class="lnr">462 </span>旧被 <span class="Comment">$callback</span> 所指向的匿名子程序引用, 所以此变量作为一个匿名的
+<span class="lnr">463 </span>标量变量仍旧活着。当 <span class="Comment">find</span> 子程序调用回调匿名子程序的时
+<span class="lnr">464 </span>候, 先前被称为 <span class="Comment">$count</span> 的这个变量的值继续从1到2到3地增加。
+<span class="lnr">465 </span>
+<span class="lnr">466 </span><span class="Constant">7. 5. 从子程序中返回一个子程序</span>
+<span class="lnr">467 </span>
+<span class="lnr">468 </span>尽管定义回调时用裸块的话, 会工作得很好, 但是如果让子程序返回一
+<span class="lnr">469 </span>个对子程序的引用的做法更加有用：
+<span class="lnr">470 </span>
+<span class="lnr">471 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">472 </span>
+<span class="lnr">473 </span><span class="PreProc"> sub create_find_callback_that_counts {</span>
+<span class="lnr">474 </span><span class="PreProc">  my $count = 0;</span>
+<span class="lnr">475 </span><span class="PreProc">  return sub { print ++$count, &quot;: $File::Find::name\n&quot; };</span>
+<span class="lnr">476 </span><span class="PreProc"> }</span>
+<span class="lnr">477 </span>
+<span class="lnr">478 </span><span class="PreProc"> my $callback = create_find_callback_that_counts();</span>
+<span class="lnr">479 </span><span class="PreProc"> find($callback, '.');</span>
+<span class="lnr">480 </span>
+<span class="lnr">481 </span>上面那个程序与之前的程序有同样的功能, 只稍稍做了些改动。当我们调
+<span class="lnr">482 </span>用 <span class="Comment">create_find_callback_that_counts()</span> 的时候, 我们会把词法变量
+<span class="lnr">483 </span><span class="Comment">$count</span> 置为零。子程序返回的是一个对匿名子程序的引用, 它同样是
+<span class="lnr">484 </span>一个闭包, 因为这个闭包访问 <span class="Comment">$count</span> 变量。尽管 <span class="Comment">$count</span> 在
+<span class="lnr">485 </span><span class="Comment">create_find_callback_that_counts()</span> 子程序结束后跑出范围, 但仍旧
+<span class="lnr">486 </span>有一个绑定它和返回的子程序引用, 所以, 变量会一直存在, 直到子程序
+<span class="lnr">487 </span>引用最后被丢弃。
+<span class="lnr">488 </span>
+<span class="lnr">489 </span>如果我们重用回调, 相同的变量仍会保留它最近的值。初始值是在最初调
+<span class="lnr">490 </span>用子程序的时候创建的（ <span class="Comment">create_find_callback_that_counts</span> ）, 并
+<span class="lnr">491 </span>不是回调的匿名子程序中：
+<span class="lnr">492 </span>
+<span class="lnr">493 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">494 </span>
+<span class="lnr">495 </span><span class="PreProc"> sub create_find_callback_that_counts {</span>
+<span class="lnr">496 </span><span class="PreProc">  my $count = 0;</span>
+<span class="lnr">497 </span><span class="PreProc">  return sub { print ++$count, &quot;: $File::Find::name\n&quot; };</span>
+<span class="lnr">498 </span><span class="PreProc"> }</span>
+<span class="lnr">499 </span>
+<span class="lnr">500 </span><span class="PreProc"> my $callback = create_find_callback_that_counts();</span>
+<span class="lnr">501 </span><span class="PreProc"> print &quot;my bin:\n&quot;;</span>
+<span class="lnr">502 </span><span class="PreProc"> find($callback, 'bin');</span>
+<span class="lnr">503 </span><span class="PreProc"> print &quot;my lib:\n&quot;;</span>
+<span class="lnr">504 </span><span class="PreProc"> find($callback, 'lib');</span>
+<span class="lnr">505 </span>
+<span class="lnr">506 </span>下面这个例子从 <span class="Statement">1</span> 开始为整个 <span class="Comment">bin</span> 目录下的文件计数, 接着前面的数
+<span class="lnr">507 </span>值, 继续为 <span class="Comment">lib</span> 目录下所有的文件计数。在两个程序用同样一个
+<span class="lnr">508 </span><span class="Comment">$count</span> 变量的值。然而, 如果我们调用两次
+<span class="lnr">509 </span><span class="Comment">create_find_callback_that_counts()</span>, 我们会得到两个不同的
+<span class="lnr">510 </span><span class="Comment">$count</span> 变量的值：
+<span class="lnr">511 </span>
+<span class="lnr">512 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">513 </span>
+<span class="lnr">514 </span><span class="PreProc"> sub create_find_callback_that_counts {</span>
+<span class="lnr">515 </span><span class="PreProc">  my $count = 0;</span>
+<span class="lnr">516 </span><span class="PreProc">  return sub { print ++$count, &quot;: $File::Find::name\n&quot; };</span>
+<span class="lnr">517 </span><span class="PreProc"> }</span>
+<span class="lnr">518 </span>
+<span class="lnr">519 </span><span class="PreProc"> my $callback1 = create_find_callback_that_counts();</span>
+<span class="lnr">520 </span><span class="PreProc"> my $callback2 = create_find_callback_that_counts();</span>
+<span class="lnr">521 </span><span class="PreProc"> print &quot;my bin:\n&quot;;</span>
+<span class="lnr">522 </span><span class="PreProc"> find($callback1, 'bin');</span>
+<span class="lnr">523 </span><span class="PreProc"> print &quot;my lib:\n&quot;;</span>
+<span class="lnr">524 </span><span class="PreProc"> find($callback2, 'lib');</span>
+<span class="lnr">525 </span>
+<span class="lnr">526 </span>上面的例子中, 我们有两个分开的 <span class="Comment">$count</span> 变量, 各自被他们自己的
+<span class="lnr">527 </span>回调子程序访问。
+<span class="lnr">528 </span>
+<span class="lnr">529 </span>那我们怎么得到所有找到的文件的总的文件大小呢？在前一章的例子中,
+<span class="lnr">530 </span>我们的作法是让 <span class="Comment">$total_size</span> 变量在范围内可见。如果我们把 <span class="Comment">$total_size</span>
+<span class="lnr">531 </span>的定义放在返回回调引用的子程序里的话, 我们将无法访问这个
+<span class="lnr">532 </span>变量。但是我们可以耍个小花招。即我们可以决定, 只要收到任何参数, 我
+<span class="lnr">533 </span>们就不调用回调子程序, 这样的话, 如果子程序收到一个参数, 我们就让它
+<span class="lnr">534 </span>返回总字节数：
+<span class="lnr">535 </span>
+<span class="lnr">536 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">537 </span>
+<span class="lnr">538 </span><span class="PreProc"> sub create_find_callback_that_sums_the_size {</span>
+<span class="lnr">539 </span><span class="PreProc">  my $total_size = 0;</span>
+<span class="lnr">540 </span><span class="PreProc">  return sub {</span>
+<span class="lnr">541 </span><span class="PreProc">    if (@_) { # it's our dummy invocation</span>
+<span class="lnr">542 </span><span class="PreProc">      return $total_size;</span>
+<span class="lnr">543 </span><span class="PreProc">    } else { # it's a callback from File::Find:</span>
+<span class="lnr">544 </span><span class="PreProc">      $total_size += -s if -f;</span>
+<span class="lnr">545 </span><span class="PreProc">    }</span>
+<span class="lnr">546 </span><span class="PreProc">  };</span>
+<span class="lnr">547 </span><span class="PreProc"> }</span>
+<span class="lnr">548 </span>
+<span class="lnr">549 </span><span class="PreProc"> my $callback = create_find_callback_that_sums_the_size();</span>
+<span class="lnr">550 </span><span class="PreProc"> find($callback, 'bin');</span>
+<span class="lnr">551 </span><span class="PreProc"> # dummy parameter to get size</span>
+<span class="lnr">552 </span><span class="PreProc"> my $total_size = $callback-&gt;('dummy');</span>
+<span class="lnr">553 </span><span class="PreProc"> print &quot;total size of bin is $total_size\n&quot;;</span>
+<span class="lnr">554 </span>
+<span class="lnr">555 </span>当然, 用区分参数存在或者不存在的来决定程序行为不是一个通用的解
+<span class="lnr">556 </span>决方案。还好, 我们可以在 <span class="Comment">create_find_callback_that_counts()</span>中创
+<span class="lnr">557 </span>建多个子程序。
+<span class="lnr">558 </span>
+<span class="lnr">559 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">560 </span>
+<span class="lnr">561 </span><span class="PreProc"> sub create_find_callbacks_that_sum_the_size {</span>
+<span class="lnr">562 </span><span class="PreProc">   my $total_size = 0;</span>
+<span class="lnr">563 </span><span class="PreProc">   return(sub { $total_size += -s if -f }, </span>
+<span class="lnr">564 </span><span class="PreProc">          sub { return $total_size });</span>
+<span class="lnr">565 </span><span class="PreProc"> }</span>
+<span class="lnr">566 </span>
+<span class="lnr">567 </span><span class="PreProc"> my ($count_em, $get_results) = </span>
+<span class="lnr">568 </span><span class="PreProc">     create_find_callbacks_that_sum_the_size();</span>
+<span class="lnr">569 </span><span class="PreProc"> find($count_em, 'bin');</span>
+<span class="lnr">570 </span><span class="PreProc"> my $total_size = &amp;$get_results();</span>
+<span class="lnr">571 </span><span class="PreProc"> print &quot;total size of bin is $total_size\n&quot;;</span>
+<span class="lnr">572 </span>
+<span class="lnr">573 </span>因为创建的两个匿名子程序在同一个范围内, 所以他们都访问相同的 I
+<span class="lnr">574 </span>&lt;<span class="Identifier">$total_size</span>&gt; 变量。尽管在我们调用任一个匿名子程序之前, 这个变量已
+<span class="lnr">575 </span>经跑出范围, 但他们仍能共享这个变量并且可以用这个变量交换计算结果。
+<span class="lnr">576 </span>
+<span class="lnr">577 </span>在返回这两个匿名子程序引用时, 并不执行他们。这时仅仅返回程序引用
+<span class="lnr">578 </span>而已。真正调用是在他们作为回调程序被执行或还原后被执行时。
+<span class="lnr">579 </span>
+<span class="lnr">580 </span>那我们多执行几遍这个新的子程序会怎么样？
+<span class="lnr">581 </span>
+<span class="lnr">582 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">583 </span>
+<span class="lnr">584 </span><span class="PreProc"> sub create_find_callbacks_that_sum_the_size {</span>
+<span class="lnr">585 </span><span class="PreProc">  my $total_size = 0;</span>
+<span class="lnr">586 </span><span class="PreProc">  return(sub { $total_size += -s if -f }, </span>
+<span class="lnr">587 </span><span class="PreProc">               sub { return $total_size });</span>
+<span class="lnr">588 </span><span class="PreProc"> }</span>
+<span class="lnr">589 </span>
+<span class="lnr">590 </span><span class="PreProc"> ## set up the subroutines</span>
+<span class="lnr">591 </span><span class="PreProc"> my %subs;</span>
+<span class="lnr">592 </span><span class="PreProc"> foreach my $dir (qw(bin lib man)) {</span>
+<span class="lnr">593 </span><span class="PreProc">  my ($callback, $getter) = </span>
+<span class="lnr">594 </span><span class="PreProc">      create_find_callbacks_that_sum_the_size();</span>
+<span class="lnr">595 </span><span class="PreProc">  $subs{$dir}{CALLBACK}   = $callback;</span>
+<span class="lnr">596 </span><span class="PreProc">  $subs{$dir}{GETTER}     = $getter;</span>
+<span class="lnr">597 </span><span class="PreProc"> }</span>
+<span class="lnr">598 </span>
+<span class="lnr">599 </span><span class="PreProc"> ## gather the data</span>
+<span class="lnr">600 </span><span class="PreProc"> for (keys %subs) {</span>
+<span class="lnr">601 </span><span class="PreProc">  find($subs{$_}{CALLBACK}, $_);</span>
+<span class="lnr">602 </span><span class="PreProc"> }</span>
+<span class="lnr">603 </span>
+<span class="lnr">604 </span><span class="PreProc"> ## show the data</span>
+<span class="lnr">605 </span><span class="PreProc"> for (sort keys %subs) {</span>
+<span class="lnr">606 </span><span class="PreProc">  my $sum = $subs{$_}{GETTER}-&gt;();</span>
+<span class="lnr">607 </span><span class="PreProc">  print &quot;$_ has $sum bytes\n&quot;;</span>
+<span class="lnr">608 </span><span class="PreProc"> }</span>
+<span class="lnr">609 </span>
+<span class="lnr">610 </span>在创建子程序的程序片断中, 我们创建了回调／求总对的三个实例。每一
+<span class="lnr">611 </span>个回调程序都有相应的求总程序。接下来, 在取得文件字节总数的程序片断
+<span class="lnr">612 </span>中, 我们三次用相应的回调匿名子程序的引用调用 <span class="Comment">find</span> 程序, 这更新
+<span class="lnr">613 </span>了与这三个回调匿名子程序关联的三个独立的 <span class="Comment">$total_size</span> 变量。最后
+<span class="lnr">614 </span>, 在展示结果的程序片断中, 我们调用返回字节求总的那个匿名子程序来
+<span class="lnr">615 </span>取得结果。
+<span class="lnr">616 </span>
+<span class="lnr">617 </span>六个匿名子程序（他们共享了三个 <span class="Comment">$total_size</span> 变量）是引用计数
+<span class="lnr">618 </span>的.当我们修改 <span class="Comment">%subs</span> 或者它跑出范围时, 引用计数减少, 重用他们包
+<span class="lnr">619 </span>含的数据。（如果这些数据同样引用其它数据, 那么那些数据的引用计数也
+<span class="lnr">620 </span>相应减少。）
+<span class="lnr">621 </span>
+<span class="lnr">622 </span><span class="Constant">7. 6. 作为输入参数的闭包变量</span>
+<span class="lnr">623 </span>
+<span class="lnr">624 </span>上一章的例子展示了闭包中变量如何被修改的, 而闭包变量还可以被用
+<span class="lnr">625 </span>来初始化变量或给匿名子程序提供参数输入（类似静态局部变量）。比如,
+<span class="lnr">626 </span>我们来写一个子程序来创建 <span class="Comment">File::Find</span> 回调, 打印出所有超过一定大
+<span class="lnr">627 </span>小的文件名：
+<span class="lnr">628 </span>
+<span class="lnr">629 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">630 </span>
+<span class="lnr">631 </span><span class="PreProc"> sub print_bigger_than {</span>
+<span class="lnr">632 </span><span class="PreProc">   my $minimum_size = shift;</span>
+<span class="lnr">633 </span><span class="PreProc">   return sub { print &quot;$File::Find::name\n&quot;</span>
+<span class="lnr">634 </span><span class="PreProc">          if -f and -s &gt;= $minimum_size };</span>
+<span class="lnr">635 </span><span class="PreProc"> }</span>
+<span class="lnr">636 </span>
+<span class="lnr">637 </span><span class="PreProc"> my $bigger_than_1024 = print_bigger_than(1024);</span>
+<span class="lnr">638 </span><span class="PreProc"> find($bigger_than_1024, 'bin');</span>
+<span class="lnr">639 </span>
+<span class="lnr">640 </span>我们把 <span class="Comment">1024</span> 作为参数传给子程序 <span class="Comment">print_bigger_than</span> , 这个子
+<span class="lnr">641 </span>程序将其传给词法变量 <span class="Comment">$minimum_size。</span> 因为我们在匿名子程序中引用
+<span class="lnr">642 </span>这个变量, 然后再返回匿名子程序的引用, 所以这成为一个闭包变量, 只
+<span class="lnr">643 </span>要匿名子程序引用它, 它的值就一直保持着。同样, 多次调用这个程序会为
+<span class="lnr">644 </span><span class="Comment">$minimum_size</span> 锁定不同的值, 每个都和他们各自的匿名子程序引用绑定。
+<span class="lnr">645 </span>
+<span class="lnr">646 </span>闭包是仅对词法变量跑出程序范围时 <span class="Statement">关闭</span>。因为一个包变量（因
+<span class="lnr">647 </span>为是全局）总是在范围之内, 一个闭包不可能 <span class="Statement">关闭</span> 一个包变量。
+<span class="lnr">648 </span>对于所有的子程序来说, 他们都引用全局变量的同一个实例。
+<span class="lnr">649 </span>
+<span class="lnr">650 </span><span class="Constant">7. 7. 闭包变量用作静态局部变量</span>
+<span class="lnr">651 </span>
+<span class="lnr">652 </span>要做成一个闭包, 并不一定非要搞成匿名子程序。如果一个命名子程序访
+<span class="lnr">653 </span>问那些跑出范围的词法变量, 其作用就如同你用匿名子程序一样。比如, 考
+<span class="lnr">654 </span>虑一下两个为 <span class="Comment">Gilligan</span> 计算椰子的子程序
+<span class="lnr">655 </span>
+<span class="lnr">656 </span><span class="PreProc"> {</span>
+<span class="lnr">657 </span><span class="PreProc">  my $count;</span>
+<span class="lnr">658 </span><span class="PreProc">  sub count_one { ++$count }</span>
+<span class="lnr">659 </span><span class="PreProc">  sub count_so_far { return $count }</span>
+<span class="lnr">660 </span><span class="PreProc"> }</span>
+<span class="lnr">661 </span>
+<span class="lnr">662 </span>如果我们把这短代码放到程序开始, 我们在一个裸块里声明了了变量
+<span class="lnr">663 </span><span class="Comment">$count</span> , 然后两个子程序引用这个变量, 于是就成了闭包。然而, 因为它
+<span class="lnr">664 </span>们都有名字, 并且会保留名字直到块结束（就像所有的命名子程序一样。）
+<span class="lnr">665 </span>因为子程序访问声明在范围外的变量, 它们成为闭包并且因此可以在程序
+<span class="lnr">666 </span>的生命周期内继续访问 <span class="Comment">$count。</span>
+<span class="lnr">667 </span>
+<span class="lnr">668 </span>所以, 经过几次调用, 我们可以看到计数增长：
+<span class="lnr">669 </span>
+<span class="lnr">670 </span><span class="PreProc"> count_one();</span>
+<span class="lnr">671 </span><span class="PreProc"> count_one();</span>
+<span class="lnr">672 </span><span class="PreProc"> count_one();</span>
+<span class="lnr">673 </span><span class="PreProc"> print 'we have seen ', count_so_far(), &quot; coconuts!\n&quot;;</span>
+<span class="lnr">674 </span>
+<span class="lnr">675 </span>在几次调用 <span class="Comment">count_one()</span> 或 <span class="Comment">count_so_far()</span> , <span class="Comment">$count</span> 会保
+<span class="lnr">676 </span>留其原来的值, 但程序里其它部份的代码是不能访问 <span class="Comment">$count</span> 的。
+<span class="lnr">677 </span>
+<span class="lnr">678 </span>在C语言里, 这被称作静态本地变量： 一个变量仅仅在程序子程序的一
+<span class="lnr">679 </span>小块代码中可见, 但会在程序的生命周期内保留其值, 甚至在那些子程序的
+<span class="lnr">680 </span>数次调用中也保留值。
+<span class="lnr">681 </span>
+<span class="lnr">682 </span>那递减会如何呢？大概应该如此：
+<span class="lnr">683 </span>
+<span class="lnr">684 </span><span class="PreProc"> {</span>
+<span class="lnr">685 </span><span class="PreProc">  my $countdown = 10;</span>
+<span class="lnr">686 </span><span class="PreProc">  sub count_down { $countdown-- }</span>
+<span class="lnr">687 </span><span class="PreProc">  sub count_remaining { $countdown }</span>
+<span class="lnr">688 </span><span class="PreProc"> }</span>
+<span class="lnr">689 </span>
+<span class="lnr">690 </span><span class="PreProc"> count_down();</span>
+<span class="lnr">691 </span><span class="PreProc"> count_down();</span>
+<span class="lnr">692 </span><span class="PreProc"> count_down();</span>
+<span class="lnr">693 </span><span class="PreProc"> print 'we're down to ', count_remaining(), &quot; coconuts!\n&quot;;</span>
+<span class="lnr">694 </span>
+<span class="lnr">695 </span>就是说, 只要我们把块放在程序开始, 放在任何 <span class="Comment">count_donw()</span> 或
+<span class="lnr">696 </span><span class="Comment">count_remaining()</span> 之前就可以。为什么呢？
+<span class="lnr">697 </span>
+<span class="lnr">698 </span>如果把裸块放在那些调用之后的话就不会工作, 因为有两个功能部分牵
+<span class="lnr">699 </span>涉到下面这行：
+<span class="lnr">700 </span>
+<span class="lnr">701 </span><span class="PreProc"> my $countdown = 10;</span>
+<span class="lnr">702 </span>
+<span class="lnr">703 </span>一个功能部份是 <span class="Comment">$countdown</span> 的声明是作为一个词法变量。这部份是
+<span class="lnr">704 </span>在程序被编译阶段被解释并处理的。第二个功能部分是把 <span class="Comment">10</span> 赋值给一块
+<span class="lnr">705 </span>分配的内存。这部份是 <span class="Comment">Perl</span> 执行代码时处理的。除非 <span class="Comment">Perl</span> 在运行
+<span class="lnr">706 </span>阶段执行这些代码, 否则变量的初始是未定义值。
+<span class="lnr">707 </span>
+<span class="lnr">708 </span>一种解决方法是把代码放进 <span class="Comment">BEGIN</span> 块：
+<span class="lnr">709 </span>
+<span class="lnr">710 </span><span class="PreProc"> BEGIN {</span>
+<span class="lnr">711 </span><span class="PreProc">  my $countdown = 10;</span>
+<span class="lnr">712 </span><span class="PreProc">  sub count_down { $countdown-- }</span>
+<span class="lnr">713 </span><span class="PreProc">  sub count_remaining { $countdown }</span>
+<span class="lnr">714 </span><span class="PreProc"> }</span>
+<span class="lnr">715 </span>
+<span class="lnr">716 </span><span class="Comment">BEGIN</span> 块会告诉 <span class="Comment">Perl</span> 编译器只要这个块被成功解释了（在编译
+<span class="lnr">717 </span>阶段）, 就马上去运行这个块。假定这个块不会导致致命错误, 编译器就继
+<span class="lnr">718 </span>续下面的块。块自身也会被丢弃, 保证其中的代码在程序中被精确地只执行
+<span class="lnr">719 </span>一次, 甚至代码在语法上在一个循环或子程序中。
+<span class="lnr">720 </span>
+<span class="lnr">721 </span><span class="Constant">7. 8. 练习</span>
+<span class="lnr">722 </span>
+<span class="lnr">723 </span>答案附件找。
+<span class="lnr">724 </span>
+<span class="lnr">725 </span><span class="Constant">7. 8. 1. 练习 </span><span class="Comment">[50</span><span class="Constant"> 分钟]</span>
+<span class="lnr">726 </span>
+<span class="lnr">727 </span>周一中午, 教授修改了一些文件, 不过现在他忘了改了哪些文件这种
+<span class="lnr">728 </span>事情老是发生。他要你写个程序, 叫 <span class="Comment">gather_mtime_between</span>。 这个程
+<span class="lnr">729 </span>序接受开始和结束时间作为参数, 返回一对代码引用第一个会被
+<span class="lnr">730 </span><span class="Comment">File::Find</span> 模块用来收集那些修改时间在两个时间点之间的文件名;
+<span class="lnr">731 </span>第二个将返回所有文件列表。
+<span class="lnr">732 </span>
+<span class="lnr">733 </span>这里有一些代码; 它应该列出那些在最近的周一之后修改过的文件, 当
+<span class="lnr">734 </span>然, 你可以容易的修改它来适应不同的日期(你不必写出所有的代码。
+<span class="lnr">735 </span>这个程序应该可以在 <span class="Comment">O'Reilly</span> 网站下载, 名字叫 <span class="Comment">ex6-1.plx</span> )
+<span class="lnr">736 </span>
+<span class="lnr">737 </span>暗示：你可以用如下代码找到一个文件的时间戳：
+<span class="lnr">738 </span>
+<span class="lnr">739 </span><span class="PreProc"> my $timestamp = (stat $file_name)[9];</span>
+<span class="lnr">740 </span>
+<span class="lnr">741 </span>因为是片断, 记住上面这段代码中那些小括号是必须要加的。别忘记回调
+<span class="lnr">742 </span>里的工作目录不一定是 <span class="Comment">find</span> 程序调用的起始目录。
+<span class="lnr">743 </span>
+<span class="lnr">744 </span><span class="PreProc"> use File::Find;</span>
+<span class="lnr">745 </span><span class="PreProc"> use Time::Local;</span>
+<span class="lnr">746 </span>
+<span class="lnr">747 </span><span class="PreProc"> my $target_dow = 1;        # Sunday is 0, Monday is 1,...</span>
+<span class="lnr">748 </span><span class="PreProc"> my @starting_directories = (&quot;. &quot;);</span>
+<span class="lnr">749 </span>
+<span class="lnr">750 </span><span class="PreProc"> my $seconds_per_day = 24 * 60 * 60;</span>
+<span class="lnr">751 </span><span class="PreProc"> my($sec, $min, $hour, $day, $mon, $yr, $dow) = localtime;</span>
+<span class="lnr">752 </span><span class="PreProc"> # midnight today</span>
+<span class="lnr">753 </span><span class="PreProc"> my $start = timelocal(0, 0, 0, $day, $mon, $yr);</span>
+<span class="lnr">754 </span><span class="PreProc"> while ($dow != $target_dow) {</span>
+<span class="lnr">755 </span><span class="PreProc">   # Back up one day</span>
+<span class="lnr">756 </span><span class="PreProc">   $start -= $seconds_per_day;        # hope no DST! :-)</span>
+<span class="lnr">757 </span><span class="PreProc">   if (--$dow &lt; 0) {</span>
+<span class="lnr">758 </span><span class="PreProc">     $dow += 7;</span>
+<span class="lnr">759 </span><span class="PreProc">   }</span>
+<span class="lnr">760 </span><span class="PreProc"> }</span>
+<span class="lnr">761 </span><span class="PreProc"> my $stop = $start + $seconds_per_day;</span>
+<span class="lnr">762 </span>
+<span class="lnr">763 </span><span class="PreProc"> my($gather, $yield)  = gather_mtime_between($start, $stop);</span>
+<span class="lnr">764 </span><span class="PreProc"> find($gather, @starting_directories);</span>
+<span class="lnr">765 </span><span class="PreProc"> my @files = $yield-&gt;();</span>
+<span class="lnr">766 </span>
+<span class="lnr">767 </span><span class="PreProc"> for my $file (@files) {</span>
+<span class="lnr">768 </span><span class="PreProc">   my $mtime = (stat $file)[9];        # mtime via slice</span>
+<span class="lnr">769 </span><span class="PreProc">   my $when = localtime $mtime;</span>
+<span class="lnr">770 </span><span class="PreProc">   print &quot;$when: $file\n&quot;;</span>
+<span class="lnr">771 </span><span class="PreProc"> }</span>
+<span class="lnr">772 </span>
+<span class="lnr">773 </span>注意关于 <span class="Comment">DST</span> 的注释。在世界上的其它部份, 在夏时制的白天可能有
+<span class="lnr">774 </span>出入, 并不一定是 <span class="Comment">86</span>, <span class="Comment">400</span> 秒。这个程序忽略了这个问题, 但是一
+<span class="lnr">775 </span>些更 <span class="Statement">顶真</span> 的程序员可能会把这种情况适当考虑进去。
+</pre>
+</body>
+</html>

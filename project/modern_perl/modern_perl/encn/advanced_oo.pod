@@ -1,0 +1,209 @@
+=head1 Advanced OO Perl
+
+Z<advanced_oo>
+
+Creating and using objects in Perl 5 with Moose (L<moose>) is easy.
+I<Designing> good programs is not. You must balance between designing too
+little and too much.  Only practical experience can help you understand the
+most important design techniques, but several principles can guide you.
+
+=head2 Favor Composition Over Inheritance
+
+X<OO: composition>
+X<OO; inheritance>
+
+Novice OO designs often overuse inheritance to reuse code and to exploit
+polymorphism. The result is a deep class hierarchy with responsibilities
+scattered in the wrong places. Maintaining this code is difficult--who knows
+where to add or edit behavior? What happens when code in one place conflicts
+with code declared elsewhere?
+
+X<OO; is-a>
+X<OO; has-a>
+
+Inheritance is one tool. It's not the only tool. Although C<Car> may extend
+C<Vehicle::Wheeled> (an I<is-a relationship>), it's likely better for C<Car> to
+I<contain> contain several C<Wheel> objects as instance attributes (a I<has-a
+relationship>).
+
+Decomposing complex classes into smaller, focused entities (whether classes or
+roles) improves encapsulation and reduces the possibility that any one class or
+role will grow to do too much. Smaller, simpler, and better encapsulated
+entities are easier to understand, test, and maintain.
+
+=head2 Single Responsibility Principle
+
+X<OO; single responsibility principle>
+
+When you design your object system, model the problem in terms of
+responsibilities--the behavior each entity must provide. For example, an
+C<Employee> object may represent specific information about a person's name,
+contact information, and other personal data, while a C<Job> object may
+represent business responsibilities. Separating these entities in terms of
+their responsibilities allows the C<Employee> class to consider only the
+problem of managing information specific to who the person is and the C<Job>
+class to represent what the person does. (Two C<Employees> may have a
+C<Job>-sharing arrangement, for example.)
+
+When each class has a single responsibility, you improve the encapsulation of
+class-specific data and behaviors and reduce coupling between classes.
+
+=head2 Don't Repeat Yourself
+
+X<DRY>
+
+Complexity and duplication complicate development and maintenance. The DRY
+principle (Don't Repeat Yourself) is a reminder to seek out and to eliminate
+duplication within the system. Duplication exists in data as well as in code.
+Instead of repeating configuration information, user data, and other artifacts
+within your system, create a single, canonical representation of that
+information from which you can generate the other artifacts.
+
+This principle helps to reduce the possibility that important parts of your
+system can get unsynchronized, and helps you to find the optimal representation
+of the system and its data.
+
+=head2 Liskov Substitution Principle
+
+X<OO; Liskov Substitution Principle>
+
+The Liskov substitution principle suggests that you should be able to
+substitute a specialization of a class or a role for the original without
+violating the API of the original.  In other words, an object should be as or
+more general with regard to what it expects and at least as specific about what
+it produces.
+
+Imagine two classes, C<Dessert> and its child class C<PecanPie>. If the
+classes follow the Liskov substitution principle, you can replace every use of
+C<Dessert> objects with C<PecanPie> objects in the test suite, and everything
+should passN<See Reg Braithwaite's "IS-STRICTLY-EQUIVALENT-TO-A" for more
+details,
+U<http://weblog.raganwald.com/2008/04/is-strictly-equivalent-to.html>.>.
+
+=head2 Subtypes and Coercions
+
+Z<subtypes>
+Z<coercions>
+X<types>
+X<subtypes>
+X<coercion>
+
+Moose allows you to declare and use types and extend them through subtypes to
+form ever more specialized descriptions of what your data represents and how it
+behaves. These type annotations help verify that the data on which you want to
+work in specific functions or methods is appropriate and even to specify
+mechanisms by which to coerce data of one type to data of another type.
+
+X<C<Moose::Util::TypeConstraints>>
+X<C<MooseX::Types>>
+
+See C<Moose::Util::TypeConstraints> and C<MooseX::Types> for more information.
+
+=head2 Immutability
+
+Z<immutability>
+
+X<OO; immutability>
+
+OO novices often treat objects as if they were bundles of records which use
+methods to get and set internal values. This simple technique leads to the
+unfortunate temptation to spread the object's responsibilities throughout the
+entire system.
+
+With a well designed object, you tell it what to do and not how to do it. As a
+rule of thumb, if you find yourself accessing object instance data (even
+through accessor methods), you may have too much access to an object's
+internals.
+
+One approach to preventing this behavior is to consider objects as immutable.
+Provide the necessary data to their constructors, then disallow any
+modifications of this information from outside the class. Expose no methods to
+mutate instance data. The objects so constructed are always valid after their
+construction and cannot become invalid through external manipulation. This
+takes tremendous discipline to achieve, but the resulting systems are robust,
+testable, and maintainable.
+
+Some designs go as far as to prohibit the modification of instance data
+I<within> the class itself, though this is much more difficult to achieve.
+=encoding utf8
+
+=head1 高级 Perl 面向对象
+
+Z<advanced_oo>
+
+利用 Moose (L<moose>) 在 Perl 5 中创建并使用对象是容易的。I<设计> 一个好的对象
+系统则不那么简单。额外的抽象能力同时也为混乱提供了可能。只有实践经验才能帮助你
+理解最重要的设计技能……还有一些原理可以作为指导。
+
+=head2 多用合成而非继承
+
+初级 OO 设计通常过度地使用继承。常见的类结构尝试将所有实体的行为建模于单类系统之中。
+由于你必须理解整个层次结构，这样就给理解该系统增加了概念上的开销；同时这也向每一个
+类增加了技术上的份量，因为冲突的职责和方法可能成为所需行为和进一步修改的绊脚石。
+
+由类提供的封装为代码组织提供了更好的方法。你并不需要从超类继承以向对象的用户提供
+所需行为。C<Car>（车）对象无需从 C<Vehicle::Wheeled> 对象继承，它可以实例属性的
+形式包含若干 C<Wheel> 对象。
+
+将复杂的类分解为较小的、专一的实体（无论类或是角色）可提升封装性并降低类或角色身
+兼数职的可能。更小更简单、封装更好的实体无论是从理解、测试、维护上说都更为简易。
+
+=head2 单一职责原则（SRP）
+
+当你设计你的对象系统时，应按职责给问题建模，或按每一个特定实体改变的理由。举例说来，
+一个 C<Employee> 对象也许会代表有关人名、联系方式以及其他个人数据的特定信息，而 C<Job>
+对象可能代表的是业务职责。一个简单的设计也许会将这两者合并为单一的实体，但职责分离允
+许 C<Employee> 类仅考虑管理有关此是何人的问题，且 C<Job> 类只需代表其人的工作。（例如，
+两个 C<Employees> 也许实行工作（C<Job>）分担制。）
+
+当每个类都有单一的职责时，你可以更好地封装特定于类的数据和行为，并降低类间的耦合。
+
+=head2 不要重复你自己（DRY）
+
+复杂性和重复使开发和维护活动更加纷繁。DRY 原则（“Don't Repeat Yourself”）提醒你挑出
+并减少系统内的重复。重复的形式是多种多样的，既出现在数据也出现在代码中。如果你发现自
+己正重复配置信息、用户数据以及系统内其它人为数据；作为替代，找一个正式的单一的信息表
+示形式，接着从此表示生成其它人为数据。
+
+这个原则有助于减少系统中重要部分不同步的可能，并帮助你找到系统及其数据的优化表达。
+
+=head2 Liskov 替换原则（LSP）
+
+Liskov 替换原则提出给出某类型（类或角色或子类的特化形式），其子类型应能在不窄化其接
+收数据的类型、不扩张其产出数据类型的情况下替换其父类型。换句话说，它们应该尽可能将
+接收数据一般化并将产出数据专一化。
+
+理解该原则最简单的方式是想象两个类，C<Dessert> 和 C<PecanPie>，后者是前者的子类。如果
+这两个类遵循 Liskov 替换原则，则在测试套件中每一个使用 C<Dessert> 对象的地方用 C<PecanPie> 
+对象替换后，测试仍应通过。N<更多细节参见 Reg Braithwaite 的 "IS-STRICTLY-EQUIVALENT-TO-A"，
+U<http://weblog.raganwald.com/2008/04/is-strictly-equivalent-to.html>。>。
+
+=head2 子类型和强制转换
+
+Z<subtypes>
+Z<coercions>
+X<types>
+X<subtypes>
+X<coercion>
+
+Moose 允许你声明及使用类型，并通过子类型对其扩展，以进一步对数据代表的事物及其行为
+作出更为专一的描述。你可以使用这些类型注解验证特定函数或方法处理的是否为合适的数据，
+甚至凭此指定从一个类型强制转换到另一个类型的机制。
+
+更多信息请参见 C<Moose::Util::TypeConstraints> 和 C<MooseX::Types>。
+
+=head2 不可变性
+
+Z<immutability>
+
+一个常见于面向对象程序设计新手的模式便是将对象视为一捆记录，并使用方法获得和设置内
+部的值。虽然容易实现和理解，但是它可能引发不幸的诱惑，使行为上的职责散播到整个系统
+各个独立的类中。
+
+高效处理对象最为有用的技巧便是告诉它们做什么而非怎么做。如果你发现自己正访问对象的
+实例数据（即使通过访问器方法）都有过度访问类职责之嫌。
+
+避免这种行为的一种方法是将对象视为不可变。向对象的构造器传入所有相关的配置数据，接
+着禁止所有来自该类外部对此类信息的修改。不要暴露任何改变实例数据的方法。
+
+一些设计仅制止类 I<内部> 对实例数据的修改，虽然这更加难以做到。

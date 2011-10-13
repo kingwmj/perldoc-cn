@@ -1,0 +1,46 @@
+=head0 Regular Expressions and Matching
+
+Z<regex>
+
+X<regular expressions>
+X<regex>
+X<regex; engine>
+
+Perl's text processing power comes from its use of I<regular expressions>.  A
+regular expression (I<regex> or I<regexp>) is a I<pattern> which describes
+characteristics of a piece of text. A I<regular expression engine> interprets
+patterns and applies them to match or modify pieces of text.
+
+Perl's core documentation--C<perldoc perlretut>, C<perldoc perlreref>, and
+C<perldoc perlre>--includes a regex tutorial, a reference guide, and full
+documentation, respectively. Jeffrey Friedl's book I<Mastering Regular
+Expressions> explains the theory and the mechanics of how regular expressions
+work. While mastering regular expressions is a daunting pursuit, a little
+knowledge will give you great power.
+
+L<regular_expressions>
+
+L<smart_match>
+=encoding utf8
+
+=head0 正则表达式和匹配
+
+Z<regular_expressions>
+
+X<regular expressions>
+X<regex>
+X<regexp>
+X<regular expression engine>
+
+Perl 操作文本的强大能力部分来源于对一个名为 I<正则表达式> 的计算概念的囊括。正则
+表达式（通常简化为 I<regex> 或 I<regexp>）是一个 I<模式>，它描述了某文本字符串的
+特征。I<正则表达式引擎> 解释一个模式并将其应用到文本字符串上，以识别何者匹配。
+
+Perl 的核心文档丰富而详细地描述了 Perl 的正则表达式；请参考 C<perldoc perlretut> 
+教程、C<perldoc perlre> 完整文档和 C<perldoc perlreref> 参考指南。Jeffrey Friedl
+的著作 I<精通正则表达式> 解释了正则表达式工作背后的理论和机制。即便这些参考书看上
+去令人望而生畏，正则表达式却很像 Perl ———— 你可以在懂得很少的情况下完成很多任务。
+
+L<regular_expressions>
+
+L<smart_match>

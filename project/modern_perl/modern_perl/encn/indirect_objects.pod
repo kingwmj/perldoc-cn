@@ -1,0 +1,264 @@
+=head1 Indirect Objects
+
+Z<indirect_objects>
+
+A constructor in Perl 5 is anything which returns an object; C<new> is not a
+builtin operator.  By convention, constructors are class methods named
+C<new()>, but you have the flexibility to choose a different approach to meet
+your needs.  Several old Perl 5 object tutorials promote the use of C++ and
+Java-style constructor calls:
+
+=begin programlisting
+
+    my $q = B<new> CGI; # DO NOT USE
+
+=end programlisting
+
+... instead of the unambiguous:
+
+=begin programlisting
+
+    my $q = CGI->new();
+
+=end programlisting
+
+These syntaxes are equivalent in behavior, except when they're not.
+
+X<indirect object notation>
+X<dative notation>
+
+The first form is the indirect object form (more precisely, the I<dative>
+case), where the verb (the method) precedes the noun to which it refers (the
+object).  This is fine in spoken languages, but it introduces parsing
+ambiguities in Perl 5.
+
+=head2 Bareword Indirect Invocations
+
+One problem is that the name of the method is a bareword (L<barewords>).  The
+parser must apply several heuristics to determine the proper interpretation.
+While these heuristics are well-tested and I<almost> always correct, their
+failure modes are confusing.  Worse, they're fragile in the face of the
+I<order> of compilation and module loading.
+
+Parsing is more difficult for humans I<and> the computer when the constructor
+takes arguments.  The indirect style may resemble:
+
+=begin programlisting
+
+    # DO NOT USE
+    my $obj = new Class( arg => $value );
+
+=end programlisting
+
+... thus making the class name C<Class> look like a function call.  Perl 5
+I<can> disambiguate many of these cases, but its heuristics depend on which
+package names the parser has seen at the current point in the parse, which
+barewords it has already resolved (and how it resolved them), and the I<names>
+of functions already declared in the current package.
+
+Imagine running afoul of a prototyped function (L<prototypes>) with a
+name which just happens to conflict somehow with the name of a class or a
+method called indirectly.  This is infrequent, but so difficult to debug that
+avoiding this syntax is always worthwhile.
+
+=head2 Indirect Notation Scalar Limitations
+
+Another danger of the syntax is that the parser expects a single scalar
+expression as the object.  Printing to a filehandle stored in an aggregate
+variable I<seems> obvious, but it is not:
+
+=begin programlisting
+
+    # DOES NOT WORK AS WRITTEN
+    say $config->{output} "This is a diagnostic message!";
+
+=end programlisting
+
+X<builtins; C<print>>
+X<builtins; C<close>>
+X<builtins; C<say>>
+
+C<print>, C<close>, and C<say>--all builtins which operate on
+filehandles--operate in an indirect fashion.  This was fine when filehandles
+were package globals, but lexical filehandles (L<lexical_filehandles>) make the
+indirect object syntax problems obvious.  In the previous example, Perl will
+try to call the C<say> method on the C<$config> object.  The solution is to
+disambiguate the expression which produces the intended invocant:
+
+=begin programlisting
+
+    say B<{>$config->{output}B<}> "This is a diagnostic message!";
+
+=end programlisting
+
+=head2 Alternatives to Indirect Notation
+
+Direct invocation notation does not suffer this ambiguity problem.  To
+construct an object, call the constructor method on the class name directly:
+
+=begin programlisting
+
+    my $q   = CGI->new();
+    my $obj = Class->new( arg => $value );
+
+=end programlisting
+
+X<C<IO::Handle>>
+
+For the limited case of filehandle operations, the dative use is so prevalent
+that you can use the indirect invocation approach if you surround your intended
+invocant with curly brackets.  Another option is to use the core C<IO::Handle>
+module which adds IO methods to lexical filehandles.
+
+=begin sidebar
+
+For supreme paranoia, disambiguate class method calls further by appending
+C<::> to the end of class names, such as C<< CGI::->new() >>.  Very little code
+does this in practice, however.
+
+=end sidebar
+
+X<C<Perl::Critic>>
+X<C<Perl::Critic::Policy::Dynamic::NoIndirect>>
+X<C<indirect>>
+
+The CPAN module C<Perl::Critic::Policy::Dynamic::NoIndirect> (a plugin for
+C<Perl::Critic>) can identify indirect invocations during code reviews.  The
+CPAN module C<indirect> can identify and prohibit their use in running
+programs:
+
+=begin programlisting
+
+    # warn on indirect use
+    no indirect;
+
+    # throw exceptions on their use
+    no indirect ':fatal';
+
+=end programlisting
+=encoding utf8
+
+=head1 间接对象
+
+Z<indirect_objects>
+
+Perl 5 中的构造器就是任何返回对象的东西；C<new> 不是一个内置的函数。出于惯例，
+构造器是一个名为 C<new()> 的类方法，但是你仍可以按需灵活地选择不同名称。若干陈
+旧的 Perl 5 对象教程推行 C++ 和 Java 风格的构造器调用方式：
+
+=begin programlisting
+
+    my $q = B<new> CGI; # 不要这样写
+
+=end programlisting
+
+……而非毫无歧义的：
+
+=begin programlisting
+
+    my $q = CGI->new();
+
+=end programlisting
+
+两种语法在行为上是等价的，除了它们不等价的时候。
+
+X<indirect object notation>
+X<indirect objects>
+X<dative notation>
+X<dative>
+
+第一种形式就是间接对象（indirect object）形式（更精确地说，I<与格（dative）>
+形式），即动词（方法）处于其意指的名词（对象）之前。在口语中这是可行的，但是
+这样会向 Perl 5 引入歧义。
+
+=head2 裸字间接调用
+
+其中一个问题就是方法名称是裸字（L<barewords>）。语法分析器必须进行若干启发式
+方法来决定正确的解释。虽然这些启发式方法经过良好测试并且 I<几乎> 总是正确的，
+但它们出错的方式令人疑惑。更糟糕的是，在编译和模块加载 I<顺序> 的面前，它们
+相当脆弱。
+
+在构造器带参数时，语法分析对人类 I<和> 计算机来说都是困难的。间接风格可能类
+似于：
+
+=begin programlisting
+
+    # 不要这样写
+    my $obj = new Class( arg => $value );
+
+=end programlisting
+
+……这样便使得类名 C<Class> 看上去像函数调用。Perl 5 I<能够> 对许多这样的情况消歧，
+但它的启发式方法取决于语法分析器在该语法分析点上见到了什么包名，它已经解析了的裸
+字（已经如何解析它们），以及已在当前包内声明的函数 I<名称>。
+
+假设执行一个冲突的原型函数，它的名称正好和类名或者一个间接调用的方法冲突。这样的
+情况并不频繁，但是难以调试，避免这样的语法总是值得的。
+
+=head2 间接记法的标量限制
+
+该语法的另一危险之处就是语法分析器期望单个标量表达式是一个对象。向一个存放在集合
+变量（aggregate variable）文件句柄打印 I<看上去> 很显然，但是事实并非如此：
+
+=begin programlisting
+
+    # 代码和行为不一致
+    say $config->{output} "This is a diagnostic message!";
+
+=end programlisting
+
+C<print>、C<close> 和 C<say>────所有操作文件句柄的关键字────都按间接方式进行操作。
+当文件句柄是包全局变量时一切正常，但是词法文件句柄（L<lexical_filehandles>）使得
+间接对象语法问题显而易见。在上一个例子中，Perl 会尝试调用 C<$config> 对象上的 C<say>
+方法。解决方法就是产出调用者的表达式消歧：
+
+=begin programlisting
+
+    say B<{>$config->{output}B<}> "This is a diagnostic message!";
+
+=end programlisting
+
+=head2 间接记法的替代
+
+直接调用记法没有这类歧义问题。要构造一个对象，直接在类名上调用构造方法即可：
+
+=begin programlisting
+
+    my $q   = CGI->new();
+    my $obj = Class->new( arg => $value );
+
+=end programlisting
+
+X<IO::Handle>
+
+对于文件句柄操作限制这一情况来说，与格用法太普遍了，你只要将目标调用者用大括号
+围起，就可以是有间接调用手法。除此之外，考虑加载 C<IO::Handle> 核心模块，它允许
+你调用文件句柄对象（如词法文件句柄）上的方法来执行 IO 操作。
+
+=begin sidebar
+
+对于超级偏执狂来说，你可以通过在类名后追加 C<::> 来进一步对类方法调用消歧，例如
+C<< CGI::->new() >>。然而，实践中很少有代码会这样做。
+
+=end sidebar
+
+X<Perl::Critic::Policy::Dynamic::NoIndirect; CPAN modules>
+X<Perl::Critic::Policy::Dynamic::NoIndirect>
+X<Perl::Critic; CPAN modules>
+X<Perl::Critic>
+X<indirect; CPAN modules>
+X<indirect>
+
+CPAN 模块 C<Perl::Critic::Policy::Dynamic::NoIndirect>（一个 C<Perl::Critic> 的插件）
+可在代码审核期间识别间接调用语法。CPAN 模块 C<indirect> 可以在程序运行时识别它们并禁
+止使用：
+
+=begin programlisting
+
+    # 对间接用法做出警告
+    no indirect;
+
+    # 对此用法抛出异常
+    no indirect ':fatal';
+
+=end programlisting

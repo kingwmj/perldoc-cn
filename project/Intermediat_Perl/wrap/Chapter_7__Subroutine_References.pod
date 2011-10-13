@@ -1,29 +1,26 @@
-=head2 Chapter 7. 对子程序的引用
+=head2 第七章. 对子程序的引用
 
-目前, 你已经看到了对 I<Perl> 三种数据类型的引用：标量, 数
-组和散列。 同样, 我们也可以对一个子程序进行引用 (有时候我们把
-它叫作代码引用).
+目前, 你已经看到了对 I<Perl> 三种数据类型的引用：标量, 数组和散
+列同样, 我们也可以对一个子程序进行引用 (有时候我们把它叫作代码
+引用)。
 
-但我们为什么要做那个呢？ 与我们用指向数组的引用来实现用同
-一代码块在不同时间处理不同数组相同, 我们也可以使用指向子程序
-的引用实现在不同时间调用不同的子程序。 一样, 引用充许复杂的数
-据结构。 一个指向子程序的引用使子程序成为复杂数据结构的一部
-份成为可能。
+但我们为什么要做那个呢？与我们用指向数组的引用来实现用同一代码
+块在不同时间处理不同数组相同, 我们也可以使用指向子程序的引用实现
+在不同时间调用不同的子程序。一样, 引用充许复杂的数据结构。一个指
+向子程序的引用使子程序成为复杂数据结构的一部份成为可能。
 
-换一种说法, 一个变量或者一个复杂数据结构是一个程序中的数据
-的仓库。 一个对子程序的引用可以被想像成为一个程序动作（方法
-）的仓库。 本节中的例子可以向你揭示这一点。
+换一种说法, 一个变量或者一个复杂数据结构是一个程序中的数据的仓
+库。一个对子程序的引用可以被想像成为一个程序动作（方法）的仓库。
+本节中的例子可以向你揭示这一点。
 
 =head2 7. 1. 对命名子程序的引用
 
 I<Skipper> 和 I<Gilligan> 之间有一通对话：
 
-
  sub skipper_greets {
   my $person = shift;
   print "Skipper: Hey there, $person!\n";
  }
-
 
  sub gilligan_greets {
   my $person = shift;
@@ -34,120 +31,102 @@ I<Skipper> 和 I<Gilligan> 之间有一通对话：
   }
  }
 
-
  skipper_greets("Gilligan");
  gilligan_greets("Skipper");
 
 其输出结果如下：
 
-
  Skipper: Hey there, Gilligan!
  Gilligan: Sir, yes, sir, Skipper!
 
-到现在为止, 一切正常.然而, 你要注意, I<Gilligan> 有两个不
-同的行为, 这依赖于它是否对 I<Skipper> 说话, 还是对其它人说。
+到现在为止, 一切正常。然而, 你要注意, I<Gilligan> 有两个不同的行
+为, 这依赖于它是否对 I<Skipper> 说话, 还是对其它人说。
 
-现在, 教授到屋子里来了.这两个 I<Minnow> 船员都向新来者问候
-：
-
+现在, 教授到屋子里来了。这两个 I<Minnow> 船员都向新来者问候：
 
  skipper_greets('Professor');
  gilligan_greets('Professor');
 
 其输出是：
 
-
  Skipper: Hey there, Professor!
  Gilligan: Hi, Professor!
 
 这下轮到教授要作出反映了：
 
-
  sub professor_greets {
    my $person = shift;
-   print "Professor: By my calculations, you must be $person!\n";
+   print "Professor:By my calculations,you must be $person!\n";
  }
-
 
  professor_greets('Gilligan');
  professor_greets('Skipper');
 
 输出结果是：
 
-
  Professor: By my calculations, you must be Gilligan!
  Professor: By my calculations, you must be Skipper!
 
-咻！这程序写得真费事, 而且一点也不抽象。 如果每个乘客的行
-为以不同的子程序命名, 而且每个乘客都进来的话, 我们要不得不写
-多少程序来对付啊。 当然, 我们可以用这样难以维护的代码来处理这
-件事, 但是, 就像我们在数组和散列上做的那样, 我们只要加一些小
-技巧, 就可以简化处理过程。
+咻！这程序写得真费事, 而且一点也不抽象。如果每个乘客的行为以不
+同的子程序命名, 而且每个乘客都进来的话, 我们要不得不写多少程序来
+对付啊。当然, 我们可以用这样难以维护的代码来处理这件事, 但是, 就
+像我们在数组和散列上做的那样, 我们只要加一些小技巧, 就可以简化处理
+过程。
 
-首先, 让我们用"取引用"操作符。 实际上这也不用介绍, 因为它
-与之前的反斜杠长得非常像：
-
+首先, 让我们用B<取引用>操作符。实际上这也不用介绍, 因为它与之前
+的反斜杠长得非常像：
 
  my $ref_to_greeter = \&skipper_greets;
 
-我们现在取子程序 I<skipper_greets()> 的引用。 注意, 前导的
-&字符在这里是强制必须的, 而其后的小括号也不要加。 I<Perl> 会
-把对这个子程序的引用放到变量 I<$ref_to_greeter> 中, 而且, 同
-对其它的引用一样, 它适合于任何可以使用标量的地方。
+我们现在取子程序 I<skipper_greets()> 的引用。注意, 前导的&字符
+在这里是强制必须的, 而其后的小括号也不要加。I<Perl> 会把对这个子
+程序的引用放到变量 I<$ref_to_greeter> 中, 而且, 同对其它的引用一
+样, 它适合于任何可以使用标量的地方。
 
-还原一个对子程序的引用的惟一目的就是：为了调用它。 还原对
-代码的引用同还原对其它数据类型的引用是相似的。 首先, 我们可以
-采用我们在听说引用以前写过的方法来处理（包括前导的&号）
-
+还原一个对子程序的引用的惟一目的就是：为了调用它还原对代码的
+引用同还原对其它数据类型的引用是相似的首先, 我们可以采用我们在
+听说引用以前写过的方法来处理（包括前导的&号）
 
  & skipper_greets ( 'Gilligan' )
 
 下一步, 我们把子程序的名字用引用变量名字外套花括号代替：
 
-
  & { $ref_to_greeter } ( 'Gilligan' )
 
-就是它了.这个方法调用了当前 I<$ref_to_greeter> 变量中保存
-的那个对子程序的引用, 并给它传了一个字串参数： I<Gilligan.>
+就是它了。这个方法调用了当前 I<$ref_to_greeter> 变量中保存的那个
+对子程序的引用, 并给它传了一个字串参数： I<Gilligan>。
 
-不过, 这样子是不是太丑陋了？ 幸运的是同样的简化规则也能应
-用于对子程序的引用。 如果花括号里是简单的标量变量的话, 花括号
-可以去掉：
-
+不过, 这样子是不是太丑陋了？ 幸运的是同样的简化规则也能应用于对
+子程序的引用如果花括号里是简单的标量变量的话, 花括号可以去掉：
 
  & $ref_to_greeter ( 'Gilligan' )
 
 我们也可以把它转换成带箭头的格式：
 
-
  $ref_to_greeter -> ( 'Gilligan' )
 
-最后一种形式特别适用于在一个大数据结构中进行代码引用, 你一
-会儿就会看到。
+最后一种形式特别适用于在一个大数据结构中进行代码引用, 你一会儿
+就会看到。
 
-如果让 I<Gilligan> 和 I<Skipper> 向教授问好, 我们只需要迭
-代调用子程序就可以了：
-
+如果让 I<Gilligan> 和 I<Skipper> 向教授问好, 我们只需要迭代调用
+子程序就可以了：
 
  for my $greet (\&skipper_greets, \&gilligan_greets) {
   $greet->('Professor');
  }
 
-首先, 在小括号里面, 我们建立一个两个元素的列表, 而且这两个
-元素各保存一个对代码块的引用。 而每个对代码的引用都各自被还
-原, 调用相应的子程序并传入"教授"字串。
+首先, 在小括号里面, 我们建立一个两个元素的列表, 而且这两个元素
+各保存一个对代码块的引用而每个对代码的引用都各自被还原, 调用相
+应的子程序并传入"教授"字串。
 
-我们已经看到了把代码引用作为一个列表中的元素。 那我们是否
-可以把代码引用放到一个大的数据结构中呢? 当然可以. 我们可以创
-建一个表, 来让乘客与其向他们问候动作对应, 我们可以重写之前的
-例子：
-
+我们已经看到了把代码引用作为一个列表中的元素那我们是否可以把
+代码引用放到一个大的数据结构中呢? 当然可以。我们可以创建一个表,
+来让乘客与其向他们问候动作对应, 我们可以重写之前的例子：
 
  sub skipper_greets {
   my $person = shift;
   print "Skipper: Hey there, $person!\n";
  }
-
 
  sub gilligan_greets {
   my $person = shift;
@@ -158,12 +137,10 @@ I<Skipper> 和 I<Gilligan> 之间有一通对话：
   }
  }
 
-
  sub professor_greets {
   my $person = shift;
-  print "Professor: By my calculations, you must be $person!\n";
+  print "Professor:By my calculations,you must be $person!\n";
  }
-
 
  my %greets = (
   Gilligan  => \&gilligan_greets,
@@ -171,27 +148,23 @@ I<Skipper> 和 I<Gilligan> 之间有一通对话：
   Professor => \&professor_greets,
  );
 
-
  for my $person (qw(Skipper Gilligan)) {
   $greets{$person}->('Professor');
  }
 
-注意, 变量 I<$person> 是字名, 他们以前在散列中查找代码引用
-。 然后我们还原那个代码引用, 并传给他要问候的人名, 获得正确
-的问候行为, 输出结果如下：
-
+注意, 变量 I<$person> 是字名, 他们以前在散列中查找代码引用然
+后我们还原那个代码引用, 并传给他要问候的人名, 获得正确的问候行为
+, 输出结果如下：
 
  Skipper: Hey there, Professor!
  Gilligan: Hi, Professor!
 
 现在我们可以让大家互相问候了, 在一个十分友好的房间：
 
-
  sub skipper_greets {
   my $person = shift;
   print "Skipper: Hey there, $person!\n";
  }
-
 
  sub gilligan_greets {
   my $person = shift;
@@ -202,19 +175,16 @@ I<Skipper> 和 I<Gilligan> 之间有一通对话：
   }
  }
 
-
  sub professor_greets {
   my $person = shift;
-  print "Professor: By my calculations, you must be $person!\n";
+  print "Professor:By my calculations,you must be $person!\n";
  }
-
 
  my %greets = (
   Gilligan  => \&gilligan_greets,
   Skipper   => \&skipper_greets,
   Professor => \&professor_greets,
  );
-
 
  my @everyone = sort keys %greets;
  for my $greeter (@everyone) {
@@ -226,7 +196,6 @@ I<Skipper> 和 I<Gilligan> 之间有一通对话：
 
 其输出结果如下：
 
-
  Gilligan: Hi, Professor!
  Gilligan: Sir, yes, sir, Skipper!
  Professor: By my calculations, you must be Gilligan!
@@ -234,14 +203,12 @@ I<Skipper> 和 I<Gilligan> 之间有一通对话：
  Skipper: Hey there, Gilligan!
  Skipper: Hey there, Professor!
 
-呣.这里有些复杂.让我们使他们一个个进来。
-
+呣。这里有些复杂。让我们使他们一个个进来。
 
  sub skipper_greets {
   my $person = shift;
   print "Skipper: Hey there, $person!\n";
  }
-
 
  sub gilligan_greets {
   my $person = shift;
@@ -252,19 +219,16 @@ I<Skipper> 和 I<Gilligan> 之间有一通对话：
   }
  }
 
-
  sub professor_greets {
   my $person = shift;
-  print "Professor: By my calculations, you must be $person!\n";
+  print "Professor:By my calculations,you must be $person!\n";
  }
-
 
  my %greets = (
   Gilligan  => \&gilligan_greets,
   Skipper   => \&skipper_greets,
   Professor => \&professor_greets,
  );
-
 
  my @room; # initially empty
  for my $person (qw(Gilligan Skipper Professor)) {
@@ -279,14 +243,11 @@ I<Skipper> 和 I<Gilligan> 之间有一通对话：
 
 输出结果如下, 岛上典型的一天是这样的：
 
-
  Gilligan walks into the room.
-
 
  Skipper walks into the room.
  Skipper: Hey there, Gilligan!
  Gilligan: Sir, yes, sir, Skipper!
-
 
  Professor walks into the room.
  Professor: By my calculations, you must be Gilligan!
@@ -296,15 +257,14 @@ I<Skipper> 和 I<Gilligan> 之间有一通对话：
 
 =head2 7. 2. 匿名子程序
 
-在最后那个例子中, 我们并没有显式的调用子程序, 如 I<profre
-ssor_greets(> ), 我们只是间接通过代码引用来调用它.所以, 为了
-初始化一个数据结构, 我们仅仅因为在其它地方使用而给子程序提供
-名字纯属浪费脑筋.但是, 就像我们可以建立匿名数组和匿名散列一样
-, 我们也可能建立一个匿名的子程序！
+在最后那个例子中, 我们并没有显式的调用子程序, 如 I<profressor_
+greets(> ), 我们只是间接通过代码引用来调用它。所以, 为了初始化一个
+数据结构, 我们仅仅因为在其它地方使用而给子程序提供名字纯属浪费脑筋
+。但是, 就像我们可以建立匿名数组和匿名散列一样, 我们也可能建立一个
+匿名的子程序！
 
-让我们再添加一个岛上的居民： I<Ginger.> 但是不同于用命名子
-程序来给她定义行为, 我们可能建立一个匿名子程序：
-
+让我们再添加一个岛上的居民： I<Ginger>。 但是不同于用命名子程序
+来给她定义行为, 我们可能建立一个匿名子程序：
 
  my $ginger = sub {
    my $person = shift;
@@ -312,32 +272,26 @@ ssor_greets(> ), 我们只是间接通过代码引用来调用它.所以, 为了
  };
  $ginger->('Skipper');
 
-一个匿名子程序看上去像一个平常的子程序声明, 只是没有名字（
-或原型声明）在 I<sub> 关键字和紧随的代码块之间.这同样是声明
-的一部份, 所以在大多数情况下, 我们需要结尾的分号, 或者其它的
-表达式分隔符。
+一个匿名子程序看上去像一个平常的子程序声明, 只是没有名字（或原
+型声明）在 I<sub> 关键字和紧随的代码块之间。这同样是声明的一部份,
+所以在大多数情况下, 我们需要结尾的分号, 或者其它的表达式分隔符。
 
+ sub { ...body of subroutine... };
 
- sub {. . . body of subroutine. . . };
-
-I<$ginger> 的值是一个代码引用, 就像我们在其后定义了子程序
-一样, 然后返回引用给它.当我们到达最后一行, 我们看到：
-
+I<$ginger> 的值是一个代码引用, 就像我们在其后定义了子程序一样,
+然后返回引用给它。当我们到达最后一行, 我们看到：
 
  Ginger: (in a sultry voice) Well hello, Skipper!
 
 尽管我们可以把代码引用作为标量值保存, 但我们也可以直接把
 I<sub> I<{...}> 代码块直接放在初始化的 I<greetings> 散列中：
 
-
  my %greets = (
-
 
   Skipper => sub {
     my $person = shift;
     print "Skipper: Hey there, $person!\n";
   },
-
 
   Gilligan => sub {
     my $person = shift;
@@ -348,21 +302,17 @@ I<sub> I<{...}> 代码块直接放在初始化的 I<greetings> 散列中：
     }
   },
 
-
   Professor => sub {
     my $person = shift;
-    print "Professor: By my calculations, you must be $person!\n";
+    print "Professor:By my calculations,you must be $person!\n";
   },
-
 
   Ginger => sub {
     my $person = shift;
     print "Ginger: (in a sultry voice) Well hello, $person!\n";
   },
 
-
  );
-
 
  my @room; # initially empty
  for my $person (qw(Gilligan Skipper Professor Ginger)) {
@@ -375,24 +325,20 @@ I<sub> I<{...}> 代码块直接放在初始化的 I<greetings> 散列中：
   push @room, $person; # come in, get comfy
  }
 
-注意我们简化了多少行代码.子程序的定义现在直接放在数据结构
-中.结果相当直观：
-
+注意我们简化了多少行代码。子程序的定义现在直接放在数据结构中。
+结果相当直观：
 
  Gilligan walks into the room.
-
 
  Skipper walks into the room.
  Skipper: Hey there, Gilligan!
  Gilligan: Sir, yes, sir, Skipper!
-
 
  Professor walks into the room.
  Professor: By my calculations, you must be Gilligan!
  Gilligan: Hi, Professor!
  Professor: By my calculations, you must be Skipper!
  Skipper: Hey there, Professor!
-
 
  Ginger walks into the room.
  Ginger: (in a sultry voice) Well hello, Gilligan!
@@ -402,48 +348,42 @@ I<sub> I<{...}> 代码块直接放在初始化的 I<greetings> 散列中：
  Ginger: (in a sultry voice) Well hello, Professor!
  Professor: By my calculations, you must be Ginger!
 
-添加更多的旅客就变成了简单的把问候行为放到散列中, 并把他们
-加入到进入房间的人名清单中.我们在效率上得到扩展, 因为我们把
-程序行为保存为数据, 并通过它可以查找和迭代, 这要感谢友好的子
-程序引用。
+添加更多的旅客就变成了简单的把问候行为放到散列中, 并把他们加入
+到进入房间的人名清单中。我们在效率上得到扩展, 因为我们把程序行为保
+存为数据, 并通过它可以查找和迭代, 这要感谢友好的子程序引用。
 
-=head2 7. 3. 回调
+=head2 7.3. 回调
 
-一个对子程序的引用, 经常被用来做回调.一个回调定义了在一个
-算法中当子程序运行到了一个特定地点时, 程序应该做什么。
+一个对子程序的引用, 经常被用来做回调。一个回调定义了在一个算法中
+当子程序运行到了一个特定地点时, 程序应该做什么。
 
-举个例子来说, I<File::Find> 模块导出一个 I<find> 子程序,
-它被用来以非常可移植的方式高效地遍历给定文件系统的层次结构.在
-这个简单的例子中, 我们传给 I<find> 子程序两个参数：一个表示
-目录搜索开始点的字串, 另一个是对子程序引用.这子程序会对从给定
-的起始目录开始, 通过递归搜索的方法, 找到其下的每个文件或目录
-, 并对它们"干些什么"：
-
+举个例子来说, I<File::Find> 模块导出一个 I<find> 子程序, 它被用
+来以非常可移植的方式高效地遍历给定文件系统的层次结构。在这个简单的
+例子中, 我们传给 I<find> 子程序两个参数：一个表示目录搜索开始点的
+字串, 另一个是对子程序引用。这子程序会对从给定的起始目录开始, 通过
+递归搜索的方法, 找到其下的每个文件或目录, 并对它们"干些什么"：
 
  use File::Find;
  sub what_to_do {
    print "$File::Find::name found\n";
  }
- my @starting_directories = qw(. );
-
+ my @starting_directories = qw(.);
 
  find(\&what_to_do, @starting_directories);
 
-在例子中, I<find> 程序开始于当前目录（.）, 并且向下找到所
-有的目录和文件.对于找到的每个项目, 我们会调用那个子程序 I<wh
-at_to_do()> , 把一些全局变量传进去.一般来说全局变量 I<:$File
-::Find::name> 是项目的全路径名（以开始搜索的目录为起点）
+在例子中, I<find> 程序开始于当前目录（.）, 并且向下找到所有的目
+录和文件。对于找到的每个项目, 我们会调用那个子程序 I<what_to_do()>,
+把一些全局变量传进去。一般来说全局变量 I<:$File::Find::name> 是
+项目的全路径名（以开始搜索的目录为起点）
 
-在此例中, 我们传了两项数据（开始搜索的目录）和给 I<find>
-子程序的行为子程序作为参数。
+在此例中, 我们传了两项数据（开始搜索的目录）和给 I<find> 子程序
+的行为子程序作为参数。
 
-在这里, 子程序只使用一次, 为此而起个名字的做法好像有些蠢,
-所以我们还可以把子程序做成匿名子程序, 如：
-
+在这里, 子程序只使用一次, 为此而起个名字的做法好像有些蠢, 所以
+我们还可以把子程序做成匿名子程序, 如：
 
  use File::Find;
  my @starting_directories = qw(. );
-
 
  find(
   sub {
@@ -454,165 +394,146 @@ at_to_do()> , 把一些全局变量传进去.一般来说全局变量 I<:$File
 
 =head2 7. 4. 闭包
 
-我们还可以用 I<File::Find> 来查其它一些文件属性, 比如它们
-的文件大小.为了回调方便, 当前目录被设为文件所在的目录, 目录中
-的文件名也放在缺省变量 I<$_> 中.：
+我们还可以用 I<File::Find> 来查其它一些文件属性, 比如它们的文件
+大小.为了回调方便, 当前目录被设为文件所在的目录, 目录中的文件名也
+放在缺省变量 I<$_> 中：
 
-刚才你可能已经注意到了, 在前面的代码中, 我们用 I<$File::F
-ind::name> 来返回文件的名字.所以现在哪个名字是真实的呢？ I<$
-_> 或者 I<$File::Find::name> ？ I<$File::Find::name> 是给出文
-件自起始搜索目录的相对路径名, 而在回调程序中, 工作目录就是项
-目所在目录.比如, 假定我们要在当前目录找些文件, 所以我们给出
-它（ I<"."> ）作为要搜索的目录.如果我们当前目录是 I</usr> ,
-则程序会往下找这个目录.然后程序找到 I</usr/bin/perl> , 此时当
-前目录（在回调程序中）是 I</usr/bin.> 变量 I<$_> 保存了 I<p
-erl> , 而 I<$File::Find::name> 保存 I<./bin/perl> , 就是相对
-起始搜索目录的相对路径。
+刚才你可能已经注意到了, 在前面的代码中, 我们用 I<$File::Find::name>
+来返回文件的名字。所以现在哪个名字是真实的呢？ I<$_> 或者 I<
+$File::Find::name>？ I<$File::Find::name> 是给出文件自起始搜索目
+录的相对路径名, 而在回调程序中, 工作目录就是项目所在目录。比如, 假
+定我们要在当前目录找些文件, 所以我们给出它（I<".">）作为要搜索的
+目录。如果我们当前目录是 I</usr> , 则程序会往下找这个目录。然后程序
+找到 I</usr/bin/perl> , 此时当前目录（在回调程序中）是 I</usr/bin>。
+变量 I<$_> 保存了 I<perl> , 而 I<$File::Find::name> 保存 I<./bin/perl>,
+就是相对起始搜索目录的相对路径。
 
-这一切说明对文件的查验, 如 I<-s> , 是自动应用在即时找到的
-那个文件上的.尽管这很方便, 回调程序里的当前目录还是与搜索目录
-不同。
+这一切说明对文件的查验, 如 I<-s> , 是自动应用在即时找到的那个文
+件上的。尽管这很方便, 回调程序里的当前目录还是与搜索目录不同。
 
-如果我们要用 I<File::Find> 来累加所找到的所有文件的大小的
-话, 应该如何做呢？回调子程序不能有参数, 而调用者也忽略回调子
-程序返回的结果.但这没有关系.在还原后, 一个子程序引用可以看到
-所有指向子程序的引用的可见词法变量.例如：
-
+如果我们要用 I<File::Find> 来累加所找到的所有文件的大小的话, 应
+该如何做呢？回调子程序不能有参数, 而调用者也忽略回调子程序返回的
+结果。但这没有关系。在还原后, 一个子程序引用可以看到所有指向子程序的
+引用的可见词法变量。例如：
 
  use File::Find;
-
 
  my $total_size = 0;
- find(sub { $total_size += -s if -f }, '. ');
+ find(sub { $total_size += -s if -f }, '.');
  print $total_size, "\n";
 
-同以前一样, 我们调用 I<find> 子程序时传给它两个参数：一个
-指向匿名子程序的引用和一个起始搜索目录.在它找到文件在目录中时
-（或其子目录中时）, 它会调用匿名子程序。
+同以前一样, 我们调用 I<find> 子程序时传给它两个参数：一个指向匿
+名子程序的引用和一个起始搜索目录。在它找到文件在目录中时（或其子目
+录中时）, 它会调用匿名子程序。
 
-注意, 匿名子程序会访问 I<$total_size> 变量.我们定义这个变
-量是在匿名子程序范围之外的, 但是对于匿名子程序来说还是可见的
-.所以, 尽管 I<find> 调用那个回调的匿名子程序（并且不会直接访
-问 I<$total_size> ）, 回调的匿名子程序会访问并且更新变量。
+注意, 匿名子程序会访问 I<$total_size> 变量。我们定义这个变量是在
+匿名子程序范围之外的, 但是对于匿名子程序来说还是可见的。所以, 尽管
+I<find> 调用那个回调的匿名子程序（并且不会直接访问 I<$total_size>）,
+回调的匿名子程序会访问并且更新变量。
 
-那种能访问所有我们声明的在运行时存在的词法变量的子程序, 我
-们叫它闭包（一个从数字世界借过一的词）.在 I<Perl> 术语中, 一
-个闭包就是指一种能引用在程序范围之外的词法变量的子程序。
+那种能访问所有我们声明的在运行时存在的词法变量的子程序, 我们叫
+它闭包（一个从数字世界借过一的词）。在 I<Perl> 术语中, 一个闭包就是
+指一种能引用在程序范围之外的词法变量的子程序。
 
-更有甚者, 在闭包内部访问变量能保证只要匿名子程序引用存在,
-变量的值就能保留.比如, 让我们对输出文件计数：[*]
+更有甚者, 在闭包内部访问变量能保证只要匿名子程序引用存在, 变量
+的值就能保留。比如, 让我们对输出文件计数：
 
-[*] 这里的代码好像在行尾给 I<$callback> 赋值时多出一个分号
-, 不是吗？ But remember, the construct sub {. . . } is an e
-xpression. 值（一段代码引用）赋给变量 I<$callback> , 所以语句
-后面有分号。 在花括号定义的匿名子程序后面加上适当的标点符号
-是很容易被遗忘的。
-
+这里的代码好像在行尾给 I<$callback> 赋值时多出一个分号, 不
+是吗？ 但是请记住, C<sub { ... }> 结构是一个表达式。
+值（一段代码引用）赋给变量 I<$callback> , 所以语句后面有分号在
+花括号定义的匿名子程序后面加上适当的标点符号是很容易被遗忘的。
 
  use File::Find;
-
 
  my $callback;
  {
   my $count = 0;
   $callback = sub { print ++$count, ": $File::Find::name\n" };
  }
- find($callback, '. ');
+ find($callback, '.');
 
-这儿, 我们定义了一个保存有回调子程序引用的变量.我们不能在
-裸块中定义这个变量（其后的块并非 I<Perl> 语法构建的一部份）,
-或者 I<Perl> 在块结束时会回收它.之后, 词法变量 I<$count> 变
-量会初始化为 I<0.> 我们声明一个匿名子程序并把其引用给 I<$cal
-lback.> 这个子程序就是个闭包, 因它指向词法变量 I<$count.>
+这儿, 我们定义了一个保存有回调子程序引用的变量。我们不能在裸块中
+定义这个变量（其后的块并非 I<Perl> 语法构建的一部份）, 或者 I<Pe rl>
+在块结束时会回收它。之后, 词法变量 I<$count> 变量会初始化为 I<0>
+我们声明一个匿名子程序并把其引用给 I<$callback>。这个子程序就
+是个闭包, 因它指向词法变量 I<$count>。
 
-在裸块的结尾, 变量 I<$count> 跑出程序范围.然而, 因为这个变
-量仍旧被 I<$callback> 所指向的匿名子程序引用, 所以此变量作为
-一个匿名的标量变量仍旧活着 I<.[> *] 当 I<find> 子程序调用回
-调匿名子程序的时候, 先前被称为 I<$count> 的这个变量的值继续从
-1到2到3地增加。
+在裸块的结尾, 变量 I<$count> 跑出程序范围。然而, 因为这个变量仍
+旧被 I<$callback> 所指向的匿名子程序引用, 所以此变量作为一个匿名的
+标量变量仍旧活着。当 I<find> 子程序调用回调匿名子程序的时
+候, 先前被称为 I<$count> 的这个变量的值继续从1到2到3地增加。
 
 =head2 7. 5. 从子程序中返回一个子程序
 
-尽管定义回调时用裸块的话, 会工作得很好, 但是如果让子程序返
-回一个对子程序的引用的做法更加有用：
-
+尽管定义回调时用裸块的话, 会工作得很好, 但是如果让子程序返回一
+个对子程序的引用的做法更加有用：
 
  use File::Find;
-
 
  sub create_find_callback_that_counts {
   my $count = 0;
   return sub { print ++$count, ": $File::Find::name\n" };
  }
 
+ my $callback = create_find_callback_that_counts();
+ find($callback, '.');
 
- my $callback = create_find_callback_that_counts(  );
- find($callback, '. ');
+上面那个程序与之前的程序有同样的功能, 只稍稍做了些改动。当我们调
+用 I<create_find_callback_that_counts()> 的时候, 我们会把词法变量
+I<$count> 置为零。子程序返回的是一个对匿名子程序的引用, 它同样是
+一个闭包, 因为这个闭包访问 I<$count> 变量。尽管 I<$count> 在
+I<create_find_callback_that_counts()> 子程序结束后跑出范围, 但仍旧
+有一个绑定它和返回的子程序引用, 所以, 变量会一直存在, 直到子程序
+引用最后被丢弃。
 
-上面那个程序与之前的程序有同样的功能, 只稍稍做了些改动.当
-我们调用 I<create_find_callback_that_counts()> 的时候, 我们会
-把词法变量 I<$count> 置为零.子程序返回的是一个对匿名子程序的
-引用, 它同样是一个闭包, 因为这个闭包访问 I<$count> 变量.尽管
-I<$count> 在 I<create_find_callback_that_counts(> ) 子程序
-结束后跑出范围, 但仍旧有一个绑定它和返回的子程序引用, 所以,
-变量会一直存在, 直到子程序引用最后被丢弃。
-
-如果我们重用回调, 相同的变量仍会保留它最近的值.初始值是在
-最初调用子程序的时候创建的（ I<create_find_callback_that_cou
-nts> ）, 并不是回调的匿名子程序中：
-
+如果我们重用回调, 相同的变量仍会保留它最近的值。初始值是在最初调
+用子程序的时候创建的（ I<create_find_callback_that_counts> ）, 并
+不是回调的匿名子程序中：
 
  use File::Find;
-
 
  sub create_find_callback_that_counts {
   my $count = 0;
   return sub { print ++$count, ": $File::Find::name\n" };
  }
 
-
- my $callback = create_find_callback_that_counts(  );
+ my $callback = create_find_callback_that_counts();
  print "my bin:\n";
  find($callback, 'bin');
  print "my lib:\n";
  find($callback, 'lib');
 
-下面这个例子从1开始为整个 I<bin> 目录下的文件计数, 接着前
-面的数值, 继续为 I<lib> 目录下所有的文件计数.在两个程序用同样
-一个 I<$count> 变量的值.然而, 如果我们调用两次 I<create_fin
-d_callback_that_counts(> ), 我们会得到两个不同的 I<$count> 变
-量的值：
-
+下面这个例子从 C<1> 开始为整个 I<bin> 目录下的文件计数, 接着前面的数
+值, 继续为 I<lib> 目录下所有的文件计数。在两个程序用同样一个
+I<$count> 变量的值。然而, 如果我们调用两次 
+I<create_find_callback_that_counts()>, 我们会得到两个不同的
+I<$count> 变量的值：
 
  use File::Find;
-
 
  sub create_find_callback_that_counts {
   my $count = 0;
   return sub { print ++$count, ": $File::Find::name\n" };
  }
 
-
- my $callback1 = create_find_callback_that_counts(  );
- my $callback2 = create_find_callback_that_counts(  );
+ my $callback1 = create_find_callback_that_counts();
+ my $callback2 = create_find_callback_that_counts();
  print "my bin:\n";
  find($callback1, 'bin');
  print "my lib:\n";
  find($callback2, 'lib');
 
-上面的例子中, 我们有两个分开的 I<$count> 变量, 各自被他们
-自己的回调子程序访问。
+上面的例子中, 我们有两个分开的 I<$count> 变量, 各自被他们自己的
+回调子程序访问。
 
-那我们怎么得到所有找到的文件的总的文件大小呢？在前一章的例
-子中, 我们的作法是让 I<$total_size> 变量在范围内可见.如果我
-们把 I<$total_size> 的定义放在返回回调引用的子程序里的话, 我
-们将无法访问这个变量.但是我们可以耍个小花招.即我们可以决定,
-只要收到任何参数, 我们就不调用回调子程序, 这样的话, 如果子程
-序收到一个参数, 我们就让它返回总字节数：
-
+那我们怎么得到所有找到的文件的总的文件大小呢？在前一章的例子中,
+我们的作法是让 I<$total_size> 变量在范围内可见。如果我们把 I<$total_size>
+的定义放在返回回调引用的子程序里的话, 我们将无法访问这个
+变量。但是我们可以耍个小花招。即我们可以决定, 只要收到任何参数, 我
+们就不调用回调子程序, 这样的话, 如果子程序收到一个参数, 我们就让它
+返回总字节数：
 
  use File::Find;
-
 
  sub create_find_callback_that_sums_the_size {
   my $total_size = 0;
@@ -625,122 +546,112 @@ d_callback_that_counts(> ), 我们会得到两个不同的 I<$count> 变
   };
  }
 
-
- my $callback = create_find_callback_that_sums_the_size(  );
+ my $callback = create_find_callback_that_sums_the_size();
  find($callback, 'bin');
- my $total_size = $callback->('dummy'); # dummy parameter to get size
+ # dummy parameter to get size
+ my $total_size = $callback->('dummy');
  print "total size of bin is $total_size\n";
 
-当然, 用区分参数存在或者不存在的来决定程序行为不是一个通用
-的解决方案.还好, 我们可以在 I<create_find_callback_that_cou
-nts(> )中创建多个子程序。
-
+当然, 用区分参数存在或者不存在的来决定程序行为不是一个通用的解
+决方案。还好, 我们可以在 I<create_find_callback_that_counts()>中创
+建多个子程序。
 
  use File::Find;
-
 
  sub create_find_callbacks_that_sum_the_size {
    my $total_size = 0;
-   return(sub { $total_size += -s if -f }, sub { return $total_size });
+   return(sub { $total_size += -s if -f }, 
+          sub { return $total_size });
  }
 
-
- my ($count_em, $get_results) = create_find_callbacks_that_sum_the_size(  );
+ my ($count_em, $get_results) = 
+     create_find_callbacks_that_sum_the_size();
  find($count_em, 'bin');
- my $total_size = &$get_results(  );
+ my $total_size = &$get_results();
  print "total size of bin is $total_size\n";
 
-因为创建的两个匿名子程序在同一个范围内, 所以他们都访问相同
-的 I<$total_size> 变量.尽管在我们调用任一个匿名子程序之前,
-这个变量已经跑出范围, 但他们仍能共享这个变量并且可以用这个变
-量交换计算结果。
+因为创建的两个匿名子程序在同一个范围内, 所以他们都访问相同的 I
+<$total_size> 变量。尽管在我们调用任一个匿名子程序之前, 这个变量已
+经跑出范围, 但他们仍能共享这个变量并且可以用这个变量交换计算结果。
 
-在返回这两个匿名子程序引用时, 并不执行他们.这时仅仅返回程
-序引用而已.真正调用是在他们作为回调程序被执行或还原后被执行时
-。
+在返回这两个匿名子程序引用时, 并不执行他们。这时仅仅返回程序引用
+而已。真正调用是在他们作为回调程序被执行或还原后被执行时。
 
 那我们多执行几遍这个新的子程序会怎么样？
 
-
  use File::Find;
-
 
  sub create_find_callbacks_that_sum_the_size {
   my $total_size = 0;
-  return(sub { $total_size += -s if -f }, sub { return $total_size });
+  return(sub { $total_size += -s if -f }, 
+               sub { return $total_size });
  }
-
 
  ## set up the subroutines
  my %subs;
  foreach my $dir (qw(bin lib man)) {
-  my ($callback, $getter) = create_find_callbacks_that_sum_the_size(  );
+  my ($callback, $getter) = 
+      create_find_callbacks_that_sum_the_size();
   $subs{$dir}{CALLBACK}   = $callback;
   $subs{$dir}{GETTER}     = $getter;
  }
-
 
  ## gather the data
  for (keys %subs) {
   find($subs{$_}{CALLBACK}, $_);
  }
 
-
  ## show the data
  for (sort keys %subs) {
-  my $sum = $subs{$_}{GETTER}->(  );
+  my $sum = $subs{$_}{GETTER}->();
   print "$_ has $sum bytes\n";
  }
 
-在创建子程序的程序片断中, 我们创建了回调／求总对的三个实例
-.每一个回调程序都有相应的求总程序.接下来, 在取得文件字节总数
-的程序片断中, 我们三次用相应的回调匿名子程序的引用调用 I<fi
-nd> 程序, 这更新了与这三个回调匿名子程序关联的三个独立的 I<$
-total_size> 变量.最后, 在展示结果的程序片断中, 我们调用返回字
-节求总的那个匿名子程序来取得结果。
+在创建子程序的程序片断中, 我们创建了回调／求总对的三个实例。每一
+个回调程序都有相应的求总程序。接下来, 在取得文件字节总数的程序片断
+中, 我们三次用相应的回调匿名子程序的引用调用 I<find> 程序, 这更新
+了与这三个回调匿名子程序关联的三个独立的 I<$total_size> 变量。最后
+, 在展示结果的程序片断中, 我们调用返回字节求总的那个匿名子程序来
+取得结果。
 
-六个匿名子程序（他们共享了三个 I<$total_size> 变量）是引用
-计数的.当我们修改 I<%subs> 或者它跑出范围时, 引用计数减少,
-重用他们包含的数据.（如果这些数据同样引用其它数据, 那么那些数
-据的引用计数也相应减少.）
+六个匿名子程序（他们共享了三个 I<$total_size> 变量）是引用计数
+的.当我们修改 I<%subs> 或者它跑出范围时, 引用计数减少, 重用他们包
+含的数据。（如果这些数据同样引用其它数据, 那么那些数据的引用计数也
+相应减少。）
 
 =head2 7. 6. 作为输入参数的闭包变量
 
-上一章的例子展示了闭包中变量如何被修改的, 而闭包变量还可以
-被用来初始化变量或给匿名子程序提供参数输入（类似静态局部变量
-）.比如, 我们来写一个子程序来创建 I<File::Find> 回调, 打印出
-所有超过一定大小的文件名：
-
+上一章的例子展示了闭包中变量如何被修改的, 而闭包变量还可以被用
+来初始化变量或给匿名子程序提供参数输入（类似静态局部变量）。比如,
+我们来写一个子程序来创建 I<File::Find> 回调, 打印出所有超过一定大
+小的文件名：
 
  use File::Find;
 
-
  sub print_bigger_than {
    my $minimum_size = shift;
-   return sub { print "$File::Find::name\n" if -f and -s >= $minimum_size };
+   return sub { print "$File::Find::name\n"
+          if -f and -s >= $minimum_size };
  }
-
 
  my $bigger_than_1024 = print_bigger_than(1024);
  find($bigger_than_1024, 'bin');
 
-我们把 I<1024> 作为参数传给子程序 I<print_bigger_than> ,
-这个子程序将其传给词法变量 I<$minimum_size.> 因为我们在匿名子
-程序中引用这个变量, 然后再返回匿名子程序的引用, 所以这成为一
-个闭包变量, 只要匿名子程序引用它, 它的值就一直保持着.同样,
-多次调用这个程序会为 I<$minimum_size> 锁定不同的值, 每个都和
-他们各自的匿名子程序引用绑定。
+我们把 I<1024> 作为参数传给子程序 I<print_bigger_than> , 这个子
+程序将其传给词法变量 I<$minimum_size。> 因为我们在匿名子程序中引用
+这个变量, 然后再返回匿名子程序的引用, 所以这成为一个闭包变量, 只
+要匿名子程序引用它, 它的值就一直保持着。同样, 多次调用这个程序会为
+I<$minimum_size> 锁定不同的值, 每个都和他们各自的匿名子程序引用绑定。
 
-闭包是仅对词法变量跑出程序范围时"关闭 I<".> 因为一个包变量
-（因为是全局）总是在范围之内, 一个闭包不可能"关闭"一个包变量
-.对于所有的子程序来说, 他们都引用全局变量的同一个实例。
+闭包是仅对词法变量跑出程序范围时 C<关闭>。因为一个包变量（因
+为是全局）总是在范围之内, 一个闭包不可能 C<关闭> 一个包变量。
+对于所有的子程序来说, 他们都引用全局变量的同一个实例。
 
 =head2 7. 7. 闭包变量用作静态局部变量
 
-要做成一个闭包, 并不一定非要搞成匿名子程序.如果一个命名子
-程序访问那些跑出范围的词法变量, 其作用就如同你用匿名子程序一
-样.比如, 考虑一下两个为 I<Gilligan> 计算椰子的子程序
-
+要做成一个闭包, 并不一定非要搞成匿名子程序。如果一个命名子程序访
+问那些跑出范围的词法变量, 其作用就如同你用匿名子程序一样。比如, 考
+虑一下两个为 I<Gilligan> 计算椰子的子程序
 
  {
   my $count;
@@ -748,30 +659,27 @@ total_size> 变量.最后, 在展示结果的程序片断中, 我们调用返回
   sub count_so_far { return $count }
  }
 
-如果我们把这短代码放到程序开始, 我们在一个裸块里声明了了变
-量 I<$count> , 然后两个子程序引用这个变量, 于是就成了闭包.然
-而, 因为它们都有名字, 并且会保留名字直到块结束（就像所有的命
-名子程序一样.） 因为子程序访问声明在范围外的变量, 它们成为闭
-包并且因此可以在程序的生命周期内继续访问 I<$count.>
+如果我们把这短代码放到程序开始, 我们在一个裸块里声明了了变量 
+I<$count> , 然后两个子程序引用这个变量, 于是就成了闭包。然而, 因为它
+们都有名字, 并且会保留名字直到块结束（就像所有的命名子程序一样。）
+因为子程序访问声明在范围外的变量, 它们成为闭包并且因此可以在程序
+的生命周期内继续访问 I<$count。>
 
 所以, 经过几次调用, 我们可以看到计数增长：
 
+ count_one();
+ count_one();
+ count_one();
+ print 'we have seen ', count_so_far(), " coconuts!\n";
 
- count_one(  );
- count_one(  );
- count_one(  );
- print 'we have seen ', count_so_far(  ), " coconuts!\n";
+在几次调用 I<count_one()> 或 I<count_so_far()> , I<$count> 会保
+留其原来的值, 但程序里其它部份的代码是不能访问 I<$count> 的。
 
-在几次调用 I<count_one()> 或 I<count_so_far()> , I<$count
-> 会保留其原来的值, 但程序里其它部份的代码是不能访问 I<$coun
-t> 的。
-
-在C语言里, 这被称作静态本地变量： 一个变量仅仅在程序子程序
-的一小块代码中可见, 但会在程序的生命周期内保留其值, 甚至在那
-些子程序的数次调用中也保留值。
+在C语言里, 这被称作静态本地变量： 一个变量仅仅在程序子程序的一
+小块代码中可见, 但会在程序的生命周期内保留其值, 甚至在那些子程序的
+数次调用中也保留值。
 
 那递减会如何呢？大概应该如此：
-
 
  {
   my $countdown = 10;
@@ -779,28 +687,25 @@ t> 的。
   sub count_remaining { $countdown }
  }
 
+ count_down();
+ count_down();
+ count_down();
+ print 'we're down to ', count_remaining(), " coconuts!\n";
 
- count_down(  );
- count_down(  );
- count_down(  );
- print 'we're down to ', count_remaining(  ), " coconuts!\n";
+就是说, 只要我们把块放在程序开始, 放在任何 I<count_donw()> 或
+I<count_remaining()> 之前就可以。为什么呢？
 
-就是说, 只要我们把块放在程序开始, 放在任何 I<count_donw()
-> 或 I<count_remaining()> 之前就可以.为什么呢？
-
-如果把裸块放在那些调用之后的话就不会工作, 因为有两个功能部
-分牵涉到下面这行：
-
+如果把裸块放在那些调用之后的话就不会工作, 因为有两个功能部分牵
+涉到下面这行：
 
  my $countdown = 10;
 
-一个功能部份是 I<$countdown> 的声明是作为一个词法变量.这部
-份是在程序被编译阶段被解释并处理的.第二个功能部分是把 I<10>
-赋值给一块分配的内存.这部份是 I<Perl> 执行代码时处理的.除非
-I<Perl> 在运行阶段执行这些代码, 否则变量的初始是未定义值。
+一个功能部份是 I<$countdown> 的声明是作为一个词法变量。这部份是
+在程序被编译阶段被解释并处理的。第二个功能部分是把 I<10> 赋值给一块
+分配的内存。这部份是 I<Perl> 执行代码时处理的。除非 I<Perl> 在运行
+阶段执行这些代码, 否则变量的初始是未定义值。
 
 一种解决方法是把代码放进 I<BEGIN> 块：
-
 
  BEGIN {
   my $countdown = 10;
@@ -808,10 +713,10 @@ I<Perl> 在运行阶段执行这些代码, 否则变量的初始是未定义值�
   sub count_remaining { $countdown }
  }
 
-I<BEGIN> 块会告诉 I<Perl> 编译器只要这个块被成功解释了（在
-编译阶段）, 就马上去运行这个块.假定这个块不会导致致命错误,
-编译器就继续下面的块.块自身也会被丢弃, 保证其中的代码在程序中
-被精确地只执行一次, 甚至代码在语法上在一个循环或子程序中。
+I<BEGIN> 块会告诉 I<Perl> 编译器只要这个块被成功解释了（在编译
+阶段）, 就马上去运行这个块。假定这个块不会导致致命错误, 编译器就继
+续下面的块。块自身也会被丢弃, 保证其中的代码在程序中被精确地只执行
+一次, 甚至代码在语法上在一个循环或子程序中。
 
 =head2 7. 8. 练习
 
@@ -819,37 +724,33 @@ I<BEGIN> 块会告诉 I<Perl> 编译器只要这个块被成功解释了（在
 
 =head2 7. 8. 1. 练习 I<[50> 分钟]
 
-周一中午, 教授修改了一些文件, 不过现在他忘了改了哪些文件。
-这种事情老是发生.他要你写个程序, 叫 I<"gather_mtime_betwee
-n".> 这个程序接受开始和结束时间作为参数, 返回一对代码引用。
-第一个会被 I<File::Find> 模块用来收集那些修改时间在两个时间点
-之间的文件名;第二个将返回所有文件列表。
+周一中午, 教授修改了一些文件, 不过现在他忘了改了哪些文件这种
+事情老是发生。他要你写个程序, 叫 I<gather_mtime_between>。 这个程
+序接受开始和结束时间作为参数, 返回一对代码引用第一个会被
+I<File::Find> 模块用来收集那些修改时间在两个时间点之间的文件名;
+第二个将返回所有文件列表。
 
-这里有一些代码; 它应该列出那些在最近的周一之后修改过的文件
-, 当然, 你可以容易的修改它来适应不同的日期。 (你不必写出所有
-的代码。 这个程序应该可以在 I<O'Reilly> 网站下载, 名字叫 I<
-ex6-1.plx> )
+这里有一些代码; 它应该列出那些在最近的周一之后修改过的文件, 当
+然, 你可以容易的修改它来适应不同的日期(你不必写出所有的代码。
+这个程序应该可以在 I<O'Reilly> 网站下载, 名字叫 I<ex6-1.plx> )
 
 暗示：你可以用如下代码找到一个文件的时间戳：
 
-
  my $timestamp = (stat $file_name)[9];
 
-因为是片断, 记住上面这段代码中那些小括号是必须要加的.别忘
-记回调里的工作目录不一定是 I<find> 程序调用的起始目录。
-
+因为是片断, 记住上面这段代码中那些小括号是必须要加的。别忘记回调
+里的工作目录不一定是 I<find> 程序调用的起始目录。
 
  use File::Find;
  use Time::Local;
 
-
- my $target_dow = 1;        # Sunday is 0, Monday is 1,. . .
+ my $target_dow = 1;        # Sunday is 0, Monday is 1,...
  my @starting_directories = (". ");
-
 
  my $seconds_per_day = 24 * 60 * 60;
  my($sec, $min, $hour, $day, $mon, $yr, $dow) = localtime;
- my $start = timelocal(0, 0, 0, $day, $mon, $yr);        # midnight today
+ # midnight today
+ my $start = timelocal(0, 0, 0, $day, $mon, $yr);
  while ($dow != $target_dow) {
    # Back up one day
    $start -= $seconds_per_day;        # hope no DST! :-)
@@ -859,11 +760,9 @@ ex6-1.plx> )
  }
  my $stop = $start + $seconds_per_day;
 
-
  my($gather, $yield)  = gather_mtime_between($start, $stop);
  find($gather, @starting_directories);
- my @files = $yield->(  );
-
+ my @files = $yield->();
 
  for my $file (@files) {
    my $mtime = (stat $file)[9];        # mtime via slice
@@ -871,7 +770,6 @@ ex6-1.plx> )
    print "$when: $file\n";
  }
 
-注意关于 I<DST> 的注释.在世界上的其它部份, 在夏时制的白天
-可能有出入, 并不一定是 I<86> , I<400> 秒.这个程序忽略了这个问
-题, 但是一些更"顶真"的程序员可能会把这种情况适当考虑进去。
-
+注意关于 I<DST> 的注释。在世界上的其它部份, 在夏时制的白天可能有
+出入, 并不一定是 I<86>, I<400> 秒。这个程序忽略了这个问题, 但是一
+些更 C<顶真> 的程序员可能会把这种情况适当考虑进去。

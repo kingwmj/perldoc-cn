@@ -1,0 +1,488 @@
+=head1 Global Variables
+
+Z<globals>
+
+X<super globals>
+X<variables; super global>
+
+Perl 5 provides several I<super global variables> that are truly global, not
+restricted to any specific package.  These super globals have two drawbacks.
+First, they're global; any direct or indirect modifications may have effects on
+other parts of the program.  Second, they're terse.  Experienced Perl 5
+programmers have memorized some of them.  Few people have memorized all of
+them.  Only a handful are ever useful.  C<perldoc perlvar> contains the
+exhaustive list of such variables.
+
+=head2 Managing Super Globals
+
+X<super globals; managing>
+X<builtins; C<local>>
+
+The best approach to managing the global behavior of these super globals is to
+avoid using them.  When you must use them, use C<local> in the smallest
+possible scope to constrain any modifications.  You are still susceptible to
+any changes code you I<call> makes to those globals, but you reduce the
+likelihood of surprising code I<outside> of your scope.
+
+Workarounds exist for some of this global behavior, but many of these variables
+have existed since Perl 1 and will continue as part of Perl 5 throughout its
+lifetime.  As the easy file slurping idiom (L<easy_file_slurping>)
+demonstrates, this is often possible:
+
+=begin programlisting
+
+    my $file = do { B<local $/> = <$fh> };
+
+=end programlisting
+
+The effect of C<local>izing C<$/> lasts only through the end of the block.
+There is a low chance that any Perl code will run as a result of reading lines
+from the filehandleN<A tied filehandle is one of the few possibilities.> and
+change the value of C<$/> within the C<do> block.
+
+Not all cases of using super globals are this easy to guard, but this often
+works.
+
+X<C<eval>>
+X<exceptions; catching>
+
+Other times you need to I<read> the value of a super global and hope that no
+other code has modified it.  Catching exceptions with an C<eval> block can be
+susceptible to race conditionsN<< Use C<Try::Tiny> instead! >>, in that
+C<DESTROY()> methods invoked on lexicals that have gone out of scope may reset
+C<$@>:
+
+=begin programlisting
+
+    local $@;
+
+    eval { ... };
+
+    if (B<my $exception = $@>) { ... }
+
+=end programlisting
+
+Copy C<$@> I<immediately> to preserve its contents.
+
+=head2 English Names
+
+X<C<English>>
+
+The core C<English> module provides verbose names for the punctuation-heavy
+super globals.  Import them into a namespace with:
+
+=begin programlisting
+
+    use English '-no_match_vars';
+
+=end programlisting
+
+Subsequently you can use the verbose names documented in C<perldoc perlvar>
+within the scope of this namespace.
+
+X<C<$&>>
+X<global variables; C<$&>>
+X<C<$`>>
+X<global variables; C<$`>>
+X<C<$'>>
+X<global variables; C<$'>>
+
+Three regex-related super globals (C<$&>, C<$`>, and C<$'>) impose a global
+performance penalty for I<all> regular expressions within a program.  If you
+neglect to provide that import flag, your program will suffer the penalty even
+if you don't explicitly read from those variables.  This is not the default
+behavior for backwards-compatibility concerns.
+
+Modern Perl programs should use the C<@-> variable as a replacement for the
+terrible three.
+
+=head2 Useful Super Globals
+
+X<super globals; useful>
+
+Most modern Perl 5 programs can get by with using only a couple of the super
+globals.  Several exist for special circumstances you're unlikely to encounter.
+While C<perldoc perlvar> is the canonical documentation for most of these
+variables, some deserve special mention.
+
+X<C<$/>>
+X<global variables; C<$/>>
+X<C<$INPUT_RECORD_SEPARATOR>>
+X<global variables; C<$INPUT_RECORD_SEPARATOR>>
+X<C<readline>>
+
+=over 4
+
+=item * C<$/> (or C<$INPUT_RECORD_SEPARATOR> from the C<English> pragma) is a
+string of zero or more characters which denotes the end of a record when
+reading input a line at a timeN<Yes, C<readline()> should more accurately be
+C<readrecord()>, but the name has stuck by now.>.  By default, this is your
+platform-specific newline character sequence.  If you undefine this value, Perl
+will attempt to read the entire file into memory.  If you set this value to a
+I<reference> to an integer, Perl will try to read that many I<bytes> per record
+(so beware of Unicode concerns).
+
+X<C<$.>>
+X<global variables; C<$.>>
+X<C<$INPUT_LINE_NUMBER>>
+X<global variables; C<$INPUT_LINE_NUMBER>>
+
+=item * C<$.> (C<$INPUT_LINE_NUMBER>) contains the number of current record
+read from the most recently-accessed filehandle.  You can read from this
+variable, but writing to it has no effect.  Localizing this variable will
+localize the filehandle to which it refers.
+
+X<C<$|>>
+X<global variables; C<$|>>
+X<C<$OUTPUT_AUTOFLUSH>>
+X<global variables; C<$OUTPUT_AUTOFLUSH>>
+
+=item * C<$|> (C<$OUTPUT_AUTOFLUSH>) is the boolean value of this variable
+governs whether Perl will flush everything written to the currently selected
+filehandle immediately or only when Perl's buffer is full.  Unbuffered output
+is useful when writing to a pipe or socket or terminal which should not block
+waiting for input.
+
+X<C<@ARGV>>
+X<global variables; C<@ARGV>>
+
+=item * C<@ARGV> contains the command-line arguments passed to the program.
+
+X<C<$!>>
+X<global variables; C<$!>>
+X<C<$ERRNO>>
+X<global variables; C<$ERRNO>>
+
+=item * C<$!> (C<$ERRNO>) is a dualvar (L<dualvars>) which contains the result
+of the I<most recent> system call.  In numeric context, this corresponds to C's
+C<errno> value, where anything other than zero indicates some kind of error.
+In string context, returns the appropriate system error string.  Localize this
+variable before making a system call (implicitly or explicitly) to avoid
+overwriting the appropriate value for other code elsewhere.  Many places within
+Perl 5 itself make system calls without your knowledge.  The value of this
+variable can change out from under you, so copy it I<immediately> after making
+such a call yourself.
+
+X<C<$">>
+X<global variables; C<$">>
+X<C<$LIST_SEPARATOR>>
+X<global variables; C<$LIST_SEPARATOR>>
+
+=item * C<$"> (C<$LIST_SEPARATOR>) is a string used to separate array and list
+elements interpolated into a string.
+
+X<C<%+>>
+X<global variables; C<%+>>
+
+=item * C<%+> contains named captures from successful regular expression
+matches (L<named_captures>).
+
+X<C<$@>>
+X<global variables; C<$@>>
+X<C<$EVAL_ERROR>>
+X<global variables; C<$EVAL_ERROR>>
+
+=item * C<$@> (C<$EVAL_ERROR>) contains the value thrown from the most recent
+exception (L<catching_exceptions>).
+
+X<C<$0>>
+X<global variables; C<$0>>
+X<C<$PROGRAM_NAME>>
+X<global variables; C<$PROGRAM_NAME>>
+
+=item * C<$0> (C<$PROGRAM_NAME>) contains the name of the program currently
+executing.  You may modify this value on some Unix-like platforms to change the
+name of the program as it appears to other programs on the system, such as
+C<ps> or C<top>.
+
+X<C<$$>>
+X<global variables; C<$$>>
+X<C<$PID>>
+X<global variables; C<$PID>>
+
+=item * C<$$> (C<$PID>) contains the process id of the currently running
+instance of the program, as the operating system understands it.  This will
+vary between C<fork()>ed programs and may vary between threads in the same
+program.
+
+X<C<@INC>>
+X<global variables; C<@INC>>
+
+=item * C<@INC> holds a list of filesystem paths in which Perl will look for
+files to load with C<use> or C<require>.  See C<perldoc -f require> for other
+items this array can contain.
+
+X<C<%SIG>>
+X<global variables; C<%SIG>>
+
+=item * C<%SIG> maps OS and low-level Perl signals to function references
+used to handle those signals.  Trap the standard Ctrl-C interrupt by catching
+the C<INT> signal, for example.  See C<perldoc perlipc> for more information
+about signals and especially safe signals.
+
+=back
+
+=head2 Alternatives to Super Globals
+
+X<super globals; alternatives>
+X<C<Try::Tiny>>
+
+The worst culprits for action at a distance relate to IO and exceptional
+conditions.  Using C<Try::Tiny> (L<exception_caveats>) will help insulate you
+from the tricky semantics of proper exception handling.  C<local>izing and
+copying the value of C<$!> can help you avoid strange behaviors when Perl makes
+implicit system calls.
+
+X<C<IO::Handle>>
+
+C<IO::Handle> allows you to call methods on filehandles
+(L<lexical_filehandles>) to replace the manipulation of IO-related super
+globals.  Call the C<autoflush()> method on a lexical filehandle instead of
+C<select>ing the filehandle, then manipulating C<$|>.  Use the
+C<input_line_number()> method to get the equivalent of C<$.> for that specific
+filehandle.  See the C<IO::Handle> documentation for other appropriate methods.
+=encoding utf8
+
+=head1 全局变量
+
+Z<globals>
+
+X<super globals>
+X<variables; super global>
+
+Perl 5 提供了若干 I<超级全局变量>，它们是真正的全局变量，而不仅仅局限于任何特定的
+包。这些超级全局变量有两个缺点。第一，它们是全局变量；任何直接或间接的修改就能影响
+到程序的其余部分。第二，它们太过精炼。经验丰富的 Perl 5 程序员早就记住了它们中的一
+部分。很少有人能够记全这些变量。而且，它们中也只有几个是常用的。C<perldoc perlvar>
+包含这类变量的详尽列表。
+
+=head2 管理超级全局变量
+
+X<super globals; managing>
+X<local>
+
+要管理这些超级全局变量的全局行为，最佳途径就是避免使用它们。当你必须用到它们时，
+请在尽可能小的作用域内使用 C<local> 来约制改动。所 I<调用> 的代码对这些全局变量
+做出的修改仍然会影响到你，但你已经降低了在你能力范围 I<之外> 出现令人惊奇的代码
+的可能。
+
+=begin sidebar
+
+对于这些全局变量的行为目前有一些变通的方法，但是很多变量从 Perl 1 开始就存在了，
+并将作为 Perl 5 的一部分直至其生命周期的结束。就像文件吸入惯用语（L<easy_file_slurping>）
+所展示的那样，通常会这样写：
+
+=begin programlisting
+
+    my $file = do { B<local $/> = <$fh> };
+
+=end programlisting
+
+用 C<local> 本地化 C<$/> 的效果仅持续到代码块的末尾。以从文件句柄中读取所有行N<一个
+tie 文件句柄就是屈指可数的可能情况中的一种。>为目的并在 C<do> 代码块内改变 C<$/> 的
+值的 Perl 代码出现的机会不多。
+
+并非所有对超级全局变量的使用管理起来都那么容易，但是这个方法通常很有效。
+
+X<eval>
+X<exceptions; catching>
+
+其他时候你需要 I<读取> 超级全局变量的值并期望没有代码会修改它。用 C<eval> 代码块捕获
+异常的方式容易受竞争条件的感染N<< 用 C<Try::Tiny> 代替！ >>，在这种情况下，因词法变量
+超出作用域而调用其上的 C<DESTROY()> 方法可能会重置 C<$@>：
+
+=begin programlisting
+
+    local $@;
+
+    eval { ... };
+
+    if (B<my $exception = $@>) { ... }
+
+=end programlisting
+
+I<立刻> 复制 C<$@> 可以预留它的内容。
+
+=end sidebar
+
+=head2 英语名称
+
+X<english>
+
+C<English> 核心模块为过度使用标点的超级全局变量提供了详细的名称。用如下方式将其
+导入名称空间：
+
+=begin programlisting
+
+    use English '-no_match_vars';
+
+=end programlisting
+
+随后你就可以在该名称空间作用域内使用记录在 C<perldoc perlvar> 中的详细名称。
+
+=begin sidebar
+
+X<$&>
+X<globals; $&>
+X<$`>
+X<globals; $`>
+X<$'>
+X<globals; $'>
+
+三个正则表达式相关的超级全局变量（C<$&>、C<$`> 和 C<$'>）一同降低了程序内 I<所有> 
+正则表达式的性能。如果你因疏忽而没有提供导入参数，则你的程序性能仍会下降即便你没有
+显式地从这些变量中读取。出于向后兼容考虑，这并非默认行为。
+
+现代化的 Perl 程序应使用 C<@-> 代替前三个可怕的变量。
+
+=end sidebar
+
+=head2 常用超级全局变量
+
+X<super globals; useful>
+
+大部分现代化的 Perl 5 程序只用到一部分超级全局变量。有部分全局变量只是为一些
+你不太可能碰到的特殊情况而存在的。虽说 C<perldoc perlvar> 是这些变量正规文档，
+有部分变量还是值得在此提一下。
+
+=begin table 超级全局变量
+
+=headrow
+
+=row
+
+=cell 全局变量
+
+=cell 英语名称
+
+=cell 说明
+
+=bodyrows
+
+=row
+
+=cell C<$/>
+
+=cell C<$INPUT_RECORD_SEPARATOR>
+
+=cell 一个由零或多个字符组成的字符串，用于按行读取时标记记录的结尾。默认地，这是
+对应平台相关的换行符序列。如果此值未定义，Perl 将试图将整个文件读入内存。如果将其
+值设置为某整数的 I<引用>，Perl 将尝试对每一条记录读取该整数指出 I<字节> 数（因此
+请注意 Unicode）。
+
+=row
+
+=cell C<$.>
+
+=cell C<$INPUT_LINE_NUMBER>
+
+=cell 从最近访问的文件句柄中读取当前行（更精确地说，I<记录>）的行号。你可以从此变
+量中读，向其写入内容则没有任何效果。局部化此变量也将局部化和此变量关联的文件句柄。
+
+=row
+
+=cell C<$|>
+
+=cell C<$OUTPUT_AUTOFLUSH>
+
+=cell 此变量的布尔值管辖着 Perl 是否应该在向当前选中的文件句柄写入后立即冲洗缓冲区
+或仅在 Perl 的缓冲区填满时才这样做。非缓冲输出在写管道、套接字或终端时很有用，这些
+都不应等待程序写入。
+
+=row
+
+=cell C<@ARGV>
+
+=cell (none)
+
+=cell 传递给程序的命令行参数。
+
+=row
+
+=cell C<$!>
+
+=cell C<$ERRNO>
+
+=cell 一个包含 I<最近一次> 系统调用结果的双重变量（L<dualvars>）。在数值上下文中，
+它对应于 C 的 C<errno> 值，非零值表明有错误发生。在字符串上下文中，返回合适的系统
+错误字符。在进行系统调用之前本地化该变量（显式或隐式地）以避免其余代码覆写它的值。
+Perl 5 的很多地方都在你不知情的情况下执行系统调用。该变量的值也会在你眼皮底下改变，
+因此你应该在系统调用之后 I<立即> 复制它的值。
+
+=row
+
+=cell C<$">
+
+=cell C<$LIST_SEPARATOR>
+
+=cell 此字符串用于在数组和列表内插为字符串时分隔其中元素。
+
+=row
+
+=cell C<%+>
+
+=cell (none)
+
+=cell 此变量包含来自成功的正则表达式匹配的具名捕获（L<named_captures>）。
+
+=row
+
+=cell C<$@>
+
+=cell C<$EVAL_ERROR>
+
+=cell 此值有最近一次异常（L<catching_exceptions>）抛出。
+
+=row
+
+=cell C<$0>
+
+=cell C<$PROGRAM_NAME>
+
+=cell 当前执行的程序的名称。在一些类 Unix 系统上，你可以通过修改此值来改变程序
+显示给系统上其他程序的名称，诸如 C<ps> 或是 C<top>。
+
+=row
+
+=cell C<$$>
+
+=cell C<$PID>
+
+=cell 当前运行程序实例的进程号，按操作系统的理解。它会在随 C<fork()> 程序而不同
+在同一程序的不同线程内可能也不同。
+
+=row
+
+=cell C<@INC>
+
+=cell (none)
+
+=cell 一个文件系统路径列表，在使用 C<use> 或 C<require> 时，Perl 将从中查找要加载
+的文件。参见 C<perldoc -f require> 以了解此数值中的其它内容。
+
+=row
+
+=cell C<%SIG>
+
+=cell (none)
+
+=cell 此哈希将 OS 和底层 Perl 信号映射为用于处理对应信号的函数引用。例如，可以通过
+捕获 C<INT> 信号捕获标准的 Ctrl-C 中断。参见 C<perldoc perlipc> 以了解有关信号特别
+是安全信号的信息。
+
+=row
+
+=end table
+
+=head2 超级全局变量的替代
+
+X<super globals; alternatives>
+
+超距作用（Action at a distance）的罪魁祸首与IO和异常条件有关。使用 C<Try::Tiny>
+（L<exception_caveats>）有助于把你和正确异常处理所含狡猾的语义隔开。用 C<local> 
+局部化并复制 C<$!> 的值可以帮助你避免因 Perl 执行隐式系统调用时的古怪行为。
+
+你可以通过 C<use> 引入 C<IO::Handle> 来执行词法文件句柄（L<lexical_filehandles>）上
+的方法而非 IO 相关的超级全局变量。就地 C<select> 一个文件句柄，接着修改 C<$|>，即是
+直接调用词法文件句柄上的 C<autoflush()> 方法。调用特定文件句柄上的 C<input_line_number()>
+方法可以得到和 C<$.> 等价的结果。有关其他适用方法的信息请参见 C<IO::Handle> 文档。

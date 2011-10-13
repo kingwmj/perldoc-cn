@@ -1,0 +1,1489 @@
+=head1 Values
+
+Z<values>
+
+X<variables>
+X<values>
+
+The structure of a program depends heavily on the means by which you model your
+data with appropriate variables.
+
+Where variables allow the abstract manipulation of data, the values they hold
+make programs concrete and useful. The more accurate your values, the better
+your programs.  These values are data--your aunt's name and address, the
+distance between your office and a golf course on the moon, or the weight of
+all cookies you've eaten in the past year. Within your program, the rules
+regarding the format of that data are often strict. Effective programs need
+effective (simple, fast, most compact, most efficnet) ways of representing
+their data.
+
+=head2 Strings
+
+X<strings>
+
+A I<string> is a piece of textual or binary data with no particular formatting
+or contents. It could be your name, the contents of an image file, or your
+program itself. A string has meaning in the program only when you give it
+meaning.
+
+X<strings; delimiters>
+
+To represent a literal string in your program, surround it with a pair of
+quoting characters. The most common I<string delimiters> are single and double
+quotes:
+
+=begin programlisting
+
+    my $name    = B<'Donner Odinson, Bringer of Despair'>;
+    my $address = B<"Room 539, Bilskirnir, Valhalla">;
+
+=end programlisting
+
+X<strings; single-quoted>
+
+=begin sidebar
+
+Perl strings have variable lengths. As you manipulate and modify strings, Perl
+will change their sizes as appropriate.
+
+=end sidebar
+
+Characters in a I<single-quoted string> represent themselves literally, with
+two exceptions. Embed a single quote inside a single-quoted string by escaping
+the quote with a leading backlash:
+
+=begin programlisting
+
+    my $reminder = 'DonB<\'>t forget to escape the single quote!';
+
+=end programlisting
+
+You must also escape any backslash at the end of the string to avoid escaping
+the closing delimiter and producing a syntax error:
+
+=begin programlisting
+
+    my $exception = 'This string ends with a backslash, not a quote: B<\\>';
+
+=end programlisting
+
+=begin sidebar
+
+Any other backslash will be part of the string as it appears, unless two
+backslashes are adjacent, in which case the first will escape the second:
+
+=begin programlisting
+
+    is('Modern B<\> Perl', 'Modern B<\\> Perl',
+        'single quotes backslash escaping');
+
+=end programlisting
+
+=end sidebar
+
+X<strings; double-quoted>
+
+A I<double-quoted string> has several more special characters available. For
+example, you may encode otherwise invisible whitespace characters in the
+string:
+
+=begin programlisting
+
+    my $tab       = "B<\t>";
+    my $newline   = "B<\n>";
+    my $carriage  = "B<\r>";
+    my $formfeed  = "B<\f>";
+    my $backspace = "B<\b>";
+
+=end programlisting
+
+This demonstrates a useful principle: the syntax used to declare a string may
+vary. You can represent a tab within a string with the C<\t> escape or by
+typing a tab directly. Within Perl's purview, both strings behave the same way,
+even though the specific representation of the string may differ in the source
+code.
+
+A string declaration may cross logical newlines; these two declarations are
+equivalent:
+
+=begin programlisting
+
+    my $escaped = "two\nlines";
+    my $literal = "two
+    lines";
+    is $escaped, $literal, '\n and newline are equivalent';
+
+=end programlisting
+
+These sequences are often easier to read than their whitespace equivalents.
+
+X<interpolation>
+X<strings; interpolation>
+
+You may also I<interpolate> the value of a scalar variable or the values of an
+array within a double-quoted string, such that the I<current> contents of the
+variable become part of the string as if you'd used concatenation directly:
+
+=begin programlisting
+
+    my $factoid = "Did you know that B<$name> lives at B<$address>?";
+
+    # equivalent to
+
+    my $factoid = 'Did you know that ' . $name . ' lives at ' . $address . '?';
+
+=end programlisting
+
+X<escaping>
+
+Include a literal double-quote inside a double-quoted string by I<escaping> it
+(that is, preceding it with a leading backslash):
+
+=begin programlisting
+
+    my $quote = "\"Ouch,\", he cried.  \"That I<hurt>!\"";
+
+=end programlisting
+
+X<operators; quoting>
+X<C<q>; single quoting operator>
+X<operators; C<q>>
+X<C<qq>; double quoting operator>
+X<operators; C<qq>>
+
+When repeated backslashing becomes unwieldy, use an alternate I<quoting
+operator> by which you can choose an alternate string delimiter. The C<q>
+operator indicates single quoting, while the C<qq> operator provides double
+quoting behavior. The character immediately following the operator determines
+the characters used to delimit the strings. If the character is the opening
+character of a balanced pair--such as opening and closing braces--the closing
+character will be the final delimiter. Otherwise, the character itself will be
+both the starting and ending delimiter.
+
+=begin programlisting
+
+    my $quote     = B<qq{>"Ouch", he said.  "That I<hurt>!"B<}>;
+    my $reminder  = B<q^>Don't need to escape the single quote!B<^>;
+    my $complaint = B<q{>It's too early to be awake.B<}>;
+
+=end programlisting
+
+X<heredocs>
+X<strings; heredocs>
+
+When declaring a complex string with a series of embedded escapes is tedious,
+use the I<heredoc> syntax to assign one or more lines of a string:
+
+=begin programlisting
+
+    my $blurb =<<'END_BLURB';
+
+    He looked up. "Time is never on our side, my child. Do you see the irony?
+    All they know is change. Change is the constant on which they all can
+    agree. Whereas we, born out of time to remain perfect and perfectly
+    self-aware, can only suffer change if we pursue it. It is against our
+    nature. We rebel against that change. Shall we consider them greater
+    for it?"
+    END_BLURB
+
+=end programlisting
+
+The C<< <<'END_BLURB' >> syntax has three parts. The double angle-brackets
+introduce the heredoc. The quotes determine whether the heredoc obeys single-
+or double-quoted behavior. The default behavior is double-quoted interpolation.
+C<END_BLURB> is an arbitrary identifier which the Perl 5 parser uses as the
+ending delimiter.
+
+Be careful; regardless of the indentation of the heredoc declaration itself,
+the ending delimiter I<must> start at the beginning of the line:
+
+=begin programlisting
+
+    sub some_function {
+        my $ingredients =<<'END_INGREDIENTS';
+        Two eggs
+        One cup flour
+        Two ounces butter
+        One-quarter teaspoon salt
+        One cup milk
+        One drop vanilla
+        Season to taste
+    END_INGREDIENTS
+    }
+
+=end programlisting
+
+=begin sidebar
+
+If the identifier begins with whitespace, that same whitespace must be present
+before the ending delimiter. Yet if you indent the identifier, Perl 5 will
+I<not> remove equivalent whitespace from the start of each line of the heredoc.
+
+=end sidebar
+
+Using a string in a non-string context will induce coercion (L<coercion>).
+
+=head2 Unicode and Strings
+
+Z<unicode>
+X<Unicode>
+
+I<Unicode> is a system for representing the characters of the world's written
+languages. While most English text uses a character set of only 127 characters
+(which requires seven bits of storage and fits nicely into eight-bit bytes),
+it's naE<iuml>ve to believe that you won't someday need an umlaut.
+
+Perl 5 strings can represent either of two separate but related data types:
+
+X<codepoint>
+
+=over 4
+
+=item Sequences of Unicode characters
+
+Each character has a I<codepoint>, a unique number which identifies it in the
+Unicode character set.
+
+=item Sequences of octets
+
+X<octet>
+
+Binary data is a sequence of I<octets>--8 bit numbers, each of which can
+represent a number between 0 and 255.
+
+=back
+
+=begin sidebar
+
+Why I<octet> and not I<byte>? Assuming that one character fits in one byte will
+cause you no end of Unicode grief. Separate the idea of memory storage from
+character representation.
+
+=end sidebar
+
+Unicode strings and binary strings look similar. Each has a C<length()>.  Each
+supports standard string operations such as concatenation, splicing, and
+regular expression processing. Any string which is not purely binary data is
+textual data, and should be a sequence of Unicode characters.
+
+However, because of how your operating system represents data on disk or from
+users or over the network--as sequences of octets--Perl can't know if the data
+you read is an image file or a text document or anything else. By default, Perl
+treats all incoming data as sequences of octets. You must add a specific
+meaning to that data.
+
+=head3 Character Encodings
+
+X<encoding>
+X<Unicode; encoding>
+X<UTF-8>
+X<ASCII>
+X<Latin-1>
+
+A Unicode string is a sequence of octets which represent a sequence of
+characters. A I<Unicode encoding> maps octet sequences to characters. Some
+encodings, such as UTF-8, can encode all of the characters in the Unicode
+character set. Other encodings represent a subset of Unicode characters. For
+example, ASCII encodes plain English text with no accented characters, while
+Latin-1 can represent text in most languages which use the Latin alphabet.
+
+To avoid most Unicode problems, always decode to and from the appropriate
+encoding at the inputs and outputs of your program.
+
+=head3 Unicode in Your Filehandles
+
+X<C<open>>
+X<builtins; C<open>>
+X<IO layers>
+
+When you tell Perl that a specific filehandle (L<files>) works with encoded
+text, Perl will convert the incoming octets to Unicode strings automatically.
+To do this, add a IO layer to the mode of the C<open> builtin. An I<IO layer>
+wraps around input or output and converts the data. In this case, the C<:utf8>
+layer decodes UTF-8 data:
+
+=begin programlisting
+
+    use autodie;
+
+    open my $fh, '<:utf8', $textfile;
+
+    my $unicode_string = <$fh>;
+
+=end programlisting
+
+X<C<binmode>>
+X<builtins; C<binmode>>
+
+You may also modify an existing filehandle with C<binmode>, whether for input
+or output:
+
+=begin programlisting
+
+    binmode $fh, ':utf8';
+    my $unicode_string = <$fh>;
+
+    binmode STDOUT, ':utf8';
+    say $unicode_string;
+
+=end programlisting
+
+Without the C<utf8> mode, printing Unicode strings to a filehandle will result
+in a warning (C<Wide character in %s>), because files contain octets, not
+Unicode characters.
+
+=head3 Unicode in Your Data
+
+X<C<Encode>>
+X<C<decode()>>
+X<C<encode()>>
+
+The core module C<Encode> provides a function named C<decode()> to convert a
+scalar containing data to a Unicode string. For example, if you have UTF-8
+data:
+
+=begin programlisting
+
+    my $string = decode('utf8', $data);
+
+=end programlisting
+
+The corresponding C<encode()> function converts from Perl's internal encoding
+to the desired output encoding:
+
+=begin programlisting
+
+    my $latin1 = encode('iso-8859-1', $string);
+
+=end programlisting
+
+=head3 Unicode in Your Programs
+
+X<pragmas; C<utf8>>
+X<C<utf8> pragma>
+X<encoding>
+
+You may include Unicode characters in your programs in three ways. The easiest
+is to use the C<utf8> pragma (L<pragmas>), which tells the Perl parser to
+interpret the rest of the source code file with the UTF-8 encoding. This allows
+you to use Unicode characters in strings and identifiers:
+
+=begin programlisting
+
+    use utf8;
+
+    sub E<pound>_to_E<yen> { ... }
+
+    my $pounds = E<pound>_to_E<yen>('1000E<pound>');
+
+=end programlisting
+
+To I<write> this code, your text editor must understand UTF-8 and you must save
+the file with the appropriate encoding.
+
+X<strings; C<\x{}>>
+X<C<\x{}>; escape sequence for character encodings>
+
+Within double-quoted strings, you may use the Unicode escape sequence to
+represent character encodings. The syntax C<\x{}> represents a single
+character; place the hex form of the character's Unicode number within the
+curly brackets:
+
+=begin programlisting
+
+    my $escaped_thorn = "\x{00FE}";
+
+=end programlisting
+
+X<C<charnames> pragma>
+X<pragmas; C<charnames>>
+X<strings; C<\N{}>>
+X<C<\N{}>; escape sequence for named character encodings>
+
+Some Unicode characters have names, and these names are often clearer to read
+than Unicode numbers. Use the C<charnames> pragma to enable them and the
+C<\N{}> escape to refer to them:
+
+=begin programlisting
+
+    use charnames ':full';
+    use Test::More tests => 1;
+
+    my $escaped_thorn = "\x{00FE}";
+    my $named_thorn   = "\N{LATIN SMALL LETTER THORN}";
+
+    is $escaped_thorn, $named_thorn, 'Thorn equivalence check';
+
+=end programlisting
+
+You may use the C<\x{}> and C<\N{}> forms within regular expressions as well as
+anywhere else you may legitimately use a string or a character.
+
+=head3 Implicit Conversion
+
+Most Unicode problems in Perl arise from the fact that a string could be either
+a sequence of octets or a sequence of characters. Perl allows you to combine
+these types through the use of implicit conversions. When these conversions are
+wrong, they're rarely I<obviously> wrong.
+
+When Perl concatenates a sequences of octets with a sequence of Unicode
+characters, it implicitly decodes the octet sequence using the Latin-1
+encoding. The resulting string will contain Unicode characters. When you print
+Unicode characters, Perl will encode the string using UTF-8, because Latin-1
+cannot represent the entire set of Unicode characters--Latin-1 is a subset of
+UTF-8.
+
+This asymmetry can lead to Unicode strings encoded as UTF-8 for output and
+decoded as Latin-1 when input.
+
+Worse yet, when the text contains only English characters with no accents, the
+bug hides--because both encodings have the same representation for every
+character.
+
+=begin programlisting
+
+    my $hello    = "Hello, ";
+    my $greeting = $hello . $name;
+
+=end programlisting
+
+If C<$name> contains an English name such as I<Alice> you will never notice any
+problem, because the Latin-1 representation is the same as the UTF-8
+representation. If C<$name> contains a name such as I<JosE<eacute>>, C<$name>
+can contain several possible values:
+
+=over 4
+
+=item *
+
+C<$name> contains four Unicode characters.
+
+=item *
+
+C<$name> contains four Latin-1 octets representing four Unicode characters.
+
+=item *
+
+C<$name> contains five UTF-8 octets representing four Unicode characters.
+
+=back
+
+The string literal has several possible scenarios:
+
+=over 4
+
+=item * It is an ASCII string literal and contains octets.
+
+=begin programlisting
+
+    my $hello = "Hello, ";
+
+=end programlisting
+
+=item * It is a Latin-1 string literal with no explicit encoding and contains
+octets.
+
+=begin programlisting
+
+    my $hello = "E<iexcl>Hola, ";
+
+=end programlisting
+
+The string literal contains octets.
+
+=item * It is a non-ASCII string literal with the C<utf8> or C<encoding> pragma
+in effect and contains Unicode characters.
+
+=begin programlisting
+
+    use utf8;
+    my $hello = "KuirabE<aacute>, ";
+
+=end programlisting
+
+=back
+
+If both C<$hello> and C<$name> are Unicode strings, the concatenation will
+produce another Unicode string.
+
+If both strings are octet streams, Perl will concatenate them into a new octet
+string. If both values are octets of the same encoding--both Latin-1, for
+example, the concatenation will work correctly. If the octets do not share an
+encoding, the concatenation append UTF-8 data to Latin-1 data, producing a
+sequence of octets which makes sense in I<neither> encoding. This could happen
+if the user entered a name as UTF-8 data and the greeting were a Latin-1 string
+literal, but the program decoded neither.
+
+If only one of the values is a Unicode string, Perl will decode the other as
+Latin-1 data. If this is not the correct encoding, the resulting Unicode
+characters will be wrong. For example, if the user input were UTF-8 data and
+the string literal were a Unicode string, the name would be incorrectly decoded
+into five Unicode characters to form I<JosE<Atilde>E<copy>> (I<sic>) instead of
+I<JosE<eacute>> because the UTF-8 data means something else when decoded as
+Latin-1 data.
+
+See C<perldoc perluniintro> for a far more detailed explanation of  Unicode,
+encodings, and how to manage incoming and outgoing data in a Unicode worldN<For
+I<far> more detail about managing Unicode effectively throughout your programs,
+see Tom Christiansen's answer to "Why does Modern Perl avoid UTF-8 by default?"
+U<http://stackoverflow.com/questions/6162484/why-does-modern-perl-avoid-utf-8-by-default/6163129#6163129>>.
+
+=begin sidebar
+
+X<C<unicode_strings>>
+X<pragmas; C<feature>>
+
+Perl 5.12 added a feature called C<unicode_strings>, which enables Unicode
+semantics for all string operations within its scope. Perl 5.14 improved this
+feature; if you work with Unicode in Perl, it's worth upgrading to at least
+Perl 5.14.
+
+=end sidebar
+
+=head2 Numbers
+
+X<numbers>
+X<integers>
+X<floating-point values>
+
+Perl supports numbers as both integers and floating-point values. You may
+represent them with scientific notation as well as in binary, octal, and
+hexadecimal forms:
+
+=begin programlisting
+
+    my $integer   = 42;
+    my $float     = 0.007;
+    my $sci_float = 1.02e14;
+    my $binary    = B<0b>101010;
+    my $octal     = B<0>52;
+    my $hex       = B<0x>20;
+
+=end programlisting
+
+X<numbers; representation prefixes>
+X<C<0b>>
+X<C<0>>
+X<C<0x>>
+
+The emboldened characters are the numeric prefixes for binary, octal, and hex
+notation respectively. Be aware that a leading zero I<always> indicates octal
+mode.
+
+X<numbers; underscore separator>
+X<underscore>
+
+=begin sidebar
+
+Even though you can write floating-point values explicitly in Perl 5 with
+perfect accuracy, Perl 5 stores them internally in a binary format. This
+representation is sometimes imprecise in specific ways; consult C<perldoc
+perlnumber> for more details.
+
+=end sidebar
+
+You may not use commas to separate thousands in numeric literals, lest the
+parser interpret the commas as comma operators. Instead, use underscores within
+the number. The parser will treat them as invisible characters; your readers
+may not. These are equivalent:
+
+=begin programlisting
+
+    my $billion = 1000000000;
+    my $billion = 1_000_000_000;
+    my $billion = 10_0_00_00_0_0_0;
+
+=end programlisting
+
+Consider the most readable alternative.
+
+X<C<Scalar::Util>>
+X<C<looks_like_number()>>
+
+Because of coercion (L<coercion>), Perl programmers rarely have to worry about
+converting text read from outside the program to numbers. Perl will treat
+anything which looks like a number I<as> a number in numeric contexts. In the
+rare circumstances where you need to know if something looks like a number to
+Perl, use the C<looks_like_number> function from the core module
+C<Scalar::Util>. This function returns a true value if Perl will consider the
+given argument numeric.
+
+X<C<Regexp::Common>>
+
+The C<Regexp::Common> module from the CPAN provides several well-tested regular
+expressions to identify more specific valid I<types> (whole number, integer,
+floating-point value) of numeric values.
+
+=head2 Undef
+
+X<C<undef>>
+
+Perl 5's C<undef> value represents an unassigned, undefined, and unknown value.
+Declared but undefined scalar variables contain C<undef>:
+
+=begin programlisting
+
+    my $name = undef;   # unnecessary assignment
+    my $rank;           # also contains undef
+
+=end programlisting
+
+X<C<undef>; coercions>
+
+C<undef> evaluates to false in boolean context. Evaluating C<undef> in a string
+context--such as interpolating it into a string--produces an C<uninitialized
+value> warning:
+
+=begin programlisting
+
+    my $undefined;
+    my $defined = $undefined . '... and so forth';
+
+=end programlisting
+
+... produces:
+
+=begin screen
+
+    Use of uninitialized value $undefined in concatenation (.) or string...
+
+=end screen
+
+X<builtins; C<defined>>
+
+The C<defined> builtin returns a true value if its operand evaluates to a
+defined value (anything other than C<undef>):
+
+=begin programlisting
+
+    my $status = 'suffering from a cold';
+
+    say B<defined> $status;
+    say B<defined> undef;
+
+=end programlisting
+
+=head2 The Empty List
+
+X<empty list>
+X<C<()>; empty list>
+
+When used on the right-hand side of an assignment, the C<()> construct
+represents an empty list. In scalar context, this evaluates to C<undef>. In
+list context, it is an empty list.
+
+When used on the left-hand side of an assignment, the C<()> construct imposes
+list context. To count the number of elements returned from an expression in
+list context without using a temporary variable, use the idiom (L<idioms>):
+
+=begin programlisting
+
+    my $count = B<()> = get_all_clown_hats();
+
+=end programlisting
+
+Because of the right associativity (L<associativity>) of the assignment
+operator, Perl first evaluates the second assignment by calling
+C<get_all_clown_hats()> in list context. This produces a list.
+
+Assignment to the empty list throws away all of the values of the list, but
+that assignment takes place in scalar context, which evaluates to the number of
+items on the right hand side of the assignment. As a result, C<$count> contains
+the number of elements in the list returned from C<get_all_clown_hats()>.
+
+If you find that concept confusing right now, fear not. As you understand how
+Perl's fundamental design features fit together in practice, it will make more
+sense.
+
+=head2 Lists
+
+X<lists>
+
+A list is a comma-separated group of one or more expressions. Lists may occur
+verbatim in source code as values:
+
+=begin programlisting
+
+    my @first_fibs = (1, 1, 2, 3, 5, 8, 13, 21);
+
+=end programlisting
+
+... as targets of assignments:
+
+=begin programlisting
+
+    my ($package, $filename, $line) = caller();
+
+=end programlisting
+
+... or as lists of expressions:
+
+=begin programlisting
+
+    say name(), ' => ', age();
+
+=end programlisting
+
+Parentheses do not I<create> lists. The comma operator creates lists. Where
+present, the parentheses in these examples group expressions to change their
+I<precedence> (L<precedence>).
+
+X<operators; range>
+X<operators; C<..>>
+X<C<..>; range operator>
+
+Use the range operator to create lists of literals in a compact form:
+
+=begin programlisting
+
+    my @chars = 'a' .. 'z';
+    my @count = 13 .. 27;
+
+=end programlisting
+
+X<operators; C<qw()>>
+X<C<qw()>; quote words operator>
+
+Use the C<qw()> operator to split a literal string on whitespace to produce a
+list of strings:
+
+=begin programlisting
+
+    my @stooges = qw( Larry Curly Moe Shemp Joey Kenny );
+
+=end programlisting
+
+=begin sidebar
+
+Perl will produce a warning if a C<qw()> contains a comma or the comment
+character (C<#>), because not only are such characters rare in a C<qw()>, their
+presence usually indicates an oversight.
+
+=end sidebar
+
+Lists can (and often do) occur as the results of expressions, but these lists
+do not appear literally in source code.
+
+Lists and arrays are not interchangeable in Perl. Lists are values. Arrays are
+containers. You may store a list in an array and you may coerce an array to a
+list, but they are separate entities. For example, indexing into a list always
+occurs in list context. Indexing into an array can occur in scalar context (for
+a single element) or list context (for a slice):
+
+=begin programlisting
+
+    # you do not need to understand all of this right now
+    sub context
+    {
+        my $context = wantarray();
+
+        say defined $context
+             ? $context
+                 ? 'list'
+                 : 'scalar'
+             : 'void';
+        return 0;
+    }
+
+    my @list_slice  = (1, 2, 3)[context()];
+    my @array_slice = @list_slice[context()];
+    my $array_index = $array_slice[context()];
+
+    # say imposes list context
+    say context();
+
+    # void context is obvious
+    context();
+
+=end programlisting
+=encoding utf8
+
+=head1 值
+
+Z<values>
+
+高效的 Perl 程序依赖于对值的精确的表示方式及操作。
+
+X<variables>
+X<variables>
+
+计算机程序包含 I<变量>：持有 I<值> 的容器。值是程序实际操作的数据。虽然很容易就能
+描述某项数据────你姑妈的名字和地址、你的办公室和月球上一堂高尔夫课程的距离，或者
+去年你吃的曲奇的重量────但是这些和数据格式相关的规则往往很严格。编写高效的程序
+通常意味着理解能表示该数据的最佳（最简单、最快、最紧凑或者最容易的）方式。
+
+虽然程序的结构很大程度上依赖你用适合的变量为数据建立模型的方式，但如果不能准确地
+容下数据本身（即：值）这些变量将会是毫无意义的。
+
+=head2 字符串
+
+X<strings>
+
+I<字符串> 是无特定格式、无特定内容的一小片数据，对程序来说也没有其他特别的含义。它
+可能是你的名字，可能是从你的硬盘上读取的图像文件的内容，还可能是 Perl 程序本身。一
+个字符串在你赋予它意义之前对程序而言毫无意义。字符串是一块由某种形式的括号括起的固
+定长度的数据，Perl 字符串还能随着你的添加和抽减而变化。
+
+最普通的字符串分隔符是单双引号：
+
+=begin programlisting
+
+    my $name    = B<'Donner Odinson, Bringer of Despair'>;
+    my $address = B<"Room 539, Bilskirnir, Valhalla">;
+
+=end programlisting
+
+X<strings; single-quoted>
+
+I<单引号字符串> 中的字符代表它们自身的字面含义，但有两处例外。通过反斜杠转义，你可
+以在一个单引号字符串中内嵌另一个单引号字符串：
+
+=begin programlisting
+
+    my $reminder = 'DonB<\'>t forget to escape the single quote!';
+
+=end programlisting
+
+如果反斜杠在字符串末尾，你可以用另一个反斜杠将其转义，否则 Perl 语法分析器将认为你
+是在转义结尾的单引号：
+
+=begin programlisting
+
+    my $exception = 'This string ends with a backslash, not a quote: B<\\>';
+
+=end programlisting
+
+=begin sidebar
+
+其他所有反斜杠都是作为字面值出现在字符串中，但如果出现两个相邻的反斜杠，则前者将后
+者转义。
+
+=begin programlisting
+
+    is('Modern B<\> Perl', 'Modern B<\\> Perl', 'single quotes backslash escaping');
+
+=end programlisting
+
+
+=end sidebar
+
+X<strings; double-quoted>
+
+I<双引号字符串> 有着更为复杂（通常也更有用）的行为。举例来说，你可以将非打印字符编
+码进一个字符串：
+
+=begin programlisting
+
+    my $tab       = "B<\t>";
+    my $newline   = "B<\n>";
+    my $carriage  = "B<\r>";
+    my $formfeed  = "B<\f>";
+    my $backspace = "B<\b>";
+
+=end programlisting
+
+字符串定义可以横跨多个逻辑行，如下列两个字符串是等价的：
+
+=begin programlisting
+
+    my $escaped = "two\nlines";
+    my $literal = "two
+    lines";
+    is( $escaped, $literal, '\n and newline are equivalent' );
+
+=end programlisting
+
+你 I<可以> 将这些字符直接输入字符串，但在视觉上通常很难将一个制表符和四个（或者两
+个再或者八个）空格区分开来。
+
+X<interpolation>
+X<strings; interpolation>
+
+在双引号字符串内，你也可以将标量或数组的值 I<内插> 入字符串，使得变量的值成为该字符串
+的一部分，就好像你直接对其进行拼接操作：
+
+=begin programlisting
+
+    my $factoid = "Did you know that B<$name> lives at B<$address>?";
+
+    # 等同于
+
+    my $factoid = 'Did you know that ' . $name . ' lives at ' . $address . '?';
+
+=end programlisting
+
+X<escaping>
+
+在双引号字符串内，你可以通过 I<转义> 插入一个字面双引号（即，在它前面加上一个反斜杠）：
+
+=begin programlisting
+
+    my $quote = "\"Ouch,\", he cried.  \"That I<hurt>!\"";
+
+=end programlisting
+
+X<quoting operators>
+X<q>
+X<operators; q>
+X<qq>
+X<operators; qq>
+
+如果你觉得这简直丑陋到令人发指，那你可以使用另外的 I<引号操作符>。C<q> 操作符进行单引号
+操作，而 C<qq> 操作符是双引号。每种情况下，你都可以自行选择字符串分隔符。紧随操作符后的
+字符决定了该字符串的开头和结尾。如果该字符是诸如大括号之类标点对中的开标点，则对应的闭
+标点为字符串结尾的分隔符。除上述之外，字符本身将作为开头和结尾的分隔符。
+
+=begin programlisting
+
+    my $quote     = B<qq{>"Ouch", he said.  "That I<hurt>!"B<}>;
+    my $reminder  = B<q^>Didn't need to escape the single quote!B<^>;
+    my $complaint = B<q{>It's too early to be awake.B<}>;
+
+=end programlisting
+
+X<heredocs>
+X<strings; heredocs>
+
+即使你可以通过一系列内嵌的转义字符来声明一个复杂的字符串，有些时候跨行声明一个多行字符
+串更为方便。I<heredoc> 的语法让你可以以另一种方式进行多行字符串赋值：
+
+=begin programlisting
+
+    my $blurb =<<'END_BLURB';
+
+    He looked up.  "Time is never on our side, my child.  Do you see the irony?
+    All they know is change.  Change is the constant on which they all can
+    agree.  Whereas we, born out of time to remain perfect and perfectly
+    self-aware, can only suffer change if we pursue it.  It is against our
+    nature.  We rebel against that change.  Shall we consider them greater
+    for it?"
+    END_BLURB
+
+=end programlisting
+
+C<< <<'END_BLURB' >> 语法有三个部分。两重尖括号引入了 heredoc。引号决定此 heredoc 在处理
+变量内插和转义字符时遵循单引号还是双引号的规则。它们是可选的，默认按双引号规则处理。C<END_BLURB>
+自身可以是任意标识符，由 Perl 5 语法分析器用作标示结束的分隔符。
+
+注意，不管 heredoc 声明部分缩进多少，结束分隔符 I<必须> 位于一行的开头：
+
+=begin programlisting
+
+    sub some_function {
+        my $ingredients =<<'END_INGREDIENTS';
+        Two eggs
+        One cup flour
+        Two ounces butter
+        One-quarter teaspoon salt
+        One cup milk
+        One drop vanilla
+        Season to taste
+    END_INGREDIENTS
+    }
+
+=end programlisting
+
+=begin sidebar
+
+如果标识符以空白开始，则等数量的空白必须在结束分隔符中出现。即便你确实缩进了该标识符，
+Perl 5 也 I<不会> 从 heredoc 主体部分的每行行首移除等量的空白。 
+
+=end sidebar
+
+你也可以在其他上下文中使用字符串，如布尔上下文和数值上下文，它的内容将决定结果的值（L<coercion>）。
+
+=head2 Unicode and Strings
+
+Z<unicode>
+X<unicode>
+
+I<Unicode> 一套用于表示世界手写语言字符的系统。虽然绝大部分英语文本使用一个仅含 127 个字符的
+字符集（该字符集要求7位的存储空间，并且对于8位的字节来说正合适），但举例来说，不相信
+需要变音的人是幼稚（“naE<iuml>ve”，注意第三个字符）的。
+
+Perl 5 可以按两种相关但不同的方式表示一个字符串：
+
+X<codepoint>
+
+=over 4
+
+=item Unicode 字符序列
+
+Unicode 字符集包含了绝大多数语言的书写字符及其他一些符号。每一个字符有一个对应的 I<代码点>，
+一个在 Unicode 字符集中标识该字符的唯一数字。
+
+=item 八进制序列
+
+X<octet>
+
+二进制数据是一个 I<八进制> 的序列────8位的数字，每一个都可以表示一个 0 到 255 直接的数字。
+
+=back
+
+=begin sidebar
+
+为什么称为 I<八进制数> 而非 I<字节>？将 Unicode 作为字符考虑，而不要考虑这些字符在内存中
+表示方式所占的特定长度。做出一个字符一个字节的假设只会带给你无尽的 Unicode 悲哀。
+
+=end sidebar
+
+Unicode 字符串和二进制字符串看上去很像。它们都有 C<length()> 函数，你可以对它们进行标准
+字符串操作，如：拼接、分片和正则表达式处理。任何非纯二进制的字符串都是文本数据，它应是一
+个 Unicode 字符序列。
+
+虽都是八进制序列，数据还是会因操作系统对磁盘数据的表示方式，以及其他用户、网络等原因而不同，
+因此 Perl 无从得知读取的某块数据究竟是图像文件、文本文档还是其他东西。默认地，Perl 将所有
+读入的数据按八进制序列处理。给字符串内容赋予额外的含义是你的责任。
+
+=head3 字符编码
+
+X<encoding>
+X<Unicode; encoding>
+X<UTF-8>
+X<ASCII>
+X<Latin-1>
+
+Unicode 字符串是一个表示一系列字符的八进制序列。I<Unicode 编码> 将八进制序列映射到字符上。
+一些编码方式，如 UTF-8，可以编码 Unicode 字符集中的所有字符。其他编码方式只能表示 Unicode 
+字符的一个子集。例如，ASCII 编码纯英语文本且不含重音字符，Latin-1 可以表示使用拉丁字母表的
+大部分语言的文本。
+
+如果你总是以正确的方式编解码程序输入输出，你将避开许多麻烦。
+
+=head3 文件句柄中的 Unicode 
+
+X<open>
+X<IO layers>
+
+Unicode 输入的一个来源就是文件句柄（L<files>）。如果你告知 Perl 某特定的文件句柄对已编码的文本进行操作，Perl
+能够将数据自动转换为 Unicde 字符串。为实现此功能，请向内置 C<open> 操作符的模式添加一个 IO 层。
+I<IO 层> 包装了输入输出并对数据进行某种形式的转换。在此种情况下，C<:utf8> 层将对 UTF-8 数据进行解码：
+
+=begin programlisting
+
+    use autodie;
+
+    open my $fh, '<:utf8', $textfile;
+
+    my $unicode_string = <$fh>;
+
+=end programlisting
+
+X<binmode>
+X<builtins; binmode>
+
+你也可以用 C<binmode> 对已经打开的文件句柄进行修改，无论是输入还是输出：
+
+=begin programlisting
+
+    binmode $fh, ':utf8';
+    my $unicode_string = <$fh>;
+
+    binmode STDOUT, ':utf8';
+    say $unicode_string;
+
+=end programlisting
+
+不启用 C<utf8> 模式时，向某文件句柄打印 Unicode 字符串会得到一个警告（C<Wide character in %s>），因为
+文件包含的是八进制数据而非 Unicode 字符。
+
+=head3 数据中的 Unicode
+
+X<Encode>
+X<Encode; decode()>
+X<Encode; encode()>
+
+C<Encode> 核心模块提供了一个名为 C<decode()> 的函数来将已知格式标量数据转换成一个 Unicode 字符串。例如，
+如果你有的是 UTF-8 数据：
+
+=begin programlisting
+
+    my $string = decode('utf8', $data);
+
+=end programlisting
+
+对应的 C<encode()> 函数将 Perl 内部编码转换为所需输出编码：
+
+=begin programlisting
+
+    my $latin1 = encode('iso-8859-1', $string);
+
+=end programlisting
+
+=head3 程序中的 Unicode
+
+X<pragmas; utf8>
+X<utf8>
+X<encoding>
+
+在你的程序中包含 Unicode 字符有三种方式。最简易的方法是利用 C<utf8> 编译命令（L<pragmas>），它告诉 Perl 
+语法分析器将后续源代码编码解释为 UTF-8。这允许你在字符串和标识符中使用 Unicode 字符：
+
+=begin programlisting
+
+    use utf8;
+
+    sub E<pound>_to_E<yen> { ... }
+
+    my $pounds = E<pound>_to_E<yen>('1000E<pound>');
+
+=end programlisting
+
+要 I<编写> 这些代码，你的文本编辑器必须理解 UTF-8 并且你必须按正确的编码保存该文件。
+
+X<escapes; \x{}>
+X<\x{}>
+
+你也可以使用 Unicode 转义序列来表示字符编码。C<\x{}> 语法代表一个单独的字符。将该字符的
+Unicode 数字的十六进制表示放入大括号内：
+
+=begin programlisting
+
+    my $escaped_thorn = "\x{00FE}";
+
+=end programlisting
+
+=begin sidebar
+
+注意这些转义序列仅在双引号字符串内内插。
+
+=end sidebar
+
+X<charnames pragma>
+X<pragmas; charnames>
+X<escapes; \N{}>
+X<\N{}>
+
+一些 Unicode 字符有自己的名称。虽然这相当详细，但是比起 Unicode 数字来说更加易读。你必须使用
+C<charnames> 编译命令来启用它。用 C<\N{}> 转义语法来指代它：
+
+=begin programlisting
+
+    use charnames ':full';
+    use Test::More tests => 1;
+
+    my $escaped_thorn = "\x{00FE}";
+    my $named_thorn   = "\N{LATIN SMALL LETTER THORN}";
+
+    is( $escaped_thorn, $named_thorn, 'Thorn equivalence check' );
+
+=end programlisting
+
+你可以在正则表达式内使用 C<\x{}> 和 C<\N{}> 形式，就像在他处合理地使用一个字符或字符串。
+
+=head3 隐式转换
+
+Perl 中的大多数 Unicode 问题因字符串既可以是八进制数据序列也可以是字符序列而起。Perl 允许你
+通过隐式转换结合使用这些类型。当这些转换出错时，它们不会错得那么 I<明显>。
+
+当 Perl 拼接一个八进制序列和一个 Unicode 字符序列时，它隐式地将八进制序列按 Latin-1 编码方式
+解码。结果字符串包含 Unicode 字符。当你打印 Unicode 字符时，Perl 用 UTF-8 编码该字符串，因为
+Latin-1 无法表示完整的 Unicode 字符集。
+
+这个不对称性可导致 Unicode 字符串在输出时编码为 UTF-8 以及在输入时候解码为 Latin-1。
+
+更糟糕的是，当文本只包含除重音外的英文字符时，这个 bug 会隐藏起来────因为这两种编码对每一个
+字符的表示方式一致。
+
+=begin programlisting
+
+    my $hello    = "Hello, ";
+    my $greeting = $hello . $name;
+
+=end programlisting
+
+如果 C<$name> 包含例如 C<Alice> 之类的英文名字，你决不会察觉任何问题，因为 Latin-1 表示和 UTF-8
+表示是一样的。
+
+又如果，C<$name> 包含类似 C<JosE<eacute>> 的名字，则 C<$name> 可能包含下列几种可能的值：
+
+=over 4
+
+=item *
+
+C<$name> 四个 Unicode 字符；
+
+=item *
+
+C<$name> 四个代表它们各自 Unicode 字符的八进制 Latin-1；
+
+=item *
+
+C<$name> 五个代表它们各自 Unicode 字符的八进制 UTF-8。
+
+=back
+
+字符串字面值有如下可能的情形：
+
+=over 4
+
+=item ASCII 字符串字面值
+
+=begin programlisting
+
+    my $hello = "Hello, ";
+
+=end programlisting
+
+此字符串字面值包含八进制数据。
+
+=item Latin-1 字符串字面值，无明确编码，例如：
+
+=begin programlisting
+
+    my $hello = "E<iexcl>Hola, ";
+
+=end programlisting
+
+此字符串字面值包含八进制数据。
+
+=item 非 ASCII 字符串字面值，通过 C<utf8> 或 C<encoding> 编译命令指定：
+
+=begin programlisting
+
+    use utf8;
+    my $hello = "E<#x5E9>E<#x5DC>E<#x5D5>E<#x5DD>, ";
+
+=end programlisting
+
+此字符串字面值包含 Unicode 字符。
+
+=back
+
+如果 C<$hello> 和 C<$name> 都是 Unicode 字符串，拼接操作会产生另一个 Unicode 字符串。
+
+如果两个字符串都是八进制流，Perl 会将它们拼接为一个新的八进制字符串。如果两者的都为
+编码方式相同的八进制值────例如，全为 Lation-1，则拼接操作将正常执行。如果两者并不共用
+编码方式，拼接操作将把 UTF-8 数据追加到 Latin-1 数据之后，生成两种编码方式 I<都无法>
+识别的八进制序列。这种情况可能在用户以 UTF-8 编码输入姓名而问候语是 Latin-1 字符串字
+面值、程序又不能按任一编码解码时发生。
+
+如果仅有一值为 UTF-8 字符串，Perl 将其他部分按 Latin-1 解码。如果这不是正确的编码方式，
+作为结果的 UTF-8 字符串也会是错误的。例如，用户输入的是 UTF-8 数据并且此字符串字面值是
+一个 Unicode 字符串，那么这个姓名将被错误地解码成五个 Unicode 字符，C<JosE<Atilde>E<copy>> 
+而非 C<JosE<eacute>>，因为 UTF-8 数据在作为 Latin-1 解码时有着不同的含义。
+
+参见 C<perldoc perluniintro> 以获取一份有关如下话题更为详细的解释：Unicode、编码、以及如
+何在 Unicode 世界中正确处理输入输出数据。
+
+=head2 数字
+
+X<numbers>
+X<integers>
+X<floating-point values>
+
+Perl 同样提供对数字的支持，无论是整数还是浮点数。它们可以按科学计数法、二进制、
+八进制和十六进制形式给出：
+
+=begin programlisting
+
+    my $integer   = 42;
+    my $float     = 0.007;
+    my $sci_float = 1.02e14;
+    my $binary    = B<0b>101010;
+    my $octal     = B<0>52;
+    my $hex       = B<0x>20;
+
+=end programlisting
+
+加粗的字符是二进制、八进制、十六进制对应的数值前缀。注意开头的零总是意味着八进制
+模式，这偶尔会引发意想不到的迷惑。
+
+X<numbers; underscore separator>
+X<underscore>
+
+=begin sidebar
+
+即使你可以在 Perl 5 中明确且精准地表示一个浮点值，Perl 5 内部将它们存储为二进制格式。
+某些具体情况下无法精确地比较浮点值，详情请参考 C<perldoc perlnumber>。
+
+=end sidebar
+
+你无法用逗号按千分隔数值字面值，因为语法分析器会将逗号解释为逗号操作符。为此你 I<可以>
+在数字内使用下划线。语法分析器会将其作为不可见的字符对待，但你程序的读者不会。下面这些
+是等价的：
+
+=begin programlisting
+
+    my $billion = 1000000000;
+    my $billion = 1_000_000_000;
+    my $billion = 10_0_00_00_0_0_0;
+
+=end programlisting
+
+请考虑使用最易读的方式。
+
+X<Scalar::Util>
+X<looks_like_number>
+X<Scalar::Util; looks_like_number>
+
+由于强制转换（L<coercion>），Perl 程序员几乎不用担心将外部读取的文本转换为数字一事。在
+数值上下文中 Perl 会将所有看上去像数字的东西统一作为数字对待。虽然它几乎每每都能正确处理
+此类事项，有时知道一下某物看上去是不是像数字也不赖。核心模块 C<Scalar::Util> 包含一个名
+叫 C<looks_like_number> 的函数，如果 Perl 将某物做数值考虑，它就会返回一个为真的值。
+
+X<Regexp::Common>
+
+来自 CPAN 的 C<Regexp::Common> 模块同样提供了若干经过良好测试的正则表达式来识别数值的有
+效 I<类型> （全数字、整数、浮点数值）。
+
+=head2 Undef
+
+X<undef>
+
+Perl 5 中由 C<undef> 代表所有未赋值、未定义和未知的值。已声明但未定义的标量包含 C<undef>：
+
+=begin programlisting
+
+    my $name = undef;   # 多余的赋值
+    my $rank;           # 同样包含 undef
+
+=end programlisting
+
+X<undef; coercions>
+
+在布尔上下文中对 C<undef> 求值得到假。将 C<undef> 内插入一个字符串────或者对其在
+字符串上下文中求值────将产生一个 C<uninitialized value> 的警告：
+
+=begin programlisting
+
+    my $undefined;
+    my $defined = $undefined . '... and so forth';
+
+=end programlisting
+
+……产生：
+
+=begin screen
+
+    Use of uninitialized value $undefined in concatenation (.) or string...
+
+=end screen
+
+=head2 空列表
+
+X<empty list>
+X<()>
+
+当用于一个赋值操作的右手边时，C<()> 结构代表一个空列表。当在标量上下文中求值时得到 C<undef>。
+在列表上下文中，它在效果上就是一个空列表。
+
+当用于一个赋值操作的左手边时，C<()> 规定了列表上下文。不用临时变量，计算一个表达式在列表上下
+文中返回结果的个数，你可以使用如下惯用语（L<idioms>）：
+
+=begin programlisting
+
+    my $count = B<()> = get_all_clown_hats();
+
+=end programlisting
+
+由于赋值操作符的右结合性（L<associativity>），Perl 先对第二个赋值操作通过在列表上下文中调用
+C<get_all_clown_hats()> 求值，这会产生一个列表。
+
+对空列表的赋值丢弃了该列表全部的值，但这个赋值在标量上下文中发生，将求得赋值操作右手边的元素
+的个数。结果就是 C<$count> 包含了从 C<get_all_clown_hats()> 返回的列表中元素的个数。
+
+目前你不用理解这段代码中所有的隐含内容，但是它确确实实地展示了 Perl 设计中区区几个基础功能的
+组合就能产生如此有趣且有用的行为。
+
+=head2 列表
+
+X<lists>
+
+列表是一个由逗号分隔、包含一个或多个表达式的组。
+
+列表可能在源代码中逐字出现：
+
+=begin programlisting
+
+    my @first_fibs = (1, 1, 2, 3, 5, 8, 13, 21);
+
+=end programlisting
+
+……或作为赋值的目标：
+
+=begin programlisting
+
+    my ($package, $filename, $line) = caller();
+
+=end programlisting
+
+……或作为一系列表达式：
+
+=begin programlisting
+
+    say name(), ' => ', age();
+
+=end programlisting
+
+值得一提的是 I<创建> 列表并不需要括号，这些例子中（括号）出现的地方是为了让表达式成组出现，以
+改变这些表达式的 I<优先级>（L<precedence>）。
+
+X<operators; range>
+X<operators; ..>
+X<..>
+X<range operator>
+
+你可以用范围操作符以一种紧凑的方式创建一个字面值列表：
+
+=begin programlisting
+
+    my @chars = 'a' .. 'z';
+    my @count = 13 .. 27;
+
+=end programlisting
+
+X<qw()>
+X<operators; qw()>
+X<qw() operator>
+
+……同时，你也可以用 C<qw()> 操作符以空白符分隔一字符串字面值，并创建一个字符串列表：
+
+=begin programlisting
+
+    my @stooges = qw( Larry Curly Moe Shemp Joey Kenny );
+
+=end programlisting
+
+=begin sidebar
+
+如果 C<qw()> 包含逗号或注释符（C<#>），Perl 会产生一条警告。不仅因为这些字符在 C<qw()> 中出现的机会很少，
+而且它们的出现往往意味着疏忽。
+
+=end sidebar
+
+列表可以（通常也）作为一个表达式的结果，但是这些列表不以字面形式在源代码中出现。
+
+在 Perl 中，列表和数组概念之间不可以交换。列表是值而数组是容器。你可以在一个数组中存放一个列表，
+也可以将一个数组强转为列表，但它们是不同的实体。举例来说，按下标访问列表通常在列表上下文中出现。
+按下标访问数组通常在标量上下文（为获取单个元素）或列表上下文中出现（为数组分片）：
+
+=begin programlisting
+
+    # enable say and other features (see preface)
+    use Modern::Perl;
+
+    # you do not need to understand this all
+    sub context
+    {
+        my $context = wantarray();
+
+        say defined $context
+             ? $context
+                 ? 'list'
+                 : 'scalar'
+             : 'void';
+        return 0;
+    }
+
+    my @list_slice  = (1, 2, 3)[context()];
+    my @array_slice = @list_slice[context()];
+    my $array_index = $array_slice[context()];
+
+    # say imposes list context
+    say context();
+
+    # void context is obvious
+    context()
+
+=end programlisting

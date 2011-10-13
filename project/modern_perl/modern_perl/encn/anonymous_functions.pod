@@ -1,0 +1,556 @@
+=head1 Anonymous Functions
+
+Z<anonymous_functions>
+
+X<functions; anonymous>
+
+An I<anonymous function> is a function without a name. It otherwise behaves
+exactly like a named function--you can invoke it, pass arguments to it, return
+values from it, and copy references to it. Yet the only way to deal with it is
+by reference (L<function_references>).
+
+X<functions; dispatch table>
+X<idioms; dispatch table>
+X<dispatch table>
+
+A common Perl 5 idiom known as a I<dispatch table> uses hashes to associate
+input with behavior:
+
+=begin programlisting
+
+    my %dispatch =
+    (
+        plus     => \&add_two_numbers,
+        minus    => \&subtract_two_numbers,
+        # ... and so on
+    );
+
+    sub add_two_numbers      { $_[0] + $_[1] }
+
+    sub subtract_two_numbers { $_[0] - $_[1] }
+
+    sub dispatch
+    {
+        my ($left, $op, $right) = @_;
+
+        die "Unknown operation!"
+            unless exists $dispatch{ $op };
+
+        return $dispatch{ $op }->( $left, $right );
+    }
+
+=end programlisting
+
+The C<dispatch()> function takes arguments of the form C<(2, 'times', 2)> and
+returns the result of evaluating the operation.
+
+=head2 Declaring Anonymous Functions
+
+X<builtins; C<sub>>
+
+The C<sub> builtin used without a name creates and returns an anonymous
+function. Use this function reference any place you'd use a reference to a
+named function, such as to declare the dispatch table's functions in place:
+
+=begin programlisting
+
+    my %dispatch =
+    (
+        plus     => sub { $_[0]  + $_[1] },
+        minus    => sub { $_[0]  - $_[1] },
+        times    => sub { $_[0]  * $_[1] },
+        goesinto => sub { $_[0]  / $_[1] },
+        raisedto => sub { $_[0] ** $_[1] },
+    );
+
+=end programlisting
+
+=begin sidebar
+
+This dispatch table offers some degree of security; only those functions mapped
+within the table are available for users to call. If your dispatch function
+blindly assumed that the string given as the name of the operator corresponded
+directly to the name of a function to call, a malicious user could conceivably
+call any function in any other namespace by crafting an operator name of
+C<'Internal::Functions::some_malicious_function'>.
+
+=end sidebar
+
+You may also see anonymous functions passed as function arguments:
+
+=begin programlisting
+
+    sub invoke_anon_function
+    {
+        my $func = shift;
+        return $func->( @_ );
+    }
+
+    sub named_func
+    {
+        say 'I am a named function!';
+    }
+
+    invoke_anon_function( \&named_func );
+    invoke_anon_function( B<sub { say 'I am an anonymous function' }> );
+
+=end programlisting
+
+=head2 Anonymous Function Names
+
+X<anonymous functions; names>
+
+Given a reference to a function, you can determine whether the function is
+named or anonymous with introspection:
+
+=begin programlisting
+
+    package ShowCaller;
+
+    sub show_caller
+    {
+        my ($package, $filename, $line, $sub) = caller(1);
+        say "Called from $sub in $package at $filename : $line";
+    }
+
+    sub main
+    {
+        my $anon_sub = sub { show_caller() };
+        show_caller();
+        $anon_sub->();
+    }
+
+    main();
+
+=end programlisting
+
+=begin sidebar
+
+X<CPAN; C<Sub::Identify>>
+
+The CPAN module C<Sub::Identify>'s C<sub_name> function simplifies this
+introspection.
+
+=end sidebar
+
+The result may be surprising:
+
+    Called from ShowCaller::B<main> in ShowCaller at anoncaller.pl : 20
+    Called from ShowCaller::B<__ANON__> in ShowCaller at anoncaller.pl : 17
+
+X<CPAN; C<Sub::Name>>
+
+The C<__ANON__> in the second line of output demonstrates that the anonymous
+function has no name that Perl can identify. This can complicate debugging.
+The CPAN module C<Sub::Name>'s C<subname()> function allows you to attach names
+to anonymous functions:
+
+=begin programlisting
+
+    use Sub::Name;
+    use Sub::Identify 'sub_name';
+
+    my $anon  = sub {};
+    say sub_name( $anon );
+
+    my $named = subname( 'pseudo-anonymous', $anon );
+    say sub_name( $named );
+    say sub_name( $anon );
+
+    say sub_name( sub {} );
+
+=end programlisting
+
+This program produces:
+
+    __ANON__
+    pseudo-anonymous
+    pseudo-anonymous
+    __ANON__
+
+Be aware that both references refer to the same underlying anonymous function.
+Using C<subname()> on one reference to a function will modify that anonymous
+function's name such that all other references to it will see the new name.
+
+=head2 Implicit Anonymous Functions
+
+X<anonymous functions; implicit>
+
+X<CPAN; C<Test::Fatal>>
+
+Perl 5 allows the declaration of anonymous functions implicitly through the use
+of prototypes (L<prototypes>). Though this feature exists nominally to enable
+programmers to write their own syntax such as that for C<map> and C<eval>, an
+interesting example is the use of I<delayed> functions that don't look like
+functions. Consider the CPAN module C<Test::Fatal>:
+
+=begin programlisting
+
+    use Test::More;
+    use Test::Fatal;
+
+    my $croaker = exception { die 'I croak!' };
+    my $liver   = exception { 1 + 1 };
+
+    like( $croaker, qr/I croak/, 'die() should throw an exception' );
+    is(   $liver,   undef,       'simple addition should not' );
+
+    done_testing();
+
+=end programlisting
+
+The function C<exception()> takes an anonymous function as its first argument.
+These calls are equivalent to:
+
+=begin programlisting
+
+    my $croaker = exception( sub { die 'I croak!' } );
+    my $liver   = exception( sub { 1 + 1 } );
+
+=end programlisting
+
+... but are easier to read.
+
+This syntax allows you to pass named functions by reference as well:
+
+=begin programlisting
+
+    B<sub croaker { die 'I croak!' }>
+
+    B<sub liver   { 1 + 1 }>
+
+    my $croaker = exception \&croaker;
+    my $liver   = exception \&liver;
+
+    like( $croaker, qr/I croak/, 'die() should throw an exception' );
+    is(   $liver,   undef,       'simple addition should not' );
+
+=end programlisting
+
+... but you may I<not> pass them as scalar references:
+
+=begin programlisting
+
+    B<my $croak_ref = \&croaker;>
+    B<my $live_ref  = \&liver;>
+
+    # BUGGY: does not work
+    my $croaker   = exception $croak_ref;
+    my $liver     = exception $live_ref;
+
+=end programlisting
+
+... because the prototype changes the way the Perl 5 parser interprets this
+code. It cannot determine with 100% clarity I<what> C<$croaker> and C<$liver>
+will contain, and so will throw an exception.
+
+=begin screen
+
+    Type of arg 1 to Test::Fatal::exception must be block or sub {}
+    (not private variable)
+
+=end screen
+
+Also be aware that a function which takes an anonymous function as the first of
+multiple arguments cannot have a trailing comma after the function block:
+
+=begin programlisting
+
+    use Test::More;
+    use Test::Fatal 'dies_ok';
+
+    dies_ok { die 'This is my boomstick!' } 'No movie references here';
+
+=end programlisting
+
+This is an occasionally confusing wart on otherwise helpful syntax, courtesy of
+a quirk of the Perl 5 parser. The syntactic clarity available by promoting bare
+blocks to anonymous functions can be helpful, but use it sparingly and document
+the API with care.
+=encoding utf8
+
+=head1 匿名函数
+
+Z<anonymous_functions>
+
+X<anonymous function>
+X<functions; anonymous>
+
+I<匿名函数> 就是没有名字的函数。它的行为和那些有名字的函数一样————你可以调用它，
+也可以把参数传递给它，从其中返回结果，复制引用给它————它可以做到任何具名函数可以
+做到的事。区别就是它没有名字。你可以用引用来处理匿名函数（参见引用 L<references> 
+和函数引用 L<function_references>）。
+
+=head2 声明匿名函数
+
+你不能独立地声明一个匿名函数；你必须在构造完成后将它复制给一个变量，或直接调用它，
+再就是将它作为参数传递给另一个函数，显式或是隐式地。使用 C<sub> 关键字而不加命名
+将显式地创建一个匿名函数：
+
+=begin programlisting
+
+    my $anon_sub = sub { ... };
+
+=end programlisting
+
+X<dispatch table>
+
+一个名为 I<分派表> 的 Perl 5 惯用语，使用哈希将输入和行为关联起来：
+
+=begin programlisting
+
+    my %dispatch =
+    (
+        plus     => sub { $_[0]  + $_[1] },
+        minus    => sub { $_[0]  - $_[1] },
+        times    => sub { $_[0]  * $_[1] },
+        goesinto => sub { $_[0]  / $_[1] },
+        raisedto => sub { $_[0] ** $_[1] },
+    );
+
+    sub dispatch
+    {
+        my ($left, $op, $right) = @_;
+
+        die "Unknown operation!"
+            unless exists $dispatch{ $op };
+
+        return $dispatch{ $op }->( $left, $right );
+    }
+
+=end programlisting
+
+C<dispatch()> 函数以 C<(2, 'times', 2)> 的形式接受参数并且返回对操作求值后的
+结果。
+
+你可以在使用函数引用的地方用匿名函数。对于 Perl 来说，两者是等价的。没有什么
+I<迫使> 使用匿名函数来进行这些数学操作，但对这类短小的函数来说，写成这样也没
+有什么不好。
+
+你可以将 C<%dispatch> 重写为：
+
+=begin programlisting
+
+    my %dispatch =
+    (
+        plus     => \&add_two_numbers,
+        minus    => \&subtract_two_numbers,
+        # ……等等
+    );
+
+    sub add_two_numbers      { $_[0] + $_[1] }
+
+    sub subtract_two_numbers { $_[0] - $_[1] }
+
+=end programlisting
+
+……相比因语言特性而做出这样的决定，到不如说是出于对代码可维护性，或是安全，再或
+是团队编程风格的考虑。
+
+=begin sidebar
+
+因间接通过分派表而带来的一个好处是，它对未经验证调用函数提供了一定的保护————调用
+这些函数安全多了。如果你的分派函数盲目地假设那些字符串直接对应到某操作应该调用的
+函数名，那么可以想象通过将 C<'Internal::Functions::some_malicious_function'> 修
+整为操作名，一个恶意用户可以调用任何其他名称空间的任何函数。
+
+=end sidebar
+
+你也可以在将匿名函数作为参数传递的过程中创建它们：
+
+=begin programlisting
+
+    sub invoke_anon_function
+    {
+        my $func = shift;
+        return $func->( @_ );
+    }
+
+    sub named_func
+    {
+        say 'I am a named function!';
+    }
+
+    invoke_anon_function( \&named_func );
+    invoke_anon_function( sub { say 'I am an anonymous function' } );
+
+=end programlisting
+
+=head2 匿名函数名称
+
+X<anonymous functions; names>
+
+存在可以鉴别一个引用是指向具名函数还是匿名函数的特例————匿名函数（正常情况下）没
+有名称。这听上去很玄乎很傻也很明显，内省可以现实这个区别：
+
+=begin programlisting
+
+    package ShowCaller;
+
+    use Modern::Perl;
+
+    sub show_caller
+    {
+        my ($package, $filename, $line, $sub) = caller(1);
+        say "Called from $sub in $package at $filename : $line";
+    }
+
+    sub main
+    {
+        my $anon_sub = sub { show_caller() };
+        show_caller();
+        $anon_sub->();
+    }
+
+    main();
+
+=end programlisting
+
+结果可能令人惊讶：
+
+    Called from ShowCaller::B<main> in ShowCaller at anoncaller.pl : 20
+    Called from ShowCaller::B<__ANON__> in ShowCaller at anoncaller.pl : 17
+
+输出第二行中的 C<__ANON__> 展示了匿名函数没有 Perl 可以识别的名称。即使这样会难以调试，
+但还是有方法可以绕过它的隐匿性。
+
+CPAN 模块 C<Sub::Identify> 提供了一系列有用的函数来对传入函数引用的名称进行检查。
+C<sub_name()> 便是不二之选：
+
+=begin programlisting
+
+    use Sub::Identify 'sub_name';
+
+    sub main
+    {
+        say sub_name( \&main );
+        say sub_name( sub {} );
+    }
+
+    main();
+
+=end programlisting
+
+正如你想象的那样，名称的缺少使得调试匿名函数更加复杂。CPAN 模块 C<Sub::Name> 可以
+帮助你。它的 C<subname()> 函数允许你将名称附加在匿名函数上：
+
+=begin programlisting
+
+    use Sub::Name;
+    use Sub::Identify 'sub_name';
+
+    my $anon  = sub {};
+    say sub_name( $anon );
+
+    my $named = subname( 'pseudo-anonymous', $anon );
+    say sub_name( $named );
+    say sub_name( $anon );
+
+    say sub_name( sub {} );
+
+=end programlisting
+
+这个程序产生如下输出：
+
+    __ANON__
+    pseudo-anonymous
+    pseudo-anonymous
+    __ANON__
+
+注意这两个引用都指向同一个底层函数。用 C<$anon> 调用 C<subname()> 并且将结果
+返回给 C<$named> 将修改该函数，因此其他指向这个函数的引用将见到相同的名字，即
+C<pseudo-anonymous>。
+
+=head2 隐式匿名函数
+
+X<anonymous functions; implicit>
+
+所有这些匿名函数声明都是显式的。Perl 5 通过原型（L<prototypes>）允许隐式匿名函数。
+虽然这个特性的存在名义上是为了让程序员为诸如 C<map> 和 C<eval> 编写自己的语法，一
+个有趣的例子就是对 I<延迟> 函数的使用看上去不像函数那样。考虑 CPAN 模块 C<Test::Exception>：
+
+=begin programlisting
+
+    use Test::More tests => 2;
+    use Test::Exception;
+
+    throws_ok { die "I croak!" }
+         qr/I croak/, 'die() should throw an exception';
+
+    lives_ok  { 1 + 1 }
+        'simple addition should not';
+
+=end programlisting
+
+C<lives_ok()> 和 C<throws_ok()> 都接受一个匿名函数作为它们的第一个参数。这段代码
+等价于：
+
+=begin programlisting
+
+    throws_ok( B<sub { die "I croak!" },>
+         qr/I croak/, 'die() should throw an exception' );
+
+    lives_ok( B<sub { 1 + 1 },>
+        'simple addition should not' );
+
+=end programlisting
+
+……只不过更加易读罢了。
+
+=begin sidebar
+
+注意隐式版本中匿名函数最后的大括号后 I<没有> 逗号。相比其他一些好用的语法来说，
+有时候这是一个令人疑惑的疙瘩，是 Perl 5 语法分析器古怪的好意。
+
+=end sidebar
+
+这两个函数的实现都不关心你是用何种机制传递函数引用的。你也可以按引用传递一个具
+名函数：
+
+=begin programlisting
+
+    B<sub croak { die 'I croak!' }>
+
+    B<sub add   { 1 + 1 }>
+
+    throws_ok B<\&croak>,
+         qr/I croak/, 'die() should throw an exception';
+
+    lives_ok  B<\&add>,
+        'simple addition should not';
+
+=end programlisting
+
+……但你 I<不> 能将他们当作标量引用传递：
+
+=begin programlisting
+
+    sub croak { die 'I croak!' }
+
+    sub add   { 1 + 1 }
+
+    B<my $croak = \&croak;>
+    B<my $add   = \&add;>
+
+    throws_ok B<$croak>,
+         qr/I croak/, 'die() should throw an exception';
+
+    lives_ok  B<$add>,
+        'simple addition should not';
+
+=end programlisting
+
+……因为原型改变了 Perl 5 语法分析器解释这段代码的方式。在对 C<throws_ok()> 或是
+C<lives_ok()> 的调用进行求值时，它不能 100% 清楚地确定 C<$croak> 和 C<$add> 含
+有 I<什么内容>，因此它会产生一条错误信息：
+
+=begin screen
+
+    Type of arg 1 to Test::Exception::throws_ok must be block or sub {}
+    (not private variable) at testex.pl line 13,
+    near "'die() should throw an exception';"
+
+=end screen
+
+不提缺点，这个特性偶尔也有其用处。虽然通过将裸代码块提升为匿名函数带来了语法上
+的清晰，但请有节制地使用并小心编写好 API 文档。

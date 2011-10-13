@@ -1,0 +1,40 @@
+=head0 Objects
+
+Programming is a management activity. The larger the program, the more details
+you must manage. Our only hope to manage this complexity is to exploit
+abstraction (treating similar things similarly) and encapsulation (grouping
+related details together).
+
+Functions alone are insufficient for large problems. Several techniques group
+functions into units of related behaviors--one popular technique is object
+orientation. Perl 5's default object system is flexible, but minimal. You can
+build great things on top of it, but it provides little assistance for some
+basic tasks.
+
+L<moose>
+
+L<blessed_references>
+
+L<reflection>
+
+L<advanced_oo>
+=encoding utf8
+
+=head0 对象
+
+鉴于同时掌控所有程序细节的难度，编写大型程序要比编写小程序更需要规范。抽象（找到
+并利用相似性和近似之处）和封装（组织特定细节并按其所属来访问）是掌控细节之必需。
+
+函数有益于此，但函数本身对庞大的程序来说远远不够。面向对象是一种流行的技术，它将
+函数组织为可执行相关行为的对象。
+
+Perl 5 的默认对象系统极其简单。它相当灵活────你可以在它之上创建几乎所有其他对象
+系统────但它几乎不对完成最基本任务提供任何简易的辅助。
+
+L<moose>
+
+L<blessed_references>
+
+L<reflection>
+
+L<advanced_oo>

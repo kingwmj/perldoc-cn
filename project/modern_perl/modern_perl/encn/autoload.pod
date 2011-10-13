@@ -1,0 +1,597 @@
+=head1 AUTOLOAD
+
+Z<autoload>
+
+Perl does not require you to declare every function before you call it. Perl
+will happily attempt to call a function even if it doesn't exist. Consider the
+program:
+
+=begin programlisting
+
+    #! perl
+
+    use Modern::Perl;
+
+    bake_pie( filling => 'apple' );
+
+=end programlisting
+
+When you run it, Perl will throw an exception due to the call to the undefined
+function C<bake_pie()>. Now add a function called C<AUTOLOAD()>:
+
+=begin programlisting
+
+    sub AUTOLOAD {}
+
+=end programlisting
+
+When you run the program now, nothing will happen.  Perl will call a function
+named C<AUTOLOAD()> in a package--if it exists-- whenever normal dispatch.
+Change the C<AUTOLOAD()> to emit a message:
+
+=begin programlisting
+
+    sub AUTOLOAD { B<say 'In AUTOLOAD()!'> }
+
+=end programlisting
+
+=head2 Basic Features of AUTOLOAD
+
+The C<AUTOLOAD()> function receives the arguments passed to the undefined
+function in C<@_> directly. Manipulate these arguments as you like:
+
+=begin programlisting
+
+    sub AUTOLOAD
+    {
+        # pretty-print the arguments
+        B<local $" = ', ';>
+        B<say "In AUTOLOAD(@_)!">
+    }
+
+=end programlisting
+
+X<C<$AUTOLOAD>>
+
+The I<name> of the undefined function is available in the pseudo-global
+variable C<$AUTOLOAD>:
+
+=begin programlisting
+
+    sub AUTOLOAD
+    {
+        B<our $AUTOLOAD;>
+
+        # pretty-print the arguments
+        local $" = ', ';
+        say "In AUTOLOAD(@_) B<for $AUTOLOAD>!"
+    }
+
+=end programlisting
+
+The C<our> declaration (L<our>) scopes this variable to the body of
+C<AUTOLOAD()>. The variable contains the fully-qualified name of the undefined
+function (in this case, C<main::bake_pie>). Remove the package name with a
+regular expression (L<regex>):
+
+=begin programlisting
+
+    sub AUTOLOAD
+    {
+        B<my ($name) = our $AUTOLOAD =~ /::(\w+)$/;>
+
+        # pretty-print the arguments
+        local $" = ', ';
+        say "In AUTOLOAD(@_) B<for $name>!"
+    }
+
+=end programlisting
+
+Whatever C<AUTOLOAD()> returns, the original call receives:
+
+=begin programlisting
+
+    say secret_tangent( -1 );
+
+    sub AUTOLOAD { return 'mu' }
+
+=end programlisting
+
+So far, these examples have merely intercepted calls to undefined functions.
+You have other options.
+
+=head2 Redispatching Methods in AUTOLOAD()
+
+X<C<AUTOLOAD>; redispatch>
+X<C<AUTOLOAD>; delegation>
+X<OO; delegation>
+X<delegation>
+X<OO; proxying>
+X<proxying>
+
+A common pattern in OO programming (L<moose>) is to I<delegate> or I<proxy>
+certain methods in one object to another, often contained in or otherwise
+accessible from the former. A logging proxy can help with debugging:
+
+=begin programlisting
+
+    package Proxy::Log;
+
+    sub new
+    {
+        my ($class, $proxied) = @_;
+        bless \$proxied, $class;
+    }
+
+    sub AUTOLOAD
+    {
+        my ($name) = our $AUTOLOAD =~ /::(\w+)$/;
+        Log::method_call( $name, @_ );
+
+        my $self = shift;
+        return $$self->$name( @_ );
+    }
+
+=end programlisting
+
+This C<AUTOLOAD()> logs the method call. Then it dereferences the proxied
+object from a blessed scalar reference, extracts the name of the undefined
+method, then invokes that method on the proxied object with the provided
+parameters.
+
+=head2 Generating Code in AUTOLOAD()
+
+X<C<AUTOLOAD>; code installation>
+
+This double dispatch is easy to write but inefficient. Every method call on the
+proxy must fail normal dispatch to end up in C<AUTOLOAD()>.  Pay that penalty
+only once by installing new methods into the proxy class as the program needs
+them:
+
+=begin programlisting
+
+    sub AUTOLOAD
+    {
+        B<my ($name) = our $AUTOLOAD =~ /::(\w+)$/;>
+
+        my $method = sub
+        {
+            Log::method_call( $name, @_ );
+
+            my $self = shift;
+            return $self->$name( @_ );
+        }
+
+        B<no strict 'refs';>
+        B<*{ $AUTOLOAD } = $method;>
+        return $method->( @_ );
+    }
+
+=end programlisting
+
+The body of the previous C<AUTOLOAD()> has become a closure (L<closures>) bound
+over the I<name> of the undefined method. Installing that closure in the
+appropriate symbol table allows all subsequent dispatch to that method to find
+the created closure (and avoid C<AUTOLOAD()>). This code finally invokes the
+method directly and returns the result.
+
+Though this approach is cleaner and almost always more transparent than
+handling the behavior directly in C<AUTOLOAD()>, the code I<called> by
+C<AUTOLOAD()> may detect that dispatch has gone through C<AUTOLOAD()>.  In
+short, C<caller()> will reflect the double-dispatch of both techniques shown so
+far. While it may violate encapsulation to care that this occurs, leaking the
+details of I<how> an object provides a method may also violate encapsulation.
+
+X<tailcalls>
+X<C<goto>; tailcall>
+
+Some code uses a tailcall (L<tailcalls>) to I<replace> the current invocation
+of C<AUTOLOAD()> with a call to the destination method:
+
+=begin programlisting
+
+    sub AUTOLOAD
+    {
+        B<my ($name) = our $AUTOLOAD =~ /::(\w+)$/;>
+
+        my $method = sub { ... }
+
+        no strict 'refs';
+        *{ $AUTOLOAD } = $method;
+        B<goto &$method;>
+    }
+
+=end programlisting
+
+This has the same effect as invoking C<$method> directly, except that
+C<AUTOLOAD()> will no longer appear in the list of calls available from
+C<caller()>, so it looks like the generated method was simply called directly.
+
+=head2 Drawbacks of AUTOLOAD
+
+Z<autoload_drawbacks>
+
+X<C<AUTOLOAD>; drawbacks>
+X<C<UNIVERSAL::can>>
+X<C<can()>>
+X<C<subs> pragma>
+X<pragmas; C<subs>>
+X<functions; predeclaration>
+
+C<AUTOLOAD()> can be useful tool, though it is difficult to use properly. The
+naE<iuml>ve approach to generating methods at runtime means that the C<can()>
+method will not report the right information about the capabilities of objects
+and classes. The easiest solution is to predeclare all functions you plan to
+C<AUTOLOAD()> with the C<subs> pragma:
+
+=begin programlisting
+
+    use subs qw( red green blue ochre teal );
+
+=end programlisting
+
+That technique has the advantage of documenting your intent but the
+disadvantage that you have to maintain a static list of functions or methods.
+Overriding C<can()> (L<universal>) sometimes works better:
+
+=begin programlisting
+
+    sub can
+    {
+        my ($self, $method) = @_;
+
+        # use results of parent can()
+        my $meth_ref = $self->SUPER::can( $method );
+        return $meth_ref if $meth_ref;
+
+        # add some filter here
+        return unless $self->should_generate( $method );
+
+        $meth_ref = sub { ... };
+        no strict 'refs';
+        return *{ $method } = $meth_ref;
+    }
+
+    sub AUTOLOAD
+    {
+        my ($self) = @_;
+        my ($name) = our $AUTOLOAD =~ /::(\w+)$/;>
+
+        return unless my $meth_ref = $self->can( $name );
+        goto &$meth_ref;
+    }
+
+=end programlisting
+
+C<AUTOLOAD()> is a big hammer; it can catch functions and methods you had no
+intention of autoloading, such as C<DESTROY()>, the destructor of objects. If
+you write a C<DESTROY()> method with no implementation, Perl will happily
+dispatch to it instead of C<AUTOLOAD()>:
+
+=begin programlisting
+
+    # skip AUTOLOAD()
+    sub DESTROY {}
+
+=end programlisting
+
+=begin sidebar
+
+The special methods C<import()>, C<unimport()>, and C<VERSION()> never go
+through C<AUTOLOAD()>.
+
+=end sidebar
+
+If you mix functions and methods in a single namespace which inherits from
+another package which provides its own C<AUTOLOAD()>, you may see the strange
+error:
+
+=begin screen
+
+  Use of inherited AUTOLOAD for non-method I<slam_door>() is deprecated
+
+=end screen
+
+If this happens to you, simplify your code; you've called a function which does
+not exist in a package which inherits from a class which contains its own
+C<AUTOLOAD()>. The problem compounds in several ways: mixing functions and
+methods in a single namespace is often a design flaw, inheritance and
+C<AUTOLOAD()> get complex very quickly, and reasoning about code when you don't
+know what methods objects provide is difficult.
+
+C<AUTOLOAD()> is useful for quick and dirty programming, but robust code avoids
+it.
+=encoding utf8
+
+=head1 AUTOLOAD
+
+Z<autoload>
+
+你没有必要为调用而定义 I<每一个> 函数和方法。Perl 提供了一种机制，通过它你可以
+截获不存在方法的调用。这样你就可以只定义所需的函数或提供有趣的错误信息和警告。
+
+考虑如下程序：
+
+=begin programlisting
+
+    #! perl
+
+    use Modern::Perl;
+
+    bake_pie( filling => 'apple' );
+
+=end programlisting
+
+当运行它时，Perl 将因调用未定义的函数 C<bake_pie()> 而抛出一个异常。现在添加一个
+名为 C<AUTOLOAD()> 的函数：
+
+=begin programlisting
+
+    sub AUTOLOAD {}
+
+=end programlisting
+
+除了错误不再出现，没有发生任何明显改变。在某个包中，名为 C<AUTOLOAD()> 函数的出现
+告诉 Perl 无论是正常分派或方法缺失时都调用它。可以将 C<AUTOLOAD()> 稍作修改，显示
+一个消息来演示这一点：
+
+=begin programlisting
+
+    sub AUTOLOAD { B<say 'In AUTOLOAD()!'> }
+
+=end programlisting
+
+=head2 AUTOLOAD 的基本功能
+
+C<AUTOLOAD()> 函数直接在 C<@_> 中接到传递给未定义函数的参数。你可以按喜好修改
+这些参数：
+
+=begin programlisting
+
+    sub AUTOLOAD
+    {
+        # 将参数美化输出
+        B<local $" = ', ';>
+        B<say "In AUTOLOAD(@_)!">
+    }
+
+=end programlisting
+
+X<$AUTOLOAD>
+
+未定义函数的 I<名称> 可以从伪全局变量 C<$AUTOLOAD> 得到：
+
+=begin programlisting
+
+    sub AUTOLOAD
+    {
+        B<our $AUTOLOAD;>
+
+        # 将参数美化输出
+        local $" = ', ';
+        say "In AUTOLOAD(@_) B<for $AUTOLOAD>!"
+    }
+
+=end programlisting
+
+C<our> 声明（L<our>）将此变量的作用域限制在 C<AUTOLOAD()> 的代码体内。这个变量
+包含了未定义函数的完全限定名称。就此例来说，这个函数是 C<main::bake_pie>。一个
+常见的惯用语可以用来去掉包名：
+
+=begin programlisting
+
+    sub AUTOLOAD
+    {
+        B<my ($name) = our $AUTOLOAD =~ /::(\w+)$/;>
+
+        # 将参数美化输出
+        local $" = ', ';
+        say "In AUTOLOAD(@_) B<for $name>!"
+    }
+
+=end programlisting
+
+最终，无论 C<AUTOLOAD()> 返回什么，最初的调用都会收到：
+
+=begin programlisting
+
+    say secret_tangent( -1 );
+
+    sub AUTOLOAD { return 'mu' }
+
+=end programlisting
+
+目前为止，这些例子只是截获了对未定义函数的调用。还有其他的路可走。
+
+=head2 在 AUTOLOAD() 中重分派方法
+
+X<AUTOLOAD; redispatch>
+X<AUTOLOAD; delegation>
+X<OO; delegation>
+X<delegation>
+X<OO; proxying>
+X<proxying>
+
+面向对象编程中一个常见的模式就是将某方法 I<委托> 或 I<代理> 给另一个对象，通
+常包含在前者内或可以从中访问到。这是一个记录日志有趣且有效的方法：
+
+=begin programlisting
+
+    package Proxy::Log;
+
+    sub new
+    {
+        my ($class, $proxied) = @_;
+        bless \$class, $proxied;
+    }
+
+    sub AUTOLOAD
+    {
+        my ($name) = our $AUTOLOAD =~ /::(\w+)$/;
+        Log::method_call( $name, @_ );
+
+        my $self = shift;
+        return $$self->$name( @_ );
+    }
+
+=end programlisting
+
+这段 C<AUTOLOAD()> 的代码记录方法调用。它的神奇之处就在于一个简单的模式；它从
+经 bless 的标量引用中对被代理对象进行解引用，提取未定义方法的名称，然后调用被
+代理对象中的方法，传递参数给它。
+
+=head2 在 AUTOLOAD() 中生成代码
+
+X<AUTOLOAD; code installation>
+
+那个双重分派的技巧很有用，但比要求的要慢一些。每一次代理的方法调用必须通过常规
+分派，失败，最后落入 C<AUTOLOAD()>。因为程序需要它们，作为代替，你可以将新方法
+安装到代理类中：
+
+=begin programlisting
+
+    sub AUTOLOAD
+    {
+        B<my ($name) = our $AUTOLOAD =~ /::(\w+)$/;>
+
+        my $method = sub
+        {
+            Log::method_call( $name, @_ );
+
+            my $self = shift;
+            return $self->$name( @_ );
+        }
+
+        B<no strict 'refs';>
+        B<*{ $AUTOLOAD } = $method;>
+        return $method->( @_ );
+    }
+
+
+=end programlisting
+
+之前 C<AUTOLOAD()> 的代码体变为了一个匿名函数。这段代码创建绑定未定义函数 I<名称>
+的闭包（L<closures>）。接着它在合适的符号表内安装该闭包，使得方法的后续分派能够找
+到已经创建的闭包而避开 C<AUTOLOAD()>。最后，它直接调用该方法，返回结果。
+
+虽然这个方法更为清爽且几乎总是比直接在 C<AUTOLOAD()> 处理调用行为来得更透明，但被
+C<AUTOLOAD()> I<调用> 的代码也许会检测到分派过程经过了 C<AUTOLOAD()>。简单说来，C<caller()>
+将反映出目前两种双重分派的技巧。这便可能成为一个问题；诚然你可以争辩这是一种打破闭
+包的行为，必须被关注，但是让一个对象 I<如何> 提供方法的内幕泄露到宽广的世界中去，也
+算得上是违反闭包原则了。
+
+X<tailcall>
+X<goto; tailcall>
+
+另一种惯用语就是使用尾部调用（L<tailcalls>）从 C<caller()>（调用者的）
+“记忆”中把当前对 C<AUTOLOAD()> 的调用 I<替换> 为目标方法：
+
+=begin programlisting
+
+    sub AUTOLOAD
+    {
+        B<my ($name) = our $AUTOLOAD =~ /::(\w+)$/;>
+
+        my $method = sub { ... }
+
+        no strict 'refs';
+        *{ $AUTOLOAD } = $method;
+        B<goto &$method;>
+    }
+
+=end programlisting
+
+这样做和直接调用 C<$method> 等效。C<AUTOLOAD()> 不会出现在 C<caller()> 的调用列表中，
+因此看上去就像生成的方法被直接调用一般。
+
+=head2 AUTOLOAD 的缺点
+
+Z<autoload_drawbacks>
+
+X<AUTOLOAD; drawbacks>
+X<UNIVERSAL::can>
+X<can()>
+X<subs>
+X<pragmas; subs>
+X<functions; predeclaration>
+
+在某些情况下，C<AUTOLOAD()> 的确是一个有用的工具，但它也会变得难以正确使用。请考虑使
+用其他的技巧，比如 C<Moose> 及其他抽象来代替。
+
+运行时生成方法的朴素手段意味着 C<can()> 方法将不能正确地报告有关类和对象能力的相关信
+息。你可以用几种方法解决这个问题；其中最简单的一个就是用 C<subs> 编译命令预定义所有
+打算让 AUTOLOAD 处理的函数：
+
+=begin programlisting
+
+    use subs qw( red green blue ochre teal );
+
+=end programlisting
+
+这个技巧的好处是可以让你记录下你的意图，但坏处则是你必须维护一个静态的函数、方法名
+称表。
+
+你也可以提供你自己的 C<can()> 方法来生成合适的函数：
+
+=begin programlisting
+
+    sub can
+    {
+        my ($self, $method) = @_;
+
+        # 是用上级 can() 方法的结果
+        my $meth_ref = $self->SUPER::can( $method );
+        return $meth_ref if $meth_ref;
+
+        # 添加过滤器
+        return unless $self->should_generate( $method );
+
+        $meth_ref = sub { ... };
+        no strict 'refs';
+        return *{ $method } = $meth_ref;
+    }
+
+    sub AUTOLOAD
+    {
+        my ($self) = @_;
+        my ($name) = our $AUTOLOAD =~ /::(\w+)$/;>
+
+        return unless my $meth_ref = $self->can( $name );
+        goto &$meth_ref;
+    }
+
+=end programlisting
+
+根据需求的复杂程度，你也许会发现维护一个类似包含所缺方法名称的包作用域哈希之
+类的数据结构更为简单。
+
+注意某些原本不欲提供的方法也可能通过 C<AUTOLOAD()>。一个常见的罪犯便是 C<DESTROY()>，
+对象的析构器。最简便的方法就是提供一个不含实现的 C<DESTROY()> 方法；Perl 将高兴地分派
+此方法并将 C<AUTOLOAD()> 一起忽略：
+
+=begin programlisting
+
+    # 跳过 AUTOLOAD()
+    sub DESTROY {}
+
+=end programlisting
+
+=begin sidebar
+
+如 C<import()>、C<unimport()> 和 C<VERSION()> 等特殊方法绝不会通过 C<AUTOLOAD()>。
+
+=end sidebar
+
+如果你在一个继承某自行提供 C<AUTOLOAD()> 的包的名称空间内混用函数和方法，你可能会
+得到一个怪异的错误消息：
+
+=begin screen
+
+  Use of inherited AUTOLOAD for non-method I<slam_door>() is deprecated
+
+=end screen
+
+这会发生在当你尝试调用一个包内不存在的方法而所继承的类有包含它自己的 C<AUTOLOAD()> 时。
+这绝不是你的意图。这个问题由多个原因混合而成：在单个名称空间内混用函数和方法通常是一个
+设计缺陷，继承以及 C<AUTOLOAD()> 会很快地变得复杂，并且，在你不知道对象可以执行何种方
+法时，推理一段代码是很困难的。

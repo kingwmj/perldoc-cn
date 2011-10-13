@@ -1,0 +1,260 @@
+=head1 Scalars
+
+Z<scalars>
+
+X<scalars>
+
+Perl 5's fundamental data type is the I<scalar>, a single, discrete value.
+That value may be a string, an integer, a floating point value, a filehandle,
+or a reference--but it is always a single value.
+
+X<C<$>; sigil>
+X<sigils; C<$>>
+
+Scalars may be lexical, package, or global (L<globals>) variables. You may only
+declare lexical or package variables. The names of scalar variables must
+conform to standard variable naming guidelines (L<names>). Scalar variables
+always use the leading dollar-sign (C<$>) sigil (L<sigils>).
+
+=begin sidebar
+
+Scalar values and scalar context have a deep connection; assigning to a scalar
+provides scalar context. Using the scalar sigil with an aggregate variable
+imposes scalar context to access a single element of the hash or array.
+
+=end sidebar
+
+=head2 Scalars and Types
+
+A scalar variable can contain any type of scalar value without special
+conversions or casts, and the type of value stored in a variable can change:
+
+=begin programlisting
+
+    my $value;
+    $value = 123.456;
+    $value = 77;
+    $value = "I am Chuck's big toe.";
+    $value = Store::IceCream->new();
+
+=end programlisting
+
+Even though this code is I<legal>, changing the type of data stored in a scalar
+is a sign of confusion.
+
+This flexibility of type often leads to value coercion (L<coercion>). For
+example, you may treat the contents of a scalar as a string, even if you didn't
+explicitly assign it a string:
+
+=begin programlisting
+
+    my $zip_code       = 97006;
+    my $city_state_zip = 'Beaverton, Oregon' . ' ' . $zip_code;
+
+=end programlisting
+
+You may also use mathematical operations on strings:
+
+=begin programlisting
+
+    my $call_sign = 'KBMIU';
+    my $next_sign = $call_sign++;
+
+    # also fine as
+    $next_sign    = ++$call_sign;
+
+    # but I<does not work> as:
+    $next_sign    = $call_sign + 1;
+
+=end programlisting
+
+X<increment; string>
+
+=begin sidebar
+
+This magical string increment behavior has no corresponding magical decrement
+behavior. You can't get the previous string value by writing C<$call_sign-->.
+
+=end sidebar
+
+This string increment operation turns C<a> into C<b> and C<z> into C<aa>,
+respecting character set and case. While C<ZZ9> becomes C<AAA0>, C<ZZ09>
+becomes C<ZZ10>--numbers wrap around while there are more significant places to
+increment, as on a vehicle odometer.
+
+X<stringification>
+X<numification>
+
+Evaluating a reference (L<references>) in string context produces a string.
+Evaluating a reference in numeric context produces a number. Neither operation
+modifies the reference in place, but you cannot recreate the reference from
+either result:
+
+=begin programlisting
+
+    my $authors     = [qw( Pratchett Vinge Conway )];
+    my $stringy_ref = '' . $authors;
+    my $numeric_ref =  0 + $authors;
+
+=end programlisting
+
+C<$authors> is still useful as a reference, but C<$stringy_ref> is a string
+with no connection to the reference and C<$numeric_ref> is a number with no
+connection to the reference.
+
+X<C<Scalar::Util>>
+X<dualvars>
+X<C<dualvar()>>
+
+To allow coercion without data loss, Perl 5 scalars can contain both numeric
+and string components. The internal data structure which represents a scalar in
+Perl 5 has a numeric slot and a string slot. Accessing a string in a numeric
+context produces a scalar with both string and numeric values. The C<dualvar()>
+function within the core C<Scalar::Util> module allows you to manipulate both
+values directly within a single scalar.
+
+X<boolean>
+X<scalars; boolean values>
+X<boolean; true>
+X<boolean; false>
+X<strings; true>
+X<strings; false>
+X<numbers; true>
+X<numbers; false>
+
+Scalars do not contain a separate slot for boolean values. In boolean context,
+the empty string (C<''>) and C<'0'> are false. All other strings are true. In
+boolean context, numbers which evaluate to zero (C<0>, C<0.0>, and C<0e0>) are
+false. All other numbers are true.
+
+Be careful that the I<strings> C<'0.0'> and C<'0e0'> are true; this is one
+place where Perl 5 makes a distinction between what looks like a number and
+what really is a number.
+
+X<C<undef>>
+
+One other value is always false: C<undef>. This is the value of uninitialized
+variables as well as a value in its own right.
+=encoding utf-8
+
+=head1 标量
+
+Z<scalars>
+
+X<scalar>
+
+Perl 5 的基本数据类型是 I<标量>，它表示单个、离散的值。这个值可以是字符串、整数、浮点数、
+文件句柄或者引用────但它总是单个值。标量值和标量上下文有着深层次的联系，向标量赋值提供了
+标量上下文。
+
+标量可以是词法、包或全局（L<globals>）变量。你可能只希望声明词法或包变量。标量变量的名称
+必须符合 L<names> 中提及的指导条款。标量变量开头总是使用美元符号（C<$>）作为印记（L<sigils>）。
+
+=begin sidebar
+
+它的反面不 I<全> 正确，标量印记可以应用对集合变量的操作以决定通过此操作可以访问到的数量型。
+（L<arrays>、L<hashes>）
+
+=end sidebar
+
+=head2 标量和类型
+
+Perl 5 标量并非静态类型。一个标量可以包含任何标量类型的值而不必进行特殊的转换，并且变量内值
+的类型可以改变。下列代码是合法的：
+
+=begin programlisting
+
+    my $value;
+    $value = 123.456;
+    $value = 77;
+    $value = "I am Chuck's big toe.";
+    $value = Store::IceCream->new();
+
+=end programlisting
+
+虽然这是 I<合法的>，它可能会导致混乱。请给你的变量选择具有描述性、唯一的名字以避免这种迷惑。
+
+标量求值的类型上下文会可能会使 Perl 对该标量的值进行强制转换（L<coercion>）。例如，你可以把一个
+标量的内容作为字符串对待，即使你不明确地将其赋值给一个字符串。
+
+=begin programlisting
+
+    my $zip_code        = 97006;
+    my $city_state_zip  = 'Beaverton, Oregon' . ' ' . $zip_code;
+
+=end programlisting
+
+你也可以对字符串进行数学操作：
+
+=begin programlisting
+
+    my $call_sign = 'KBMIU';
+    my $next_sign = $call_sign++;
+
+    # 也可以这样
+    $next_sign    = ++$call_sign;
+
+    # 但是 I<不可以> 这样写：
+    $next_sign    = $call_sign + 1;
+
+=end programlisting
+
+X<increment; string>
+
+=begin sidebar
+
+这个神奇的字符串自增操作并没有对应的神奇字符串自减操作。你不能通过编写 C<$call_sign-->
+得到之前的字符串。
+
+=end sidebar
+
+字符串自增操作针对字符集和大小写将 C<a> 变为 C<b> 将 C<z> 变为 C<aa>。同样的，C<ZZ9> 
+变为 C<AA0>，但是 C<ZZ09> 就会成为 C<ZZ10>─────数字会照常进位，但不会延续到字母部分。
+
+X<stringification>
+X<numification>
+
+在字符串上下文中对引用（L<references>）求值会得到一个字符串，而在数值上下文对引用求值会
+得到一个数字。两个操作都不对引用做出修改，但你不能从得到的字符串或数字中重新创建该引用。
+
+=begin programlisting
+
+    my $authors     = [qw( Pratchett Vinge Conway )];
+    my $stringy_ref = '' . $authors;
+    my $numeric_ref =  0 + $authors;
+
+=end programlisting
+
+C<$authors> 仍旧可以作为引用使用，但是 C<$stringy_ref> 是一个和该引用没有关联的字符串，
+C<$numeric_ref> 是一个和该引用没有关联的数字。
+
+X<Scalar::Util>
+X<dualvars>
+X<dualvar(); Scalar::Util>
+X<looks_like_number()>
+X<looks_like_number;Scalar::Util>
+
+使得所有这些强制转换和操作成为可能的是，因为 Perl 5 标量可以包含数值部分以及字符串部分。
+Perl 5 中表示标量的内部数据结构有一个数值槽和一个字符串槽。在数值上下文中访问一个字符串
+最终产生一个拥有字符串和数值槽两者的标量。核心模块 C<Scalar::Util> 中的 C<dualvar()> 函
+数允许你对一个标量的这两个值进行改动。相似地，模块中的 C<looks_like_number()> 函数在所
+提供标量值被 Perl 5 认作数字时返回真。
+
+X<boolean>
+X<scalars; boolean values>
+X<boolean true>
+X<boolean false>
+X<strings; true>
+X<strings; false>
+X<numbers; true>
+X<numbers; false>
+
+标量没有单独针对布尔值的槽。在布尔上下文中，空字符串（C<''>）和 C<'0'> 为假。其他所有字
+符串为真。在布尔上下文中，求值得零的数字（C<0>、C<0.0> 和 C<0e0>）为假，其他所有数字为真。
+
+注意 I<字符串> C<'0.0'> 和 C<'0e0'> 是真值，这是 Perl 5 将看上去像数字的事物和数字区别对
+待的地方之一。
+
+X<undef>
+
+另有一个总是为假的值：C<undef>。这是未定义变量和它本身的值。

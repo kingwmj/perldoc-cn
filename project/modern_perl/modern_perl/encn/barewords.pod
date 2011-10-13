@@ -1,0 +1,381 @@
+=head1 Barewords
+
+Z<barewords>
+
+Perl uses sigils and other punctuation pervasively to help both the parser and
+the programmer identify the categories of named entities.  Even so, Perl is a
+malleable language.  You can write programs in the most creative, maintainable,
+obfuscated, or bizarre fashion as you prefer.  Maintainability is a concern of
+good programmers, but the developers of Perl itself don't presume to dictate
+what I<you> find most maintainable.
+
+X<barewords>
+X<C<strict> pragma>
+X<pragmas; C<strict>>
+
+Perl's parser understands the builtin Perl builtins and operators; it knows
+that C<bless()> means you're making objects (L<blessed_references>).  These are
+rarely ambiguous... but Perl programmers can add complexity to parsing by using
+I<barewords>.  A bareword is an identifier without a sigil or other attached
+disambiguation as to its intended syntactical function.  Because there's no
+Perl 5 builtin C<curse>, the literal word C<curse> appearing in source code is
+ambiguous.  Did you intend to use a variable C<$curse> or to call a function
+C<curse()>?  The C<strict> pragma warns about use of such ambiguous barewords
+for good reason.
+
+Even so, barewords are permissible in several places in Perl 5 for good reason.
+
+=head2 Good Uses of Barewords
+
+X<barewords; pros>
+X<hashes; bareword keys>
+X<C<+>; unary operator>
+
+Hash keys in Perl 5 are barewords.  These are usually not ambiguous because
+their use as keys is sufficient for the parser to identify them as the
+equivalent of single-quoted strings.  Yet be aware that attempting to evaluate
+a function call or a builtin operator (such as C<shift>) to I<produce> a hash
+key may not do what you expect, unless you disambiguate by providing arguments,
+using function argument parentheses, or prepending unary plus to force the
+evaluation of the builtin rather than its interpretation as a string:
+
+=begin programlisting
+
+    # the literal 'shift' is the key
+    my $value = $items{B<shift>};
+
+    # the value produced by shift is the key
+    my $value = $items{B<shift @_>}
+
+    # unary plus uses the builtin shift
+    my $value = $items{B<+>shift};
+
+=end programlisting
+
+X<packages; bareword names>
+
+Package names in Perl 5 are barewords in a sense.  Good naming conventions for
+packages (initial caps) help prevent unwanted surprises, but the parser uses a
+complex heuristic based on the code it's already compiled within the current
+namespace to determine whether C<< Package->method() >> means to call a
+function named C<Package()> and then call the C<method()> method on its results
+or whether to treat C<Package> as the name of a package.  You can disambiguate
+this with the postfix package separator (C<::>), but that's rare and admittedly
+ugly:
+
+=begin programlisting
+
+    # probably a class method
+    Package->method();
+
+    # definitely a class method
+    Package::->method();
+
+=end programlisting
+
+X<C<BEGIN>>
+X<C<DESTROY>>
+X<C<AUTOLOAD>>
+X<C<INIT>>
+X<C<UNITCHECK>>
+X<C<CHECK>>
+X<C<END>>
+
+The special named code blocks provide their own types of barewords.
+C<AUTOLOAD>, C<BEGIN>, C<CHECK>, C<DESTROY>, C<END>, C<INIT>, and C<UNITCHECK>
+I<declare> functions, but they do not need the C<sub> builtin to do so.  You
+may be familiar with the idiom of writing C<BEGIN> without C<sub>:
+
+=begin programlisting
+
+    package Monkey::Butler;
+
+    BEGIN { initialize_simians( __PACKAGE__ ) }
+
+=end programlisting
+
+You I<can> leave off the C<sub> on C<AUTOLOAD()> declarations, but that's
+uncommon.
+
+X<constants; barewords>
+
+Constants declared with the C<constant> pragma are usable as barewords:
+
+=begin programlisting
+
+    # don't use this for real authentication
+    use constant NAME     => 'Bucky';
+    use constant PASSWORD => '|38fish!head74|';
+
+    ...
+
+    return unless $name eq NAME && $pass eq PASSWORD;
+
+=end programlisting
+
+Be aware that these constants do I<not> interpolate in interpolation contexts
+such as double-quoted strings.
+
+X<prototypes; barewords>
+
+Constants are a special case of prototyped functions (L<prototypes>).  If
+you've predeclared a prototype for a function, you may use that function as a
+bareword; Perl 5 knows everything it needs to know to parse all occurrences of
+that function appropriately.  The other drawbacks of prototypes still apply.
+
+=head2 Ill-Advised Uses of Barewords
+
+X<barewords; cons>
+
+Barewords should be rare in modern Perl code; their ambiguity produces fragile
+code.  You can avoid them in almost every case, but you may encounter several
+poor uses of barewords in legacy code.
+
+X<barewords; filehandles>
+
+Prior to lexical filehandles (L<lexical_filehandles>), all file and directory
+handles used barewords.  You can almost always safely rewrite this code to use
+lexical filehandles; the exceptions are C<STDIN>, C<STDOUT>, and C<STDERR>.
+
+X<barewords; function calls>
+
+Code written without C<strict 'subs'> in effect may use bareword function
+names.  You may safely parenthesize the argument lists to these functions
+without changing the intent of the codeN<Use C<perl -MO=Deparse,-p> to
+discover how Perl parses them, then parenthesize accordingly.>.
+
+X<barewords; hash values>
+
+Along similar lines, old code may not take pains to quote the I<values> of hash
+pairs appropriately:
+
+=begin programlisting
+
+    # poor style; do not use
+    my %parents =
+    (
+        mother => Annette,
+        father => Floyd,
+    );
+
+=end programlisting
+
+Because neither the C<Floyd()> nor C<Annette()> functions exist, Perl parses
+these hash values as strings.  The C<strict 'subs'> pragma makes the parser
+give an error in this situation.
+
+X<barewords; sort functions>
+X<C<sort>>
+X<builtins; C<sort>>
+
+Finally, the C<sort> builtin can take as its second argument the I<name> of a
+function to use for sorting.  Instead provide a I<reference> to the function to
+use for sorting to avoid the use of barewords:
+
+=begin programlisting
+
+    # poor style; do not use
+    my @sorted = sort compare_lengths @unsorted;
+
+    # better style
+    my $comparison = \&compare_lengths;
+    my @sorted     = sort $comparison @unsorted;
+
+=end programlisting
+
+The result is one line longer, but it avoids the use of a bareword.  Unlike
+other bareword examples, Perl's parser needs no disambiguation for this syntax.
+There is only one way for it to interpret C<compare_lengths>.  However, the
+clarity of an explicit reference can help human readers.
+
+Perl 5's parser I<does not> understand the single-line version:
+
+=begin programlisting
+
+    # does not work
+    my @sorted = sort \&compare_lengths @unsorted;
+
+=end programlisting
+
+This is due to the special parsing of C<sort>; you cannot use an arbitrary
+expression (such as taking a reference to a named function) where a block or a
+scalar might otherwise go.
+
+=encoding utf8
+
+=head1 裸字
+
+Z<barewords>
+
+Perl 到处使用印记（sigil）和其他标点来同时帮助语法分析器和程序员区分具名实体的
+类别。即便如此，Perl 仍是一门可塑的语言。你可以按偏好用最具创意的、可维护的、
+混乱的、奇形怪状的风格来编写程序。可维护性是每一个优秀程序员都必须考虑的，但 Perl
+开发者本身并不会冒昧地对 I<你> 认为的可维护性做出任何假设。
+
+X<bareword>
+
+Perl 语法分析器理解内置的 Perl 关键字和操作符；它知道 C<bless()> 意味着你在创建
+对象（L<blessed_references>）。这些不太会产生歧义……但是 Perl 程序员可以通过使用
+I<裸字（barewords）> 添加语法分析的复杂度。裸字是一个标识符，它没有印记或其他用
+于说明其语法功用的附加消歧条件。因为 Perl 5 没有名为 C<curse> 的关键字，则出现在
+源代码中的字面词 C<curse> 就是有歧义的。你是想操作一个变量 C<$curse> 还是调用函数
+C<curse()>？C<strict> 编译命令有充分的理由对这类带歧义裸字的使用作出警告。
+
+即便如此，基于充分的理由，裸字仍允许在 Perl 5 的若干地方使用。
+
+=head2 裸字的正当使用
+
+X<barewords; pros>
+X<hashes; bareword keys>
+
+Perl 5 中的哈希键是裸字。键的用法已经足够让语法分析器将其识别为单引号字符串
+的等价物，因此它们不会产生歧义。还要注意意图通过对函数调用或内置操作符（例如
+C<shift>）求值而 I<产生> 一个哈希键的做法并不如你想象的那样，除非你消除歧义。
+
+=begin programlisting
+
+    # 'shift' 字面值是键
+    my $value = $items{B<shift>};
+
+    # 由 shift 产出的值是键
+    my $value = $items{B<shift @_>}
+
+    # 一元加号足够用于消除歧义
+    my $value = $items{B<+>shift};
+
+=end programlisting
+
+X<packages; bareword names>
+
+从某种意义上说，Perl 5 中的包名是裸字。良好的包命名习惯（首字母大写）有助于避免
+意外情况，但是语法分析器使用启发式（heuristic）方法决定 C<< Package->method() >>
+是否意味着先调用一个名为 C<Package()> 的函数接着调用结果的 C<method()> 方法，或者
+是否应该将 C<Package> 做包名对待。你可以通过后缀包分隔符（C<::>）对此消歧，但这种
+情况比较罕见，显然也很丑陋：
+
+=begin programlisting
+
+    # 可能是类方法
+    Package->method();
+
+    # 一定是类方法
+    Package::->method();
+
+=end programlisting
+
+X<BEGIN>
+X<DESTROY>
+X<AUTOLOAD>
+X<INIT>
+X<UNITCHECK>
+X<CHECK>
+X<END>
+
+特殊的具名代码块提供了独有的裸字。C<AUTOLOAD>、C<BEGIN>,、C<CHECK>、C<DESTROY>、
+C<END>、C<INIT> 和 C<UNITCHECK> I<声明> 了函数，但无需 C<sub> 关键字。你可能熟悉
+了编写不带 C<sub> 的 C<BEGIN> 惯用语：
+
+=begin programlisting
+
+    package Monkey::Butler;
+
+    BEGIN { initialize_simians( __PACKAGE__ ) }
+
+=end programlisting
+
+你 I<可以> 不在 C<AUTOLOAD()> 声明时使用 C<sub>，但不常见。
+
+X<constants; barewords>
+
+用 C<constant> 编译命令定义的常量可以按裸字使用：
+
+=begin programlisting
+
+    # 不要在正式验证时这样做
+    use constant NAME     => 'Bucky';
+    use constant PASSWORD => '|38fish!head74|';
+
+    ...
+
+    return unless $name eq NAME && $pass eq PASSWORD;
+
+=end programlisting
+
+注意这些常量 I<不会> 在内插上下文，如双引号字符串，中内插。
+
+X<prototypes; barewords>
+
+常量是原型函数（L<prototypes>）的特例。如果你预声明了函数的原型，你就可以将函数
+用作裸字；Perl 5 知道它要知道的每件事来正确的地对函数的每一处出现进行语法分析。
+原型的其他缺点仍然适用。
+
+=head2 裸字的欠考虑使用
+
+X<barewords; cons>
+
+裸字在现代化 Perl 代码中应该很少见；它们的歧义产生脆弱的代码。你可以在几乎所有
+地方避免使用它们，但是你可能会在遗留的代码中遇到若干对裸字蹩脚的使用。
+
+X<barewords; filehandles>
+
+在词法文件句柄之前（L<lexical_filehandles>），所有文件和目录句柄使用裸字。你几乎
+总是可以安全地将这些代码用词法文件句柄重写；除了 C<STDIN>、C<STDOUT>、C<STDERR>
+以外。
+
+X<barewords; function calls>
+
+没有启用 C<strict 'subs'> 而编写的代码可以使用裸字函数名。你可以安全地给这些函数
+的参数列表加上括号而不会改变代码意图N<使用 C<perl -MO=Deparse,-p> 可以显示 Perl
+如何对其进行语法分析，接着一一加上括号。>。
+
+X<barewords; hash values>
+
+类似地，旧式代码不会费神正确地对哈希对的 I<值> 加上引号：
+
+=begin programlisting
+
+    # 不良风格；不要使用
+    my %parents =
+    (
+        mother => Annette,
+        father => Floyd,
+    );
+
+=end programlisting
+
+因为名为 C<Floyd()> 和 C<Annette()> 的函数都不存在，Perl 将这些哈希值分析为字符串。
+C<strict 'subs'> 编译命令使语法分析器在这种情况下给出错误。
+
+X<barewords; sort functions>
+X<sort>
+X<operators; sort>
+
+最后，内置的 C<sort> 操作符以第二参数的形式接受一个用于排序的函数 I<名>。作为代替，
+提供一个用于排序的函数 I<引用> 可以避免使用裸字：
+
+=begin programlisting
+
+    # 不良用法；不要使用
+    my @sorted = sort compare_lengths @unsorted;
+
+    # 更好的风格
+    my $comparison = \&compare_lengths;
+    my @sorted     = sort $comparison @unsorted;
+
+=end programlisting
+
+结果代码要多出一行，但是它避免了对裸字的使用。不像其他裸字示例，Perl 的语法分析
+器不需要对这种语法消歧义。它仅有一种解释 C<compare_lengths> 的途径。然而，显式引
+用带来的清晰度为人类读者带来了好处。
+
+Perl 5 的语法分析器并 I<不> 理解这一单行版本：
+
+=begin programlisting
+
+    # 无法工作
+    my @sorted = sort \&compare_lengths @unsorted;
+
+=end programlisting
+
+这起因于对 C<sort> 的特殊语法分析；你不能使用任意表达式（诸如取具名函数的引用），
+但一个代码块或者一个标量可以行得通。

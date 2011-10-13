@@ -1,0 +1,691 @@
+=head1 Scope
+
+Z<scope>
+
+X<scope>
+X<encapsulation>
+
+I<Scope> in Perl refers to the lifespan and visibility of named entities.
+Everything with a name in Perl (a variable, a function) has a scope.  Scoping
+helps to enforce I<encapsulation>--keeping related concepts together and
+preventing them from leaking out.
+
+=head2 Lexical Scope
+
+Z<lexical_scope>
+
+X<lexical scope>
+X<scope; lexical>
+
+L<Lexical scope> is the scope visible as you I<read> a program. The Perl
+compiler resolves this scope during compilation. A block delimited by curly
+braces creates a new scope, whether a bare block, the block of a loop
+construct, the block of a C<sub> declaration, an C<eval> block, or any other
+non-quoting block:
+
+=begin programlisting
+
+    # outer lexical scope
+    {
+        package Robot::Butler;
+
+        # inner lexical scope
+        sub tidy_room
+        {
+            # further inner lexical scope
+            do {
+                ...
+            } while (@_);
+
+            # sibling inner lexical scope
+            for (@_)
+            {
+                ...
+            }
+        }
+    }
+
+=end programlisting
+
+X<variables; lexical>
+
+Lexical scope governs the visibility of variables declared with C<my>--
+I<lexical> variables. A lexical variable declared in one scope is visible in
+that scope and any scopes nested within it, but is invisible to sibling or
+outer scopes:
+
+=begin programlisting
+
+    # outer lexical scope
+    {
+        package Robot::Butler
+
+        my $battery_level;
+
+        sub tidy_room
+        {
+            my $timer;
+
+            do {
+                my $dustpan;
+                ...
+            } while (@_);
+
+            # sibling inner lexical scope
+            for (@_)
+            {
+                my $polish_cloth;
+                ...
+            }
+        }
+    }
+
+=end programlisting
+
+... C<$battery_level> is visible in all four scopes. C<$timer> is visible in
+the method, the C<do> block, and the C<for> loop.  C<$dustpan> is visible only
+in the C<do> block and C<$polish_cloth> within the C<for> loop.
+
+X<lexical shadowing>
+X<scope; lexical shadowing>
+
+Declaring a lexical in an inner scope with the same name as a lexical in an
+outer scope hides, or I<shadows>, the outer lexical:
+
+=begin programlisting
+
+    {
+        my $name = 'Jacob';
+
+        {
+            my $name = 'Edward';
+            say $name;
+        }
+
+        say $name;
+    }
+
+=end programlisting
+
+This program prints C<Edward> and then C<Jacob>N<Family members, not
+vampires.>. Even though redeclaring a lexical variable with the same name and
+type I<in the same lexical scope> produces a warning message, shadowing a
+lexical. This is a feature of encapsulation.
+
+=begin sidebar
+
+Lexical shadowing can happen by accident. Limit the scope of variables and the
+nesting of scopes to lessen your risk.
+
+=end sidebar
+
+Some lexical declarations have subtleties, such as a lexical variable used as
+the iterator variable of a C<for> loop. Its declaration comes outside of the
+block, but its scope is that I<within> the loop block:
+
+=begin programlisting
+
+    my $cat = 'Bradley';
+
+    for my $cat (qw( Jack Daisy Petunia Tuxedo ))
+    {
+        say "Iterator cat is $cat";
+    }
+
+    say "Static cat is $cat";
+
+=end programlisting
+
+X<lexical topic>
+X<topic; lexical>
+
+Similarly, C<given> (L<given_when>) creates a I<lexical topic> (akin to C<my
+$_>) within its block:
+
+=begin programlisting
+
+    $_ = 'outside';
+
+    given ('inner')
+    {
+        say;
+        $_ = 'this assignment does nothing useful';
+    }
+
+    say;
+
+=end programlisting
+
+... such that leaving the block restores the previous value of C<$_>.
+
+Functions--named and anonymous--provide lexical scoping to their bodies. This
+facilitates closures (L<closures>).
+
+=head3 Our Scope
+
+Z<our>
+X<builtins; C<our>>
+X<packages; scope>
+X<scope; packages>
+
+Within given scope, declare an alias to a package variable with the C<our>
+builtin. Like C<my>, C<our> enforces lexical scoping of the alias. The
+fully-qualified name is available everywhere, but the lexical alias is visible
+only within its scope.
+
+C<$our> is most useful with package global variables such as C<$VERSION> and
+C<$AUTOLOAD>.
+
+=head2 Dynamic Scope
+
+Z<dynamic_scope>
+
+X<dynamic scope>
+X<scope; dynamic>
+
+Dynamic scope resembles lexical scope in its visibility rules, but instead of
+looking outward in compile-time scopes, lookup traverses backwards through the
+calling context. While a package global variable may be I<visible> within all
+scopes, its I<value> changes depending on C<local>ization and assignment:
+
+=begin programlisting
+
+    {
+        our $scope;
+
+        sub inner
+        {
+            say $scope;
+        }
+
+        sub main
+        {
+            say $scope;
+            local $scope = 'main() scope';
+            middle();
+        }
+
+        sub middle
+        {
+            say $scope;
+            inner();
+        }
+
+        $scope = 'outer scope';
+        main();
+        say $scope;
+    }
+
+
+=end programlisting
+
+The program begins by declaring an C<our> variable, C<$scope>, as well as three
+functions. It ends by assigning to C<$scope> and calling C<main()>.
+
+X<builtins; C<local>>
+
+Within C<main()>, the program prints C<$scope>'s current value, C<outer scope>,
+then C<local>izes the variable. This changes the visibility of the symbol
+within the current lexical scope I<as well as> in any functions called from the
+I<current> lexical scope. Thus, C<$scope> contains C<main() scope> within the
+body of both C<middle()> and C<inner()>.  After C<main()> returns, when control
+flow reaches the end of its block, Perl restores the original value of the
+C<local>ized C<$scope>. The final C<say> prints C<outer scope> once again.
+
+X<lexicals; pads>
+X<lexpads>
+X<symbol tables>
+
+Package variables and lexical variables have different visibility rules and
+storage mechanisms within Perl. Every scope which contains lexical variables
+has a special data structure called a I<lexical pad> or I<lexpad> which can
+store the values for its enclosed lexical variables. Every time control flow
+enters one of these scopes, Perl creates another lexpad for the values of those
+lexical variables for that particular call. This makes functions work
+correctly, especially in recursive calls (L<recursion>).
+
+Each package has a single I<symbol table> which holds package variables as well
+as named functions. Importing (L<importing>) works by inspecting and
+manipulating this symbol table. So does C<local>. You may only C<local>ize
+global and package global variables--never lexical variables.
+
+X<C<$/>>
+X<magic variables; C<$/>>
+X<C<$!>>
+X<magic variables; C<$!>>
+X<C<$@>>
+X<magic variables; C<$@>>
+X<C<$|>>
+X<magic variables; C<$|>>
+
+C<local> is most often useful with magic variables. For example, C<$/>, the
+input record separator, governs how much data a C<readline> operation will read
+from a filehandle. C<$!>, the system error variable, contains the error number
+of the most recent system call. C<$@>, the Perl C<eval> error variable,
+contains any error from the most recent C<eval> operation. C<$|>, the autoflush
+variable, governs whether Perl will flush the currently C<select>ed filehandle
+after every write operation.
+
+C<local>izing these in the narrowest possible scope limits the effect of your
+changes. This can prevent strange behavior in other parts of your code.
+
+=head2 State Scope
+
+Z<state_scope>
+
+X<C<state>>
+X<builtins; C<state>>
+X<scope; state>
+
+Perl 5.10 added a new scope to support the C<state> builtin. State scope
+resembles lexical scope in terms of visibility, but adds a one-time
+initialization as well as value persistence:
+
+=begin programlisting
+
+    sub counter
+    {
+        B<state> $count = 1;
+        return $count++;
+    }
+
+    say counter();
+    say counter();
+    say counter();
+
+=end programlisting
+
+On the first call to C<counter>, Perl performs its single initialization of
+C<$count>. On subsequent calls, C<$count> retains its previous value. This
+program prints C<1>, C<2>, and C<3>. Change C<state> to C<my> and the program
+will print C<1>, C<1>, and C<1>.
+
+You may use an expression to set a C<state> variable's initial value:
+
+=begin programlisting
+
+    sub counter
+    {
+        state $count = shift;
+        return $count++;
+    }
+
+    say counter(B<2>);
+    say counter(B<4>);
+    say counter(B<6>);
+
+=end programlisting
+
+Even though a simple reading of the code may suggest that the output should be
+C<2>, C<4>, and C<6>, the output is actually C<2>, C<3>, and C<4>. The first
+call to the sub C<counter> sets the C<$count> variable. Subsequent calls will
+not change its value.
+
+C<state> can be useful for establishing a default value or preparing a cache,
+but be sure to understand its initialization behavior if you use it:
+
+=begin programlisting
+
+    sub counter
+    {
+        state $count = shift;
+        say 'Second arg is: ', shift;
+        return $count++;
+    }
+
+    say counter(2, 'two');
+    say counter(4, 'four');
+    say counter(6, 'six');
+
+=end programlisting
+
+The counter for this program prints C<2>, C<3>, and C<4> as expected, but the
+values of the intended second arguments to the C<counter()> calls are C<two>,
+C<4>, and C<6>--because the C<shift> of the first argument only happens in the
+first call to C<counter()>. Either change the API to prevent this mistake, or
+guard against it with:
+
+=begin programlisting
+
+    sub counter
+    {
+        my ($initial_value, $text) = @_;
+
+        state $count = $initial_value;
+        say "Second arg is: $text";
+        return $count++;
+    }
+
+    say counter(2, 'two');
+    say counter(4, 'four');
+    say counter(6, 'six');
+
+=end programlisting
+=encoding utf8
+
+=head1 作用域
+
+Z<scope>
+
+X<scope>
+X<encapsulation>
+
+Perl 中的 I<作用域> 指的是符号的生存期限和可见性。在 Perl 中，任何有名字的事物
+（比如：变量、函数）都有作用域。作用域的制定有助于强制 I<封装>————将相关的概念
+放在一块并防止它们的泄漏。
+
+=head2 词法作用域
+
+Z<lexical_scope>
+
+X<lexical scope>
+X<scope; lexical>
+
+在现代的 Perl 编程环境中，最常见的作用域形式是词法作用域。Perl 编译器在编译期解
+决此类作用域。这类作用域在你 I<阅读> 一段程序时是可见的。
+
+要创建一个新的词法作用域，可以编写一个由大括号分隔的代码块。这个代码块可以是一个
+裸块、或循环结构主体中的块、一个 C<eval> 块、或是其他任何没有用引号引起的块：
+
+=begin programlisting
+
+    # 外层词法作用域
+    {
+        package My::Class;
+
+        # 内层词法作用域
+        sub awesome_method
+        {
+            # 最内层词法作用域
+            do {
+                ...
+            } while (@_);
+
+            # 内层词法作用域的兄弟
+            for (@_)
+            {
+                ...
+            }
+        }
+    }
+
+=end programlisting
+
+X<variables; lexical>
+
+词法作用域管理由 C<my> 声明的变量的可见性；这些变量被称作 I<词法> 变量。在某块内
+声明的词法变量对块本身及嵌套块可见，但对此块兄弟或外层块是不可见的。因此，在如下
+代码中：
+
+=begin programlisting
+
+    # 外层词法作用域
+    {
+        package My::Class;
+
+        my $outer;
+
+        sub awesome_method
+        {
+            my $inner;
+
+            do {
+                my $do_scope;
+                ...
+            } while (@_);
+
+            # 兄弟内层词法作用域
+            for (@_)
+            {
+                my $for_scope;
+                ...
+            }
+        }
+    }
+
+=end programlisting
+
+…… C<$outer> 对全部四个作用域都是可见的。C<$inner> 在方法内部、C<do> 代码块和 
+C<for> 循环内都是可见。C<$do_scope> 仅在 C<do> 代码块内可见，C<$for_scope> 仅
+在 C<for> 循环内可见。
+
+X<lexical shadowing>
+X<scope; lexical shadowing>
+
+在内层词法作用域里声明一个和外部词法作用域同名的词法变量将隐藏，或者说 I<遮盖>
+外层的词法变量：
+
+=begin programlisting
+
+    {
+        my $name = 'Jacob';
+
+        {
+            my $name = 'Edward';
+            say $name;
+        }
+
+        say $name;
+    }
+
+=end programlisting
+
+这段程序在 C<Edward> 之后接着打印 C<Jacob>。即使在单一词法作用域内重新声明一个有
+着相同名称相同类型的词法变量会产生一个警告，在嵌套作用域内遮盖一个词法变量则不会；
+这是一个词法遮盖的特性。
+
+=begin sidebar
+
+词法遮盖可能会意外地发生，但是通过限制变量的作用域和嵌套的层数————这是一个良好
+的设计————你可以减小此风险。
+
+=end sidebar
+
+词法变量的声明有着自身的微妙性。例如，一个用作 C<for> 循环迭代器变量的词法变量的
+作用域是循环代码块 I<内部>。它对循环体外部是不可见的：
+
+=begin programlisting
+
+    my $cat = 'Bradley';
+
+    for my $cat (qw( Jack Daisy Petunia Tuxedo ))
+    {
+        say "Iterator cat is $cat";
+    }
+
+    say "Static cat is $cat";
+
+=end programlisting
+
+X<lexical topic>
+X<topic; lexical>
+
+类似地，C<given> 语法结构在其块内部创建了 I<词法话题> （近似于 C<my $_>）：
+
+=begin programlisting
+
+    $_ = 'outside';
+
+    given ('inner')
+    {
+        say;
+        $_ = 'whomped inner';
+    }
+
+    say;
+
+=end programlisting
+
+……先不管块内对 C<$_> 的赋值。你可以显式地词法化话题，虽然这在考虑动态作用域时
+更为有用。
+
+最后，词法作用域助于构造闭包（L<closures>）。注意不要意外地创建闭包。
+
+=head3 “Our”作用域
+
+Z<our>
+X<our>
+X<package scope>
+
+在给出的作用域内，你可以用 C<our> 关键字声明一个包变量的别名。就像 C<my> 一样，
+C<our> 强制了别名的词法作用域。完全限定名称随处可用，但是词法别名仅在自身作用
+域内可见。
+
+对 C<our> 的最好使用就是声明那些你 I<不得不> 有的变量，诸如 C<$VERSION>。
+
+=head2 动态作用域
+
+Z<dynamic_scope>
+
+X<dynamic scope>
+X<scope; dynamic>
+
+动态作用域在可见性规则上类似于词法作用域，和在编译期确定作用域相反，确定作用域
+的过程沿着调用上下文发生。考虑如下例子：
+
+=begin programlisting
+
+    {
+        our $scope;
+
+        sub inner
+        {
+            say $scope;
+        }
+
+        sub main
+        {
+            say $scope;
+            local $scope = 'main() scope';
+            middle();
+        }
+
+        sub middle
+        {
+            say $scope;
+            inner();
+        }
+
+        $scope = 'outer scope';
+        main();
+        say $scope;
+    }
+
+
+=end programlisting
+
+这段程序由声明一个 C<our> 变量————C<$scope>，和三个函数开始。它于赋值 C<$scope>
+并调用 C<main()> 处结束。
+
+X<local>
+
+在 C<main()> 内，这个程序打印出 C<$scope> 当前的值，即 C<outer scope>，接着用 
+C<local> 局部化了这个变量。这样，符号在当前词法作用域内的可见性 I<连同> 该符号
+在此词法作用域内调用的函数内部的可见性一同被改变。因此，C<$scope> 在 C<middle()>
+和 C<inner()> 两者的代码体包含 C<main() scope> 这个值。在 C<main()> 返回后————
+在该点流程退出了那个代码块，块中包含 C<local> 后的 C<$scope>，Perl 恢复了变量的
+原始值。最后的 C<say> 再次打印出 C<outer scope>。
+
+虽然此变量在这些作用域内都是 I<可见的>，但变量 I<值> 的变化却取决于用 C<local>
+局部化和赋值操作。这个特性既狡猾又微妙，但改变那些神奇变量时还是相当有用的。
+
+X<lexicals; pads>
+X<lexpads>
+X<symbol tables>
+
+包变量和词法变量在可见性上的区别用 Perl 5 自身存储这些变量的机制来解释，就会变得
+非常明显。词法变量被存放在附着于作用域的 I<词法板> 中。每次进入到词法作用域中都需
+要 Perl 来创建一个包含变量值的新的专属词法板。（这就是为什么函数可以调用自身而不会
+弄坏现有同名变量的值。）
+
+包变量的存储机制称为符号表。每个包都含有一个单独的符号表，并且每个包变量在其中占有
+一个条目。你可以用 Perl 检查并修改这个符号表；这就是导入的工作原理（L<importing>）。
+这也是为什么你只能用 C<local> 局部化全局和包变量而非词法变量。
+
+X<$/>
+X<magic variables; $/>
+X<$!>
+X<magic variables; $!>
+X<$@>
+X<magic variables; $@>
+X<$|>
+X<magic variables; $|>
+
+用 C<local> 局部化若干神奇变量的做法很常见。举例来说，C<$/>，输入记录分隔符，决
+定了 C<readline> 操作从一个文件句柄读入数据的量。C<$!>，系统错误变量，包含了最近
+一次系统调用的错误号。C<$@>，Perl C<eval> 错误变量，包含最近一次 C<eval> 操作中
+发生的任何错误。C<$|>，自动冲洗变量，决定了 Perl 是否应该在每次写操作之后，自动
+冲洗当前由 C<select> 选定的文件句柄。
+
+这些全部是特殊的全局变量；在最窄小的作用域内用 C<local> 局部化它们可以避免其余代
+码远距离修改所用全局变量而引发的问题。
+
+=head2 “State”（状态）作用域
+
+Z<state>
+
+X<state>
+X<scope; state>
+
+最后一种作用域类型的年纪和 Perl 5.10 一样。这是 C<state> 关键字的作用域。状态作用域
+类似词法作用域的地方在于，它声明一个词法变量，但是该变量的值只初始化 I<一次>，随后便
+一直保持：
+
+=begin programlisting
+
+    sub counter
+    {
+        B<state> $count = 1;
+        return $count++;
+    }
+
+    say counter();
+    say counter();
+    say counter();
+
+=end programlisting
+
+在第一次调用计数函数的地方，C<$count> 从未被初始化过，因此 Perl 执行赋值操作。这个
+程序打印出 C<1>、C<2> 和 C<3>。如果你把 C<state> 改为 C<my>，则会打印 C<1>、C<1>、C<1>。
+
+你也可以使用传入参数来初始化 C<state> 变量的值：
+
+=begin programlisting
+
+    sub counter
+    {
+        state $count = shift;
+        return $count++;
+    }
+
+    say counter(B<2>);
+    say counter(B<4>);
+    say counter(B<6>);
+
+=end programlisting
+
+虽然这段代码粗粗一读让人感觉输出应该是 C<2>、C<4>、C<6>，但实际上是 C<2>、C<3> 和
+C<4>。第一次对 C<counter> 子过程的调用设置了 C<$count> 变量。后续调用不会改变它的
+值。这个行为是意料之中并如同记载的一样，但这种实现方式会导致令人惊讶的结果：
+
+=begin programlisting
+
+    sub counter
+    {
+        state $count = shift;
+        say 'Second arg is: ', shift;
+        return $count++;
+    }
+
+    say counter(2, 'two');
+    say counter(4, 'four');
+    say counter(6, 'six');
+
+=end programlisting
+
+程序中计数器按预想地打印出 C<2>、C<3> 和 C<4>，但是成为 C<counter()> 调用的第
+二个参数却依次为 C<two>、C<4> 和 C<6>————并非因为这些整数确实变成了传递的第二
+个参数而是因为第一个参数的 C<shift> 只发生在第一次调用 C<counter()> 的时候。
+
+C<state> 在创建默认值和准备缓存时非常有用，但在使用它前，请确信你已经理解了它
+的初始化行为。

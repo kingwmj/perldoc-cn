@@ -1,0 +1,1811 @@
+=head1 Moose
+
+Z<moose>
+
+X<OO>
+X<objects>
+X<OO; classes>
+X<classes>
+
+In I<object orientation> (OO), or I<object oriented programming> (OOP),
+programs work with I<objects>--discrete, unique entities with their own
+identities.
+
+X<moose>
+
+I<Moose> is a complete object system for Perl 5N<See C<perldoc Moose::Manual>
+for more information.>. It provides simpler defaults, and advanced features
+borrowed from languages such as Smalltalk, Common Lisp, and Perl 6. Moose code
+interoperates with the default object system and is currently the best way to
+write object oriented code in modern Perl 5.
+
+A Moose object is a concrete instance of a I<class>, which is a template
+describing data and behavior specific to the object.
+
+=head2 Classes
+
+X<classes>
+X<builtins; C<package>>
+
+If an object is a concrete thing, its class is its abstract definition. Perl 5
+classes use packages (L<packages>) to provide namespaces:
+
+=begin programlisting
+
+    package Cat
+    {
+        use Moose;
+    }
+
+=end programlisting
+
+X<OO; instances>
+
+This C<Cat> class I<appears> to do nothing, but that's all Moose needs to make
+a class. Create objects (or I<instances>) of the C<Cat> class with the syntax:
+
+=begin programlisting
+
+    my $brad = Cat->new();
+    my $jack = Cat->new();
+
+=end programlisting
+
+Just as an arrow dereferences a reference, an arrow calls a method on an object
+or class.
+
+=head2 Methods
+
+X<OO; methods>
+X<OO; invocants>
+
+A I<method> is a function associated with a class. Just as functions belong to
+namespaces, so do methods belong to classes, with two differences. First, a
+method always operates on an I<invocant>. Calling C<new()> on C<Cat>
+effectively sends the C<Cat> class a message. The name of the class, C<Cat>, is
+C<new()>'s invocant. When you call a method on an object, that object is the
+invocant:
+
+=begin programlisting
+
+    my $choco = B<Cat>->new();
+    B<$choco>->sleep_on_keyboard();
+
+=end programlisting
+
+X<dispatch>
+X<method dispatch>
+X<OO; dispatch>
+X<OO; method dispatch>
+
+Second, a method call always involves a I<dispatch> strategy, where the object
+system selects the appropriate method. Given the simplicity of C<Cat>, the
+dispatch strategy is obvious, but much of the power of OO comes from this idea.
+
+Inside a method, its first argument is the invocant. Idiomatic Perl 5 uses
+C<$self> as its name. Suppose a C<Cat> can C<meow()>:
+
+=begin programlisting
+
+    package Cat
+    {
+        use Moose;
+
+        B<sub meow>
+        B<{>
+            B<my $self = shift;>
+            B<say 'Meow!';>
+        B<}>
+    }
+
+=end programlisting
+
+Now all C<Cat> instances can wake you up in the morning because they haven't
+eaten yet:
+
+=begin programlisting
+
+    my $fuzzy_alarm = Cat->new();
+    $fuzzy_alarm->meow() for 1 .. 3;
+
+=end programlisting
+
+X<class method>
+X<instance method>
+X<OO; class methods>
+X<OO; instance methods>
+X<methods; class>
+X<methods; instance>
+
+Methods which access invocant data are I<instance methods>, because they depend
+on the presence of an appropriate invocant to work correctly. Methods (such as
+C<meow()>) which do not access instance data are I<class methods>. You may
+invoke class methods on classes and class and instance methods on instances,
+but you cannot invoke instance methods on classes.
+
+X<methods; constructor>
+
+I<Constructors>, which I<create> instances, are obviously class methods. Moose
+provides a default constructor for you.
+
+Class methods are effectively namespaced global functions. Without access to
+instance data, they have few advantages over namespaced functions. Most OO code
+rightly uses instance methods, as they have access to instance data.
+
+=head2 Attributes
+
+X<attributes; objects>
+X<OO; attributes>
+X<OO; state>
+
+Every object in Perl 5 is unique. Objects can contain private data associated
+with each unique object--these are I<attributes>, I<instance data>, or object
+I<state>.
+
+X<attributes; typed>
+X<attributes; C<ro> (read only)>
+
+Define an attribute by declaring it as part of the class:
+
+=begin programlisting
+
+    package Cat
+    {
+        use Moose;
+
+        B<< has 'name', is => 'ro', isa => 'Str'; >>
+    }
+
+=end programlisting
+
+In English, that reads "C<Cat> objects have a C<name> attribute.  It's
+read-only, and is a string."
+
+Moose provides the C<has()> function, which declares an attribute. The first
+argument, C<'name'> here, is the attribute's name.  The C<< is => 'ro' >> pair
+of arguments declares that this attribute is C<r>ead C<o>nly, so you cannot
+modify it after you've set it. Finally, the C<< isa => 'Str' >> pair declares
+that the value of this attribute can only be a C<str>ing.
+
+X<methods; accessor>
+X<OO; accessor methods>
+
+As a result of C<has>, Moose creates an I<accessor> method named C<name()>,
+from which you can retrieve an instance's name, and allows you to pass a
+C<name> parameter to C<Cat>'s constructor:
+
+=begin programlisting
+
+    use Cat;
+
+    for my $name (qw( Tuxie Petunia Daisy ))
+    {
+        my $cat = Cat->new( name => $name );
+        say "Created a cat for ", $cat->name();
+    }
+
+=end programlisting
+
+X<attributes; untyped>
+
+If you pass a non-string, Moose will complain. Attributes do not I<need> to
+have types. In that case, anything goes:
+
+=begin programlisting
+
+    package Cat
+    {
+        use Moose;
+
+        has 'name', is => 'ro', isa => 'Str';
+        B<< has 'age',  is => 'ro'; >>
+    }
+
+    my $invalid = Cat->new( name => 'bizarre', age => 'purple' );
+
+=end programlisting
+
+Specifying a type allows Moose to perform some data validations for you.
+Sometimes this strictness is invaluable.
+
+=begin sidebar
+
+The Moose documentation uses parentheses to separate an attribute name from its
+characteristics:
+
+=begin programlisting
+
+        has 'name' => ( is => 'ro', isa => 'Str' );
+
+=end programlisting
+
+The form used in this book is equivalent, as are:
+
+=begin programlisting
+
+    has( 'name', 'is', 'ro', 'isa', 'Str' );
+    has( qw( name is ro isa Str ) );
+
+=end programlisting
+
+Choose the punctuation which offers you the most clarity. Moose's approach
+works nicely for complex declarations:
+
+=begin programlisting
+
+    has 'name' => (
+        is         => 'ro',
+        isa        => 'Str',
+
+        # advanced Moose options; perldoc Moose
+        init_arg   => undef,
+        lazy_build => 1,
+    );
+
+=end programlisting
+
+... while this book prefers a low-punctuation approach for simple declarations.
+
+=end sidebar
+
+X<attributes; C<rw> (read-write)>
+X<methods; mutator>
+X<OO; mutator methods>
+
+If you mark an attribute as readable I<and> writable (with C<< is => rw >>),
+Moose will create a I<mutator> method which can change that attribute's value:
+
+=begin programlisting
+
+    package Cat
+    {
+        use Moose;
+
+        has 'name', is => 'ro', isa => 'Str';
+        has 'age',  is => 'ro', isa => 'Int';
+        B<< has 'diet', is => 'rw'; >>
+    }
+
+    my $fat = Cat->new( name => 'Fatty', age => 8, diet => 'Sea Treats' );
+    say $fat->name(), ' eats ', $fat->diet();
+
+    B<< $fat->diet( 'Low Sodium Kitty Lo Mein' ); >>
+    say $fat->name(), ' now eats ', $fat->diet();
+
+=end programlisting
+
+An C<ro> accessor used as a mutator will throw the exception C<Cannot assign a
+value to a read-only accessor at ...>.
+
+Using C<ro> or C<rw> is a matter of design, convenience, and purity. Moose
+enforces no particular philosophy in this area. Some people suggest making all
+instance data C<ro> such that you must pass instance data into the constructor
+(L<immutability>). In the C<Cat> example, C<age()> might still be an accessor,
+but the constructor could take the I<year> of the cat's birth and calculate the
+age itself based on the current year. This approach consolidates validation
+code and ensure that all created objects have valid data.
+
+Instance data begins to demonstrate the value of object orientation. An object
+contains related data and can perform behaviors with that data. A class
+describes that data and those behaviors.
+
+=head2 Encapsulation
+
+X<encapsulation>
+X<OO; encapsulation>
+
+Moose allows you to declare I<which> attributes class instances possess (a cat
+has a name) as well as the attributes of those attributes (you cannot change a
+cat's name). Moose itself decides how to I<store> those attributes. You can
+change that if you like, but allowing Moose to manage your storage encourages
+I<encapsulation>: hiding the internal details of an object from external users
+of that object.
+
+Consider a change to how C<Cat>s manage their ages. Instead of passing a value
+for an age to the constructor, pass in the year of the cat's birth and
+calculate the age as needed:
+
+=begin programlisting
+
+    package Cat
+    {
+        use Moose;
+
+        has 'name',        is => 'ro', isa => 'Str';
+        has 'diet',        is => 'rw';
+        B<< has 'birth_year',  is => 'ro', isa => 'Int'; >>
+
+        B<sub age>
+        B<{>
+            B<my $self = shift;>
+            B<my $year = (localtime)[5] + 1900;>
+
+            B<< return $year - $self->birth_year(); >>
+        B<}>
+    }
+
+=end programlisting
+
+While the syntax for I<creating> C<Cat> objects has changed, the syntax for
+I<using> C<Cat> objects has not. Outside of C<Cat>, C<age()> behaves as it
+always has. I<How> it works internally is a detail to the C<Cat> class.
+
+=begin sidebar
+
+Retain the old syntax for I<creating> C<Cat> objects by customizing the
+generated C<Cat> constructor to allow passing an C<age> parameter. Calculate
+C<birth_year> from that. See C<perldoc Moose::Manual::Attributes>.
+
+=end sidebar
+
+X<attributes; default values>
+
+Calculating ages has another advantage. A I<default attribute value> will do
+the right thing when someone creates a new C<Cat> object without passing a
+birth year:
+
+=begin programlisting
+
+    package Cat
+    {
+        use Moose;
+
+        has 'name',        is => 'ro', isa => 'Str';
+        has 'diet',        is => 'rw', isa => 'Str';
+        B<< has 'birth_year',  is => 'ro', isa => 'Int', >>
+                           B<< default => sub { (localtime)[5] + 1900 }; >>
+    }
+
+=end programlisting
+
+The C<default> keyword on an attribute takes a function referenceN<You can use
+a simple value such as a number or string directly, but use a function
+reference for anything more complex.> which returns the default value for that
+attribute when constructing a new object. If the code creating an object passes
+no constructor value for that attribute, the object gets the default value:
+
+=begin programlisting
+
+    my $kitten = Cat->new( name => 'Choco' );
+
+=end programlisting
+
+... and that kitten will have an age of C<0> until next year.
+
+=head3 Polymorphism
+
+Encapsulation is useful, but the real power of object orientation is much
+broader. A well designed OO program can manage many types of data. When well
+designed classes encapsulate specific details of objects into the appropriate
+places, something curious happens: the code often becomes I<less> specific.
+
+Moving the details of what the program knows about individual C<Cat>s (the
+attributes) and what the program knows that C<Cat>s can do (the methods) into
+the C<Cat> class means that code that deals with C<Cat> instances can happily
+ignore I<how> C<Cat> does what it does.
+
+Consider a function which displays details of an object:
+
+=begin programlisting
+
+    sub show_vital_stats
+    {
+        my $object = shift;
+
+        say 'My name is ', $object->name();
+        say 'I am ',       $object->age();
+        say 'I eat ',      $object->diet();
+    }
+
+=end programlisting
+
+X<genericity>
+X<OO; genericity>
+
+It's obvious (in context) that this function works if you pass it a C<Cat>
+object. In fact, it will do the right thing for any object with the appropriate
+three accessors, no matter I<how> that object provides those accessors and no
+matter I<what kind> of object it is: C<Cat>, C<Caterpillar>, or C<Catbird>. The
+function is sufficiently generic that any object which respects this interface
+is a valid parameter.
+
+X<polymorphism>
+X<OO; polymorphism>
+
+This property of I<polymorphism> means that you can substitute an object of one
+class for an object of another class if they provide the same external
+interface.
+
+=begin sidebar
+
+X<duck typing>
+X<OO; duck typing>
+
+Some languages and environments require a formal relationship between two
+classes before allowing a program to substitute instances for each other.  Perl
+5 provides ways to enforce these checks, but it does not require them. Its
+default ad-hoc system lets you treat any two instances with methods of the same
+name as equivalent enough. Some people call this I<duck typing>, arguing that
+any object which can C<quack()> is sufficiently duck-like that you can treat it
+as a duck.
+
+=end sidebar
+
+C<show_vital_stats()> cares that an invocant is valid only in that it supports
+three methods, C<name()>, C<age()>, and C<diet()> which take no arguments and
+each return something which can concatenate in a string context. You may have a
+hundred different classes in your code, none of which have any obvious
+relationships, but they will work with this method if they conform to this
+expected behavior.
+
+Consider how you might enumerate a zoo's worth of animals without this
+polymorphic function. The benefit of genericity should be obvious. As well, any
+specific details about how to calculate the age of an ocelot or octopus can
+belong in the relevant class--where it matters most.
+
+Of course, the mere existence of a method called C<name()> or C<age()> does not
+by itself imply the behavior of that object. A C<Dog> object may have an
+C<age()> which is an accessor such that you can discover C<$rodney> is 9 but
+C<$lucky> is 4. A C<Cheese> object may have an C<age()> method that lets you
+control how long to stow C<$cheddar> to sharpen it. C<age()> may be an accessor
+in one class but not in another:
+
+=begin programlisting
+
+    # how old is the cat?
+    my $years = $zeppie->age();
+
+    # store the cheese in the warehouse for six months
+    $cheese->age();
+
+=end programlisting
+
+Sometimes it's useful to know I<what> an object does. For that, you must
+understand its type.
+
+=head2 Roles
+
+Z<roles>
+X<roles>
+
+A I<role> is a named collection of behavior and stateN<See the Perl 6 design
+documents on roles at U<http://feather.perl6.nl/syn/S14.html> and research on
+Smalltalk traits at U<http://scg.unibe.ch/research/traits> for copious
+details.>. While a class organizes behaviors and state into a template for
+objects, a role organizes a named collection of behaviors and state.
+
+You can instantiate a class, but not a role. A role is something a class does.
+
+Given an C<Animal> which has an age and a C<Cheese> which can age, one
+difference may be that C<Animal> does the C<LivingBeing> role, while the
+C<Cheese> does the C<Storable> role:
+
+=begin programlisting
+
+    package LivingBeing
+    {
+        use Moose::Role;
+
+        requires qw( name age diet );
+    }
+
+=end programlisting
+
+Anything which does this role must supply the C<name()>, C<age()>, and
+C<diet()> methods. The C<Cat> class must explicitly mark that it does the role:
+
+=begin programlisting
+
+    package Cat
+    {
+        use Moose;
+
+        has 'name',        is => 'ro', isa => 'Str';
+        has 'diet',        is => 'rw', isa => 'Str';
+        has 'birth_year',  is => 'ro', isa => 'Int',
+                           default => sub { (localtime)[5] + 1900 };
+
+        B<with 'LivingBeing';>
+
+        sub age { ... }
+    }
+
+=end programlisting
+
+X<roles; composition>
+
+The C<with> line causes Moose to I<compose> the C<LivingBeing> role into the
+C<Cat> class. Composition ensures all of the attributes and methods of the role
+part of the class. C<LivingBeing> requires any composing class to provide
+methods named C<name()>, C<age()>, and C<diet()>. C<Cat> satisfies these
+constraints.
+
+If C<LivingBeing> were composed into a class which did not provide those
+methods, Moose would throw an exception.
+
+=begin sidebar
+
+The C<with> keyword used to apply roles to a class must occur I<after>
+attribute declaration so that composition can identify any generated accessor
+methods.
+
+=end sidebar
+
+Now all C<Cat> instances will return a true value when queried if they provide
+the C<LivingBeing> role. C<Cheese> objects should not:
+
+=begin programlisting
+
+    say 'Alive!' if $fluffy->DOES('LivingBeing');
+    say 'Moldy!' if $cheese->DOES('LivingBeing');
+
+=end programlisting
+
+This design technique separates the I<capabilities> of classes and objects from
+the I<implementation> of those classes and objects. The special behavior of the
+C<Cat> class, where it stores the birth year of the animal and calculates the
+age directly, could itself be a role:
+
+=begin programlisting
+
+    package CalculateAge::From::BirthYear
+    {
+        use Moose::Role;
+
+        has 'birth_year', is      => 'ro',
+                          isa     => 'Int',
+                          default => sub { (localtime)[5] + 1900 };
+
+        sub age
+        {
+            my $self = shift;
+            my $year = (localtime)[5] + 1900;
+
+            return $year - $self->birth_year();
+        }
+    }
+
+=end programlisting
+
+Extracting this role from C<Cat> makes the useful behavior available to other
+classes. Now C<Cat> can compose both roles:
+
+=begin programlisting
+
+    package Cat
+    {
+        use Moose;
+
+        has 'name', is => 'ro', isa => 'Str';
+        has 'diet', is => 'rw';
+
+        B<with 'LivingBeing', 'CalculateAge::From::BirthYear';>
+    }
+
+=end programlisting
+
+Notice how the C<age()> method of C<CalculateAge::From::BirthYear> satisfies
+the requirement of the C<LivingBeing> role. Notice also that any check that
+C<Cat> performs C<LivingBeing> returns a true value. Extracting C<age()> into a
+role has only changed the details of I<how> C<Cat> calculates an age. It's
+still a C<LivingBeing>. C<Cat> can choose to implement its own age or get it
+from somewhere else. All that matters is that it provides an C<age()> which
+satisfies the C<LivingBeing> constraint.
+
+X<allomorphism>
+X<roles; allomorphism>
+
+Just as polymorphism means that you can treat multiple objects with the same
+behavior in the same way, this I<allomorphism> means that an object may
+implement the same behavior in multiple ways.
+
+Pervasive allomorphism can reduce the size of your classes and increase the
+code shared between them. It also allows you to name specific and discrete
+collections of behaviors--very useful for testing for capabilities instead of
+implementations.
+
+X<OO; mixins>
+X<OO; multiple inheritance>
+X<OO; monkeypatching>
+
+To compare roles to other design techniques such as mixins, multiple
+inheritance, and monkeypatching, see
+U<http://www.modernperlbooks.com/mt/2009/04/the-why-of-perl-roles.html>.
+
+=head3 Roles and DOES()
+
+X<C<DOES()>>
+X<Moose; C<DOES()>>
+
+When you compose a role into a class, the class and its instances will return a
+true value when you call C<DOES()> on them:
+
+=begin programlisting
+
+    say 'This Cat is alive!' if $kitten->DOES( 'LivingBeing' );
+
+=end programlisting
+
+=head2 Inheritance
+
+Z<inheritance>
+
+X<inheritance>
+X<OO; inheritance>
+X<Moose; inheritance>
+
+Perl 5's object system supports I<inheritance>, which establishes a
+relationship between two classes such that one specializes the other. The child
+class behaves the same way as its parent--it has the same number and types of
+attributes and can use the same methods. It may have additional data and
+behavior, but you may substitute any instance of a child where code expects its
+parent. In one sense, a subclass provides the role implied by the existence of
+its parent class.
+
+=begin sidebar
+
+Should you use roles or inheritance? Roles provide composition-time safety,
+better type checking, better factoring of code, and finer-grained control over
+names and behaviors, but inheritance is more familiar to experienced developers
+of other languages. Use inheritance when one class truly I<extends> another.
+Use a role when a class needs additional behavior, and when you can give that
+behavior a meaningful name.
+
+=end sidebar
+
+Consider a C<LightSource> class which provides two public attributes
+(C<candle_power> and C<enabled>) and two methods (C<light> and C<extinguish>):
+
+=begin programlisting
+
+    package LightSource
+    {
+        use Moose;
+
+        has 'candle_power', is      => 'ro', isa     => 'Int',
+                            default => 1;
+        has 'enabled',      is      => 'ro', isa     => 'Bool',
+                            default => 0,    writer  => '_set_enabled';
+
+        sub light
+        {
+            my $self = shift;
+            $self->_set_enabled(1);
+        }
+
+        sub extinguish
+        {
+            my $self = shift;
+            $self->_set_enabled(0);
+        }
+    }
+
+=end programlisting
+
+=begin sidebar
+
+The C<writer> option to the C<enabled> attribute creates a private accessor
+usable within the class to set the value.
+
+=end sidebar
+
+=head3 Inheritance and Attributes
+
+A subclass of C<LightSource> could define a super candle which provides a
+hundred times the amount of light:
+
+=begin programlisting
+
+    package SuperCandle
+    {
+        use Moose;
+
+        B<extends 'LightSource'>;
+
+        has 'B<+>candle_power', default => 100;
+    }
+
+=end programlisting
+
+X<Moose; C<extends>>
+
+C<extends> takes a list of class names to use as parents of the current class.
+If that were the only line in this class, C<SuperCandle> objects would behave
+the same as C<LightSource> objects. It would have both the C<candle_power> and
+C<enabled> attributes as well as the C<light()> and C<extinguish()> methods.
+
+The C<+> at the start of an attribute name (such as C<candle_power>) indicates
+that the current class does something special with that attribute. Here the
+super candle overrides the default value of the light source, so any new
+C<SuperCandle> created has a light value of 100 candles.
+
+When you invoke C<light()> or C<extinguish()> on a C<SuperCandle> object, Perl
+will look in the C<SuperCandle> class for the method, then in each parent.  In
+this case, those methods are in the C<LightSource> class.
+
+X<Moose; attribute inheritance>
+
+Attribute inheritance works similarly (see C<perldoc Class::MOP>).
+
+=begin sidebar
+
+X<methods; resolution>
+X<method resolution order>
+X<methods; dispatch order>
+X<multiple inheritance>
+X<objects; inheritance>
+X<objects; multiple inheritance>
+X<MRO>
+
+I<Method dispatch order> (or I<method resolution order> or I<MRO>) is obvious
+for single-parent classes. Look in the object's class, then its parent, and so
+on until you find the method or run out of parents. Classes which inherit from
+multiple parents (I<multiple inheritance>)--suppose your C<Hovercraft> extends
+both C<Boat> and C<Car>--require trickier dispatch. Reasoning about multiple
+inheritance is complex. Avoid multiple inheritance when possible.
+
+Perl 5 uses a depth-first method resolution strategy. It searches the class of
+the I<first> named parent and all of that parent's parents recursively before
+searching the classes of subsequent parents. The C<mro> pragma (L<pragmas>)
+provides alternate strategies, including the C3 MRO strategy which searches a
+given class's immediate parents before searching any of their parents.
+
+See C<perldoc mro> for more details.
+
+=end sidebar
+
+=head3 Inheritance and Methods
+
+X<Moose; overriding methods>
+X<Moose; C<override>>
+
+As with attributes, subclasses may override methods. Imagine a light that you
+cannot extinguish:
+
+=begin programlisting
+
+    package Glowstick
+    {
+        use Moose;
+
+        extends 'LightSource';
+
+        sub extinguish {}
+    }
+
+=end programlisting
+
+Calling C<extinguish()> on a glowstick does nothing, even though
+C<LightSource>'s method does something. Method dispatch will find the
+subclass's method. You may not have meant to do this. When you do, use Moose's
+C<override> to express your intention clearly.
+
+Within an overridden method, Moose's C<super()> allows you to call the
+overridden method:
+
+=begin programlisting
+
+    package LightSource::Cranky
+    {
+        use Carp;
+        use Moose;
+
+        extends 'LightSource';
+
+        B<override> light => sub
+        {
+            my $self = shift;
+
+            Carp::carp( "Can't light a lit light source!" )
+                if $self->enabled;
+
+            B<super()>;
+        };
+
+        B<override> extinguish => sub
+        {
+            my $self = shift;
+
+            Carp::carp( "Can't extinguish an unlit light source!" )
+                unless $self->enabled;
+
+            B<super()>;
+        };
+    }
+
+=end programlisting
+
+This subclass adds a warning when trying to light or extinguish a light source
+that already has the current state. The C<super()> function dispatches to the
+nearest parent's implementation of the current method, per the normal Perl 5
+method resolution order.
+
+=begin sidebar
+
+Moose's method modifiers can do similar things--and more. See C<perldoc
+Moose::Manual::MethodModifiers>.
+
+=end sidebar
+
+=head3 Inheritance and isa()
+
+X<C<isa()>>
+X<Moose; C<isa()>>
+
+Perl's C<isa()> method returns true if its invocant is or extends a named
+class. That invocant may be the name of a class or an instance of an object:
+
+=begin programlisting
+
+    say 'Looks like a LightSource' if     $sconce->isa( 'LightSource' );
+    say 'Monkeys do not glow'      unless $chimpy->isa( 'LightSource' );
+
+=end programlisting
+
+=head2 Moose and Perl 5 OO
+
+X<Moose; compared to default Perl 5 OO>
+
+Moose provides many features beyond Perl 5's default OO.  While you I<can>
+build everything you get with Moose yourself (L<blessed_references>), or cobble
+it together with a series of CPAN distributions, Moose is worth using. It is a
+coherent whole, with good documentation. Many important projects use it
+successfully. Its development community is mature and attentive.
+
+X<metaprogramming>
+X<Moose; MOP>
+X<Moose; metaprogramming>
+X<C<Class::MOP>>
+X<C<Class::MOP::Class>>
+
+Moose takes care of constructors, destructors, accessors, and encapsulation.
+You must do the work of declaring what you want, but what you get back is safe
+and easy to use. Moose objects can extend and work with objects from the
+vanilla Perl 5 system.
+
+Moose also allows I<metaprogramming>--manipulating your objects through Moose
+itself. If you've ever wondered which methods are available on a class or an
+object or which attributes an object supports, this information is available:
+
+=begin programlisting
+
+    my $metaclass = Monkey::Pants->meta();
+
+    say 'Monkey::Pants instances have the attributes:';
+
+    say $_->name for $metaclass->get_all_attributes;
+
+    say 'Monkey::Pants instances support the methods:';
+
+    say $_->fully_qualified_name for $metaclass->get_all_methods;
+
+=end programlisting
+
+You can even see which classes extend a given class:
+
+=begin programlisting
+
+    my $metaclass = Monkey->meta();
+
+    say 'Monkey is the superclass of:';
+
+    say $_ for $metaclass->subclasses;
+
+=end programlisting
+
+See C<perldoc Class::MOP::Class> for more information about metaclass
+operations and C<perldoc Class::MOP> for Moose metaprogramming information.
+
+Moose and its I<meta-object protocol> (or MOP) offers the possibility of a
+better syntax for declaring and working with classes and objects in Perl 5.
+This is valid Perl 5 code:
+
+=begin programlisting
+
+    use MooseX::Declare;
+
+    B<role> LivingBeing { requires qw( name age diet ) }
+
+    B<role> CalculateAge::From::BirthYear
+    {
+        has 'birth_year', is => 'ro', isa => 'Int',
+                          default => sub { (localtime)[5] + 1900 };
+
+        B<method> age
+        {
+            return (localtime)[5] + 1900 - $self->birth_year();
+        }
+    }
+
+    B<class Cat with LivingBeing with CalculateAge::From::BirthYear>
+    {
+        has 'name', is => 'ro', isa => 'Str';
+        has 'diet', is => 'rw';
+    }
+
+=end programlisting
+
+X<CPAN; C<MooseX::Declare>>
+X<CPAN; C<Devel::Declare>>
+
+The C<MooseX::Declare> CPAN distribution uses the CPAN distribution
+C<Devel::Declare> to add new Moose-specific syntax. The C<class>, C<role>, and
+C<method> keywords reduce the amount of boilerplate necessary to write good
+object oriented code in Perl 5.  Note specifically the declarative nature of
+this example, as well as the lack of C<my $self = shift;> in C<age()>.
+
+While Moose is not a part of the Perl 5 core, its popularity ensures that it's
+available on many OS distributions. Perl 5 distributions such as Strawberry
+Perl and ActivePerl also include it. Even though Moose is a CPAN module and not
+a core library, its cleanliness and simplicity make it essential to modern Perl
+programming.
+
+=begin sidebar
+
+X<CPAN; C<Any::Moose>>
+
+Moose programs do use more memory than non-Moose programs, but the
+C<Any::Moose> CPAN module helps reduce the cost of features you don't use.
+
+=end sidebar
+=encoding utf8
+
+=head1 Moose
+
+Z<moose>
+X<moose>
+
+Moose 是一个专为 Perl 5 提供的更为完整的对象系统。它基于现有的 Perl 5 对象系统
+创建，并提供了更为简单的默认操作、更好的集成、以及来自其它语言────包括 Smalltalk、
+Common Lisp 和 Perl 6────的更为先进的特性。如果你只想编写一些简单的程序、维护陈年
+代码或者 Moose 不适用时，Perl 5 的对象系统仍然值得一学，但 Moose 是目前为止在现代
+化 Perl 5 中编写面向对象程序的最佳途径。
+
+X<object orientation>
+X<object oriented programming>
+X<OO>
+X<OOP>
+X<objects>
+X<classes>
+
+I<面向对象>，或 I<面向对象程序设计>，是一种程序编排方法，它将组件分块为离散的唯一
+的实体。这些实体称为 I<对象>。用 Moose 的术语来说，每一个对象是某一个 I<类> 的实例，
+类作为模版描述了对象包含的数据和专属的行为。
+
+=head2 类
+
+X<classes>
+X<package>
+
+Perl 5 中的类存储类数据。类可以有一个名称。默认地，Perl 5 类使用包来提供名称空间：
+
+=begin programlisting
+
+    {
+        package Cat;
+
+        use Moose;
+    }
+
+=end programlisting
+
+X<instance>
+X<OO; instances>
+
+C<Cat> 类看上去没有做任何事，但 Moose 却做这做那以定义此类并向 Perl 注册它。完成
+之后，你可以创建 C<Cat>（猫）类的对象（或 I<实例>）：
+
+=begin programlisting
+
+    my $brad = Cat->new();
+    my $jack = Cat->new();
+
+=end programlisting
+
+箭头语法看上去不会那么陌生。就像解引用，此处箭头调用一个类或对象的方法。
+
+=head2 方法
+
+X<method>
+X<invocant>
+
+I<method> 就是和一个类关联的函数。表面上看起来，它就像一个完全限定的函数调用，但
+有两点重要的区别。第一，方法调用总是对执行方法 I<被调用者> 进行的。按创建两个 C<Cat>
+对象的例子，类的名称（C<Cat>）就是被调用者：
+
+=begin programlisting
+
+    my $fuzzy = B<Cat>->new();
+
+=end programlisting
+
+X<dispatch>
+X<method dispatch>
+
+第二，一处方法调用总是引发 I<分派> 策略。分派策略描述了对象系统如何决定调用 I<哪些>
+方法。在只有一个 C<Cat> 对象时看上去很显然，但方法分派是对象系统设计的基本要求。
+
+Perl 5 中方法的被调用者是方法的第一个参数。举例来说，C<Cat> 类可以拥有一个名为 C<meow()>
+（喵）的方法：
+
+=begin programlisting
+
+    {
+        package Cat;
+
+        use Moose;
+
+        B<sub meow>
+        B<{>
+            B<my $self = shift;>
+            B<say 'Meow!';>
+        B<}>
+    }
+
+=end programlisting
+
+现在所有 C<Cat> 实例都会因尚未进食而在清晨苏醒：
+
+=begin programlisting
+
+    my $alarm = Cat->new();
+    $alarm->meow();
+    $alarm->meow();
+    $alarm->meow();
+
+=end programlisting
+
+X<class method>
+X<methods; class>
+
+按照惯例，Perl 中方法的被调用者是一个名为 C<$self> 的词法变量，但这仅仅是一个
+普遍的惯例。C<meow()> 方法的示例实现没有用到被调用者，因此一旦方法分派完毕就
+毫不相关了。按此，C<meow()> 就像 C<new()>；你可以安全地用类名（C<Cat>）作为被
+调用者。这是一个 I<类方法>：
+
+=begin programlisting
+
+    Cat->meow() for 1 .. 3;
+
+=end programlisting
+
+=head2 属性
+
+X<attributes (objects)>
+X<objects; attributes>
+X<instance data>
+X<state>
+X<objects; state>
+
+Perl 5 中每一个对象都是唯一的。对象可以包含 I<属性>，或者说和每一个对象关联的私
+有数据。你也可能听到它被描述为 I<实例数据> 或 I<状态>。
+
+X<attributes; typed>
+X<attributes; ro>
+X<attributes; read only>
+
+要定义对象属性，可以将它们描述为类的一部分：
+
+=begin programlisting
+
+    {
+        package Cat;
+
+        use Moose;
+
+        B<< has 'name', is => 'ro', isa => 'Str'; >>
+    }
+
+=end programlisting
+
+在英语中，那行代码的意思是“C<Cat> 对象有一个 C<name> 属性。它可读但不可写，并
+且它是字符串。”该行代码创建了一个访问器方法（C<name()>）且允许你可以向构造函数
+传递一个 C<name> 参数：
+
+=begin programlisting
+
+    use Cat;
+
+    for my $name (qw( Tuxie Petunia Daisy ))
+    {
+        my $cat = Cat->new( name => $name );
+        say "Created a cat for ", $cat->name();
+    }
+
+=end programlisting
+
+X<attributes; untyped>
+
+属性的类型并非 I<必需>，在此情况下，Moose 将为你跳过核查和验证的部分：
+
+=begin programlisting
+
+    {
+        package Cat;
+
+        use Moose;
+
+        has 'name', is => 'ro', isa => 'Str';
+        B<< has 'age',  is => 'ro'; >>
+    }
+
+    my $invalid = Cat->new( name => 'bizarre', age => 'purple' );
+
+=end programlisting
+
+这样更为灵活，但在某人尝试对属性提供无效数据时便会导致奇怪的错误。灵活性和正确性
+之间的平衡取决于当时的编码标准以及欲捕获的错误类型。
+
+=begin sidebar
+
+Moose 的文档使用括号来分隔属性名称和它的特征：
+
+=begin programlisting
+
+        has 'name' => ( is => 'ro', isa => 'Str' );
+
+=end programlisting
+
+Perl 对此形式和本书所用的形式做相同的语法分析。你 I<可以> 编写如下任一代码来实现
+相同的功能：
+
+=begin programlisting
+
+    has( 'name', 'is', 'ro', 'isa', 'Str' );
+    has( qw( name is ro isa Str ) );
+
+=end programlisting
+
+……但在这种情况下，额外的标点使程序更加清晰。Moose 文档中使用的方法在处理多项特征
+时尤其有用：
+
+=begin programlisting
+
+    has 'name' => (
+        is         => 'ro',
+        isa        => 'Str',
+
+        # 高级 Moose 选项；perldoc Moose
+        init_arg   => undef,
+        lazy_build => 1,
+    );
+
+=end programlisting
+
+……出于介绍的简易性，本书倾向于使用标点符号较少的形式。Perl 给你以灵活性，让你
+可以自由选择使代码更为清晰的编码方式。
+
+=end sidebar
+
+X<attributes; rw>
+X<attributes; read-write>
+
+X<mutator>
+X<methods; mutator>
+
+如果你将某属性标记为可读 I<且> 可写（用 C<< is => rw >>），Moose 将创建一个 I<突变>
+方法────你可以用它改变属性的值：
+
+=begin programlisting
+
+    {
+        package Cat;
+
+        use Moose;
+
+        has 'name', is => 'ro', isa => 'Str';
+        has 'age',  is => 'ro', isa => 'Int';
+        B<< has 'diet', is => 'rw'; >>
+    }
+
+    my $fat = Cat->new( name => 'Fatty', age => 8, diet => 'Sea Treats' );
+    say $fat->name(), ' eats ', $fat->diet();
+
+    B<< $fat->diet( 'Low Sodium Kitty Lo Mein' ); >>
+    say $fat->name(), ' now eats ', $fat->diet();
+
+=end programlisting
+
+尝试将 C<ro> 访问器用作突变方法将抛出一个异常：
+
+=begin screen
+
+Cannot assign a value to a read-only accessor at ....
+
+=end screen
+
+=begin sidebar
+
+何时使用 C<ro> 何时使用 C<rw>？这是关系到设计、便捷和代码纯度的事情。有一派意见
+（L<immutability>）认为所有实例数据都应该采用 C<ro> 并将相关数据都传递给构造函
+数。在 C<Cat> 一例中，C<age()> 仍可以是一个访问器，但构造函数可以取得猫出生的 I<年份>
+并根据当前日期自行计算出年龄，而非依赖于手动更新猫的年龄。
+
+此方式有助于巩固验证代码的效果并保证所有创建的对象只包含有效的数据。这些设计目标
+值得考虑，尽管在这方面 Moose 并不强制采用特定的哲学。
+
+=end sidebar
+
+既然独立的对象可以各自拥有实例数据，面向对象的价值就更加明显了。一个对象是其包含
+数据，同时也是适用于这些数据的行为的书签。一个对象是具名数据和行为的集合。一个类
+是对该类实例持有的数据和行为的一个描述。
+
+=head2 封装
+
+X<encapsulation>
+
+Moose 允许你声明类的实例可以持有 I<哪些> 属性，以及如何处理这些属性。目前为止的
+例子尚未描述 I<如何> 存储这些属性。如果真的需要了解，这些信息是可以获取的，但是
+直接说明的方式可以实际地改进你的程序。由此，Moose 鼓励 I<封装>，或者说对对象的
+外界使用隐藏内部细节。
+
+考虑对 C<Cat> 做出年龄修改；并不直接对构造函数请求，而是通过出生年份来计算一只 C<Cat>
+（猫）的年龄：
+
+=begin programlisting
+
+    package Cat;
+
+    use Moose;
+
+    has 'name',        is => 'ro', isa => 'Str';
+    has 'diet',        is => 'rw';
+    B<< has 'birth_year',  is => 'ro', isa => 'Int'; >>
+
+    B<sub age>
+    B<{>
+        B<my $self = shift;>
+        B<my $year = (localtime)[5] + 1900;>
+
+        B<< return $year - $self->birth_year(); >>
+    B<}>
+
+=end programlisting
+
+虽然 I<创建> C<Cat> 对象的语法变了，但 I<使用> C<Cat> 对象的语法却没有。C<age()> 方法
+始终完成它应该完成的任务，至少就 C<Cat> 类之外的代码而言可以理解其行为。它 I<如何> 完
+成任务的方式已经改变，但这属于 C<Cat> 类的内部细节────由该类封装于自身内。
+
+=begin sidebar
+
+之前用于 I<创建> C<Cat> 对象的语法仍可以原地不动；定制生成的 C<Cat> 构造函数以允许向其
+传递 C<age> 参数，并由此计算正确的 C<birth_year>。请参看 C<perldoc Moose::Manual::Attributes>。
+
+=end sidebar
+
+X<attributes; default values>
+
+这个计算 C<Cat> 年龄的新方式有着另外的优势；你可以使用 I<默认属性值> 来减少创建 C<Cat>
+类所需的代码量：
+
+=begin programlisting
+
+    package Cat;
+
+    use Moose;
+
+    has 'name',        is => 'ro', isa => 'Str';
+    has 'diet',        is => 'rw', isa => 'Str';
+    B<< has 'birth_year',  is => 'ro', isa => 'Int', >>
+                       B<< default => sub { (localtime)[5] + 1900 }; >>
+
+=end programlisting
+
+属性上的 C<default> 关键字接受一函数引用，该引用在对象构造之时返回此属性的默认
+值。如果构造函数并未接收此属性某一合适的值，则该对象获得替代的默认值。现在你可
+以这样创建一只小猫：
+
+=begin programlisting
+
+    my $kitten = Cat->new( name => 'Bitey' );
+
+=end programlisting
+
+……并且在明年之前这只小猫的年龄都将为 C<0>。
+
+=begin sidebar
+
+你也可以使用一个简单的值，诸如数字或字符串，来作为默认值。当你需要为每一个对象
+计算某些唯一值（包括哈希或数组引用）时，使用函数引用。
+
+=end sidebar
+
+=head3 多态
+
+那行仅处理单一类型数据以及基于此数据之上单一行为的程序从对象的使用中获益不多。
+一个经过良好设计的面向对象程序应有能力处理各种类型的数据。当设计精良的类在合
+适处封装特定对象的细节时，会神奇地影响后续程序：一旦有机会，它可以选择变得
+I<不那么> 具体。
+
+换句话说，将程序了解的 C<Cat> 对象个体特征（属性）和它能做的事（方法）这类具
+体细节从程序中移入 C<Cat> 类中意味着处理 C<Cat> 实例的代码可以快乐地忽略 C<Cat> 
+对象 I<如何> 做它该做的事。
+
+用例子说话。考虑一个描述对象的函数：
+
+=begin programlisting
+
+    sub show_vital_stats
+    {
+        my $object = shift;
+
+        say 'My name is ', $object->name();
+        say 'I am ',       $object->age();
+        say 'I eat ',      $object->diet();
+    }
+
+=end programlisting
+
+X<polymorphism>
+
+很明显（在上下文中），你可以向此函数传入一个 C<Cat> 对象并得到合理的结果。不
+那么明显的是，你也可以传入其他对象并得到合理的结果。这是一个称为 I<多态> 的重
+要面向对象属性，你可以用一个类的对象替换另一个类的对象，只要它们以同样的方式
+提供相同的外部接口。
+
+X<genericity>
+
+任何提供 C<name()>、C<age()> 和 C<diet()> 访问器的对象都可以正常使用此函数。
+这个函数足够通用，每一个遵循接口的对象都是一个合法的参数。
+
+=begin sidebar
+
+X<duck typing>
+
+一些语言和环境在程序互换实例之前要求两者间建立正式的关系。Perl 5 提供了多个方法
+来强制进行这类检查，但并不要求这样做。它默认的特殊系统让你可以足够等同地对待两个
+拥有同名方法的实例。一些人称其为 I<duck typing>，此说法认为任何对象只要能 C<quack()>
+（“叫”）就足够像鸭子，因而你可以将其作为鸭子对待。
+
+=end sidebar
+
+在 C<show_vital_stats()> 中体现的泛型的好处不是特定的 I<类型> 也非对象的实现起
+决定作用。任何被调用者只要提供三个方法 C<name()>、C<age()> 和 C<diet()>────它们
+不带参数，它们的返回值可以在字符串上下文中拼接，那么它就是一个合法的参数。你的代
+码中也许会包含成上百个类，它们之间也可以没有任何明显的关系，但如果它们符合预期的
+行为，那么此方法就可以正常工作。
+
+对于为那么多类（哪怕是其中一部分）编写特定的函数提取并显示这类信息来说，这是一种
+质的提升。这个泛化的方法只需更少的代码，并使用经过良好定义的接口作为访问这些信息
+的机制，意味着上百个类可以各自采用任何可行的办法计算这些信息。计算方法的细节则位
+于它们的岗位上：在各个类各自的方法体内。
+
+当然，仅出现名为 C<name()> 或是 C<age()> 的方法并不暗示对象的行为。一个 C<Dog> 
+对象也可以包含 C<age()> 访问器，它可以让你了解 C<$rodney> 8 岁了而 C<$lucky> 是
+3 岁。C<Cheese> 对象也可以含有 C<age()> 方法，让你控制堆放 C<$cheddar> 多久使得
+奶酪味道更重；换句话说，C<age()> 可以在一个类中是访问器而在另一个类中不是：
+
+=begin programlisting
+
+    # 这只猫几岁了？
+    my $years = $zeppie->age();
+
+    # 把这批奶酪在仓库里存六个月
+    $cheese->age();
+
+=end programlisting
+
+有时候了解一个对象 I<做什么> 很有用。就是说，你要了解它的类型。
+
+=head2 角色
+
+Z<roles>
+
+I<角色> 是一个具名行为和状态的集合。类就像是一个角色，它们之间重要的区别就是你
+可以对一个类进行实例化，但角色就不行。对于对象来说，类是将行为和状态组织为模版
+主要机制，而角色便是将行为和状态组织为具名集合的主要机制。
+
+简单说来，角色和类是类似的。
+
+某些 C<Animal>（动物）────有 C<name()>（名称）、有 C<age()>（年龄）和偏好的 C<diet()>
+（食物）和 C<Cheese>（奶酪）────可以在仓库 C<age()>（陈化）────的区别在于 C<Animal> 
+可以饰演 C<LivingBeing> 的角色，而 C<Cheese> 则饰演 C<Storable> 的角色。
+
+虽然你 I<可以> 检查传入 C<show_vital_stats()> 的每一个对象是否是 C<Animal> 类的实例，
+这样你便失去了部分泛型的特质。你可以用检查该对象是否 I<饰演> C<LivingBeing> 角色来代
+替：
+
+=begin programlisting
+
+    {
+        package LivingBeing;
+
+        use Moose::Role;
+
+        requires qw( name age diet );
+    }
+
+=end programlisting
+
+任何饰演此角色的对象必须提供 C<name()>、C<age()> 和 C<diet()> 方法。这并不会自动发
+生；C<Cat> 类必须明确标明它可以饰演此角色：
+
+=begin programlisting
+
+    package Cat;
+
+    use Moose;
+
+    has 'name',        is => 'ro', isa => 'Str';
+    has 'diet',        is => 'rw', isa => 'Str';
+    has 'birth_year',  is => 'ro', isa => 'Int',
+                       default => (localtime)[5] + 1900;
+
+    B<with 'LivingBeing';>
+
+    sub age { ... }
+
+=end programlisting
+
+X<roles; composition>
+
+那行代码有两个左右。第一，它告知 Moose 该类饰演具名角色。第二，它将角色合成到类中。
+该步骤检查类是否 I<以某种方式> 提供了所需的所有方法和属性并避免了潜在的冲突。
+
+C<Cat> 类为具名属性提供了作为访问器的 C<name()> 和 C<diet()> 方法。它同时声明了自
+身的  C<age()> 方法。
+
+=begin sidebar
+
+使用 C<with> 关键字向类添加角色，其语句必须出现在属性声明 I<之后>，使得该合成过
+程可以识别任何生成的访问器方法。
+
+=end sidebar
+
+当被问及它们是否提供 C<LivingBeing> 角色时，并非所有的 C<Cat> 实例会返回真，并且
+C<Cheese> 对象不应如此：
+
+=begin programlisting
+
+    say 'Alive!' if $fluffy->does('LivingBeing');
+    say 'Moldy!' if $cheese->does('LivingBeing');
+
+=end programlisting
+
+这个设计手法看上去可能像是多余的记账，但它从类和对象的 I<实现> 中分离出了它们的
+I<能力>。C<Cat> 类的特殊行为，即存储动物的出生年份并直接计算年龄，本身就可以是一
+个角色：
+
+=begin programlisting
+
+    {
+        package CalculateAgeFromBirthYear;
+
+        use Moose::Role;
+
+        has 'birth_year', is => 'ro', isa => 'Int',
+                          default => sub { (localtime)[5] + 1900 };
+
+        sub age
+        {
+            my $self = shift;
+            my $year = (localtime)[5] + 1900;
+
+            return $year - $self->birth_year();
+        }
+    }
+
+=end programlisting
+
+将这段代码从 C<Cat> 类中移出到一个分离的角色中使其也可以用于其它类中。现在，
+C<Cat> 对象可以饰演两个角色：
+
+=begin programlisting
+
+    package Cat;
+
+    use Moose;
+
+    has 'name', is => 'ro', isa => 'Str';
+    has 'diet', is => 'rw';
+
+    B<with 'LivingBeing', 'CalculateAgeFromBirthYear';>
+
+=end programlisting
+
+X<allomorphism>
+X<roles; allomorphism>
+
+由 C<CalculateAgeFromBirthYear> 提供的 C<age()> 方法的实现满足 C<LivingBeing>
+角色的需要，使之成功合成。无论对象 I<如何> 扮演此角色，对对象是否扮演 C<LivingBeing> 
+角色的检查结果仍然不变。一个类可以选择提供它自己的 C<age()> 方法或从其它角色中获
+得一份，这并不重要。重要的是它包含此方法。这就是 I<同质异晶性>.
+
+=head3 角色和 DOES()
+
+X<DOES()>
+X<Moose; DOES()>
+
+对一个类应用一个角色意味着你在调用该类和它的实例的 C<DOES()> 方法时返回真：
+
+=begin programlisting
+
+    say 'This Cat is alive!' if $kitten->DOES( 'LivingBeing' );
+
+=end programlisting
+
+=head2 继承
+
+Z<inheritance>
+
+X<inheritance>
+X<Moose; inheritance>
+
+Perl 5 对象系统的另一个特性就是 I<继承>，即一个类将另一个类专门化。这在两个类间
+建立起一种关系，其中子类从父类继承属性和行为。就两个提供同一角色的类来说，你可以
+用子类替换父类。在某种意义上说，一个子类通过其父类的存在隐式地提供了某角色。
+
+=begin sidebar
+
+Perl 5 中最近基于角色的对象系统实验显示，在一个系统中几乎所有用到继承的地方都可
+以用角色来替代。决定使用何者大体上是熟悉程度的事。角色提供了合成时安全，更好的类
+型检查，组织良好且更低耦合的代码，可对名称和行为做出细粒度的控制，但继承对其他语
+言的用户来说更为熟悉。设计上的问题就是一派是否确实扩展了另一派或者说它是否提供了
+额外（或者，至少是，I<不同>）的行为。
+
+=end sidebar
+
+考虑 C<LightSource>（光源）类，它提供了两个公共属性（C<candle_power> 和 C<enabled>）
+以及两个方法（C<light> 和 C<extinguish>）：
+
+=begin programlisting
+
+    {
+        package LightSource;
+
+        use Moose;
+
+        has 'candle_power', is      => 'ro', isa     => 'Int',
+                            default => 1;
+        has 'enabled',      is      => 'ro', isa     => 'Bool',
+                            default => 0,    _writer => '_set_enabled';
+
+        sub light
+        {
+            my $self = shift;
+            $self->_set_enabled(1);
+        }
+
+        sub extinguish
+        {
+            my $self = shift;
+            $self->_set_enabled(0);
+        }
+    }
+
+=end programlisting
+
+=begin sidebar
+
+C<enabled> 属性的 C<_writer> 选项创建了一个私有访问器，可在类内部用于设置值。
+
+=end sidebar
+
+=head3 继承和属性
+
+创建 C<LightSource> 的子类使得定义一支行为和 C<LightSource> 相似、但提供亮度百倍
+于常的超级蜡烛成为可能：
+
+=begin programlisting
+
+    {
+        package LightSource::SuperCandle;
+
+        use Moose;
+
+        B<extends 'LightSource'>;
+
+        has 'B<+>candle_power', default => 100;
+    }
+
+=end programlisting
+
+X<Moose; extends>
+
+C<extends> 语法结构接受一个类名称列表作为当前类的父类。位于 C<candle_power> 属性
+名称前的 C<+> 指出当前类扩展了此属性的定义。在这种情况下，超级蜡烛覆盖了光源的默
+认值，因此任何新建的 C<SuperCandle> 的亮度值为 100 支蜡烛。另一个属性以及两个方法
+对 C<SuperCandle> 实例也是可用的；当你在这样一个实例上调用 C<light> 或 C<extinguish>
+Perl 会先在 C<LightSource::SuperCandle> 内查找这些方法，然后是父类列表。最终它在
+C<LightSource> 里找到了它们。
+
+X<Moose; attribute inheritance>
+
+属性继承的工作方式与此类似，除了 I<构造> 此实例的行为使得所有适当的属性按正确的方式
+提供（参见 C<perldoc Class::MOP>）。
+
+X<methods; resolution>
+X<method resolution order>
+X<methods; dispatch order>
+X<multiple inheritance>
+X<objects; inheritance>
+X<objects; multiple inheritance>
+
+单重继承的方法分派顺序理解起来比较简单。当一个类拥有多个父类时（I<多重继承>），分派
+便不那么显然了。默认的，Perl 5 提供了深度优先的方法解析策略。它先搜索类的 I<首个> 具
+名父类，接着在搜索后续具名父类之前递归地搜索此类的所有父类。这个行为通常令人迷惑；在
+你理解多重继承之前请避免使用它，并尽可能采用其他替代手段。参见 C<perldoc mro> 以获取
+有关方法解析和分派策略的更多细节。
+
+=head3 继承和方法
+
+X<Moose; override method>
+
+你可以在子类中覆盖父类的方法。设想一个你无法熄灭的光源：
+
+=begin programlisting
+
+    {
+        package LightSource::Glowstick;
+
+        use Moose;
+
+        extends 'LightSource';
+
+        sub extinguish {};
+    }
+
+=end programlisting
+
+所有对此类的 C<extinguish> 方法的调用将毫无作用。Perl 的方法分派系统将先找到这个
+方法并且不会再在父类中查找与此同名的其他方法。
+
+有时候覆盖后方法也需要来自父类同名方法的某些行为。C<override> 命令告诉 Moose，该
+子类故意覆盖此具名方法。C<super()> 函数可以用来从覆盖方法分派到被覆盖方法：
+
+=begin programlisting
+
+    {
+        package LightSource::Cranky;
+
+        use Carp;
+        use Moose;
+
+        extends 'LightSource';
+
+        B<override> light => sub
+        {
+            my $self = shift;
+
+            Carp::carp( "Can't light a lit light source!" )
+                if $self->enabled;
+
+            B<super()>;
+        };
+
+        B<override> extinguish => sub
+        {
+            my $self = shift;
+
+            Carp::carp( "Can't extinguish an unlit light source!" )
+                unless $self->enabled;
+
+            B<super()>;
+        };
+    }
+
+=end programlisting
+
+这个子类在点亮和熄灭一个已经处于当前状态的光源时增加了一条警告。C<super()> 函数
+在遵守正常 Perl 5 方法解析顺序的同时将当前方法分派到最近的父类实现中。
+
+=begin sidebar
+
+你可以用 Moose 的方法修饰符实现相同的行为。参见 C<perldoc Moose::Manual::MethodModifiers>。
+
+=end sidebar
+
+=head3 继承和 isa()
+
+X<isa()>
+X<Moose; isa()>
+
+从父类继承意味着子类及其所有实例在调用其上 C<isa()> 方法时返回真：
+
+=begin programlisting
+
+    say 'Looks like a LightSource' if     $sconce->isa( 'LightSource' );
+    say 'Monkeys do not glow'      unless $chimpy->isa( 'LightSource' );
+
+=end programlisting
+
+=head2 Moose 和 Perl 5 OO
+
+X<moose; versus Perl 5 OO>
+
+Moose 提供了许多原本需要你自行在 Perl 5 的默认对象模型中实现的特性。虽然你 I<可以>
+自行构建来自 Moose 的全部特性（参见 L<blessed_references>），或者用一系列 CPAN 发行
+包修修补补地实现，但 Moose 是一个合适且连贯的包，包括了优秀的文档，且是许多成功项目
+的一部分，还有，它正由一个善解人意且有才的社区积极地开发着。
+
+X<metaprogramming>
+X<Moose; MOP>
+X<Moose; metaprogramming>
+X<Class::MOP>
+X<Class::MOP::Class>
+
+默认地，Moose 对象不需要你担心构造器、析构器、访问器和封装。Moose 对象可以扩展并
+和来自平淡无奇的 Perl 5 对象系统的对象协同工作。你同时也得到了 I<元编程>────一种
+通过系统自身访问系统实现的方式────以及随附的扩展性。如果你曾考虑过某类或对象上可
+以调用什么方法或者对象支持什么属性，这类元编程信息可以通过 Moose 得到：
+
+=begin programlisting
+
+    my $metaclass = Monkey::Pants->meta();
+
+    say 'Monkey::Pants instances have the attributes:';
+
+    say $_->name for $metaclass->get_all_attributes;
+
+    say 'Monkey::Pants instances support the methods:';
+
+    say $_->fully_qualified_name for $metaclass->get_all_methods;
+
+=end programlisting
+
+你甚至可以知道那些类扩展了一个给定的类：
+
+=begin programlisting
+
+    my $metaclass = Monkey->meta();
+
+    say 'Monkey is the superclass of:';
+
+    say $_ for $metaclass->subclasses;
+
+=end programlisting
+
+请分别参阅 C<perldoc Class::MOP::Class>、C<perldoc Class::MOP> 以获取有关元类操作符、
+Moose 元编程的更多信息。
+
+X<metaprogramming; MOP>
+X<MOP>
+
+Moose 和它的 I<元对象协议>（或称 MOP）为一个更好的、用于在 Perl 5 中操作类和对象的
+语法提供了可能。如下是合法的 Perl 5 代码：
+
+=begin programlisting
+
+    use MooseX::Declare;
+
+    B<role> LivingBeing { requires qw( name age diet ) }
+
+    B<role> CalculateAgeFromBirthYear
+    {
+        has 'birth_year', is => 'ro', isa => 'Int',
+                          default => sub { (localtime)[5] + 1900 };
+
+        B<method> age
+        {
+            return (localtime)[5] + 1900 - $self->birth_year();
+        }
+    }
+
+    B<class Cat with LivingBeing with CalculateAgeFromBirthYear>
+    {
+        has 'name', is => 'ro', isa => 'Str';
+        has 'diet', is => 'rw';
+    }
+
+=end programlisting
+
+X<MooseX::Declare>
+X<Devel::Declare>
+
+来自 CPAN 的 C<MooseX::Declare> 扩展使用了一个称为 C<Devel::Declare> 的聪明的模块
+向 Perl 5 添加新语法，特别是为了 Moose。C<class>、C<role> 和 C<method> 关键字减少
+了在 Perl 5 中编写良好的面向对象代码所需的样版数量。特别注意本例称述性的本质，还有
+现在 C<age> 方法开头的 C<my $self = shift;> 代码行不是必须的。
+
+=begin sidebar
+
+自 Perl 5.12 起，Perl 5 核心提供了对 C<Devel::Declare> 的支持，但这个模块不是核心
+模块。
+
+=end sidebar
+
+采用这整个方案的一个缺点是你必须能够安装 CPAN 模块（或使用诸如 Strawberry Perl 或
+Strawberry Perl Professional 之类定制的 Perl 5 发行版，它们会替你包括这些），但和
+Perl 5 的内置面向对象比较，Moose 在清晰和简洁方面的优势应是明显的。
+
+参见 C<perldoc Moose::Manual> 以获取有关使用 Moose 的更多信息。

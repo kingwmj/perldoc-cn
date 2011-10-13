@@ -1,0 +1,185 @@
+=head1 Perldoc
+
+Z<perldoc>
+
+X<perldoc>
+
+Perl has a culture of useful documentation.  The C<perldoc> utility is part of
+every complete Perl 5 installationN<However your Unix-like system may require
+you to install an additional package such as C<perl-doc> on Debian or Ubuntu
+GNU/Linux.> C<perldoc> displays the documentation of every Perl module
+installed on the system--whether a core module or one installed from the
+Comprehensive Perl Archive Network (CPAN)--as well as thousands of pages of
+Perl's copious core documentation.
+
+=begin sidebar
+
+X<CPAN>
+X<metacpan>
+
+U<http://perldoc.perl.org/> hosts recent versions of the Perl documentation.
+The U<http://search.cpan.org/> and U<http://metacpan.org/> CPAN indexes provide
+documentation for all CPAN modules. Other Perl 5 distributions such as
+ActivePerl and Strawberry Perl provide local documentation in HTML formats.
+
+=end sidebar
+
+Use C<perldoc> to read the documentation for a module or part of the core
+documentation:
+
+=begin screen
+
+    $ B<perldoc List::Util>
+    $ B<perldoc perltoc>
+    $ B<perldoc Moose::Manual>
+
+=end screen
+
+The first example displays the documentation embedded within the C<List::Util>
+module. The second example displays a pure documentation file, in this case the
+table of contents of the core documentation. The third example displays a pure
+documentation file included as part of a CPAN distribution (L<moose>).
+C<perldoc> hides these details; here's no distinction between reading the
+documentation for a core library such as C<Data::Dumper> or one installed from
+the CPAN.
+
+The standard documentation template includes a description of the module,
+demonstrates sample uses, and then contains a detailed explanation of the
+module and its interface. While the amount of documentation varies by author,
+the form of the documentation is remarkably consistent.
+
+=begin sidebar
+
+C<perldoc perltoc> displays the table of contents of the core documentation,
+and C<perldoc perlfaq> displays the table of contents for Frequently Asked
+Questions about Perl 5. Skimming these files will give you a great overview of
+Perl 5.
+
+=end sidebar
+
+X<perldoc; C<-q> (search perlfaq)>
+
+The C<perldoc> utility has many more abilities (see C<perldoc perldoc>). The
+C<-q> option searches only the Perl FAQ for any provided keywords. Thus
+C<perldoc -q sort> returns three questions: I<How do I sort an array by
+(anything)?>, I<How do I sort a hash (optionally by value instead of key)?>,
+and I<How can I always keep my hash sorted?>.
+
+X<perldoc; C<-f> (search perlfunc)>
+
+The C<-f> option displays the documentation for a builtin Perl function.
+C<perldoc -f sort> explains the behavior of the C<sort> operator. If you don't
+know the name of the function you want, browse the list of available builtins
+in C<perldoc perlfunc>.
+
+X<perldoc; C<-v> (search perlvar)>
+
+The C<-v> option looks up a builtin variable. For example, C<perldoc -v $PID>
+displays the documentation for the variable which contains the current
+program's process id. Depending on your shell, you may have to quote the
+variable appropriately.
+
+=begin sidebar
+
+C<perldoc perlop> and C<perldoc perlsyn> document Perl's symbolic operators and
+syntactic constructs. C<perldoc perldiag> explains the meanings of Perl's
+warning messages. C<perldoc perlvar> lists all of Perl's symbolic variables.
+
+=end sidebar
+
+The C<-l> option causes C<perldoc> to display the I<path> to the documentation
+file rather than the contents of the documentationN<Be aware that a module may
+have a separate F<.pod> file in addition to its F<.pm> file.>.
+
+The C<-m> option displays the entire I<contents> of the module, code and all,
+without performing any special formatting.
+
+X<POD>
+X<POD; C<perldoc>>
+X<POD; C<podchecker>>
+X<POD; C<Pod::Webserver>>
+X<CPAN; C<Pod::Webserver>>
+
+Perl 5's documentation system is I<POD>, or I<Plain Old Documentation>.
+C<perldoc perlpod> describes how POD works. Other POD tools include
+C<podchecker>, which validates the form of your POD, and C<Pod::Webserver>,
+which displays local POD as HTML through a minimal web server.
+
+X<CPAN; C<Pod::PseudoPod>>
+This book uses an extension of POD called C<Pod::PseudoPod>.
+=encoding utf8
+
+=head1 Perldoc
+
+Z<perldoc>
+
+Perl 最有用也是最不受感恩的功能之一就是 C<perldoc> 实用工具。这个程序是每一个完整 
+Perl 5 安装的一部分。N<在免费的 GNU/Linux 的发行版或是其它类 Unix 系统下，你也许
+需要安装一项额外的软件包，Debian 和 Ubuntu 上为 C<perl-doc>>。它能显示系统上每一个
+已安装 Perl 模块的文档────无论是核心模块，或是那些来自 Comprehensive Perl
+Archive Network (Perl 综合典藏网，CPAN) 的部分────还包括上千页 Perl 核心文档。
+
+=begin sidebar
+
+如果你倾向于一份在线版本，U<http://perldoc.perl.org/> 存有 Perl 文档的最近版本。
+U<http://search.cpan.org/> 可显示 CPAN 上所有模块的文档。对于 Windows 用户，ActivePerl 和
+Strawberry Perl 都在开始菜单提供了指向这份文档的链接。 
+
+=end sidebar
+
+C<perldoc> 的默认行为是显示某模块的文档或是 Perl 核心文档的特定章节：
+
+    $ B<perldoc List::Util>
+    $ B<perldoc perltoc>
+    $ B<perldoc Moose::Manual>
+
+第一个例子解开为 C<List::Util> 模块所编写的文档并按适合你的显示屏的方式显示出来。
+CPAN 模块 (L<cpan>) 的社区标准建议额外的库使用和核心模块一致的格式，使得阅读诸如
+C<Data::Dumper> 核心模块以及从 CPAN 安装的其他模块的文档并无差别。标准文档模板包
+含了一份对模块的描述，用法演示，和后续对模块的详细解释和接口介绍。虽然文档的长度
+因作者而不同，其形式却相当统一。
+
+第二个例子显示一个纯粹的文档文件，此处是核心文档自己的目录。这个文件描述了核心文
+档的每一个独立的部分。浏览一下，简单地看看 Perl 的能力。
+
+第三个例子是第二个例子的翻版。 C<Moose::Manual> 是 Moose CPAN 发行版 (L<moose>)
+的一部分。它同样也是一个纯文档，不包含任何代码。
+
+=begin sidebar
+
+类似的，C<perldoc perlfaq> 将会显示 Perl 5 常见问题的目录。仅扫一眼这些问题也会使
+人获益匪浅。
+
+=end sidebar
+
+X<perldoc; -q>
+
+C<perldoc> 实用工具还有不少能力(参见 C<perldoc perldoc>)。其中两个最有用的是C<-q>
+以及 C<-f> 参数。C<-q> 参数读取一个或多个关键字，在 Perl FAQ 中查找，并显示所有结
+果。从而 C<perldoc -q sort> 返回三个常见问题：I<我如何按（任何条件）排序数组？>，
+I<我如何将一个哈希排序（可选的附加条件：通过值而非键）？>，以及 
+I<我如何使一个哈希总保持在有序状态？>.
+
+X<perldoc; -f>
+
+C<-f> 参数显示核心文档中某 Perl 内置函数的相应部分。C<perldoc -f sort> 解释了 C<sort>
+操作符的行为。如果你不知道你要查找函数的名称，C<perldoc perlfunc> 可以给出一张函数列表。
+
+=begin sidebar
+
+C<perldoc perlop> 和 C<perldoc perlsyn> 记录了 Perl 中符号形式的操作符和语法结构。
+C<perldoc perldiag> 解释了 Perl 警告消息的含义。
+
+X<POD>
+
+Perl 5 的文档系统是 I<POD>，或作 I<Plain Old Documentation>。C<perldoc perlpod> 描述
+了 POD 的工作方式。C<perldoc> 实用工具能显示你为你的项目创建和安装的所有 Perl 模块中
+的 POD，其他诸如 C<podchecker> 等 POD 工具，可以验证你的 POD 的格式，C<Pod::Webserver>，
+可以通过一个小型 Web 服务器以 HTML 的形式显示本地的 POD，同样也将验证其正确性。
+
+X<perldoc; -l>
+X<perldoc; -m>
+
+C<perldoc> 还有其他用途。给出 C<-l> 命令行参数，它将显示文档文件的 I<路径> 而非文件内容。
+N<注意：一个模块除 F<.pm> 文件外可能还有多个分离的 F<.pod> 文件>。给出 C<-m> 参数，它
+将显示整个模块的 I<内容>，包括代码，并不对任何 POD 指令进行处理。

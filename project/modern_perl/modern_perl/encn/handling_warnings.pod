@@ -1,0 +1,471 @@
+=head1 Handling Warnings
+
+Z<handling_warnings>
+
+Perl 5 produces optional warnings for many confusing, unclear, and ambiguous
+situations.  Even though you should almost always enable warnings
+unconditionally, certain circumstances dictate prudence in disabling certain
+warnings--and Perl supports this.
+
+=head2 Producing Warnings
+
+Z<producing_warnings>
+
+X<builtins; C<warn>>
+
+Use the C<warn> builtin to emit a warning:
+
+=begin programlisting
+
+    warn 'Something went wrong!';
+
+=end programlisting
+
+C<warn> prints a list of values to the STDERR filehandle (L<filehandle>).  Perl
+will append the filename and line number on which the C<warn> call occurred
+unless the last element of the list ends in a newline.
+
+X<C<Carp>>
+X<C<Carp>; C<carp()>>
+X<C<Carp>; C<cluck()>>
+X<C<Carp>; C<croak()>>
+X<C<Carp>; C<confess()>>
+
+The core C<Carp> module offers other mechanisms to produce warnings.  Its
+C<carp()> function reports a warning from the perspective of the calling code.
+That is, you could check the arity of a function (L<arity>) with:
+
+=begin programlisting
+
+    use Carp;
+
+    sub only_two_arguments
+    {
+        my ($lop, $rop) = @_;
+        Carp::carp( 'Too many arguments provided' ) if @_ > 2;
+        ...
+    }
+
+=end programlisting
+
+... and anyone who reads the error message will receive the filename and line
+number of the I<calling> code, not C<only_two_arguments()>.  Similarly,
+C<Carp>'s C<cluck()> produces an entire backtrace of all function calls up to
+the current function.
+
+X<C<Carp>; verbose>
+
+To track down weird warnings or exceptions throughout your system, enable
+C<Carp>'s verbose mode throughout the entire program:
+
+=begin programlisting
+
+    $ perl -MCarp=verbose my_prog.pl
+
+=end programlisting
+
+This changes all C<carp()> (and C<croak()>--L<reporting_errors>) calls to
+include a backtrace.  When you organize your code into modules (L<modules>),
+use Carp instead of C<warn> or C<die> to save debugging time.
+
+=head2 Enabling and Disabling Warnings
+
+X<C<-w>; enable warnings command-line argument>
+X<command-line arguments; C<-w>>
+
+Lexical encapsulation of warnings is as important as lexical encapsulation of
+variables.  Older code may use the C<-w> command-line argument to enable
+warnings throughout the program, even if other code has not specifically
+attempted to suppress warnings.  It's all or nothing.  If you have the
+wherewithal to eliminate warnings and potential warnings throughout the entire
+codebase, this can be useful.
+
+X<C<warnings>>
+X<pragmas; C<warnings>>
+
+The modern approach is to use the C<warnings> pragmaN<...or an equivalent such
+as C<use Modern::Perl;>.>, which indicates the intent of the author of the code
+that normal operation should not produce warnings.
+
+=begin sidebar
+
+X<C<-W>; enable warnings command-line argument>
+X<command-line arguments; C<-W>>
+X<C<-X>; disable warnings command-line argument>
+X<command-line arguments; C<-X>>
+
+The C<-W> flag enables warnings throughout the program unilaterally, regardless
+of lexical enabling or disabling through the C<warnings> pragma.  The C<-X>
+flag I<disables> warnings throughout the program unilaterally.  Neither is
+common.
+
+=end sidebar
+
+X<C<$^W>>
+X<global variables; C<$^W>>
+
+All of C<-w>, C<-W>, and C<-X> affect the value of the global variable C<$^W>.
+Code written before the C<warnings> pragma (Perl 5.6.0 in spring 2000) may
+C<local>ize C<$^W> to suppress certain warnings within a given scope.  New code
+should use the pragma instead.
+
+=head2 Disabling Warning Categories
+
+To disable selective warnings within a scope, use C<no warnings;> with an
+argument list.  Omitting the argument list disables all warnings within that
+scope.
+
+C<perldoc perllexwarn> lists all of the warnings categories your version of
+Perl 5 understands with the C<warnings> pragma.  Most of them represent truly
+interesting conditions which Perl may find in your program.  A few may be
+unhelpful in specific conditions.  For example, the C<recursion> warning will
+occur if Perl detects that a function has called itself more than a hundred
+times.  If you are confident in your ability to write recursion-ending
+conditions, you may disable this warning within the scope of the recursion
+(though tail calls may be better; L<tail_calls>).
+
+If you're generating code (L<code_generation>) or locally redefining symbols,
+you may wish to disable the C<redefine> warnings.
+
+Some experienced Perl hackers disable the C<uninitialized> value warnings in
+string-processing code which concatenates values from many sources.  Careful
+initialization of variables can avoid the need to disable the warning, but
+local style and concision may render this warning moot.
+
+=head2 Making Warnings Fatal
+
+Z<fatal_warnings>
+X<warnings; fatal>
+
+If your project considers warnings as onerous as errors, you can make them
+lexically fatal.  To promote I<all> warnings into exceptions:
+
+=begin programlisting
+
+    use warnings FATAL => 'all';
+
+=end programlisting
+
+You may also make specific categories of warnings fatal, such as the use of
+deprecated constructs:
+
+=begin programlisting
+
+    use warnings FATAL => 'deprecated';
+
+=end programlisting
+
+=head2 Catching Warnings
+
+X<C<$SIG{__WARN__}>>
+X<warnings; catching>
+
+Just as you can catch exceptions, so you can catch warnings.  The C<%SIG>
+variableN<See C<perldoc perlvar>.> holds handlers for all sorts of signals Perl
+or your operating system might throw.  It also includes two slots for signal
+handlers for Perl 5 exceptions and warnings.  To catch a warning, install an
+anonymous function into C<$SIG{__WARN__}>:
+
+=begin programlisting
+
+    {
+        my $warning;
+        local $SIG{__WARN__} = sub { $warning .= shift };
+
+        # do something risky
+        ...
+
+        say "Caught warning:\n$warning" if $warning;
+    }
+
+=end programlisting
+
+Within the warning handler, the first argument is the warning's message.
+Admittedly, this technique is less useful than disabling warnings
+lexically--but it can come to good use in test modules such as
+C<Test::Warnings> from the CPAN, where the actual text of the warning is
+important.
+
+=head2 Registering Your Own Warnings
+
+Z<registering_warnings>
+
+X<warnings; registering>
+X<lexical warnings>
+
+With the use of the C<warnings::register> pragma you can even create your own
+lexical warnings so that users of your code can enable and disable lexical
+warnings as appropriate.  This is easy to accomplish; from a module, C<use> the
+C<warnings::register> pragma:
+
+=begin programlisting
+
+    package Scary::Monkey;
+
+    B<use warnings::register;>
+
+    1;
+
+=end programlisting
+
+This will create a new warnings category named after the package
+C<Scary::Monkey>.  Enable these warnings with C<use warnings 'Scary::Monkey'>
+and disable them with C<no warnings 'Scary::Monkey'>.
+
+Use C<warnings::enabled()> to test if the calling lexical scope has the given
+warning category enabled.  Use C<warnings::warnif()> to produce a warning only
+if warnings are in effect.  For example, to produce a warning in the
+C<deprecated> category:
+
+=begin programlisting
+
+    package Scary::Monkey;
+
+    use warnings::register;
+
+    B<sub import>
+    B<{>
+        B<warnings::warnif( 'deprecated',>
+            B<'empty imports from ' . __PACKAGE__ . ' are now deprecated' )>
+            B<unless @_;>
+    B<}>
+
+    1;
+
+=end programlisting
+
+See C<perldoc perllexwarn> for more details.
+=encoding utf-8
+
+=head1 处理警告
+
+Z<handling_warnings>
+
+Perl 5 会针对各类令人困惑、不甚清楚、带有歧义的情况产生可选的警告。虽然你应该
+在几乎任何时候无条件地启用警告，但某些情形使我们谨慎地做出禁用警告的决定────
+并且 Perl 支持这样做。
+
+=head2 产生警告
+
+Z<producing_warnings>
+
+X<keywords; warn>
+X<warn>
+
+可使用 C<warn> 关键字发出警告：
+
+=begin programlisting
+
+    warn 'Something went wrong!';
+
+=end programlisting
+
+C<warn> 将一个值列表打印至 STDERR 文件句柄（L<filehandle>）。Perl 会将文件名和
+C<warn> 调用发生的行号附加其后，除非列表最后一个元素以换行结尾。
+
+X<Carp>
+X<Carp; carp()>
+X<Carp; cluck()>
+X<Carp; croak()>
+X<Carp; confess()>
+
+核心模块 C<Carp> 提供了其他产生警告的机制。其中的 C<carp()> 函数把警告以调用方
+的角度汇报。就是说，你可以按如下方式检查一个函数是几元函数（L<arity>）：
+
+=begin programlisting
+
+    use Carp;
+
+    sub only_two_arguments
+    {
+        my ($lop, $rop) = @_;
+        Carp::carp( 'Too many arguments provided' ) if @_ > 2;
+        ...
+    }
+
+=end programlisting
+
+……阅读错误消息的每一个人将得知 I<调用方> 代码文件名和行号，而非 C<only_two_arguments()>。
+类似地，C<Carp> 中的 C<cluck()> 输出到此调用为止的所有函数调用栈跟踪。
+
+X<Carp; verbose>
+
+为在系统范围内全面跟进怪异的警告或异常，可以对整个程序启用 C<Carp> 的详细模式：
+
+=begin programlisting
+
+    $ perl -MCarp=verbose my_prog.pl
+
+=end programlisting
+
+这样便将所有 C<croak()> 调用改为 C<confess()> 的行为而所有 C<carp()> 调用改为 C<cluck()>
+的行为。
+
+=head2 启用和禁用警告
+
+X<-w>
+X<command-line arguments; -w>
+
+对警告的词法封装如同对变量的词法封装一样重要。旧式代码可能会使用 C<-w> 命令行参数对
+整个文件启用警告，即便其它代码没有明确压制警告产生的意图。它要么有要么没有。如果你有
+消除警告及潜在警告的资本，它很实用。
+
+X<warnings>
+X<pragmas; warnings>
+
+现代化的方法是使用 C<warnings> 编译命令。在代码中对 C<use warnings;> 或其等价 N<诸如 C<use Modern::Perl;>>
+的使用意味着作者认为对此代码的常规操作不会引发警告。
+
+=begin sidebar
+
+X<-W>
+X<command-line arguments; -W>
+X<-X>
+X<command-line arguments; -X>
+
+C<-W> 命令行参数单方面对整个程序启用警告，而不顾 C<warnings> 编译命令的词法启、禁用。C<-X>
+参数对整个程序单方面 I<禁用> 警告。没有哪个参数是常用的。
+
+=end sidebar
+
+X<$^W>
+X<global variables; $^W>
+
+所有 C<-w>、C<-W> 和 C<-X> 影响全局变量 C<$^W> 的值。在 C<warnings> 编译命令出现（2000 年
+春季，Perl 5.6.0）之前编写的代码，也许会 C<local> 化 C<$^W> 以在给定的作用域内压制某些警告。
+新编写的代码应使用编译命令。
+
+=head2 禁用警告类
+
+要在作用域内选择性禁用警告，使用 C<no warnings;> 并提供一列参数。忽略参数列表则在该作用域
+内禁用所有警告。
+
+C<perldoc perllexwarn> 列出了你的 Perl 5 版本在使用 C<warnings> 编译命令时能够理解的所
+有类别的警告。它们中的大多数代表了你的程序可能会陷入的一些非常有意思的条件，并且可由 Perl 
+认出。另有一小部分在特定条件下不那么有用。举例来说，如果 Perl 检测到一个函数自行调用在
+一百次以上，则产生 C<recursion> 警告。如果你对你编写递归函数的能力有信心，可以在递归的
+作用域内禁用次警告（另行参见 L<tail_calls>。）
+
+如果你正生成代码（L<code_generation>）或局部地重定义符号，你或许想禁用 C<redefine> 警告。
+
+一些有经验的 Perl 黑客在从众多来源拼接值的字符串处理代码内禁用 C<uninitialized> 值的警告。
+仔细地初始化变量可以免除禁用此警告的需要，但局部风格和简明的代码可使这种警告没有实际意义。
+
+=head2 致命的警告
+
+Z<fatal_warnings>
+X<warnings; fatal>
+
+如果你的项目视警告如错误般繁重，你可以使其词法致命。让 I<所有> 警告提升为异常：
+
+=begin programlisting
+
+    use warnings FATAL => 'all';
+
+=end programlisting
+
+你也许会想使特定类别的警告变得致命，例如对不推荐语法结构的使用：
+
+=begin programlisting
+
+    use warnings FATAL => 'deprecated';
+
+=end programlisting
+
+=head2 捕获警告
+
+X<signal handlers; __WARN__>
+X<__WARN__>
+X<$SIG{__WARN__}>
+X<warnings; catching>
+
+就像你可以捕获异常，你也可以捕获警告。C<%SIG> 变量持有所有类型的信号处理器，这些
+信号可由 Perl 或你的操作系统抛出。它还包括两个专为 Perl 5 异常和警告准备的信号处
+理器槽。要捕获警告，将一个匿名函数安装到 C<$SIG{__WARN__}>：
+
+=begin programlisting
+
+    {
+        my $warning;
+        local $SIG{__WARN__} = sub { $warning .= shift };
+
+        # 做一些冒险的事
+        say "Caught warning:\n$warning" if $warning;
+    }
+
+=end programlisting
+
+在警告处理器内，第一个参数是警告消息。不可否认，这个技巧不像在词法范围内禁用
+警告那么有用────但它在如来自 CPAN 的 C<Test::Warnings> 等测试模块内得到良好的
+利用，这些时候重要的是警告消息的实际文本内容。
+
+=begin sidebar
+
+C<perldoc perlvar> 更为详细地讨论了 C<%SIG>。
+
+=end sidebar
+
+=head2 注册自己的警告
+
+Z<registering_warnings>
+
+X<warnings; registering>
+X<lexical warnings>
+
+对 C<warnings::register> 编译命令的使用可以让你创建自己词法警告，使你代码的用户
+可以按合适启用、禁用词法警告。很容易就可以做到────在某模块内，用 C<use> 引入
+C<warnings::register> 编译命令：
+
+=begin programlisting
+
+    package Scary::Monkey;
+
+    B<use warnings::register;>
+
+    1;
+
+=end programlisting
+
+这将创建一个按此包命名的新警告类别（此例中是 C<Scary::Monkey>）。用户可以显式地用
+C<use warnings 'Scary::Monkey'> 启用或用 C<no warnings 'Scary::Monkey'> 显式禁用它。
+要报告一条警告，结合 C<warnings::enabled()> 使用 C<warnings::warn()> 函数：
+
+=begin programlisting
+
+    package Scary::Monkey;
+
+    use warnings::register;
+
+    B<sub import>
+    B<{>
+        B<warnings::warn( __PACKAGE__ . ' used with empty import list' )>
+            B<if @_ == 0 && warnings::enabled();>
+    B<}>
+
+    1;
+
+=end programlisting
+
+如果 C<warnings::enabled()> 为真，那么调用方词法作用域即启用此项警告。你也可
+以报告已存在类别的警告，诸如对不推荐语法结构的使用：
+
+=begin programlisting
+
+    package Scary::Monkey;
+
+    use warnings::register;
+
+    B<sub import>
+    B<{>
+        B<warnings::warnif( 'deprecated',
+            'empty imports from ' . __PACKAGE__ . ' are now deprecated' )
+            unless @_;>
+    B<}>
+
+    1;
+
+=end programlisting
+
+C<warnings::warnif()> 函数检查具名警告类别并在其活动时报告。
+
+更多细节参见 C<perldoc perllexwarn>。 

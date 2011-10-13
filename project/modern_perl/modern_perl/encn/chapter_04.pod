@@ -1,0 +1,41 @@
+=head0 Operators
+
+Z<operators>
+X<operators>
+X<operands>
+
+Some people call Perl an "operator-oriented language". To understand a Perl
+program, you must understand how its operators interact with their operands.
+
+A Perl I<operator> is a series of one or more symbols used as part of the
+syntax of a language. Each operator operates on zero or more I<operands>. Think
+of an operator as a special sort of function the parser understands and its
+operands as arguments.
+
+L<operator_characteristics>
+
+L<operator_types>
+=encoding utf8
+
+=head0 操作符
+
+Z<operators>
+X<operators>
+X<operands>
+
+一个准确但不礼貌的形容：Perl 是一种“面向操作符的语言”。正是操作符之间的互动
+以及它们的操作数给与了 Perl 表达力和力量。要理解 Perl 必须理解操作符和它们的
+行为。出于本次讨论，一个 Perl I<操作符> 的确切定义是：“它由一系列符号组成，
+用作语言语法的一部分”。每一个操作符接受零个或多个 I<操作数>；这个定义是循环的，
+因为操作数也是由操作符操作的值。
+
+=begin sidebar
+
+对操作符最准确的定义是“C<perlop>中的那个”，但它还是将一些操作符遗漏在 C<perlsyn>
+中并且把内置函数也算入其中。不要太执着于单个定义。
+
+=end sidebar
+
+L<operator_characteristics>
+
+L<operator_types>

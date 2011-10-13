@@ -1,0 +1,207 @@
+=head1 Variables
+
+Z<variables>
+X<variable>
+
+A I<variable> in Perl is a storage location for a value (L<values>). While a
+trivial program can manipulate values directly, most programs work with
+variables to simplify the logic of the code. A variable represents values; it's
+easier to explain the Pythagorean theorem in terms of the variables C<a>, C<b>,
+and C<c> than by intuiting its principle by producing a long list of valid
+values. This concept may seem basic, but effective programming requires you to
+manage the art of balancing the generic and reusable with the specific.
+
+=head2 Variable Scopes
+
+Z<variable_scopes>
+
+X<variables; scope>
+X<scope>
+X<builtins; C<package>>
+
+Variables are visible to portions of your program depending on their scope
+(L<scope>). Most of the variables you will encounter have lexical scope
+(L<lexical_scope>). I<Files> themselves provide their own lexical scopes, such
+that the C<package> declaration on its own does not create a new scope:
+
+=begin programlisting
+
+    package Store::Toy;
+
+    my $discount = 0.10;
+
+    package Store::Music;
+
+    # $discount still visible
+    say "Our current discount is $discount!";
+
+=end programlisting
+
+X<builtins; C<package>; BLOCK>
+
+As of Perl 5.14, you may provide a block to the C<package> declaration. This
+syntax I<does> provide a lexical scope:
+
+=begin programlisting
+
+    package Store::Toy
+    {
+        my $discount = 0.10;
+    }
+
+    package Store::Music
+    {
+        # $discount not available
+    }
+
+    package Store::BoardGame;
+
+    # $discount still not available
+
+=end programlisting
+
+=head2 Variable Sigils
+
+Z<sigils>
+
+X<variables; sigils>
+X<sigils>
+
+The sigil of the variable in a declaration determines the type of the variable:
+scalar, array, or hash. The sigil used when accessing a variable varies
+depending on what you do to the variable. For example, you declare an array as
+C<@values>. Access the first element--a single value--of the array with
+C<$values[0]>. Access a list of values from the array with C<@values[ @indices
+]>.
+
+=head2 Anonymous Variables
+
+X<anonymous variables>
+X<variables; anonymous>
+
+Perl variables do not I<require> names. Names exist to help you, the
+programmer, keep track of an C<$apple>, C<@barrels>, or C<%cheap_meals>.
+Variables created I<without> literal names in your source code are I<anonymous>
+variables. The only way to access anonymous variables is by reference
+(L<references>).
+
+=head2 Variables, Types, and Coercion
+
+X<variables; types>
+X<variables; container type>
+X<variables; value type>
+
+A variable in Perl 5 represents both a value (a dollar cost, available pizza
+toppings, guitar shops with phone numbers) and the container which stores that
+value. Perl's type system deals with I<value types> and I<container types>.
+While a variable's I<container type>--scalar, array, or hash--cannot change,
+Perl is flexible about a variable's value type. You may store a string in a
+variable in one line, append to that variable a number on the next, and
+reassign a reference to a function (L<function_references>) on the third.
+
+Performing an operation on a variable which imposes a specific value type may
+cause coercion (L<coercion>) from the variable's existing value type.
+
+For example, the documented way to determine the number of entries in an array
+is to evaluate that array in scalar context (L<context_philosophy>). Because a
+scalar variable can only ever contain a scalar, assigning an array to a scalar
+imposes scalar context on the operation, and an array evaluated in scalar
+context returns the number of elements in the array:
+
+=begin programlisting
+
+    my $count = @items;
+
+=end programlisting
+
+This relationship between variable types, sigils, and context is essential.
+=encoding utf8
+
+=head1 变量
+
+Z<variables>
+X<variable>
+
+Perl 中的 I<变量> 是一个存放值（L<values>）的地方。你可以直接处理一个值，但除了
+一些琐碎的代码之外，所有程序都在和变量打交道。变量是一个间接层，按照变量 C<a>、
+C<b> 和 C<c> 来解释勾股定理较你能想象的直角三角形边长而言更为清楚。这乍看好像很
+理所当然，但是要写出健壮的、良好设计的、可测试、可组合的程序，你必须在任何可能的
+地方考虑广泛性。
+
+=head2 变量作用域
+
+Z<variable_scopes>
+
+X<variables; scope>
+X<scope>
+
+变量同样有可见性，取决于它们的作用域（L<scope>）。你能碰到的大多数变量拥有词法作
+用域（L<lexical_scope>）。记住，文件也有自己的词法作用域，诸如文件内部的 C<package> 
+声明并不创建新的作用域：
+
+=begin programlisting
+
+    package Store::Toy;
+
+    our $discount = 0.10;
+
+    package Store::Music;
+
+    # $Store::Toy::discount 仍然可以通过 $discount 访问
+    say "Our current discount is $discount!";
+
+=end programlisting
+
+=head2 变量印记
+
+Z<sigils>
+
+X<variables; sigils>
+X<sigils>
+
+在 Perl 5 中，无论是标量、数组或是哈希，变量声明时的印记决定了它的类型。访问该变量所
+用的印记则决定了所访问的值的类型。变量上的印记因使用场合而不同，例如，你将 C<@values>
+声明为一个数组。你可以用 C<$values[0]> 访问它的第一个元素────一个单值。你可以通过 
+C<@values[ @indices ]> 来得到其中的一部分值的列表。参见“数组”（L<arrays>）和“哈希”（L<hashes>）
+这两个小节以获取更多信息。
+
+=head2 匿名变量
+
+X<anonymous variables>
+X<variables; anonymous>
+
+Perl 5 中的变量不 I<需要> 名称，Perl 能够另行分配存储空间而不必将它们存放在词法垫板
+(lexical pad) 或是符号表中。它们被称为 I<匿名> 变量。访问到它们的唯一办法就是通过引
+用（L<references>）。
+
+=head2 变量、类型和强制转换
+
+X<variables; types>
+X<types; containers>
+X<types; variables>
+X<container type>
+X<value type>
+
+Perl 5 中的变量并不把类型强加给它们的值。你可以在程序的某行将某字符串存入一个变量，
+然后下一行再将一个数字追加到这个变量，第三行重新将一个函数分配给一个引用（L<function_references>）。
+这些变量的 I<值> 是灵活的（或者说是动态的），但是 I<变量> 的类型是静态的。标量变量
+就只能持有标量。数组就只能存放列表。哈希只能包含偶数个元素的键值对列表。
+
+=begin sidebar
+
+以两种不同的措辞谈论 I<类型> 听上去很奇怪：某类型的变量和某类型的数据，但 Perl 确实
+如此进行区分。这两种类别的类型最明确的指代方式便是 I<容器类型> 和 I<值类型>。
+
+=end sidebar
+
+对一个变量进行赋值可能引起强制转换（L<coercion>）。文档中记载的获得某数组中元素个数的
+方式就是在标量上下文（L<context_philosophy>）中对数组进行求值。因为标量变量只能存放标量，
+将一个数组赋值给标量对此操作施加标量上下文并得出该数组内元素的个数：
+
+=begin programlisting
+
+    my $count = @items;
+
+=end programlisting
+
+变量类型、印记和上下文之间的关系对于正确理解 Perl 来说很重要。

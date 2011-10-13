@@ -1,0 +1,272 @@
+=head1 Method-Function Equivalence
+
+Z<method_sub_equivalence>
+
+X<builtins; C<sub>>
+
+Perl 5's object system is deliberately minimal (L<blessed_references>).
+Because a class is a package, Perl itself makes no strong distinction between a
+function stored in a package and a method stored in a package.  The same
+builtin, C<sub>, expresses both.  Documentation and the convention of treating
+the first parameter as C<$self> can imply intent to readers of the code, but
+Perl itself will treat any function of the appropriate name it can find in an
+appropriate package as a method if you try to call it as a method.
+
+Likewise, you can invoke a method as if it were a function--fully-qualified,
+exported, or as a reference--if you pass in your own invocant manually.
+
+Both approaches have their problems; avoid them.
+
+=head2 Caller-side
+
+Suppose you have a class which contains several methods:
+
+=begin programlisting
+
+    package Order;
+
+    use List::Util 'sum';
+
+    ...
+
+    sub calculate_price
+    {
+        my $self = shift;
+        return sum( 0, $self->get_items() );
+    }
+
+=end programlisting
+
+If you have an C<Order> object C<$o>, the following invocations of this method
+I<may> seem equivalent:
+
+=begin programlisting
+
+    my $price = $o->calculate_price();
+
+    # broken; do not use
+    my $price = Order::calculate_price( $o );
+
+=end programlisting
+
+Though in this simple case, they produce the same output, the latter violates
+the encapsulation of objects in subtle ways.  It avoids method lookup
+altogether.
+
+X<methods; avoid calling as functions>
+
+If C<$o> were instead a subclass or allomorph (L<roles>) of C<Order> which
+overrode C<calculate_price()>, calling the method as a function would produce
+the wrong behavior.  Any change to the implementation of C<calculate_price()>,
+such as a modification of inheritance or delegation through
+C<AUTOLOAD()>--might break calling code.
+
+X<methods; calling with references>
+X<C<UNIVERSAL>; C<can()>>
+X<C<can()>>
+
+Perl has one circumstance where this behavior may seem necessary.  If you force
+method resolution without dispatch, how do you invoke the resulting method
+reference?
+
+=begin programlisting
+
+    my $meth_ref = $o->can( 'apply_discount' );
+
+=end programlisting
+
+There are two possibilities.  The first is to discard the return value of the
+C<can()> method:
+
+=begin programlisting
+
+    $o->apply_discount() if $o->can( 'apply_discount' );
+
+=end programlisting
+
+The second is to use the reference itself with method invocation syntax:
+
+=begin programlisting
+
+    if (my $meth_ref = $o->can( 'apply_discount' ))
+    {
+        $o->$meth_ref();
+    }
+
+=end programlisting
+
+When C<$meth_ref> contains a function reference, Perl will invoke that
+reference with C<$o> as the invocant.  This works even under strictures, as it
+does when invoking a method with a scalar containing its name:
+
+=begin programlisting
+
+    my $name = 'apply_discount';
+    $o->$name();
+
+=end programlisting
+
+There is one small drawback in invoking a method by reference; if the structure
+of the program has changed between storing the reference and invoking the
+reference, the reference may no longer refer to the current, most appropriate
+method.  If the C<Order> class has changed such that C<Order::apply_discount>
+is no longer the right method to call, the reference in C<$meth_ref> will not
+have updated.
+
+If you use this form of invocation, limit the scope of the references.
+
+=head2 Callee-side
+
+X<methods; avoid calling as functions>
+X<functions; avoid calling as methods>
+
+Because Perl 5 makes no distinction between functions and methods at the point
+of declaration and because it's I<possible> (however inadvisable) to invoke a
+given function as a function or a method, it's possible to write a function
+callable as either.
+
+The core C<CGI> module is a prime offender.  Its functions manually inspect
+C<@_> to determine whether the first argument is a likely invocant.  If so,
+they ensure that any object state the function needs to access is available.
+If the first argument is not a likely invocant, the function must consult
+global data elsewhere.
+
+As with all heuristics, there are corner cases.  It's difficult to predict
+exactly which invocants are potentially valid for a given method, especially
+when considering that users can create their own subclasses.  The documentation
+burden is also greater, given the need to explain the dichotomy of the code and
+the desire to avoid misuse.  What happens when one part of the project uses the
+procedural interface and another uses the object interface?
+
+Providing separate procedural and object interfaces to a library may be
+justifiable.  Some designs make some techniques more useful than others.
+Conflating the two into a single API will create a maintenance burden.  Avoid
+it.
+=encoding utf8
+
+=head1 方法-函数等价
+
+Z<method_sub_equivalence>
+
+Perl 5 的对象系统故意很精简（L<blessed_references>）。因为一个类就是一个包，Perl
+自身不对存储于包中的函数和存储于包中的方法加以强制区分。相同的关键字，C<sub>，用于
+同时表达两者。将第一个参数作 C<$self> 对待的文档和惯例向代码的读者暗示其意图，但是
+如果你试着将函数作为方法调用，Perl 自身将把任何能找到的拥有合适名称、处于合适包中
+的函数当作方法。
+
+相似地，你可以将方法当作一个函数────完全限定、导出、或作为引用调用────如果手动传入
+你自己的调用物（invocant）的话。
+
+两种方法都有各自的问题；两种都不要用。
+
+=head2 调用方（Caller-side）
+
+假设你有一个包含若干方法的类：
+
+=begin programlisting
+
+    package Order;
+
+    use List::Util 'sum';
+
+    ...
+
+    sub calculate_price
+    {
+        my $self = shift;
+        return sum( 0, $self->get_items() );
+    }
+
+=end programlisting
+
+如果你有一个 C<Order> 对象 C<$o>，下列对此方法调用 I<或许> 看上去是等价的：
+
+=begin programlisting
+
+    my $price = $o->calculate_price();
+
+    # 不正确；不要使用
+    my $price = Order::calculate_price( $o );
+
+=end programlisting
+
+虽然在这一简单的例子中，它们产生相同的输出，然而后者以隐晦的方式违反了对象的封
+装。它连同对象查找一起避免了。
+
+X<methods; calling as functions (avoid)>
+
+如果 C<$o> I<不是> 一个 C<Order> 对象，而是 C<Order> 的子类或同质异晶体（allomorph）
+（L<roles>）且覆盖了 C<calculate_price()>，则“方法用作函数”调用将执行 I<错误的> 方法。
+相同地，如果 C<calculate_price()> 的内部实现会改变────也许从其他地方继承或通过 C<AUTOLOAD()>
+委托而来────则调用者可能会失败。
+
+X<methods; calling with references>
+X<UNIVERSAL; can()>
+X<can()>
+
+Perl 有一种让此行为看上去显得必须的情况。如果你强制方法解析（method resolution）而
+不进行分派（dispatch），你如何调用作为结果的方法引用？
+
+=begin programlisting
+
+    my $meth_ref = $o->can( 'apply_discount' );
+
+=end programlisting
+
+这里有两种可能。一是丢弃 C<can()> 方法返回的结果：
+
+=begin programlisting
+
+    $o->apply_discount() if $o->can( 'apply_discount' );
+
+=end programlisting
+
+第二则是按方法调用语法使用此引用：
+
+=begin programlisting
+
+    if (my $meth_ref = $o->can( 'apply_discount' ))
+    {
+        $o->$meth_ref();
+    }
+
+=end programlisting
+
+当 C<$meth_ref> 包含一个函数引用，Perl 将以 C<$o> 作为调用者（invocant）调用该引用。
+这在严格（“strict”）要求之下同样可行，就像在包含其名称的标量上调用方法一样：
+
+=begin programlisting
+
+    my $name = 'apply_discount';
+    $o->$name();
+
+=end programlisting
+
+通过引用调用方法有一小小的缺点；如果程序的结构在存储引用和调用引用之间有所变动，
+则此引用也许不会指向当前最合适的方法。如果 C<Order> 类改变导致 C<Order::apply_discount>
+不再是最合适的调用方法，C<$meth_ref> 中的引用也不会随之更新。
+
+如果你使用这种调用形式，请限定引用的作用域。
+
+=head2 被调用方（Callee-side）
+
+X<methods; callable as functions (avoid)>
+X<functions; callable as methods (avoid)>
+
+因为 Perl 5 并不就声明区分函数和方法，还因为作为函数或方法调用一个给定的函数
+是 I<可能的>（然而这是不可取的），因而编写一个能用两种方式调用的函数也是可能
+的。
+
+C<CGI> 核心模块是一个主要的冒犯者。它的函数手工检查 C<@_> 以决定第一参数是否
+是一个可能的调用物（invocant）。如果是，它们执行特别的修改来保证函数需要访问
+的任何对象状态都是可用的。如果第一参数不像是调用物，则函数必须参考其他地方的
+全局数据。
+
+像所有的启发式方法（heuristics）那样，存在一些边边角角的情况。对于给定的方法，
+很难确切预言什么调用物是潜在合法的，特别是考虑用户可以创建子类时。文档的负担
+同时也加重了────对组合了过程式和面向对象接口的解释必须反映代码的二分法（dichotomy）
+────就好像原本就是被误用的。当一部分代码使用过程式接口而另一部分用对象接口时会
+怎么样？
+
+为库提供隔离的过程式和对象式接口也许是正当的。一些设计使得一部分技巧比其他更
+加有用。将这两者合并为单一的 API 会加重维护的担子。请避免这样做。

@@ -1,27 +1,9 @@
-=EN 4.5. Modifying the Array
-=CN 4.5. 修改数组
+=EN Modifying the Array
+=CN 修改数组
 =EN You’ve seen how to solve the excessive copying problem with an array reference. Now let’s look at modifying the original array.
 =CN 你已经看到了如何用一个指向数组的引用来解决大量拷贝带来的问题。 现在我们来看看如何修改原始数组。
 =EN For every missing provision, we push that provision onto an array, forcing the passenger to consider the item:
 =CN 对于每个遗忘的的装备，我们把它放到另一个数组里，要求乘客关注这些装备：
-
-sub check_required_items {
-  my $who   = shift;
-  my $items = shift;
-  my @required = qw(preserver sunscreen water_bottle jacket);
-  my @missing = (  );
-  for my $item (@required) {
-    unless (grep $item eq $_, @$items) { # not found in list?
-      print "$who is missing $item.\n";
-      push @missing, $item;
-    }
-  }
-  if (@missing) {
-    print "Adding @missing to @$items for $who.\n";
-    push @$items, @missing;
-  }
-}
-
 =EN Note the addition of the @missing array. If we find any items missing during the scan, we push them into @missing. If there’s anything there at the end of the scan, we add it to the original provision list.
 =CN 注意我们另外增加了一个@missing数组。 如果我们在扫描数组的时候发现有遗忘的装备，我们就把它放到@missing数组里。 在扫描结束后，如果发现@missing里有内容，我们就把这个数组加在供应清单后面。
 =EN The key is in the last line of that subroutine. We’re dereferencing the $items array reference, accessing the original array, and adding the elements from @missing. Without passing by reference, we’d modify only a local copy of the data, which has no effect on the original array.

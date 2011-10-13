@@ -1,0 +1,189 @@
+=head1 Attributes
+
+Z<attributes>
+
+Named entities in Perl--variables and functions--can have additional metadata
+attached to them in the form of I<attributes>. Attributes are arbitrary names
+and values used with certain types of metaprogramming (L<code_generation>).
+
+Attribute declaration syntax is awkward, and using attributes effectively is
+more art than science. Most programs never use them, but when used well they
+offer clarity and maintenance benefits.
+
+=head2 Using Attributes
+
+A simple attribute is a colon-preceded identifier attached to a declaration:
+
+=begin programlisting
+
+    my $fortress      B<:hidden>;
+
+    sub erupt_volcano B<:ScienceProject> { ... }
+
+=end programlisting
+
+These declarations will cause the invocation of attribute handlers named
+C<hidden> and C<ScienceProject>, if they exist for the appropriate type
+(scalars and functions, respectively). These handlers can do I<anything>.  If
+the appropriate handlers do not exist, Perl will throw a compile-time
+exception.
+
+X<CPAN; C<Test::Class>>
+
+Attributes may include a list of parameters. Perl treats these parameters as
+lists of constant strings and only strings. The C<Test::Class> module from the
+CPAN uses such parametric arguments to good effect:
+
+=begin programlisting
+
+    sub setup_tests :Test(setup) { ... }
+
+    sub test_monkey_creation :Test(10) { ... }
+
+    sub shutdown_tests :Test(teardown) { ... }
+
+=end programlisting
+
+The C<Test> attribute identifies methods which include test assertions, and
+optionally identifies the number of assertions the method intends to run.
+While introspection (L<reflection>) of these classes could discover the
+appropriate test methods, given well-designed solid heuristics, the C<:Test>
+attribute makes your intent clear.
+
+The C<setup> and C<teardown> parameters allow test classes to define their own
+support methods without worrying about conflicts with other such methods in
+other classes. This separates the concern of specifying what this class must do
+with the concern of how other classes do their work, and offers great
+flexibility.
+
+=begin sidebar
+
+X<Catalyst>
+
+The Catalyst web framework also uses attributes to determine the visibility and behavior of methods within web applications.
+
+=end sidebar
+
+=head2 Drawbacks of Attributes
+
+X<pragmas; C<attributes>>
+X<C<attributes> pragma>
+X<CPAN; C<Attribute::Handlers>>
+X<CPAN; C<Attribute::Lexical>>
+
+Attributes have their drawbacks. The canonical pragma for working with
+attributes (the C<attributes> pragma) has listed its interface as experimental
+for many years. Damian Conway's core module C<Attribute::Handlers> simplifies
+their implementation. Andrew Main's C<Attribute::Lexical> is a newer approach.
+Prefer either to C<attributes> whenever possible.
+
+X<CPAN; C<Memoize>>
+
+The worst feature of attributes is their propensity to produce weird syntactic
+action at a distance. Given a snippet of code with attributes, can you predict
+their effect? Well written documentation helps, but if an innocent-looking
+declaration on a lexical variable stores a reference to that variable
+somewhere, your expectations of its lifespan may be wrong. Likewise, a handler
+may wrap a function in another function and replace it in the symbol table
+without your knowledge--consider a C<:memoize> attribute which automatically
+invokes the core C<Memoize> module.
+
+Attributes are available when you need them to solve difficult problems. They
+can be very useful, used properly--but most programs never need them.
+=encoding utf8
+
+=head1 属性
+
+Z<attributes>
+
+Perl 中的具名实体————变量和函数————可按 I<属性> 的形式附加额外的元信息。属性是
+名称（通常，也是值），它允许某种形式的元编程（L<code_generation>）。
+
+=begin sidebar
+
+定义属性可能有点别扭，对其有效地使用是科学更是艺术。它们有充足的理由不在大多数
+程序中出现，虽然它们 I<可以> 在代码维护和清晰度上带来引人注目的好处。
+
+=end sidebar
+
+=head2 使用属性
+
+用最简单的形式来说，属性是一个附加于变量或函数声明上的前置冒号标识符：
+
+=begin programlisting
+
+    my $fortress      B<:hidden>;
+
+    sub erupt_volcano B<:ScienceProject> { ... }
+
+=end programlisting
+
+如果合适类型（分别是标量和函数）的属性处理器存在，这些声明将引发对名为 C<hidden> 
+和 C<ScienceProject> 的属性处理器的调用。如果合适的处理器不存在，Perl 会抛出编译
+期异常。这些处理器可以做 I<任何事>。
+
+属性可以包括一个参数列表；Perl 将它们作为一个常量字符串列表，即使它们可能会类似于
+其他值，如，数字或变量。来自 CPAN 的 C<Test::Class> 模块很好地利用了这一参数形式：
+
+=begin programlisting
+
+    sub setup_tests :Test(setup) { ... }
+
+    sub test_monkey_creation :Test(10) { ... }
+
+    sub shutdown_tests :Test(teardown) { ... }
+
+=end programlisting
+
+C<Test> 属性标识了包括测试断言的方法，并且可选地标识了意图执行的断言方法的数量。
+虽然对这些类的内省（L<reflection>）可以发现合适的测试方法，当给出经良好设计的启发
+式方法，C<:Test> 属性使得代码及其意图毫无歧义。
+
+C<setup> 和 C<teardown> 参数允许测试类定义它们自己的支持方法而不必担心重名或其他
+因继承或其余设计上的考虑而引发的冲突。你 I<可以> 强制施行某种设计，其中所有测试类
+必须自行覆盖名为 C<setup()> 和 C<teardown()> 的方法，但是属性方式给与实现更多的灵
+活性。
+
+=begin sidebar
+
+Catalyst Web 框架也采用属性来决定 Web 应用内方法的可见性和行为。
+
+=end sidebar
+
+=head2 属性的缺点
+
+X<pragmas; attributes>
+X<attributes.pm>
+X<Attribute::Handlers>
+
+属性确实有它们的缺点：
+
+=over 4
+
+=item * 属性的正式编译命令（即 C<attributes>）已经将其接口列为“实验性质”很多年了。
+Damian Conway 的核心模块 C<Attribute::Handlers> 简化了它们的实现。请在可能时采用
+它而非 C<attributes>；
+
+=item * 任何声明属性处理器的模块必须 I<继承> C<Attribute::Handlers> 以使处理器对
+所有用到它们的包可见 N<你也 I<可以> 将它们存放在 C<UNIVERSAL>，但这是对全局的污染，
+还是一种糟糕的设计。>。此缺点归根于 Perl 5 自身对属性的实现方式；
+
+=item * 属性处理器生效于 C<CHECK> 代码块，使得它们不适合用于那些修改语法分析及编
+译顺序的项目，例如 mod_perl；
+
+=item * 任何提供给属性的参数是一列常量字符串。C<Attribute::Handlers> 进行部分数据
+转换，但偶尔你需要禁用它。
+
+=back
+
+属性中最差的一点就是它们会远距离产生奇怪的语法动作。给出一段使用属性的代码，你
+能否预言它的行为？良好而准确的文档可以帮助你，但如果一段看上去很无辜的词法变量
+声明将此变量的引用存放他处，则你对销毁该变量内容的期待将是错误的，除非你非常仔
+细地阅读文档。类似的，处理器可能会用一个函数包装另一个函数并在你不知情的情况下
+在符号表里替换了它————考虑一个自动调用 C<Memoize> 的 C<:memoize> 属性。
+
+复杂的特性可以产生紧凑和惯用语化的代码。Perl 允许开发者实验多种设计以便找到他们
+想法的最佳表示。属性和其他高级 Perl 特性可以帮助你解决复杂的问题，但是他们也会混
+淆原本简单的代码意图。
+
+大多数程序绝对不会用到这个特性。

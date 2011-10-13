@@ -1,0 +1,39 @@
+=head0 Perl and Its Community
+
+Perl 5's greatest accomplishment is the huge amount of reusable libraries
+developed for it. Where Perl 4 had forks to connect to databases such as Oracle
+and Sybase, for example, Perl 5 had a real extension mechanism. Larry wanted
+people to create and maintain their own extensions without fragmenting Perl
+into thousands of incompatible pidgins--and it worked.
+
+That technical accomplishment was almost important as the growth of a community
+around Perl 5. I<People> write libraries. I<People> build on the work of other
+people. I<People> make a community worth joining and preserving and expanding.
+
+The Perl community is strong and healthy. It welcomes willing participants at
+all levels, from novices to core developers. Take advantage of the knowledge
+and experience of countless other Perl programmers, and you'll become a better
+programmer. 
+
+L<perl_community>
+
+L<cpan>
+=encoding utf8
+
+=head0 Perl 和它的社区
+
+Larry 设计 Perl 5 的一个主要目标就是鼓励核心发行版之外开发与革新。Perl 4 有几个
+旁支，因为，举例来说，没什么简单的方法能让它连接到关系数据库。Larry 希望人们能够
+创建并维护他们自己对语言的扩展而无须使 Perl 分裂为千百个不兼容的混杂语言。
+
+你可以为扩展而引入某种技术上的机制，但是你也需站在社区角度考虑此事。那些不在人群
+中共享的扩展和增强使得每个人必须自己动手对其进行编译、测试、调试和维护。如果没人
+能够找到或者找到了也不能修正甚至根本无权使用，那么共享扩展和库同样也是毫无意义的。
+
+幸运的是，我们有 Perl 社区的存在。它强壮且健康。它欢迎任何级别的参与者────并不只
+有那些产出并共享代码的人。考虑利用无数其他 Perl 程序员的知识和经验，并同样地分享
+你自己的能力。
+
+L<perl_community>
+
+L<cpan>

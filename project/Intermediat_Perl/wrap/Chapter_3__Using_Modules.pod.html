@@ -1,0 +1,464 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>D:\Git\perldoc-cn\project\Intermediat_Perl\wrap\Chapter_3__Using_Modules.pod.html</title>
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
+<meta name="syntax" content="pod">
+<meta name="settings" content="use_css">
+<style type="text/css">
+<!--
+pre { font-family: monospace; color: #a0ffa0; background-color: #000000; }
+body { font-family: monospace; color: #a0ffa0; background-color: #000000; }
+.PreProc { color: #f5deb3; }
+.Statement { color: #ffff00; }
+.Comment { color: #ffa500; }
+.Constant { color: #ffffff; }
+-->
+</style>
+</head>
+<body>
+<pre>
+<span class="Constant">第三章 使用模块</span>
+
+模块是构建程序的基本代码块。它提供了可重用的子程序，变量或者是面
+向对象的类。用我们的方式建造我们自己的模块，我们将向你展示一些你
+也许感兴趣的地方。我们也将讲讲一些如何使用别人已经写好的模块的基
+本常识。
+
+<span class="Constant">3. 1. 标准发行版</span>
+
+<span class="Comment">Perl</span> 发行版已经自带了最受欢迎的模块。 实际上, 最近的发行版中
+有超过 <span class="Comment">50</span> 兆模块。 于 <span class="Comment">1996</span> 年十月发布的 <span class="Comment">Perl</span> <span class="Comment">5.003_07</span>
+有 <span class="Comment">98</span> 个模块.现如今, <span class="Comment">2006</span> 年的年初发行的 <span class="Comment">Perl</span> <span class="Comment">5.8.8</span>
+有 <span class="Comment">359</span> 个模块。这实在是 <span class="Comment">Perl</span> 的优点之一：许多有用且复
+杂的程序用不着你动手, 发行版里已经给你带来了。
+
+在读完本书之后, 你就能用 <span class="Comment">Module::CoreList</span> 模块来自己计算
+一下共有多少模块。 毕竟, 我们就是用这种方法来得到模块总数。
+
+在这本书里, 我们会向你标出哪些模块是 <span class="Comment">Perl</span> 自带的（而且在大多
+数情况下, 会说明是从哪个版本开始收入 <span class="Comment">Perl</span> 发行版中的）。我们
+把它们称为 <span class="Statement">核心模块</span> , 或者标注它们是在 <span class="Statement">标准发行版</span> 中的.如果你安装
+了 <span class="Comment">Perl</span> , 那你就可以用这些模块。 因为我们写这本书的时候是用的
+<span class="Comment">Perl</span> <span class="Comment">5.8.7</span> 版, 所以我们也假定这是 <span class="Comment">Perl</span> 的当前版本。
+
+当你在开发你的程序的时候, 你可能要考虑是否你应该仅仅用核心模块.
+这样的话你就能保证任何用 <span class="Comment">Perl</span> 的人都能执行你的代码, 只要他们的
+<span class="Comment">Perl</span> 版本同你相同。这里我们也不多费口舌了, 主要是因为我们
+太喜欢 <span class="Comment">CPAN</span> 了, 不用它就舍不得。
+
+<span class="Constant">3. 2. 使用模块</span>
+
+几乎所有的 <span class="Comment">Perl</span> 模块都带有文档说明. 所以尽管我们可能不知道那
+些模块背后的戏法是怎么变的, 如果我们知道如何使用接口, 我们就不必去
+担心那些细节。这就是在这里介绍接口的原因, 毕竟：它屏蔽了复杂性。
+
+在我们的本机当中, 我们可以用 <span class="Comment">perldoc</span> 命令来调出模块文档。 我
+们输入我们要查的模块的名字, 然后 <span class="Comment">perldoc</span> 打印出文档内容：
+
+<span class="PreProc"> $ perldoc File::Basename</span>
+
+<span class="PreProc"> NAME</span>
+
+<span class="PreProc">     fileparse - split a pathname into pieces</span>
+<span class="PreProc">     basename - extract just the filename from a path</span>
+<span class="PreProc">     dirname - extract just the directory from a path</span>
+
+<span class="PreProc"> SYNOPSIS</span>
+
+<span class="PreProc">     use File::Basename;</span>
+
+<span class="PreProc">     ($name, $path, $suffix) = fileparse($fullname, @suffixlist)</span>
+<span class="PreProc">     fileparse_set_fstype($os_string);</span>
+<span class="PreProc">     $basename = basename($fullname, @suffixlist);</span>
+<span class="PreProc">     $dirname = dirname($fullname);</span>
+
+我们在这里列出了文档的一般结构（至少是最重要的部分）。 模块文档
+是按 <span class="Comment">Unix</span> 旧文档格式组织的, 以 <span class="Comment">NAME</span> 和 <span class="Comment">SYNOPSIS</span> 开始.
+
+<span class="Comment">SYNOPSIS</span> 节给我们关于这个模块的用法的例子, 这样我们就可以稍
+微理解了用法就可以使用这个模块。 就是说, 这可以使你在还没有熟悉
+<span class="Comment">Perl</span> 技术和语法的情况下, 仅仅看这些例子, 就可以使程序工作起来。
+
+如今, 因为 <span class="Comment">Perl</span> 成了一个过程的、函数的、面向对象和其它各种语
+言类型的混合体, <span class="Comment">Perl</span> 模块文档开始有不同的接口。 我们会在不同的
+模块使用稍微不同风格的文档, 但是只要我们可以查文档, 我们就不会有
+问题。
+
+<span class="Constant">3. 3. 函数接口</span>
+
+为了调用一个模块, 我们可以用 <span class="Comment">Perl</span> 内置的 <span class="Comment">use</span> 语句。 这里
+我们不打算更深入的了解细节问题, 我们会在第 <span class="Comment">10</span> 章和第 <span class="Comment">15</span> 章来
+说这个问题。 目前, 我们只要能调用模块就可以了。 我们就发行版的核
+心模块中的 <span class="Comment">File::Basename</span> 模块开始说吧.要把它调入我们的脚本, 我
+们用：
+
+<span class="PreProc"> use File::Basename;</span>
+
+当我们写上如上的代码后, <span class="Comment">File::Basename</span> 向你的脚本引入了三个
+子例程： <span class="Comment">fileparse</span> , <span class="Comment">basename</span> 和 <span class="Comment">dirname.</span> 自此之后, 我
+们就可以用如下语句了：
+
+以及实用例程, <span class="Comment">fileparse_set_fstype.</span>
+
+事实上他们被它引入当前的包, 只不过我们没有告诉你这些而已。
+
+<span class="PreProc"> my $basename = basename( $some_full_path );</span>
+<span class="PreProc"> my $dirname  = dirname(  $some_full_path );</span>
+
+就象我们曾经在我们自己代码里写过 <span class="Comment">basename</span> 和 <span class="Comment">dirname</span> 这两
+个子例程一样, 或者他们就像是 <span class="Comment">Perl</span> 的内置函数似的。 这些例程的
+功能是从一个路径名中抽出文件名和目录名。 比如, 如果变量
+<span class="Comment">$some_full_path</span> 的内容是 <span class="Comment">D:\Projects\Island</span> <span class="Comment">Rescue\plan7.rtf</span>
+(我们假定是在 <span class="Comment">Windows</span> 环境下), 那么 <span class="Comment">$basename</span> 的内容将会是
+<span class="Comment">plan7.rtf</span> 而 <span class="Comment">$dirname</span> 的内容将会是 <span class="Comment">D:\Projects\Island</span> <span class="Comment">Rescue.</span>
+
+<span class="Comment">File::Basename</span> 会自己 <span class="Statement">感知</span> 它所处的是哪种操作系统, 并且因此
+针对所遇到的操作系统, 用不同的分隔符来解析字串。
+
+然而, 假定我们曾经在程序里写过一个同名的 <span class="Comment">dirname</span> 函数的话,
+那么 <span class="Comment">File::Basename</span> 提供的同名函数会把你的覆盖! 如果我们打开
+<span class="Comment">warnings</span> 报警, 我们会看到一条警告信息;否则的话 <span class="Comment">Perl</span> 不会关心
+这种情况。
+
+<span class="Constant">3. 4. 选择性地引入函数</span>
+
+很幸运, 我们可以告诉 <span class="Comment">use</span> 操作符, 通过只导入需要的子例程来限
+制它的行为.称为&quot;函数导入清单&quot;, 如：
+
+<span class="PreProc"> use File::Basename ('fileparse', 'basename');</span>
+
+这样的话, 模块只会将两个例程导入我们的程序, 让我们自己写的
+<span class="Comment">dirname</span> 留在程序中。 当然, 上述的写法输入起来太麻烦, 所以一般我们
+会看如下用引用操作符的写法：
+
+<span class="PreProc"> use File::Basename qw( fileparse basename );</span>
+
+实际上, 即便只有一个参数, 我们为了维护起来的一致性, 也倾向于用
+<span class="Comment">qw()</span> 这样的形式。; 因为我们往往过后再回来找到这段代码说：&quot;得在
+这里再加个参数&quot;, 如果我们一开始用 <span class="Comment">qw()</span> 来写的话, 维护起来会更
+简单。
+
+这样我们当然保护了本地的 <span class="Comment">dirname</span> 例程, 但是, 如果我们想用
+<span class="Comment">File::Basename</span> 模块的 <span class="Comment">dirname</span> 提供的功能怎么办？没问题！我们
+只要打出这个例程的全名就可以了：
+
+<span class="PreProc"> my $dirname = File::Basename::dirname($some_path);</span>
+
+<span class="Comment">use</span> 关键字后面的名字列表并不会使模块里(在这个例子中是
+<span class="Comment">File::Basename</span>) 的子例程的定义有任何改变.我们可以忽略导入清单,
+直接用全名, 像下面一样:
+
+你不必在这些调用的子例程的前面加 <span class="Statement">&amp;</span> 符号, 因为编译器已经知
+道子例程的名字了。
+
+<span class="PreProc"> my $basename = File::Basename::basename($some_path);</span>
+
+在一种极端的情况（但也极端有用）, 我们可能为导入列表指定一个空
+列表, 就像下面一样:
+
+<span class="PreProc"> use File::Basename ();              # no import</span>
+<span class="PreProc"> my $base = File::Basename::basename($some_path);</span>
+
+空列表和没有列表的概念是不一样的。 空列表的意思是说&quot;不要导入任
+何子例程&quot;, 而没有列表的意思是说：&quot;请导入缺省的子例程&quot;. 如果
+模块的作者干得出色的话, 他缺省导出的例程正是你想要的。
+
+<span class="Constant">3. 5. 面向对象的接口</span>
+
+相比于 <span class="Comment">File::Basename</span> 导出的子例程, 在核心模块中有另外一个
+<span class="Comment">File::Spec</span> 模块也提供类似的功能。<span class="Comment">File::Spec</span> 被设计来支持对
+文件属性的一般操作。 (一个文件属性指文件或目录的名字, 但它可能并不
+是实际存在的名子, 是这样吗？)
+
+与 <span class="Comment">File::Basename</span> 模块不同的是, <span class="Comment">File::Spec</span> 模块接口是被设
+计成面向对象的.我们也用 <span class="Comment">use</span> 来调入模块, 象往常一样：
+
+<span class="PreProc"> use File::Spec;</span>
+
+然而, 因为这个模块有面向对象的接口,它并不导入任何子例程。取
+而代之的是, 接口要我们通过访问类的方法来使用其功能。 如
+<span class="Comment">catfile</span> 方法用来把一个字串列表用适当的目录分隔符连接起来：
+
+如果我们想要专门的接口的话, 可以用 <span class="Comment">use</span> <span class="Comment">File::Spec::Functions</span>
+的办法。
+
+<span class="PreProc"> my $filespec = File::Spec-&gt;catfile( $homedir{gilligan},</span>
+<span class="PreProc">         'web_docs', 'photos', 'USS_Minnow.gif' );</span>
+
+上例就是调用了 <span class="Comment">File::Spec</span> 类中的一个叫 <span class="Comment">catfile</span> 的类方法.
+这个方法使用本地操作系统的目录分隔符建立合适的路径字患并返回单个字
+串。对于 <span class="Comment">File::Spec</span> 提供的其它方法, 调用的语法都是相似的。
+
+返回的的字段结果, 如果在 <span class="Comment">UNIX</span> 系统, 那么多半是：
+<span class="Comment">/home/gilligan/web_docs/photos/USS_Minnow.gif</span> 如果在 <span class="Comment">windows</span> 系
+统里, 就会用代表目录分隔符的反斜杠。 这个模块让我们可以写出可移植
+的代码, 至少在文件描述上是这样的。
+
+<span class="Comment">File::Spec</span> 模块还提供了许多其它的方法来用可移植的方式处理路
+径。 你可以通过 <span class="Comment">perlport</span> 文档了解更多有关移植方面的专题。
+
+<span class="Constant">3. 6. 一个更典型的面向对象模块: </span><span class="Comment">Math::BigInt</span>
+
+不要因为 <span class="Comment">File::Spec</span> 模块没有任何对象, 所以看上去比较像&quot;非面
+对象的&quot;的模块而失望.让我们看一下另外一个核心模块, <span class="Comment">Math::BigInt</span>
+, 它用来处理超出 <span class="Comment">Perl</span> 内置精度的整数值.
+
+在幕后, <span class="Comment">Perl</span> 实际上要被其宿主的操作系统架构所限制。 这是
+少数硬件环境限制之一。
+
+<span class="PreProc"> use Math::BigInt;</span>
+<span class="PreProc"> my $value = Math::BigInt-&gt;new(2); # start with 2</span>
+<span class="PreProc"> $value-&gt;bpow(1000);               # take 2**1000</span>
+<span class="PreProc"> print $value-&gt;bstr(), &quot;\n&quot;;     # print it out</span>
+
+如前所述, 这个模块没有导入任何东西。 其全部的接口使用对象的方法
+, 如用 <span class="Comment">new</span> 跟在类名之后, 来建立实例.然后调用实例的方法, 如跟在
+实例名字后的 <span class="Comment">bpow</span> 和 <span class="Comment">bstr</span>.
+
+<span class="Constant">3. 7. </span><span class="Comment">CPAN</span><span class="Constant"> 模块仓库</span>
+
+<span class="Comment">CPAN</span> 是众多志愿者协同工作的产物.志愿者中的许多人用他们自己的
+<span class="Comment">FTP</span> 站点来维持前台的 <span class="Comment">CPAN</span> <span class="Comment">Web</span> 页面。 直到 <span class="Comment">1993</span> 年底
+, 他们还是用 <span class="Comment">perl-packrats</span> 邮件列表来协调他们的工作.之后, 因为
+磁盘空间越来越便宜, 所以相同信息可以在所有的站点复制, 而不必放在专
+门的站点上。 这种想法酝酿了一年左右, 以 <span class="Comment">Jarkko</span> <span class="Comment">Hietaniemi</span>
+(芬兰人, 详见： <span class="Comment"><a href="http://users.tkk.fi/jhi/jarkko.html">http://users.tkk.fi/jhi/jarkko.html</a></span>. 中文名：沙
+雅可, 日文名：奴稗谷笑)在芬兰建立的 <span class="Comment">FTP</span> 站点为母站, 其它的镜相
+站点可以以此来进行及时的更新。
+
+这个站点的一部份工作是重新编排和组织分离的 <span class="Comment">Perl</span> 文档.建立起
+放置为非 <span class="Comment">UNIX</span> 系统的二进制文件、脚本、和 <span class="Comment">Perl</span> 源代码的空间。
+然而, <span class="Comment">CPAN</span> 当然最关心的是占空间大部份的 <span class="Comment">Perl</span> 模块部分。
+
+按模块的功能编目, <span class="Comment">CPAN</span> 把模块用符号连接组织起来, 指向他们的
+作者目录－－实际文件所在的地方。 模块还包含以易于 <span class="Comment">Perl</span> 分析的格
+式索引, 如 <span class="Comment">Data::Dumper</span> 这样的输出来丰富模块索引的内容。 自然
+啦, 这一切编目索引都是有主服务器的 <span class="Comment">Perl</span> 程序自动从数据库生成的
+。 一般来说, <span class="Comment">CPAN</span> 中从一个服务器同步到另一个服务器的工作是由
+<span class="Comment">mirror.pl</span> 这个古老的 <span class="Comment">Perl</span> 程序完成的。
+
+从屈指可数的几台镜相服务器开始, <span class="Comment">CPAN</span> 如今已经成长为超过
+<span class="Comment">200</span> 公共服务器, 至少每天（有时是每小时）刷新一次的网络。 无论你在
+世界的哪头, 我们总是可以找到最近的 <span class="Comment">CPAN</span> 镜相站。
+
+<span class="Comment">CPAN</span> <span class="Comment">Search</span> <span class="Comment">(<a href="http://search.cpan.org)">http://search.cpan.org)</a></span> 的难以置信的易用
+性, 一定会成为你最喜欢的搜寻界面。 从那个网页, 你可以搜寻模块、看
+它的文档、浏览它有哪些版本、查询他们的 <span class="Comment">CPAN</span> 测试者的报告以及许
+多其它事情。
+
+<span class="Constant">3. 8. 安装从 </span><span class="Comment">CPAN</span><span class="Constant"> 下载的模块</span>
+
+安装从 <span class="Comment">CPAN</span> 获得的简单模块可以很直接：先从 <span class="Comment">CPAN</span> 下载发布
+的文档, 解压到一个目录。下例中我们用 <span class="Comment">wget</span> 下载文档, 当然, 你可
+以用你习惯的工具下载。
+
+<span class="PreProc"> $ wget <a href="http://www.cpan.org/.../HTTP-Cookies-Safari-1.10.tar.gz">http://www.cpan.org/.../HTTP-Cookies-Safari-1.10.tar.gz</a></span>
+<span class="PreProc"> $ tar -xzf HTTP-Cookies-Safari-1.10.tar.gz</span>
+<span class="PreProc"> $ cd HTTP-Cookies-Safari-1.10s</span>
+
+然后我们可以以两种办法安装（我们将会在第 <span class="Comment">16</span> 章介绍）. 如果我
+们找到一个叫 <span class="Comment">makefile.pl</span> 的文件, 我们可以运行如下的命令来编译
+, 测试和最终安装源码：
+
+<span class="PreProc"> $ perl Makefile.PL</span>
+<span class="PreProc"> $ make</span>
+<span class="PreProc"> $ make test</span>
+<span class="PreProc"> $ make install</span>
+
+如果你因为没有权限而不能在系统级的目录里建立目录, 我们可以用
+<span class="Comment">PREFIX</span> 参数告诉 <span class="Comment">Perl</span> 安装在你另外指定的路径：
+
+这些目录由管理员安装 <span class="Comment">Perl</span> 时建立, 我们可以用 <span class="Comment">perl</span> <span class="Comment">-V</span>
+看到是哪些目录。
+
+<span class="PreProc"> $ perl Makefile.PL PREFIX=/Users/home/Ginger</span>
+
+为了让 <span class="Comment">Perl</span> 在目录中查找到模块, 我们可以设置 <span class="Comment">PERL5LIB</span> 环
+境变量。 <span class="Comment">Perl</span> 会把这些目录加到模块搜寻清单里去。
+
+<span class="PreProc"> $ export PERL5LIB=/Users/home/Ginger</span>
+
+我们也可以用 <span class="Comment">lib</span> 编译提示符来加模块搜寻路径, 尽管这并不友好
+－－因为这不仅要修改代码, 而且在其它的机器上不一定要相同的目录。
+
+<span class="PreProc"> #!/usr/bin/perl</span>
+<span class="PreProc"> use lib qw(/Users/home/Ginger);</span>
+
+不过, 等一下, 如果我们找到了 <span class="Comment">Build.PL</span> 文件, 而不是 <span class="Comment">Makefile.PL</span>,
+那我们可以用它, 过程是一样的。 这种发布用了 <span class="Comment">Module::Build</span>
+模块来建立和安装包.因为 <span class="Comment">Module::Build</span> 并非 <span class="Comment">Perl</span> 的核心
+模块（至少现在还不是）, 所以我们使用时先要安装一下。
+
+尽管它可能成为 <span class="Comment">Perl</span> <span class="Comment">5.10</span> 的一部分.（的确成为 <span class="Comment">Perl 5.10</span>
+的一部分： <span class="Comment"><a href="http://perldoc.perl.org/Module/Build.html">http://perldoc.perl.org/Module/Build.html</a></span> ］）
+
+<span class="PreProc"> $ perl Build. PL</span>
+<span class="PreProc"> $ perl Build</span>
+<span class="PreProc"> $ perl Build test</span>
+<span class="PreProc"> $ perl Build install</span>
+
+如果要把 <span class="Comment">Module::Build</span> 安装在你自己的目录, 我们可以加上
+<span class="Comment">install_base</span> 安装参数.就像我们以前安装 <span class="Comment">Perl</span> 时用的参数：
+
+<span class="PreProc"> $ perl Build.PL --install_base /Users/home/Ginger</span>
+
+不过有时候我们在发布的安装包里看到有 <span class="Comment">Makefile.PL</span> 也有
+<span class="Comment">Build.PL</span> 我们该用哪一个呢？ 都可以。请便。
+
+<span class="Constant">3. 9. 适时地打开路径</span>
+
+<span class="Comment">Perl</span> 会从一个专门的 <span class="Comment">Perl</span> 数组 <span class="Comment">:@INC</span> 中包含的目录条目中
+查找程序调用的模块. <span class="Comment">use</span> 语句会在编译时执行, 所以它会在编译时在
+<span class="Comment">@INC</span> 数组所包含的路径中查找模块.所以, 除非我们把 <span class="Comment">@INC</span> 的因
+素考虑进去, 否则我们就很难理解有时我们的程序会莫明其妙地中断。
+
+举个例子, 假定我们有个目录 <span class="Comment">/home/gilligan/lib</span> , 并且把模块
+<span class="Comment">Navigation::SeatOfPants</span> 放到这个目录下面的 <span class="Comment">Navigation</span> 目录中
+的 <span class="Comment">SeatOfPants.pm</span> 文件中.但 <span class="Comment">Perl</span> 在用如下语句调用我们的模块
+时是不会找到它的。
+
+<span class="PreProc"> use Navigation::SeatOfPants;</span>
+
+<span class="Comment">Perl</span> 会向我们报怨在 <span class="Comment">@INC</span> 中找不到需要的模块, 并且向我们展
+示数组中包含的所有目录。
+
+<span class="PreProc"> Can't locate Navigation/SeatofPants.pm in @INC (@INC contains:...)</span>
+
+我们可能会想在调用模块之前, 把路径加进 <span class="Comment">@INC</span> 不就成了？然而,
+当我们加入如下语句：
+
+<span class="PreProc"> unshift @INC, '/home/gilligan/lib';   # broken</span>
+<span class="PreProc"> use Navigation::SeatOfPants;</span>
+
+这样做不对, 为什么？因为 <span class="Comment">unshift</span> 是在运行时发生的, 远在
+<span class="Comment">use</span> 来调用模块的编译时之后.两条语句虽然在词法上紧挨着但并不表示在
+编辑时间上靠近.仅仅因为次序上一句挨着另一句并不意味着执行上也按相
+同的次序.我们得让 <span class="Comment">@INC</span> 在 <span class="Comment">use</span> 语句执行之前改变.一种解决办法
+是加上 <span class="Comment">BEGIN</span> 块：
+
+<span class="PreProc"> BEGIN { unshift @INC, '/home/gilligan/lib'; }</span>
+<span class="PreProc"> use Navigation::SeatOfPants;</span>
+
+这下 <span class="Comment">BEGIN</span> 块会在编译时被执行, 在用 <span class="Comment">use</span> 调用模块之前设置
+好适当的路径。
+
+不过, 这样做看上去很烦琐, 不容易去解释, 特别是以后向那些维护你
+代码的同事去解释.这样, 我们用一个简洁的编译提示来换掉原来用的那些
+乱七八糟的东西。
+
+<span class="PreProc"> use lib '/home/gilligan/lib';</span>
+<span class="PreProc"> use Navigation::SeatOfPants;</span>
+
+这样, <span class="Comment">lib</span> 编译提示取一个或多个参数, 并且把他们加入数组
+<span class="Comment">@INC</span> 开头, 就像前面所说的用 <span class="Comment">unshift</span> 的效果一样。
+
+[*] 之所以有效是因为它在编译期间执行而不是在运行时执行.接下来正
+是时候立即用 <span class="Comment">use</span> 了。
+
+因为 <span class="Comment">use</span> <span class="Comment">lib</span> 编译提示总是包含站点相关的路径名, 所以一般来
+说我们推荐你把它写在文件的开头。 这样当你需要为新系统移动文件, 或
+库目录名字变化时比较容易更新。 (当然, 还有一种办法, 我们压根去掉
+<span class="Comment">use</span> <span class="Comment">lib</span> 编译提示, 如果我们可以把我们的模块直接安装在
+<span class="Comment">@INC</span> 包括的标准路径下, 但这不是总是可行的。 )
+
+要注意到：<span class="Comment">use</span> <span class="Comment">lib</span> 不是指&quot;用这个库&quot;, 而是指&quot;用这个路径可
+以找到我的库（以及模块）.&quot; 很多情况下, 我们会看到代码被写成这
+样：
+
+<span class="PreProc"> use lib '/home/gilligan/lib/Navigation/SeatOfPants.pm'; # WRONG</span>
+
+这样程序员会迷惑为什么没有把定义加进去.还要注意 <span class="Comment">use</span> <span class="Comment">lib</span>
+实际上是在编译时执行的, 所以如下代码同样不能工作：
+
+<span class="PreProc"> my $LIB_DIR = '/home/gilligan/lib'; . . .</span>
+<span class="PreProc"> use lib $LIB_DIR;     # BROKEN</span>
+<span class="PreProc"> use Navigation::SeatOfPants;</span>
+
+当然, <span class="Comment">Perl</span> 声明 <span class="Comment">$LIB_DIR</span> 变量的确是在编译期（所以我们用
+<span class="Comment">use</span> <span class="Comment">strict</span> 也不会收到出错信息, 尽管实际 <span class="Comment">use</span> <span class="Comment">lib</span> 时会报
+错）, 但给变量赋上 <span class="Comment">'/home/gilligan/lib'</span> 这个值却直到运行时才发
+生, 真是的, 又晚了一步！
+
+这个时候, 你就需要把它放在 <span class="Comment">BEGIN</span> 块中, 或依赖另一个编译期操
+作：设置一个常量：
+
+<span class="PreProc"> use constant LIB_DIR =&gt; '/home/gilligan/lib';</span>
+<span class="PreProc"> use lib LIB_DIR;</span>
+<span class="PreProc"> use Navigation::SeatOfPants;</span>
+
+好, 又解决问题了.就是说, 直到我们需要的库取决于计算的结果. (
+要到哪里算是个头啊？停下来吧！)我们 <span class="Comment">99</span>％的需求可以满足了。
+
+<span class="Constant">3. 9. 1. 处理模块依赖</span>
+
+我们刚才看到如果我们要安装一个模块, 并且这个模块要引用
+<span class="Comment">Module::Build</span> 模块的话, 我们要事先装好 <span class="Comment">Module::Build</span> 模块.这就是个
+稍稍让人头痛的有关一般模块依赖性的例子.那我们的 <span class="Comment">castaways</span> 岛的
+所有的椰子应该如何处理呢？我们要安装另一些模块, 而这些模块各自又依
+赖更多的其它不同的模块。
+
+幸而, 我们有工具来助一臂之力.自从 <span class="Comment">Perl</span> <span class="Comment">5.004</span> 版开始,
+<span class="Comment">CPAN.pm</span> 模块成为核心发布的一部份.它给我们提供了一个交互式的模块安
+装环境。
+
+<span class="PreProc"> $ perl -MCPAN -e shell</span>
+<span class="PreProc"> cpan shell -- CPAN exploration and modules installation (v1.7601)</span>
+<span class="PreProc"> ReadLine support available (try 'install Bundle::CPAN')</span>
+
+<span class="PreProc"> cpan&gt;</span>
+
+要装一个模块和它所依赖的模块, 我们只要发出一个带模块名字的安装
+命令即可。 如此, <span class="Comment">CPAN.pm</span> 会处理所有下载、解包、编译、测试以及安
+装模块的工作, 并且它会递归处理所有的依赖关系。
+
+<span class="PreProc"> cpan&gt; install CGI::Prototype</span>
+
+如果觉得用上面的方法还烦琐, <span class="Comment">brian</span> 写了个 <span class="Comment">cpan</span> 脚本放在 <span class="Comment">Perl</span>
+的发行包里.我们只要简单的列出要安装的模块, 由脚本来处理余下
+的事情。
+
+<span class="PreProc"> $ cpan CGI::Prototype HTTP::Cookies::Safari Test::Pod</span>
+
+还有一个工具： <span class="Comment">CPANPLUS</span>, 是对 <span class="Comment">CPAN.pm</span> 完全的重写.但它不
+是 <span class="Comment">Perl</span> 核心包的一部份, 如下：
+
+<span class="PreProc"> $ perl -MCPANPLUS -e shell</span>
+<span class="PreProc"> CPANPLUS::Shell::Default -- CPAN exploration and modules</span>
+<span class="PreProc">           installation (v0. 03)</span>
+<span class="PreProc"> *** Please report bugs to &lt;cpanplus-bugs@lists.sourceforge.net&gt;.</span>
+<span class="PreProc"> *** Using CPANPLUS::Backend v0. 049.</span>
+<span class="PreProc"> *** ReadLine support available (try 'i Term::ReadLine::Perl').</span>
+
+<span class="PreProc"> CPAN Terminal&gt;</span>
+
+我们用i命令来安装模块：
+
+<span class="PreProc"> CPAN Terminal&gt; i CGI::Prototype</span>
+
+<span class="Comment">CPANPLUS</span> 模块同样有一个方便的脚本, 叫做 <span class="Comment">cpanp</span> 执行起来用 <span class="Statement">i</span>
+开关并列出要安装的模块列表, 像如下那样：
+
+<span class="PreProc"> $ cpanp i CGI::Prototype HTTP::Cookies::Safari Test::Pod</span>
+
+<span class="Constant">3. 10. 习题</span>
+
+在附录找答案。
+
+<span class="Constant">3. 10. 1. 练习 1 </span><span class="Comment">[25</span><span class="Constant"> 分钟]</span>
+
+读当前目录的文件列表并转换成全路径.不能用 <span class="Comment">shell</span> 命令或外部程
+序读当前目录. <span class="Comment">Perl</span> 的 <span class="Comment">File::Spec</span> 和 <span class="Comment">Cwd</span> 两个模块对这个程
+序有帮助.每个路径条目前加四个空格并每个条目开个新行, 就像第二章的
+练习一做的那样. 你可以重用原来的程序吗？
+
+<span class="Constant">3. 10. 2. 练习 2 </span><span class="Comment">[35</span><span class="Constant"> 分钟]</span>
+
+分析一下这本书的国际标准书号（ <span class="Comment">0596102062</span> ）.从 <span class="Comment">CPAN</span> 里安
+装一下 <span class="Comment">Business::ISBN</span> 模块, 并且用它来从 <span class="Comment">ISBN</span> 数字中抽取国
+家代码和发行商代码。
+</pre>
+</body>
+</html>

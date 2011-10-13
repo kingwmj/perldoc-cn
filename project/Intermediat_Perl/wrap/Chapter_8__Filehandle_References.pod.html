@@ -1,0 +1,473 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>D:\Git\perldoc-cn\project\Intermediat_Perl\wrap\Chapter_8__Filehandle_References.pod.html</title>
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
+<meta name="syntax" content="pod">
+<meta name="settings" content="use_css,number_lines">
+<style type="text/css">
+<!--
+pre { font-family: monospace; color: #a0ffa0; background-color: #000000; }
+body { font-family: monospace; color: #a0ffa0; background-color: #000000; }
+.lnr { color: #ffff00; }
+.Statement { color: #ffff00; }
+.PreProc { color: #f5deb3; }
+.Comment { color: #ffa500; }
+.Constant { color: #ffffff; }
+-->
+</style>
+</head>
+<body>
+<pre>
+<span class="lnr">  1 </span><span class="Constant">第八章. 引用文件句柄</span>
+<span class="lnr">  2 </span>
+<span class="lnr">  3 </span>我们已经看到如何通过引用传递数组, 散列和子程序, 并通过一定的手
+<span class="lnr">  4 </span>段来解决一定复杂度的问题。同样, 我们也可以将文件句柄存到引用里。
+<span class="lnr">  5 </span>让我们看如何用新办法来解决老问题。
+<span class="lnr">  6 </span>
+<span class="lnr">  7 </span><span class="Constant">8.1.旧的方法</span>
+<span class="lnr">  8 </span>
+<span class="lnr">  9 </span>在以往的日子里, <span class="Comment">Perl</span> 用裸字来代表文件句柄。文件句柄是另一种
+<span class="lnr"> 10 </span><span class="Comment">Perl</span> 的数据类型, 尽管人们对此讨论不多, 因为它也没有专门的符号
+<span class="lnr"> 11 </span>标注。你大概已经许多用裸字文件句柄的代码, 如：
+<span class="lnr"> 12 </span>
+<span class="lnr"> 13 </span><span class="PreProc"> open LOG_FH, '&gt;&gt; castaways.log'</span>
+<span class="lnr"> 14 </span><span class="PreProc">        or die &quot;Could not open castaways.log: $!&quot;;</span>
+<span class="lnr"> 15 </span>
+<span class="lnr"> 16 </span>如果我们要同程序的其它部份, 比如库, 共享这些文件句柄该如何做呢
+<span class="lnr"> 17 </span>？ 我们大概见过一些讨巧的办法, 用 <span class="Comment">typeglob</span> 或一个对 <span class="Comment">typeglob</span>
+<span class="lnr"> 18 </span>的引用来处理。
+<span class="lnr"> 19 </span>
+<span class="lnr"> 20 </span><span class="PreProc"> log_message( *LOG_FH, 'The Globetrotters are stranded with us!' );</span>
+<span class="lnr"> 21 </span>
+<span class="lnr"> 22 </span><span class="PreProc"> log_message( *LOG_FH, 'An astronaut passes overhead' );</span>
+<span class="lnr"> 23 </span>
+<span class="lnr"> 24 </span>在 <span class="Comment">log_message(</span> ) 子程序中, 我们从参数列表中取下第一个元素,
+<span class="lnr"> 25 </span>并且存在另一个 <span class="Comment">typeglob</span> 中。不需要详述太多的细节, 一个 <span class="Comment">typeglob</span>
+<span class="lnr"> 26 </span>存储了包里面所有变量的名字的指针。当我们把一个 <span class="Comment">typeglob</span> 赋
+<span class="lnr"> 27 </span>值给另一个的时候, 我们就为相同的数据创建了一个别名。这样我们现在就
+<span class="lnr"> 28 </span>可以用另外一个名字来访问这块数据的文件句柄了。如此, 当我们把名字当
+<span class="lnr"> 29 </span>文件句柄用时, <span class="Comment">Perl</span> 知道在 <span class="Comment">typeglob</span> 中找到这个名字的文件句柄
+<span class="lnr"> 30 </span>部份。如果文件句柄已经有符号, 那会更容易。
+<span class="lnr"> 31 </span>
+<span class="lnr"> 32 </span><span class="PreProc"> sub log_message {</span>
+<span class="lnr"> 33 </span><span class="PreProc">  local *FH = shift;</span>
+<span class="lnr"> 34 </span>
+<span class="lnr"> 35 </span><span class="PreProc">  print FH @_, &quot;\n&quot;;</span>
+<span class="lnr"> 36 </span><span class="PreProc"> }</span>
+<span class="lnr"> 37 </span>
+<span class="lnr"> 38 </span>注意这里 <span class="Comment">local</span> 的用法。一个 <span class="Comment">typeglob</span> 同符号表一起工作, 这
+<span class="lnr"> 39 </span>意味着它处理包变量。包变量不能是词法变量, 所以我们不能用 <span class="Comment">my</span>,
+<span class="lnr"> 40 </span>因为我们不能与程序其它部份的以 <span class="Comment">FH</span> 命名的句柄混淆, 我们必须用
+<span class="lnr"> 41 </span><span class="Comment">local</span> 告诉 <span class="Comment">Perl</span> 这个 <span class="Comment">FH</span> 是在 <span class="Comment">log_message</span> 子程序中用作临时
+<span class="lnr"> 42 </span>变量, 用完即丢, <span class="Comment">Perl</span> 会把原来的 <span class="Comment">FH</span> 句柄恢复, 好像没有发生过
+<span class="lnr"> 43 </span>一样。
+<span class="lnr"> 44 </span>
+<span class="lnr"> 45 </span>如果这一切作法让你大为紧张, 希望没有这种事该多好, 可以。我们不
+<span class="lnr"> 46 </span>用作这种事情！就是因为现在有更好的方法, 所以我们把这节叫作
+<span class="lnr"> 47 </span><span class="Statement">旧的方法</span>。我们假装没有这节吧, 直接跳到下一节吧。
+<span class="lnr"> 48 </span>
+<span class="lnr"> 49 </span><span class="Constant">8.2.改进的方法</span>
+<span class="lnr"> 50 </span>
+<span class="lnr"> 51 </span>从 <span class="Comment">Perl</span> <span class="Comment">5.6</span> 版本开始, 可以用一个通常的标量变量打开一个文
+<span class="lnr"> 52 </span>件句柄。相比于使用裸字来代表句柄名字, 我们可以用一个含有空值的标
+<span class="lnr"> 53 </span>量变量代表。
+<span class="lnr"> 54 </span>
+<span class="lnr"> 55 </span><span class="PreProc"> my $log_fh;</span>
+<span class="lnr"> 56 </span><span class="PreProc"> open $log_fh, '&gt;&gt; castaways.log'</span>
+<span class="lnr"> 57 </span><span class="PreProc">        or die &quot;Could not open castaways.log: $!&quot;;</span>
+<span class="lnr"> 58 </span>
+<span class="lnr"> 59 </span>如果标量已经有值的话, <span class="Comment">Perl</span> 会报错, 因为 <span class="Comment">Perl</span> 不会冲掉你的
+<span class="lnr"> 60 </span>数据：
+<span class="lnr"> 61 </span>
+<span class="lnr"> 62 </span><span class="PreProc"> my $log_fh = 5;</span>
+<span class="lnr"> 63 </span><span class="PreProc"> open $log_fh, '&gt;&gt; castaways.log'</span>
+<span class="lnr"> 64 </span><span class="PreProc">         or die &quot;Could not open castaways.log: $!&quot;;</span>
+<span class="lnr"> 65 </span><span class="PreProc"> print $log_fh &quot;We need more coconuts!\n&quot;; # doesn't work</span>
+<span class="lnr"> 66 </span>
+<span class="lnr"> 67 </span>当然, <span class="Comment">Perl</span> 的信条是尽量一步到位。我们可以在 <span class="Comment">open</span> 语句中声
+<span class="lnr"> 68 </span>明变量。一开始你可能觉得好笑, 但用了两次（好吧, 多次）之后, 你会
+<span class="lnr"> 69 </span>习惯并喜欢使用这种方法。 '
+<span class="lnr"> 70 </span><span class="PreProc"> open my $log_fh, '&gt;&gt; castaways.log'</span>
+<span class="lnr"> 71 </span><span class="PreProc">        or die &quot;Could not open castaways.log: $!&quot;;</span>
+<span class="lnr"> 72 </span>
+<span class="lnr"> 73 </span>当我们要把内容打印到文件句柄的时候, 我们就把标量变量代替以前裸
+<span class="lnr"> 74 </span>字的位置。注意文件句柄后面一样没有逗号。
+<span class="lnr"> 75 </span>
+<span class="lnr"> 76 </span><span class="PreProc"> print $log_fh &quot;We have no bananas today!\n&quot;;</span>
+<span class="lnr"> 77 </span>
+<span class="lnr"> 78 </span>尽管下面的代码可能你看上去比较搞笑, 或者, 如果你不觉得搞笑, 可
+<span class="lnr"> 79 </span>能那些后来读到你的代码的人也觉得看上去比较怪异。在《 <span class="Comment">Perl</span> 最佳
+<span class="lnr"> 80 </span>实践》这本书中, <span class="Comment">Damian</span> <span class="Comment">Conway</span> 建议在文件句柄部份要加上大括
+<span class="lnr"> 81 </span>号以显明你的态度。这样的语法使它看上去更新 <span class="Comment">grep</span> 或者 <span class="Comment">map</span> 的
+<span class="lnr"> 82 </span>内嵌块形式。
+<span class="lnr"> 83 </span>
+<span class="lnr"> 84 </span><span class="PreProc"> print {$log_fh} &quot;We have no bananas today!\n&quot;;</span>
+<span class="lnr"> 85 </span>
+<span class="lnr"> 86 </span>现在我们就可以把文件句柄引用当作标量一样到处使用了。我们不必不得
+<span class="lnr"> 87 </span>不搞些怪手法来处理问题。
+<span class="lnr"> 88 </span>
+<span class="lnr"> 89 </span><span class="PreProc"> log_message( $log_fh, 'My name is Mr.Ed' );</span>
+<span class="lnr"> 90 </span>
+<span class="lnr"> 91 </span><span class="PreProc"> sub log_message {</span>
+<span class="lnr"> 92 </span><span class="PreProc">   my $fh = shift;</span>
+<span class="lnr"> 93 </span>
+<span class="lnr"> 94 </span><span class="PreProc">   print $fh @_, &quot;\n&quot;;</span>
+<span class="lnr"> 95 </span><span class="PreProc"> }</span>
+<span class="lnr"> 96 </span>
+<span class="lnr"> 97 </span>我们同样可以以读的方式创建文件句柄引用。我们只要简单地在第二个参
+<span class="lnr"> 98 </span>数放上适当的文件名即可：
+<span class="lnr"> 99 </span>
+<span class="lnr">100 </span><span class="PreProc"> open my $fh, &quot;castaways.log&quot;</span>
+<span class="lnr">101 </span><span class="PreProc">        or die &quot;Could not open castaways.log: $!&quot;;</span>
+<span class="lnr">102 </span>
+<span class="lnr">103 </span>现在, 我们就可以在行输入操作符中裸字的位置替换成标量。之前, 我
+<span class="lnr">104 </span>们会看到我们把裸字放在尖括号里：
+<span class="lnr">105 </span>
+<span class="lnr">106 </span><span class="PreProc"> while( &lt;LOG_FH&gt; ) {...}</span>
+<span class="lnr">107 </span>
+<span class="lnr">108 </span>现在我们用标量代替：
+<span class="lnr">109 </span>
+<span class="lnr">110 </span><span class="PreProc"> while( &lt;$log_fh&gt; ) {...}</span>
+<span class="lnr">111 </span>
+<span class="lnr">112 </span>一般情况下, 所有用裸这字代表文件句柄的地方, 我们都可以用含有文
+<span class="lnr">113 </span>件句柄引用的标量变量代替。
+<span class="lnr">114 </span>
+<span class="lnr">115 </span>在以上的各种使用方式中, 只要这个标量变量跑出范围（或者我们赋另
+<span class="lnr">116 </span>一个值给它）, <span class="Comment">Perl</span> 就会自动关闭文件。我们不必自己显式地关闭文
+<span class="lnr">117 </span>件。
+<span class="lnr">118 </span>
+<span class="lnr">119 </span><span class="Constant">8.3.更上一层楼</span>
+<span class="lnr">120 </span>
+<span class="lnr">121 </span>到目前为此, 我们的例子展示的 <span class="Comment">open</span> 都是两个参数的形式, 但实际
+<span class="lnr">122 </span>上有个隐含之处： 文件的打开方式是和文件名都放在第二个参数的位置上
+<span class="lnr">123 </span>的。这意味着我们在一个字串里表达了两种不同的意义, 而且我们不得不
+<span class="lnr">124 </span>相信 <span class="Comment">Perl</span> 一定会很好的区分。
+<span class="lnr">125 </span>
+<span class="lnr">126 </span>为了解决这个问题, 我们可以把第两个参数分开：
+<span class="lnr">127 </span>
+<span class="lnr">128 </span><span class="PreProc"> open my $log_fh, '&gt;&gt;', 'castaways.log'</span>
+<span class="lnr">129 </span><span class="PreProc">        or die &quot;Could not open castaways.log: $!&quot;;</span>
+<span class="lnr">130 </span>
+<span class="lnr">131 </span>这种三参数的形式有可以利用 <span class="Comment">Perl</span> 的 <span class="Comment">IO</span> 过滤器的优点。这里我
+<span class="lnr">132 </span>们不涉及太多。在 <span class="Comment">perlfunc</span> 中 <span class="Comment">open</span> 函数的条目有 <span class="Comment">400</span>
+<span class="lnr">133 </span>行之多, 尽管在它自己的 <span class="Comment">perldoc</span> 教材和 <span class="Comment">perlopentut</span> 中也有
+<span class="lnr">134 </span>说明。
+<span class="lnr">135 </span>
+<span class="lnr">136 </span><span class="Constant">8.4.</span><span class="Comment">IO::Handle</span><span class="Constant"> 模块</span>
+<span class="lnr">137 </span>
+<span class="lnr">138 </span>在帷幕之后, <span class="Comment">Perl</span> 实际上用调用 <span class="Comment">IO::Handle</span><span class="Comment"> 模块</span> 模块来变
+<span class="lnr">139 </span>这个戏法的, 所以, 我们的文件句柄实际上是一个对象。<span class="Comment">IO::H</span>
+<span class="lnr">140 </span><span class="Comment">andle</span><span class="Comment"> 模块</span> 包是输入输出的基础类, 所以它处理许多不仅仅有关文件的
+<span class="lnr">141 </span>操作。
+<span class="lnr">142 </span>
+<span class="lnr">143 </span>你是否曾经疑惑为什么 <span class="Comment">print</span> 语句的文件句柄后面为什么不加
+<span class="lnr">144 </span>逗号？这的确是对象的一种间接标记 (这是我们还没有提及的, 除非你已经
+<span class="lnr">145 </span>在读这个脚注前先读完了本书, 就像我们在前言里说的那样！
+<span class="lnr">146 </span>
+<span class="lnr">147 </span>除非你正在创建新的 <span class="Comment">IO</span> 模块, 一般来说你不会直接调用 <span class="Comment">IO::</span>
+<span class="lnr">148 </span><span class="Comment">Handle</span><span class="Comment"> 模块</span> 模块。相反的, 我们可以用一些建立在 <span class="Comment">IO::Handle</span><span class="Comment"> 模块</span>
+<span class="lnr">149 </span>模块之上更加好用的模块。我们还没有告诉你有关面向对象编程的知
+<span class="lnr">150 </span>识（在第 <span class="Comment">11</span> 章, 所以我们一定会说的）, 但目前情况下, 你只要跟着
+<span class="lnr">151 </span>本书的例子就可以了。
+<span class="lnr">152 </span>
+<span class="lnr">153 </span>这些模块做的工作同 <span class="Comment">Perl</span> 自带的 <span class="Comment">open</span> 相同（这要依赖你使用
+<span class="lnr">154 </span>的 <span class="Comment">Perl</span> 的版本）, 但是, 当我们要尽可能晚的决定模块处理输入输出
+<span class="lnr">155 </span>时, 用他们就很顺手。我们只要简单的改一下模块的名字，就可以改变
+<span class="lnr">156 </span>行为。 因为我们已经为使用模块接口建立了代码，切换模块就不费多少
+<span class="lnr">157 </span>功夫。代替我们使用内建的 <span class="Comment">open</span>, 我们使用模块接口。
+<span class="lnr">158 </span>
+<span class="lnr">159 </span><span class="Constant">8.4.1.IO::File</span>
+<span class="lnr">160 </span>
+<span class="lnr">161 </span><span class="Comment">IO::File</span> 模块是 <span class="Comment">IO::Handle</span><span class="Comment"> 模块</span> 模块的子类, 用来同文件
+<span class="lnr">162 </span>打交道。它是随标准 <span class="Comment">Perl</span> 一起发布的, 所以你应该已经有这些模块
+<span class="lnr">163 </span>了。可以用多种方法来创建一个 <span class="Comment">IO::File</span> 对象。
+<span class="lnr">164 </span>
+<span class="lnr">165 </span>我们可以用单参数构造器的形式创建文件句柄的引用。我们可以通过检
+<span class="lnr">166 </span>查返回值是否为空来判断文件句柄引用创建是否成功。
+<span class="lnr">167 </span>
+<span class="lnr">168 </span><span class="PreProc"> use IO::File;</span>
+<span class="lnr">169 </span>
+<span class="lnr">170 </span><span class="PreProc"> my $fh = IO::File-&gt;new( '&gt; castaways.log' )</span>
+<span class="lnr">171 </span><span class="PreProc">        or die &quot;Could not create filehandle: $!&quot;;</span>
+<span class="lnr">172 </span>
+<span class="lnr">173 </span>如果不喜欢用这种方式（因为同样原因也不喜欢标准 <span class="Comment">open</span> ）, 你可
+<span class="lnr">174 </span>以用另一种调用约定。可选的第二个参数是文件句柄的打开方式。
+<span class="lnr">175 </span>
+<span class="lnr">176 </span>这些都是 <span class="Comment">ANSI</span> C 的 <span class="Comment">fopen</span> 的文件打开方式的字串.你在内建
+<span class="lnr">177 </span>的 <span class="Comment">open</span> 中也可以使用。实际上, <span class="Comment">IO::File</span> 在后台也是使用内建
+<span class="lnr">178 </span>的 <span class="Comment">open</span> 函数的。
+<span class="lnr">179 </span>
+<span class="lnr">180 </span><span class="PreProc"> my $read_fh  = IO::File-&gt;new( 'castaways.log', 'r' );</span>
+<span class="lnr">181 </span><span class="PreProc"> my $write_fh = IO::File-&gt;new( 'castaways.log', 'w' );</span>
+<span class="lnr">182 </span>
+<span class="lnr">183 </span>用打开模式掩码可以对文件进行更细致的控制 <span class="Comment">.IO::File</span> 模块提供
+<span class="lnr">184 </span>这些掩码的定义。
+<span class="lnr">185 </span>
+<span class="lnr">186 </span><span class="PreProc"> my $append_fh = IO::File-&gt;new('castaways.log', O_WRONLY|O_APPEND);</span>
+<span class="lnr">187 </span>
+<span class="lnr">188 </span>除了打开命名文件, 我们可能要打开匿名的临时文件。对于支持这种文
+<span class="lnr">189 </span>件的系统, 我们只要简单地以读写文件名柄建立一个新对象就可以了。
+<span class="lnr">190 </span>
+<span class="lnr">191 </span><span class="PreProc"> my $temp_fh = IO::File-&gt;new_tmpfile;</span>
+<span class="lnr">192 </span>
+<span class="lnr">193 </span>在以前, <span class="Comment">Perl</span> 会在这些标量变量跑出范围的时候把文件关闭, 不过
+<span class="lnr">194 </span>, 如果你还不放心, 我们可以显式关闭文件。
+<span class="lnr">195 </span>
+<span class="lnr">196 </span><span class="PreProc"> $temp_fh-&gt;close;</span>
+<span class="lnr">197 </span>
+<span class="lnr">198 </span><span class="PreProc"> undef $append_fh;</span>
+<span class="lnr">199 </span>
+<span class="lnr">200 </span><span class="Constant">8.4.2.匿名 </span><span class="Comment">IO:File</span><span class="Constant"> 对象</span>
+<span class="lnr">201 </span>
+<span class="lnr">202 </span>如果我们不是把 <span class="Comment">IO::File</span> 返回的对象放到一个标量变量中, 那么操
+<span class="lnr">203 </span>作起来需要一些对语法的小小变动。比如这么一个例子, 我们现在要把所
+<span class="lnr">204 </span>有符合* <span class="Comment">.input</span> 的文件都拷贝到相应的* <span class="Comment">.output</span> 文件中, 但我们
+<span class="lnr">205 </span>要并行的进行拷贝。首先, 我们打开所有的文件, 包括输入和输出的双方
+<span class="lnr">206 </span>：'
+<span class="lnr">207 </span>
+<span class="lnr">208 </span><span class="PreProc"> my @handlepairs;</span>
+<span class="lnr">209 </span>
+<span class="lnr">210 </span><span class="PreProc"> foreach my $file ( glob( '*.input' ) ) {</span>
+<span class="lnr">211 </span><span class="PreProc">        (my $out = $file) =~ s/\.input$/.output/;</span>
+<span class="lnr">212 </span><span class="PreProc">        push @handlepairs, [</span>
+<span class="lnr">213 </span><span class="PreProc">                (IO::File-&gt;new('&lt;$file') || die),</span>
+<span class="lnr">214 </span><span class="PreProc">                (IO::File-&gt;new('&gt;$out') || die),</span>
+<span class="lnr">215 </span><span class="PreProc">        ];</span>
+<span class="lnr">216 </span><span class="PreProc"> }</span>
+<span class="lnr">217 </span>
+<span class="lnr">218 </span>好, 现在我们有了一个保存数组引用的数组, 这个数组中所每个元素都
+<span class="lnr">219 </span>是 <span class="Comment">IO::File</span> 对象.现在, 让我们把输入文件的数据灌入输出文件中去。
+<span class="lnr">220 </span>
+<span class="lnr">221 </span><span class="PreProc"> while (@handlepairs) {</span>
+<span class="lnr">222 </span><span class="PreProc">   @handlepairs = grep {</span>
+<span class="lnr">223 </span><span class="PreProc">    if (defined(my $line = $_-&gt;[0]-&gt;getline)) {</span>
+<span class="lnr">224 </span><span class="PreProc">      print { $_-&gt;[1] } $line;</span>
+<span class="lnr">225 </span><span class="PreProc">    } else {</span>
+<span class="lnr">226 </span><span class="PreProc">      0;</span>
+<span class="lnr">227 </span><span class="PreProc">    }</span>
+<span class="lnr">228 </span><span class="PreProc">  } @handlepairs;</span>
+<span class="lnr">229 </span><span class="PreProc"> }</span>
+<span class="lnr">230 </span>
+<span class="lnr">231 </span>只要还有文件对, 我们就会通过 <span class="Comment">grep</span> 结构不断把列表传过来：
+<span class="lnr">232 </span>
+<span class="lnr">233 </span><span class="PreProc"> @handlepairs = grep { CONDITION } @handlepairs;</span>
+<span class="lnr">234 </span>
+<span class="lnr">235 </span>在每个传输过程中, 只有那些通过 <span class="Comment">grep</span> 条件测试的句柄对才会留下
+<span class="lnr">236 </span>。在条件测试中, 我们拿句柄对中第一个元素并读取其中内容。如果处理成
+<span class="lnr">237 </span>功, 则向句柄对中第二个元素（对应的输出句柄）写行。如果打印成功, 它
+<span class="lnr">238 </span>返回 <span class="Comment">true</span> , 这样就让 <span class="Comment">grep</span> 知道我们要保留那个句柄对。只要打印
+<span class="lnr">239 </span>失败或取行返回未定义值, <span class="Comment">grep</span> 就会认做 <span class="Comment">false</span> 并放弃那个句柄对
+<span class="lnr">240 </span>。放弃句柄对自动就关闭了输入输出句柄。太妙了！
+<span class="lnr">241 </span>
+<span class="lnr">242 </span>注意, 我们不能用更传统的句柄读或者写操作, 因为句柄的读写不能在
+<span class="lnr">243 </span>简单标量变量中。我们可以通过重写那个循环, 看看拷贝句柄是否更方便：
+<span class="lnr">244 </span>
+<span class="lnr">245 </span><span class="PreProc"> while (@handlepairs) {</span>
+<span class="lnr">246 </span><span class="PreProc">  @handlepairs = grep {</span>
+<span class="lnr">247 </span><span class="PreProc">    my ($IN, $OUT) = @$_;</span>
+<span class="lnr">248 </span><span class="PreProc">    if (defined(my $line = &lt;$IN&gt;)) {</span>
+<span class="lnr">249 </span><span class="PreProc">      print $OUT $line;</span>
+<span class="lnr">250 </span><span class="PreProc">    } else {</span>
+<span class="lnr">251 </span><span class="PreProc">      0;</span>
+<span class="lnr">252 </span><span class="PreProc">    }</span>
+<span class="lnr">253 </span><span class="PreProc">  } @handlepairs;</span>
+<span class="lnr">254 </span><span class="PreProc"> }</span>
+<span class="lnr">255 </span>
+<span class="lnr">256 </span>这样的写法理论上应该很好。大多数情况下, 简单地把复杂引用的值拷贝
+<span class="lnr">257 </span>到一个标量看上去应该更简单。实际上, 用另一种方法写这个循环可以把讨
+<span class="lnr">258 </span>厌的 <span class="Comment">if</span> 结构去掉：
+<span class="lnr">259 </span>
+<span class="lnr">260 </span><span class="PreProc"> while (@handlepairs) {</span>
+<span class="lnr">261 </span><span class="PreProc">  @handlepairs = grep {</span>
+<span class="lnr">262 </span><span class="PreProc">    my ($IN, $OUT) = @$_;</span>
+<span class="lnr">263 </span><span class="PreProc">    my $line;</span>
+<span class="lnr">264 </span><span class="PreProc">    defined($line = &lt;IN&gt;) and print $OUT $line;</span>
+<span class="lnr">265 </span><span class="PreProc">  } @handlepairs;</span>
+<span class="lnr">266 </span><span class="PreProc"> }</span>
+<span class="lnr">267 </span>
+<span class="lnr">268 </span>如果你懂得 <span class="Comment">and</span> 是个部分求值的短路操作, 只要一切 <span class="Comment">OK</span> 就返回
+<span class="lnr">269 </span><span class="Comment">true</span> , 这就是个不错的替代。记住 <span class="Comment">Perl</span> 的信条：&quot;条条大路通罗
+<span class="lnr">270 </span>马&quot;（尽管不一定在所有的情况下都合情合理）。
+<span class="lnr">271 </span>
+<span class="lnr">272 </span><span class="Constant">8.4.3.IO::Scalar</span>
+<span class="lnr">273 </span>
+<span class="lnr">274 </span>有些时候, 我们并不想把内容直接打印到文件, 宁愿把输出送到一个字
+<span class="lnr">275 </span>串中去。一些模块的接口不提供给我们这个选项, 所以我们不得不利用看上
+<span class="lnr">276 </span>去像打印到文件中去的文件句柄来完成。我们可能要在把内容写到文件之前
+<span class="lnr">277 </span>先建立好, 这样我们就可以对文件内容进行加密, 压缩或从你的程序中直接
+<span class="lnr">278 </span>把它作为邮件发出去。
+<span class="lnr">279 </span>
+<span class="lnr">280 </span><span class="Comment">IO::Scalar</span> 模块在幕后是使用 <span class="Comment">tie</span> 来实现魔法的, 它把一个文
+<span class="lnr">281 </span>件句柄引用给一个标量。这个模块不在标准的 <span class="Comment">Perl</span> 发行版中, 所以你可
+<span class="lnr">282 </span>能必须自己安装它。
+<span class="lnr">283 </span>
+<span class="lnr">284 </span><span class="PreProc"> use IO::Scalar;</span>
+<span class="lnr">285 </span>
+<span class="lnr">286 </span><span class="PreProc"> my $string_log = '';</span>
+<span class="lnr">287 </span><span class="PreProc"> my $scalar_fh = IO::Scalar-&gt;new( \$string_log );</span>
+<span class="lnr">288 </span>
+<span class="lnr">289 </span><span class="PreProc"> print $scalar_fh &quot;The Howells' private beach club is closed\n&quot;;</span>
+<span class="lnr">290 </span>
+<span class="lnr">291 </span>现在我们的日志信息不是放在文件中, 而是放在标量变量 <span class="Comment">$string_l</span>
+<span class="lnr">292 </span><span class="Comment">og</span> 中。那我们如何从我们的日志文件中读呢？ 故伎重演而已。在这个例子
+<span class="lnr">293 </span>中, 我们象之前一样创建变量 <span class="Comment">$scalar_fh</span> , 然后用用输入操作符从中
+<span class="lnr">294 </span>读行。在我们的 <span class="Comment">while</span> 循环中, 我们从日志信息中抽出包含 <span class="Comment">Gilliga</span>
+<span class="lnr">295 </span><span class="Comment">n</span> 的行（应该有很多吧, 因为他总是纠缠在许多事情中）：
+<span class="lnr">296 </span>
+<span class="lnr">297 </span><span class="PreProc"> use IO::Scalar;</span>
+<span class="lnr">298 </span>
+<span class="lnr">299 </span><span class="PreProc"> my $string_log = '';</span>
+<span class="lnr">300 </span><span class="PreProc"> my $scalar_fh = IO::Scalar-&gt;new( \$string_log );</span>
+<span class="lnr">301 </span>
+<span class="lnr">302 </span><span class="PreProc"> while( &lt;$scalar_fh&gt; ) {</span>
+<span class="lnr">303 </span><span class="PreProc">        next unless /Gilligan/;</span>
+<span class="lnr">304 </span><span class="PreProc">        print;</span>
+<span class="lnr">305 </span><span class="PreProc">        }</span>
+<span class="lnr">306 </span>
+<span class="lnr">307 </span>在 <span class="Comment">Perl</span> <span class="Comment">5.8</span> 中, 我们可以直接在 <span class="Comment">Perl</span> 中写这样的语句, 而
+<span class="lnr">308 </span>不必引入 <span class="Comment">IO::Scalar:</span>
+<span class="lnr">309 </span>
+<span class="lnr">310 </span><span class="PreProc"> open( my $fh, '&gt;&gt;', \$string_log )</span>
+<span class="lnr">311 </span><span class="PreProc">        or die &quot;Could not append to string! $!&quot;;</span>
+<span class="lnr">312 </span>
+<span class="lnr">313 </span><span class="Constant">8.4.4.IO::Tee</span>
+<span class="lnr">314 </span>
+<span class="lnr">315 </span>如果我们要一次将结果发送到多个不同的地方, 应该如何做？ 如果我们
+<span class="lnr">316 </span>要把内容发送到一个文件的同时存入一个字串中呢？ 用我们目前所知, 我
+<span class="lnr">317 </span>们大概不得不做如下这些：
+<span class="lnr">318 </span>
+<span class="lnr">319 </span><span class="PreProc"> my $string = '';</span>
+<span class="lnr">320 </span>
+<span class="lnr">321 </span><span class="PreProc"> open my $log_fh, '&gt;&gt;', 'castaways.log'</span>
+<span class="lnr">322 </span><span class="PreProc">        or die &quot;Could not open castaways.log&quot;;</span>
+<span class="lnr">323 </span><span class="PreProc"> open my $scalar_fh, '&gt;&gt;', \$string;</span>
+<span class="lnr">324 </span>
+<span class="lnr">325 </span><span class="PreProc"> my $log_message = &quot;The Minnow is taking on water!\n&quot;</span>
+<span class="lnr">326 </span><span class="PreProc"> print $log_fh    $log_message;</span>
+<span class="lnr">327 </span><span class="PreProc"> print $scalar_fh $log_message;</span>
+<span class="lnr">328 </span>
+<span class="lnr">329 </span>当然, 我们可以缩短一些, 这样我们可以只用一个打印语句。我们用
+<span class="lnr">330 </span><span class="Comment">foreach</span> 控制结构来迭代地使用句柄引用, 用 <span class="Comment">$fn</span> 一次换一个, 打印
+<span class="lnr">331 </span>到每个句柄。
+<span class="lnr">332 </span>
+<span class="lnr">333 </span><span class="PreProc"> foreach my $fh ( $log_fh, $scalar_fh ) {</span>
+<span class="lnr">334 </span><span class="PreProc">        print $fh $log_message;</span>
+<span class="lnr">335 </span><span class="PreProc"> }</span>
+<span class="lnr">336 </span>
+<span class="lnr">337 </span>不过, 这个看上去还是有些复杂。在 <span class="Comment">foreach</span> , 我们还得决定是哪个
+<span class="lnr">338 </span>句柄。以不能定义一组句柄来回答同样的问题呢？ 哈, 这就是 <span class="Comment">IO::Tee</span>
+<span class="lnr">339 </span> 提供的功能。可以把它想像成舱底连接输出水管儿的T字连接口; 当水灌到
+<span class="lnr">340 </span>T字口的时候, 它会同时向两个不同的方向流。当我们的数据灌入 <span class="Comment">IO::Tee</span>
+<span class="lnr">341 </span>时, 它会流向两个（或多个）不同管道。就是说 <span class="Comment">IO::Tee</span> 实现了多
+<span class="lnr">342 </span>路输出。在下面 例子中, 日志同时写入 <span class="Comment">logfile</span> 和标量变量。
+<span class="lnr">343 </span>
+<span class="lnr">344 </span><span class="PreProc"> use IO::Tee;</span>
+<span class="lnr">345 </span>
+<span class="lnr">346 </span><span class="PreProc"> $tee_fh = IO::Tee-&gt;new( $log_fh, $scalar_fh );</span>
+<span class="lnr">347 </span>
+<span class="lnr">348 </span><span class="PreProc"> print $tee_fh &quot;The radio works in the middle of the ocean!\n&quot;;</span>
+<span class="lnr">349 </span>
+<span class="lnr">350 </span>呵呵, 还有更绝的。如果我们给 <span class="Comment">IO::Tee</span> 一些参数（第一个为输入句
+<span class="lnr">351 </span>柄, 其后均为输出句柄）, 我们可以用同一个 <span class="Comment">Tee</span> 过的句柄来从输入
+<span class="lnr">352 </span>中读和从输出中写。虽然输出源和输出目的地不同, 但我们可以用同一个句
+<span class="lnr">353 </span>柄来操作。'
+<span class="lnr">354 </span>
+<span class="lnr">355 </span><span class="PreProc"> use IO::Tee;</span>
+<span class="lnr">356 </span>
+<span class="lnr">357 </span><span class="PreProc"> $tee_fh = IO::Tee-&gt;new( $read_fh, $log_fh, $scalar_fh );</span>
+<span class="lnr">358 </span>
+<span class="lnr">359 </span><span class="PreProc"> # reads from $read_fh</span>
+<span class="lnr">360 </span><span class="PreProc"> my $message = &lt;$tee_fh&gt;;</span>
+<span class="lnr">361 </span>
+<span class="lnr">362 </span><span class="PreProc"> # prints to $log_fh and $scalar_fh</span>
+<span class="lnr">363 </span><span class="PreProc"> print $tee_fh $message;</span>
+<span class="lnr">364 </span>
+<span class="lnr">365 </span>而且 <span class="Comment">$read_fh</span> 并不一定非要连上文件。它可以连上一个套接字, 一
+<span class="lnr">366 </span>个标量变量, 一个外部命令的输出, 或者任何其它你想得出来的东西。
+<span class="lnr">367 </span>
+<span class="lnr">368 </span><span class="Constant">8.5.目录句柄引用</span>
+<span class="lnr">369 </span>
+<span class="lnr">370 </span>用创建对句柄的引用同样的方法, 我可以创建对目录句柄的引用。
+<span class="lnr">371 </span>
+<span class="lnr">372 </span><span class="PreProc"> opendir my $dh, '.' or die &quot;Could not open directory: $!&quot;;</span>
+<span class="lnr">373 </span>
+<span class="lnr">374 </span><span class="PreProc"> foreach my $file  ( readdir( $dh ) ) {</span>
+<span class="lnr">375 </span><span class="PreProc">        print &quot;Skipper, I found $file!\n&quot;;</span>
+<span class="lnr">376 </span><span class="PreProc"> }</span>
+<span class="lnr">377 </span>
+<span class="lnr">378 </span>对目录句柄引用遵从我们在之前我们说过的规则。它必须在标量变量没有
+<span class="lnr">379 </span>值的情况下才能工作, 跑出范围或变量被另外赋值时, 句柄自动关闭。
+<span class="lnr">380 </span>
+<span class="lnr">381 </span><span class="Constant">8.5.1.IO::Dir</span>
+<span class="lnr">382 </span>
+<span class="lnr">383 </span>我们也是用面向对象的接口来处理目录句柄。从 <span class="Comment">Perl</span> <span class="Comment">5.6</span> 开始,
+<span class="lnr">384 </span><span class="Comment">IO::Dir</span> 模块就是标准发行版的一部份了。它并没有添加什么新的功能
+<span class="lnr">385 </span>, 无非包装了 <span class="Comment">Perl</span> 的内建函数而已。
+<span class="lnr">386 </span>
+<span class="lnr">387 </span>对于每个 <span class="Comment">IO::Dir</span> 模块名, 加上 <span class="Comment">&quot;dir&quot;</span> 并用 <span class="Comment">perlfunc</span>
+<span class="lnr">388 </span>查看其文档。
+<span class="lnr">389 </span>
+<span class="lnr">390 </span><span class="PreProc"> use IO::Dir;</span>
+<span class="lnr">391 </span>
+<span class="lnr">392 </span><span class="PreProc"> my $dir_fh = IO::Dir-&gt;new( '.' ) </span>
+<span class="lnr">393 </span><span class="PreProc">        || die &quot;Could not open dirhandle! $!\n&quot;;</span>
+<span class="lnr">394 </span>
+<span class="lnr">395 </span><span class="PreProc"> while( defined( my $file = $dir_fh-&gt;read ) ) {</span>
+<span class="lnr">396 </span><span class="PreProc">        print &quot;Skipper, I found $file!\n&quot;;</span>
+<span class="lnr">397 </span><span class="PreProc">        }</span>
+<span class="lnr">398 </span>
+<span class="lnr">399 </span>如果我们要重新查看文件列表的时候（可能在程序的后面）, 我们不必
+<span class="lnr">400 </span>重建句柄。我们可以用 <span class="Comment">rewind</span> 来重用目录句柄：
+<span class="lnr">401 </span>
+<span class="lnr">402 </span><span class="PreProc"> while( defined( my $file = $dir_fh-&gt;read ) ) {</span>
+<span class="lnr">403 </span><span class="PreProc">        print &quot;I found $file!\n&quot;;</span>
+<span class="lnr">404 </span><span class="PreProc"> }</span>
+<span class="lnr">405 </span>
+<span class="lnr">406 </span><span class="PreProc"> # time passes</span>
+<span class="lnr">407 </span><span class="PreProc"> $dir_fh-&gt;rewind;</span>
+<span class="lnr">408 </span>
+<span class="lnr">409 </span><span class="PreProc"> while( defined( my $file = $dir_fh-&gt;read ) ) {</span>
+<span class="lnr">410 </span><span class="PreProc">        print &quot;I can still find $file!\n&quot;;</span>
+<span class="lnr">411 </span><span class="PreProc"> }</span>
+<span class="lnr">412 </span>
+<span class="lnr">413 </span><span class="Constant">8.6.习题</span>
+<span class="lnr">414 </span>
+<span class="lnr">415 </span>答案附录找。
+<span class="lnr">416 </span>
+<span class="lnr">417 </span><span class="Constant">8.6.1.练习1 ［ </span><span class="Comment">20</span><span class="Constant"> 分钟］</span>
+<span class="lnr">418 </span>
+<span class="lnr">419 </span>写一个程序打印一周的日期, 但要允许用户选择输出到文件或标量, 或
+<span class="lnr">420 </span>者同时输出。不论用户如何选择, 都必须用一个打印语句输出。如果用户选择
+<span class="lnr">421 </span>打印到标量, 那么在程序结束时, 要将其打印到标准输出。
+<span class="lnr">422 </span>
+<span class="lnr">423 </span><span class="Constant">8.6.2.练习 2 </span><span class="Comment">[30</span><span class="Constant"> 分钟]</span>
+<span class="lnr">424 </span>
+<span class="lnr">425 </span>教授必须读如下的日志：
+<span class="lnr">426 </span>
+<span class="lnr">427 </span><span class="PreProc"> Gilligan: 1 coconut</span>
+<span class="lnr">428 </span><span class="PreProc"> Skipper: 3 coconuts</span>
+<span class="lnr">429 </span><span class="PreProc"> Gilligan: 1 banana</span>
+<span class="lnr">430 </span><span class="PreProc"> Ginger: 2 papayas</span>
+<span class="lnr">431 </span><span class="PreProc"> Professor: 3 coconuts</span>
+<span class="lnr">432 </span><span class="PreProc"> MaryAnn: 2 papayas ...</span>
+<span class="lnr">433 </span>
+<span class="lnr">434 </span>他要写一系列的文件, 名字是： <span class="Comment">gilligan.info</span> , <span class="Comment">maryann.info</span>
+<span class="lnr">435 </span> 等等, 以此类推。每个文件必须只有以文件名开始的行。（名字以冒号分隔
+<span class="lnr">436 </span>。） 其结果, <span class="Comment">gilligan.info</span> 应该是如下样子：
+<span class="lnr">437 </span>
+<span class="lnr">438 </span><span class="PreProc"> Gilligan: 1 coconut</span>
+<span class="lnr">439 </span><span class="PreProc"> Gilligan: 1 banana</span>
+<span class="lnr">440 </span>
+<span class="lnr">441 </span>现在这个日志文件很大, 而计算机又不快, 所以他要一次读入, 并行输
+<span class="lnr">442 </span>出。他该怎么办呢？
+<span class="lnr">443 </span>
+<span class="lnr">444 </span>提示： 用一个散列, 键用名字, 值是 <span class="Comment">IO::File</span> 对象提供的每个输
+<span class="lnr">445 </span>出文件。按照需要创建他们。
+<span class="lnr">446 </span>
+<span class="lnr">447 </span><span class="Constant">8.6.3.练习 3 </span><span class="Comment">[15</span><span class="Constant"> 分钟]</span>
+</pre>
+</body>
+</html>

@@ -1,0 +1,41 @@
+=head0 Style and Efficacy
+
+Quality matters.
+
+Programs have bugs. Programs need maintenance and expansion. Programs have
+multiple programmers.
+
+Programming well requires us to find a balance between getting the job done and
+allowing us to do so well into the future. We can trade any of time, resources,
+and quality for any other. How well we do that determines our skill as
+pragmatic craftworkers.
+
+Understanding Perl is important. So is cultivating a sense of good taste. The
+only way to do so is to practice maintaining code and reading and writing great
+code. This path has no shortcuts, but this path does have guideposts.
+
+L<style>
+
+L<exceptions>
+
+L<pragmas>
+=encoding utf8
+
+=head0 编程风格和效能
+
+编程和编I<好>程是两个相关但有所区分的技能。如果我们仅编写一次性程序并不再需要修
+改或维护它们，如果我们的程序毫无缺陷，如果我们的无需在耗内存和耗时间之间做出选择，
+并且如果我们永远不用和他人一起工作，我们就不必担心我们的程序写得有多差。要写好程
+序，你必须基于特定的时间、资源侧重点理解候选解决方案和进一步计划间的区别。
+
+写好 Perl 程序意味着理解 Perl 是如何工作的。同时也意味这个培养良好的编程品味。要
+培养这种技能，你必须不断练习编写和维护代码，并阅读优秀的代码。此处并无捷径可走────
+但通过遵守如下指导，你可以提高练习效率。
+
+L<style>
+
+L<files>
+
+L<exceptions>
+
+L<pragmas>

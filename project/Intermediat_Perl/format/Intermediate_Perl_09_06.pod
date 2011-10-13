@@ -14,14 +14,6 @@
 =CN 递归子程序有一个分支来调用自己来处理部份任务, 有一个分支处理基础例子. 在上面第一个例子中, 基础例子就是当表格单元空的时候. 同样空行或空表也是基础例子. 在第二人例子中, 基础例子是文件或者空的目录. 
 =EN For example, a recursive subroutine handling the factorial function, which is one of the simplest recursive functions, might look like:
 =CN 比如, 下面的一个处理阶乘的递归子程序, 是最简单的递归应用：
-sub factorial {
- my $n = shift;
- if ($n <= 1) {
- return 1;
- } else {
- return $n * factorial($n – 1);
- }
-}
 =EN Here we have a base case where $n is less than or equal to 1, which does not invoke the recursive instance, along with a recursive case for $n greater than 1, which calls the routine to handle a portion of the problem (i. e. , compute the factorial of the next lower number). 
 =CN 这里的基础例子是变量$n小于或等一1时, 这时就不会调用递归子程序, 而在$n大于1时, 就会调用子程序来处理这部分问题（如, 为下一个更小的数处理阶乘）
 =EN This task would probably be solved better using iteration rather than recursion, even though the classic definition of factorial is often given as a recursive operation. 

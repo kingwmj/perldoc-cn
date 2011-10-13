@@ -1,0 +1,35 @@
+=head0 What to Avoid
+
+Perl 5 isn't perfect.  Some features seemed like good ideas at the time, but
+they're difficult to use correctly.  Others don't work as anyone might expect.
+A few more are simply bad ideas.  These features will likely persist--removing
+a feature from Perl is a serious process reserved for only the most egregious
+offenses--but you can and should avoid them in almost every case.
+
+L<barewords>
+
+L<indirect_objects>
+
+L<prototypes>
+
+L<method_sub_equivalence>
+
+L<tie>
+=encoding utf8
+
+=head0 要避免什么
+
+Perl 5 并不完美。一些看起来像是个好主意的特性却难以正确使用。其他一些特性的行为
+不合常理。还有一部分就是些坏主意。这种种特性将持续存在────从 Perl 中删除一个特性
+是一个严肃的过程并且只为滔天罪行而备────然而你可以并应该避免在几乎任何地方使用它
+们。
+
+L<barewords>
+
+L<indirect_objects>
+
+L<prototypes>
+
+L<method_sub_equivalence>
+
+L<tie>

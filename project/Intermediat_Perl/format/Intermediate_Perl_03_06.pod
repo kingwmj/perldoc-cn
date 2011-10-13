@@ -1,7 +1,7 @@
 =EN A More Typical Object-Oriented Module: Math::BigInt
 =CN 一个更典型的面向对象模块: Math::BigInt
 =EN So as not to get dismayed about how "un-OO" the File::Spec module seems since it doesn't have objects, let's look at yet another core module, Math::BigInt, which can handle integers beyond Perl's native reach.
-=CN 不要因为 File::Spec 模块没有任何对象, 所以看上去比较像"非面对象的"的模块而失望. 让我们看一下另外一个核心模块, Math::BigInt, 它用来处理超出 Perl 内置精度的整数值. [*]
+=CN 不要因为 File::Spec 模块没有任何对象, 所以看上去比较像"非面对象的"的模块而失望. 让我们看一下另外一个核心模块, Math::BigInt, 它用来处理超出 Perl 内置精度的整数值.
 =EN Behind the scenes, Perl is limited by the architecture it's on.
 =CN 在幕后, Perl 实际上要被其宿主的操作系统架构所限制.
 =EN It's one of the few places where the hardware shows through. 

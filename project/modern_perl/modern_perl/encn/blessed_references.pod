@@ -1,0 +1,612 @@
+=head1 Blessed References
+
+Z<blessed_references>
+
+Perl 5's core object system is deliberately minimal. It has only three rules:
+
+=over 4
+
+=item * A class is a package.
+
+=item * A method is a function.
+
+=item * A (blessed) reference is an object.
+
+=back
+
+You can build anything else out of those three rules, but that's all you get by
+default. This minimalism can be impractical for larger projects--in particular,
+the possibilities for greater abstraction through metaprogramming
+(L<code_generation>) are awkward and limited. Moose (L<moose>) is a better
+choice for modern programs larger than a couple of hundred lines, although
+plenty of legacy code still uses Perl 5's default OO.
+
+X<OO; C<bless>>
+X<builtins; C<bless>>
+
+The final piece of Perl 5 core OO is the blessed reference.  The C<bless>
+builtin associates the name of a class with a reference. That reference is now
+a valid invocant, and Perl will perform method dispatch on it, using the
+associated class.
+
+X<OO; constructors>
+X<OO; class methods>
+X<methods; class>
+
+A constructor is a method which creates and blesses a reference. By convention,
+constructors have the name C<new()>, but this is not a requirement.
+Constructors are also almost always I<class methods>.
+
+C<bless> takes two arguments, a reference and a class name. It evaluates to the
+reference. The reference may be empty. The class does not have to exist yet.
+You may even use C<bless> outside of a constructor or a class (though all but
+the simplest programs should use real constructors). The canonical constructor
+resembles:
+
+=begin programlisting
+
+    sub new
+    {
+        my $class = shift;
+        bless {}, $class;
+    }
+
+=end programlisting
+
+By design, this constructor receives the class name as the method's invocant.
+You may also hard-code the name of a class, at the expense of flexibility.
+Parametric constructor allows reuse through inheritance, delegation, or
+exporting.
+
+X<OO; instance data>
+
+The type of reference used is relevant only to how the object stores its own
+I<instance data>. It has no other effect on the resulting object. Hash
+references are most common, but you can bless any type of reference:
+
+=begin programlisting
+
+    my $array_obj  = bless [], $class;
+    my $scalar_obj = bless \$scalar, $class;
+    my $sub_obj    = bless \&some_sub, $class;
+
+=end programlisting
+
+Whereas classes built with Moose define their own object attributes
+declaratively, Perl 5's default OO is lax. A class representing basketball
+players which stores jersey number and position might use a constructor like:
+
+=begin programlisting
+
+    package Player
+    {
+        sub new
+        {
+            my ($class, %attrs) = @_;
+
+            bless \%attrs, $class;
+        }
+    }
+
+=end programlisting
+
+... and create players with:
+
+=begin programlisting
+
+    my $joel = Player->new(
+        number   => 10,
+        position => 'center',
+    );
+
+    my $dante = Player->new(
+        number   => 33,
+        position => 'forward',
+    );
+
+=end programlisting
+
+The object's methods can access hash elements directly:
+
+=begin programlisting
+
+    sub format
+    {
+        my $self = shift;
+        return '#' . $self->{number} . ' plays ' . $self->{position};
+    }
+
+=end programlisting
+
+... but so can any other code. If external code violates attribute
+encapsulation, you can never change the object's internal representation
+without breaking external code. Accessor methods are safer:
+
+=begin programlisting
+
+    sub number   { return shift->{number}   }
+    sub position { return shift->{position} }
+
+=end programlisting
+
+... and now you're starting to write manually what Moose gives you for free.
+
+=begin sidebar
+
+Moose encourages you to write better code by using accessors instead of
+accessing attributes directly.
+
+=end sidebar
+
+=head2 Method Lookup and Inheritance
+
+X<method dispatch>
+X<OO; methods>
+
+Given a blessed reference, a method call of the form:
+
+=begin programlisting
+
+    my $number = $joel->number();
+
+=end programlisting
+
+... looks up the name of the class associated with the blessed reference
+C<$joel>--C<Player>, in this case. Next, Perl looks for a functionN<Remember
+that Perl 5 makes no distinction between functions in a namespace and methods.>
+named C<number()> in C<Player>. If no such function exists and if C<Player>
+extends class, Perl looks in the parent class (and so on and so on) until it
+finds a C<number()>. If Perl finds C<number()>, it calls that method with
+C<$joel> as an invocant.
+
+=begin sidebar
+
+X<CPAN; C<namespace::autoclean>>
+
+The C<namespace::autoclean> CPAN module can help avoid unintentional collisions between imported functions and methods.
+
+=end sidebar
+
+X<C<@ISA>>
+X<OO; C<@ISA>>
+
+Moose provides C<extends> to track inheritance relationships, but Perl 5 uses a
+package global variable named C<@ISA>. The method dispatcher looks in each
+class's C<@ISA> to find the names of its parent classes.  If C<InjuredPlayer>
+extends C<Player>, you might write:
+
+=begin programlisting
+
+    package InjuredPlayer
+    {
+        @InjuredPlayer::ISA = 'Player';
+    }
+
+=end programlisting
+
+X<C<parent> pragma>
+X<pragmas; C<parent>>
+
+The C<parent> pragma (L<pragmas>) is cleanerN<Older code may use the C<base>
+pragma, but C<parent> superseded C<base> in Perl 5.10.>:
+
+=begin programlisting
+
+    package InjuredPlayer
+    {
+        use parent 'Player';
+    }
+
+=end programlisting
+
+=begin programlisting
+
+Moose has its own metamodel which stores extended inheritance information; this
+offers additional features.
+
+=end programlisting
+
+X<multiple inheritance>
+X<OO; inheritance>
+
+You may inherit from multiple parent classes:
+
+=begin programlisting
+
+    package InjuredPlayer;
+    {
+        use parent qw( Player Hospital::Patient );
+    }
+
+=end programlisting
+
+... though the caveats about multiple inheritance and method dispatch
+complexity apply. Consider instead roles (L<roles>) or Moose method modifiers.
+
+=head2 AUTOLOAD
+
+X<C<AUTOLOAD>>
+X<OO; C<AUTOLOAD>>
+X<methods; C<AUTOLOAD>>
+
+If there is no applicable method in the invocant's class or any of its
+superclasses, Perl 5 will next look for an C<AUTOLOAD()> function (L<autoload>)
+in every class according to the selected method resolution order. Perl will
+invoke any C<AUTOLOAD()> it finds to provide or decline the desired method.
+
+C<AUTOLOAD()> makes multiple inheritance much more difficult to understand.
+
+=head2 Method Overriding and SUPER
+
+As with Moose, you may override methods in the core Perl 5 OO. Unlike Moose,
+core Perl 5 provides no mechanism for indicating your I<intent> to override a
+parent's method. Worse yet, any function you predeclare, declare, or import
+into the child class may override a method in the parent class by having the
+same name. Even if you forget to use the C<override> system of Moose, at least
+it exists. Core Perl 5 OO offers no such protection.
+
+X<builtins; C<SUPER::>>
+
+To override a method in a child class, declare a method of the same name as the
+method in the parent. Within an overridden method, call the parent method with
+the C<SUPER::> dispatch hint:
+
+=begin programlisting
+
+    sub overridden
+    {
+        my $self = shift;
+        warn "Called overridden() in child!";
+        return $self->SUPER::overridden( @_ );
+    }
+
+=end programlisting
+
+The C<SUPER::> prefix to the method name tells the method dispatcher to
+dispatch to an overridden method of the appropriate name. You can provide your
+own arguments to the overridden method, but most code reuses C<@_>. Be careful
+to C<shift> off the invocant if you do.
+
+=begin sidebar
+
+X<CPAN; C<SUPER>>
+
+C<SUPER::> has a confusing misfeature: it dispatches to the parent of the
+package into which the overridden method was I<compiled>. If you've imported
+this method from another package, Perl will happily dispatch to the I<wrong>
+parent. The desire for backwards compatibility has kept this misfeature in
+place. The C<SUPER> module from the CPAN offers a workaround. Moose's
+C<super()> does not suffer the same problem.
+
+=end sidebar
+
+=head2 Strategies for Coping with Blessed References
+
+If blessed references seem minimal and tricky and confusing, they are. Moose is
+a tremendous improvement. Use it whenever possible. If you do find yourself
+maintaining code which uses blessed references, or if you can't convince your
+team to use Moose in full yet, you can work around some of the problems of
+blessed references with discipline.
+
+X<C<Class::Accessor>>
+
+=over 4
+
+=item * Use accessor methods pervasively, even within methods in your class.
+Consider using a module such as C<Class::Accessor> to avoid repetitive
+boilerplate.
+
+=item * Avoid C<AUTOLOAD()> where possible. If you I<must> use it, use forward
+declarations of your functions (L<functions>) to help Perl know which
+C<AUTOLOAD()> will provide the method implementation.
+
+=item * Expect that someone, somewhere will eventually need to subclass (or
+delegate to or reimplement the interface of) your classes. Make it easier for
+them by not assuming details of the internals of your code, by using the
+two-argument form of C<bless>, and by breaking your classes into the smallest
+responsible units of code.
+
+=item * Do not mix functions and methods in the same class.
+
+=item * Use a single F<.pm> file for each class, unless the class is a small,
+self-contained helper used from a single place.
+
+=back
+=encoding utf8
+
+=head1 经 bless 后的引用
+
+Z<blessed_references>
+
+Perl 5 的默认对象系统故意最小化。以下三条简单的规则相组合构成了简单────但有效的
+────基本对象系统：
+
+=over 4
+
+=item * 一个类就一个包；
+
+=item * 一个方法就是一个函数；
+
+=item * 一个（bless 后的）引用就是一个对象。
+
+=back
+
+X<bless>
+X<operators; bless>
+
+你已经在 Moose 里见过了前两条规则。第三条规则是新出现的。C<bless> 关键字将一个类
+的名称和一个引用关联起来，使得任何在该引用上进行的方法调用由与之相关联的类来解析。
+它听上去比实际的要复杂一些。
+
+=begin sidebar
+
+虽然这些规则很好地解释了 Perl 5 的底层对象系统，它们在实际应用时显得捉襟见肘，特
+别是对于较大型的项目来说。特别地，它们几乎没有提供元编程（使用 API 操作程序本身）
+的组件。
+
+Moose（L<moose>）对于正式而现代化的、且大于几百行 Perl 程序来说是更好的选择，但你
+很可能在现存代码中遇见赤裸裸的 Perl 5 OO。
+
+=end sidebar
+
+X<constructor>
+X<OO; constructor>
+
+X<class method>
+X<methods; class>
+
+默认的 Perl 5 对象构造器是一个创建引用并对其进行 bless 的方法。出于惯例，构造器通
+常命名为 C<new()>，但并非一定如此。构造器几乎总是 I<类方法>：
+
+=begin programlisting
+
+    sub new
+    {
+        my $class = shift;
+        bless {}, $class;
+    }
+
+=end programlisting
+
+C<bless> 接受两个参数，与类相关联的引用以及类的名称。虽然程序抽象建议使用一个单
+独的方法来处理，但你仍可以在构造器或类之外使用 C<bless>。类名称不需要事先存在。
+
+设计上，构造器以被调用者的形式接收类名。直接硬编码类名称也是可能的，但不推荐。
+参数式的构造器使得此方法可以通过继承、委托或导出来重用。
+
+X<instance data>
+X<OO; instance data>
+
+引用的类型对对象上的方法调用没有影响。它只掌控对象如何存储 I<实例数据>────对象
+自身的信息。哈希引用最为常见，但你可以 bless 任何类型的引用：
+
+=begin programlisting
+
+    my $array_obj  = bless [], $class;
+    my $scalar_obj = bless \$scalar, $class;
+    my $sub_obj    = bless \&some_sub, $class;
+
+=end programlisting
+
+Moose 中创建的类由它们自己声明式地定义各自的对象属性，Perl 5 默认的 OO 则非常
+宽松。一个存储球衣号和位置、代表篮球运动员的类可能会使用如下构造器：
+
+=begin programlisting
+
+    package Player;
+
+    sub new
+    {
+        my ($class, %attrs) = @_;
+
+        bless \%attrs, $class;
+    }
+
+=end programlisting
+
+……运动员可以这样创建：
+
+=begin programlisting
+
+    my $joel = Player->new(
+        number   => 10,
+        position => 'center',
+    );
+
+    my $jerryd = Player->new(
+        number   => 4,
+        position => 'guard',
+    );
+
+=end programlisting
+
+在类的内部，方法可以直接访问哈希元素：
+
+=begin programlisting
+
+    sub format
+    {
+        my $self = shift;
+        return '#' . $self->{number} . ' plays ' . $self->{position};
+    }
+
+=end programlisting
+
+类之外的方法也可以这样做。这样便违反了封装────特别是，它意味着你绝不能在不
+破坏外部代码的情况下改变对象的内部表示，除非投机取巧────因此，保险起见还应
+提供访问器方法：
+
+=begin programlisting
+
+    sub number   { return shift->{number}   }
+    sub position { return shift->{position} }
+
+=end programlisting
+
+即便只有两个属性，Moose 在那些非必须代码方面显得更具吸引力。
+
+=begin sidebar
+
+Moose 的创建访问器的默认行为鼓励你在注重封装和泛型的情况下编写正确的代码。
+
+=end sidebar
+
+=head2 方法查找和继承
+
+X<method dispatch>
+X<objects; methods>
+
+除实例数据外，对象的另一部分就是方法分派。给定一个对象（一个 bless 后的引用），
+如下形式的方法调用：
+
+=begin programlisting
+
+    my $number = $joel->number();
+
+=end programlisting
+
+……将查找与经 bless 后的引用 C<$joel> 相关联类的名称。在此例中，该类就是 C<Player>。
+接下来，Perl 在 C<Player> 包内查找一个名为 C<number> 的函数。如果 C<Player> 类从其
+它类继承而来，Perl 也会在父类查找（如此继续）直到它找到 C<number> 方法为止。如果存
+在的话，Perl 以 C<$joel> 作为调用物调用它。
+
+X<@ISA>
+X<variables; @ISA>
+
+Moose 类在元模型中存放各自的继承信息。每一个经 bless 后的引用的类将父类信息存放在
+一个名为 C<@ISA> 的包全局变量中。方法分派器会在一个类的 C<@ISA> 中查找它的父类，以
+在其中搜索合适的方法。因此，一个 C<InjuredPlayer> 类会在其 C<@ISA> 中包含 C<Player>。
+你可以这样编写这重关系：
+
+=begin programlisting
+
+    package InjuredPlayer;
+
+    @InjuredPlayer::ISA = 'Player';
+
+=end programlisting
+
+X<parent>
+X<pragmas; parent>
+
+许多现存的 Perl 5 项目都这样做，但用 C<parent> 编译命令来替代会更容易些：
+
+=begin programlisting
+
+    package InjuredPlayer;
+
+    use parent 'Player';
+
+=end programlisting
+
+X<base>
+X<pragmas; base>
+
+=begin sidebar
+
+Perl 5.10 为替换增加于 Perl 5.004_4 的 C<base> 编译命令而添加了 C<parent>。如果
+你无法使用 Moose，请使用 C<parent>。
+
+=end sidebar
+
+X<multiple inheritance>
+X<objects; inheritance>
+
+可以从多个父类继承：
+
+=begin programlisting
+
+    package InjuredPlayer;
+
+    use parent qw( Player Hospital::Patient );
+
+=end programlisting
+
+在解析方法分派时，Perl 5 在传统上偏向于对父类使用深度优先搜索。这就是说，如果
+C<InjuredPlayer> 从 C<Player> 和 C<Hospital::Patient> 两者继承，一个在 C<InjuredPlayer>
+实例上调用的方法将先分派到 C<InjuredPlayer>，然后是 C<Player>，接着经过所有 C<Player>
+的父类来到 C<Hospital::Patient>。
+
+X<mro>
+X<pragmas; mro>
+
+Perl 5.10 增加了一个名为 C<mro> 的编译命令，它允许你另行使用称作 C3 的方法解析策略。
+虽然特定的细节可能在处理复杂的多重继承布局时变得复杂，关键的区别是，方法解析过程将
+在访问父类之前访问所有的子类。
+
+虽然其他技巧（诸如 角色 L<roles> 和 Moose 方法修饰符）允许你避开多重继承，但 C<mro>
+编译命令可以帮助你避免方法分派时令人惊讶的行为。可以这样在类中启用：
+
+=begin programlisting
+
+    package InjuredPlayer;
+
+    use mro 'c3';
+
+=end programlisting
+
+除非你在编写具有互操作插件的复杂框架，你几乎不会用到它。
+
+=head2 AUTOLOAD
+
+X<AUTOLOAD>
+X<objects; AUTOLOAD>
+X<methods; AUTOLOAD>
+
+如果在调用者及其超类的类定义内没有可用的方法，Perl 5 接下来将按照所选方法解析顺序
+在每个类中查找 C<AUTOLOAD> 函数。Perl 会调用它找到的任何 C<AUTOLOAD>，由此提供或
+谢绝所需方法。参加 L<autoload> 以获取更多细节。
+
+如你所想的那样，在面对多重继承和多个候选 C<AUTOLOAD> 目标时会变得很复杂。
+
+=head2 方法覆盖和 SUPER
+
+与 Moose 中一样，你可以在默认的 Perl 面向对象系统中覆盖方法。不幸的是，Perl 5 核心
+并没有提供指出你覆盖父类方法 I<意图> 的机制。更糟糕的是，任何预声明、声明或导入子
+类的函数都可能因重名而覆盖父类方法。你可以忘记使用 Moose 的 C<override> 系统，但在
+Perl 5 默认的面向对象系统中你根本没有这样（甚至是可选的）一重保护。
+
+要在子类中覆盖一个方法，只需声明一个和父类方法同名的方法。在覆盖的方法内，你可以通
+过 C<SUPER::> 分派指示来调用父类方法：
+
+=begin programlisting
+
+    sub overridden
+    {
+        my $self = shift;
+        warn "Called overridden() in child!";
+        return $self->SUPER::overridden( @_ );
+    }
+
+=end programlisting
+
+方法名的 C<SUPER::> 前缀告诉方法分派器将此方法分派到 I<父类> 的具名实现。你可以向
+其传递任何参数，但最好还是重用 C<@_>。
+
+=begin sidebar
+
+注意当重分派到父类方法时，这个分派器依赖于覆盖方法最初被编译的包。这长期以来是一个
+错误的特性，只是为了向后兼容而保留着。如果你向其它类或角色导出方法或手动合成类和角
+色，你会和此项特性正面冲突。CPAN 上的 C<SUPER> 模块可以为你绕过它。Moose 同样能够出
+色地处理该问题。
+
+=end sidebar
+
+=head2 应付经 bless 后引用的策略
+
+可能的话避免使用 C<AUTOLOAD>。如果 I<必须> 用到，你应该用它来转发函数（L<functions>）
+定义以帮助 Perl 知道哪个 C<AUTOLOAD> 会提供方法的实现。
+
+使用访问器方法而非直接通过引用访问实例数据。甚至在类内部的方法体内也应该这样做。
+由你自己来生成这些方法相当乏味；如果你无法使用 Moose，考虑使用诸如 C<Class::Accessor>
+这类模块来避免重复编写样板。
+
+准备好某人某时最终将继承你的类（或委托或重新实现接口）。通过不对代码内部细节做出假定、
+使用两参数形式的 C<bless> 和把类分割为最小职责单元，可以使得他人的工作更加轻松。
+
+不要在同一个类里混用函数和方法。
+
+为每一个类使用单独的 F<.pm> 文件，除非该类是一个仅用于某处的小型自包含辅助类。
+
+考虑使用 Moose 和 C<Any::Moose> 来替代赤裸的 Perl 5 OO；它们可以轻松和 Perl 5 对象系统
+的类和对象互动，还减轻了几乎所有因类声明而带来的无趣，同时提供了更多及更好的特性。

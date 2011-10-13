@@ -1,0 +1,1210 @@
+=head1 Hashes
+
+Z<hashes>
+
+X<hashes>
+
+A I<hash> is a first-class Perl data structure which associates string keys
+with scalar values. In the same way that the name of a variable corresponds to
+a storage location, a key in a hash refers to a value. Think of a hash like you
+would a telephone book: use your friend's name to look up her number. Other
+languages call hashes I<tables>, I<associative arrays>, I<dictionaries>, or
+I<maps>.
+
+Hashes have two important properties: they store one scalar per unique key and
+they provide no specific ordering of keys.
+
+=head2 Declaring Hashes
+
+X<hashes; declaring>
+X<C<%>; sigil>
+X<sigils; C<%>>
+
+Hashes use the C<%> sigil. Declare a lexical hash with:
+
+=begin programlisting
+
+    my %favorite_flavors;
+
+=end programlisting
+
+A hash starts out empty. You could write C<my %favorite_flavors = ();>, but
+that's redundant.
+
+X<C<$>; sigil>
+X<sigils; C<$>>
+
+Hashes use the scalar sigil C<$> when accessing individual elements and curly
+braces C<{ }> for keyed access:
+
+=begin programlisting
+
+    my %favorite_flavors;
+    $favorite_flavors{Gabi}    = 'Raspberry chocolate';
+    $favorite_flavors{Annette} = 'French vanilla';
+
+=end programlisting
+
+Assign a list of keys and values to a hash in a single expression:
+
+=begin programlisting
+
+    my %favorite_flavors = (
+        'Gabi',    'Raspberry chocolate',
+        'Annette', 'French vanilla',
+    );
+
+=end programlisting
+
+X<<< C<< => >>; fat comma operator >>>
+X<<< operators; C<< => >> >>>
+
+If you assign an odd number of elements to the hash, you will receive a warning
+to that effect. Idiomatic Perl often uses the I<fat comma> operator (C<< => >>)
+to associate values with keys, as it makes the pairing more visible:
+
+=begin programlisting
+
+    my %favorite_flavors = (
+        Gabi    B<< => >> 'Mint chocolate chip',
+        Annette B<< => >> 'French vanilla',
+    );
+
+=end programlisting
+
+The fat comma operator acts like the regular comma, but also automatically
+quotes the previous bareword (L<barewords>). The C<strict> pragma will not warn
+about such a bareword--and if you have a function with the same name as a hash
+key, the fat comma will I<not> call the function:
+
+=begin programlisting
+
+    sub name { 'Leonardo' }
+
+    my %address =
+    (
+        name => '1123 Fib Place',
+    );
+
+=end programlisting
+
+The key of this hash will be C<name> and not C<Leonardo>. To call the function,
+make the function call explicit:
+
+=begin programlisting
+
+    my %address =
+    (
+        B<name()> => '1123 Fib Place',
+    );
+
+=end programlisting
+
+=begin notetip
+
+Hash assignment occurs in list context. Any function called in a hash
+assignment will default to list context without an explicit C<scalar()>
+coercion.
+
+=end notetip
+
+Assign an empty list to empty a hashN<You may occasionally see C<undef
+%hash>.>:
+
+=begin programlisting
+
+    %favorite_flavors = ();
+
+=end programlisting
+
+=head2 Hash Indexing
+
+X<hashes; values>
+
+Access individual hash values with an indexing operation. Use a key (a I<keyed
+access> operation) to retrieve a value from a hash:
+
+=begin programlisting
+
+    my $address = $addresses{$name};
+
+=end programlisting
+
+In this example, C<$name> contains a string which is also a key of the hash.
+As with accessing an individual element of an array, the hash's sigil has
+changed from C<%> to C<$> to indicate keyed access to a scalar value.
+
+You may also use string literals as hash keys. Perl quotes barewords
+automatically according to the same rules as fat commas:
+
+=begin programlisting
+
+    # auto-quoted
+    my $address = $addresses{Victor};
+
+    # needs quoting; not a valid bareword
+    my $address = $addresses{B<'>Sue-LinnB<'>};
+
+    # function call needs disambiguation
+    my $address = $addresses{get_nameB<()>};
+
+=end programlisting
+
+=begin sidebar
+
+Novices often always quote string literal hash keys, but experienced developers
+elide the quotes whenever possible. In this way, the presence of quotes in hash
+keys signifies an intention to do something different.
+
+=end sidebar
+
+Even Perl 5 builtins get the autoquoting treatment:
+
+=begin programlisting
+
+    my %addresses =
+    (
+        Leonardo => '1123 Fib Place',
+        Utako    => 'Cantor Hotel, Room 1',
+    );
+
+    sub get_address_from_name
+    {
+        return $addresses{B<+>shift};
+    }
+
+=end programlisting
+
+The unary plus (L<unary_coercions>) turns what would be a bareword (C<shift>)
+subject to autoquoting rules into an expression. As this implies, you can use
+an arbitrary expression--not only a function call--as the key of a hash:
+
+=begin programlisting
+
+    # don't actually I<do> this though
+    my $address = $addresses{reverse 'odranoeL'};
+
+    # interpolation is fine
+    my $address = $addresses{"$first_name $last_name"};
+
+    # so are method calls
+    my $address = $addresses{ $user->name() };
+
+=end programlisting
+
+Hash keys can only be strings. Anything that evaluates to a string is an
+acceptable hash key. Perl will go so far as to coerce (L<coercion>) any
+non-string into a string, such that if you use an object as a hash key, you'll
+get the stringified version of that object instead of the object itself:
+
+=begin programlisting
+
+    for my $isbn (@isbns)
+    {
+        my $book = Book->fetch_by_isbn( $isbn );
+
+        # unlikely to do what you want
+        $books{$book} = $book->price;
+    }
+
+=end programlisting
+
+=head2 Hash Key Existence
+
+X<builtins; C<exists>>
+X<hashes; C<exists>>
+
+The C<exists> operator returns a boolean value to indicate whether a hash
+contains the given key:
+
+=begin programlisting
+
+    my %addresses =
+    (
+        Leonardo => '1123 Fib Place',
+        Utako    => 'Cantor Hotel, Room 1',
+    );
+
+    say "Have Leonardo's address" if exists $addresses{Leonardo};
+    say "Have Warnie's address"   if exists $addresses{Warnie};
+
+=end programlisting
+
+Using C<exists> instead of accessing the hash key directly avoids two problems.
+First, it does not check the boolean nature of the hash I<value>; a hash key
+may exist with a value even if that value evaluates to a boolean false
+(including C<undef>):
+
+=begin programlisting
+
+    my  %false_key_value = ( 0 => '' );
+    ok( %false_key_value,
+         'hash containing false key & value should evaluate to a true value' );
+
+=end programlisting
+
+Second, C<exists> avoids autovivification (L<autovivification>) within nested
+data structures (L<nested_data_structures>).
+
+X<builtins; C<defined>>
+
+If a hash key exists, its value may be C<undef>. Check that with C<defined>:
+
+=begin programlisting
+
+    $addresses{Leibniz} = undef;
+
+    say "Gottfried lives at $addresses{Leibniz}"
+        if exists  $addresses{Leibniz}
+        && defined $addresses{Leibniz};
+
+=end programlisting
+
+=head2 Accessing Hash Keys and Values
+
+X<hashes; C<keys>>
+X<builtins; C<keys>>
+
+Hashes are aggregate variables, but their pairwise nature offers many more
+possibilities for iteration: over the keys of a hash, the values of a hash, or
+pairs of keys and values. The C<keys> operator produces a list of hash keys:
+
+=begin programlisting
+
+    for my $addressee (keys %addresses)
+    {
+        say "Found an address for $addressee!";
+    }
+
+=end programlisting
+
+X<hashes; C<values>>
+X<builtins; C<values>>
+
+The C<values> operator produces a list of hash values:
+
+=begin programlisting
+
+    for my $address (values %addresses)
+    {
+        say "Someone lives at $address";
+    }
+
+=end programlisting
+
+X<hashes; C<each>>
+X<builtins; C<each>>
+
+The C<each> operator produces a list of two-element lists of the key and the
+value:
+
+=begin programlisting
+
+    while (my ($addressee, $address) = each %addresses)
+    {
+        say "$addressee lives at $address";
+    }
+
+=end programlisting
+
+Unlike arrays, there is no obvious ordering to these lists. The ordering
+depends on the internal implementation of the hash, the particular version of
+Perl you are using, the size of the hash, and a random factor. Even so, the
+order of hash items is consistent between C<keys>, C<values>, and C<each>.
+Modifying the hash may change the order, but you can rely on that order if the
+hash remains the same.
+
+Each hash has only a I<single> iterator for the C<each> operator. You cannot
+reliably iterate over a hash with C<each> more than once; if you begin a new
+iteration while another is in progress, the former will end prematurely and the
+latter will begin partway through the hash. During such iteration, beware not
+to call any function which may itself try to iterate over the hash with
+C<each>.
+
+Reset a hash's iterator with C<keys> or C<values> in void context:
+
+=begin programlisting
+
+    # reset hash iterator
+    keys %addresses;
+
+    while (my ($addressee, $address) = each %addresses)
+    {
+        ...
+    }
+
+=end programlisting
+
+=begin sidebar
+
+The single hash iterator is a well lamented caveat, but it doesn't come up as
+often as you might expect. Be cautious, but use C<each> when you need it.
+
+=end sidebar
+
+=head2 Hash Slices
+
+X<hashes; slicing>
+X<slices; hash>
+
+A I<hash slice> is a list of keys or values of a hash indexed in a single
+operation. To initialize multiple elements of a hash at once:
+
+=begin programlisting
+
+    # %cats already contains elements
+    @cats{qw( Jack Brad Mars Grumpy )} = (1) x 4;
+
+=end programlisting
+
+This is equivalent to the initialization:
+
+=begin programlisting
+
+    my %cats = map { $_ => 1 } qw( Jack Brad Mars Grumpy );
+
+=end programlisting
+
+... except that the hash slice initialization does not I<replace> the existing
+contents of the hash.
+
+To retrieve multiple values from a hash with a slice:
+
+=begin programlisting
+
+    my @buyer_addresses = @addresses{ @buyers };
+
+=end programlisting
+
+X<C<@>; sigil>
+X<sigils; C<@>>
+
+As with array slices, the sigil of the hash changes to indicate list context.
+The use of the curly braces indicates keyed access and makes the hash
+unambiguous.
+
+Hash slices make it easy to merge two hashes:
+
+=begin programlisting
+
+    my %addresses        = ( ... );
+    my %canada_addresses = ( ... );
+
+    @addresses{ keys %canada_addresses } = values %canada_addresses;
+
+=end programlisting
+
+This is equivalent to looping over the contents of C<%canada_addresses>
+manually, but is much shorter.
+
+=begin sidebar
+
+What if the same key occurs in both hashes?  The hash slice approach always
+I<overwrites> existing key/value pairs in C<%addresses>. If you want other
+behavior, looping is more appropriate.
+
+=end sidebar
+
+=head2 The Empty Hash
+
+An empty hash contains no keys or values. It evaluates to a false value in a
+boolean context. A hash which contains at least one key/value pair evaluates to
+a true value in boolean context even if all of the keys or all of the values or
+both would themselves evaluate to false values in a boolean context.
+
+=begin programlisting
+
+    use Test::More;
+
+    my %empty;
+    ok( ! %empty, 'empty hash should evaluate to false' );
+
+    my %false_key = ( 0 => 'true value' );
+    ok( %false_key, 'hash containing false key should evaluate to true' );
+
+    my %false_value = ( 'true key' => 0 );
+    ok( %false_value, 'hash containing false value should evaluate to true' );
+
+    done_testing();
+
+=end programlisting
+
+In scalar context, a hash evaluates to a string which represents the ratio of
+full buckets in the hash--internal details about the hash implementation that
+you can safely ignore.
+
+In list context, a hash evaluates to a list of key/value pairs similar to what
+you receive from the C<each> operator.  However, you I<cannot> iterate over
+this list the same way you can iterate over the list produced by C<each>, lest
+the loop never terminate:
+
+=begin programlisting
+
+    # infinite loop for non-empty hashes
+    while (my ($key, $value) = %hash)
+    {
+        ...
+    }
+
+=end programlisting
+
+You I<can> loop over the list of keys and values with a C<for> loop, but the
+iterator variable will get a key on one iteration and its value on the next,
+because Perl will flatten the hash into a single list of interleaved keys and
+values:
+
+=begin programlisting
+
+    for (%hash)
+    {
+        ...
+    }
+
+=end programlisting
+
+=head2 Hash Idioms
+
+X<hashes; finding uniques>
+
+Because each key exists only once in a hash, assigning the same key to a hash
+multiple times stores only the most recent key. Use this to find unique list
+elements:
+
+=begin programlisting
+
+    my %uniq;
+    undef @uniq{ @items };
+    my @uniques = keys %uniq;
+
+=end programlisting
+
+Using C<undef> with a hash slice sets the values of the hash to C<undef>. This
+idiom is the cheapest way to perform set operations with a hash.
+
+X<hashes; counting items>
+
+Hashes are also useful for counting elements, such as IP addresses in a log
+file:
+
+=begin programlisting
+
+    my %ip_addresses;
+
+    while (my $line = <$logfile>)
+    {
+        my ($ip, $resource) = analyze_line( $line );
+        $ip_addresses{$ip}++;
+        ...
+    }
+
+=end programlisting
+
+The initial value of a hash value is C<undef>. The postincrement operator
+(C<++>) treats that as zero. This in-place modification of the value increments
+an existing value for that key. If no value exists for that key, Perl creates a
+value (C<undef>) and immediately increments it to one, as the numification of
+C<undef> produces the value 0.
+
+X<hashes; caching>
+X<orcish maneuver>
+
+This strategy provides a useful caching mechanism to store the result of an
+expensive operation with little overhead:
+
+=begin programlisting
+
+    {
+        my %user_cache;
+
+        sub fetch_user
+        {
+            my $id = shift;
+            $user_cache{$id} ||= create_user($id);
+            return $user_cache{$id};
+        }
+    }
+
+=end programlisting
+
+X<defined-or>
+X<C<//>; infix operator>
+X<operators; C<//>>
+X<operators; defined-or>
+
+This I<orcish maneuver>N<Or-cache, if you like puns.> returns the value from
+the hash, if it exists. Otherwise, it calculates, caches, and returns the
+value.  Beware that the boolean-or assignment operator (C<||=>) operates on
+boolean values; if your cached value evaluates to false in a boolean context,
+use the defined-or assignment operator (C<//=>) instead:
+
+=begin programlisting
+
+        sub fetch_user
+        {
+            my $id = shift;
+            $user_cache{$id} B<//=> create_user($id);
+            return $user_cache{$id};
+        }
+
+=end programlisting
+
+This lazy orcish maneuver tests for the definedness of the cached value, not
+truthiness. The defined-or assignment operator was new in Perl 5.10.
+
+X<hashes; named parameters>
+
+If your function takes several arguments, use a slurpy hash
+(L<parameter_slurping>) to gather key/value pairs into a single hash as named
+function arguments:
+
+=begin programlisting
+
+    sub make_sundae
+    {
+        my %parameters = @_;
+        ...
+    }
+
+    make_sundae( flavor => 'Lemon Burst', topping => 'cookie bits' );
+
+=end programlisting
+
+This approach allows you to set default values:
+
+=begin programlisting
+
+    sub make_sundae
+    {
+        my %parameters             = @_;
+        B<$parameters{flavor}    //= 'Vanilla';>
+        B<$parameters{topping}   //= 'fudge';>
+        B<$parameters{sprinkles} //= 100;>
+        ...
+    }
+
+=end programlisting
+
+... or include them in the initial declaration and assignment itself:
+
+=begin programlisting
+
+    sub make_sundae
+    {
+        my %parameters =
+        (
+            B<< flavor    => 'Vanilla', >>
+            B<< topping   => 'fudge', >>
+            B<< sprinkles => 100, >>
+            @_,
+        );
+        ...
+    }
+
+=end programlisting
+
+... as subsequent declarations of the same key with a different value will
+overwrite previous values.
+
+=head2 Locking Hashes
+
+Z<locked_hashes>
+
+X<hashes; locked>
+
+As hash keys are barewords, they offer little typo protection compared to the
+function and variable name protection offered by the C<strict> pragma. The
+little-used core module C<Hash::Util> provides mechanisms to ameliorate this.
+
+To prevent someone from accidentally adding a hash key you did not intend
+(whether as a typo or from untrusted user input), use the C<lock_keys()>
+function to restrict the hash to its current set of keys. Any attempt to add a
+new key to the hash will raise an exception. This is lax security suitable only
+for preventing accidents; anyone can use theC<unlock_keys()> function to remove
+this protection.
+
+Similarly you can lock or unlock the existing value for a given key in the hash
+(C<lock_value()> and C<unlock_value()>) and make or unmake the entire hash
+read-only with C<lock_hash()> and C<unlock_hash()>.
+=encoding utf8
+
+=head1 哈希
+
+Z<hashes>
+
+X<hashes>
+X<hash>
+
+I<哈希> 是 Perl 数据结构中的一等公民，它将字符串键和标量值之间一一联系起来。
+在其他编程语言中，它们可能被称为 I<表格>、I<关联数组>、I<字典> 或是 I<映射>。
+正如变量名和一个存储位置相对应，哈希中的一个键对应一个值。
+
+一个备受推崇但老旧的说法，便是将哈希比方成电话簿：你可以按朋友的名字来查找
+她的电话号码。
+
+哈希有两个重要的属性。第一，它们将一个标量以唯一的键存储。第二，它们不提供特定
+的键顺序。哈希就是一个大尺寸键值对容器。
+
+=head2 声明哈希
+
+X<hashes; declaring>
+
+哈希使用 C<%> 印记。按如下方式声明一个词法哈希：
+
+=begin programlisting
+
+    my %favorite_flavors;
+
+=end programlisting
+
+哈希初始为空，没有键也没有值。在布尔上下文中，不含键的哈希求值得假。除此之外，
+它返回一个求值为真的字符串。
+
+你可以对哈希的每一个独立的元素进行赋值和访问：
+
+=begin programlisting
+
+    my %favorite_flavors;
+    $favorite_flavors{Gabi}    = 'Mint chocolate chip';
+    $favorite_flavors{Annette} = 'French vanilla';
+
+=end programlisting
+
+当访问独立元素时，哈希将使用标量印记 C<$> 且将大括号 C<{ }> 用于字符串键。
+
+你可以在单一的表达式内将一个键值对列表赋值给一个哈希：
+
+=begin programlisting
+
+    my %favorite_flavors = (
+        'Gabi',    'Mint chocolate chip',
+        'Annette', 'French vanilla',
+    );
+
+=end programlisting
+
+X<fat comma>
+
+如果你将奇数个元素赋值给一个哈希，你将收到警告说得不到预想的结果。通常
+用 I<胖逗号> 操作符来关联键和值会更加明显，因为它能使“成对”的需求更加突出。
+请比较：
+
+=begin programlisting
+
+    my %favorite_flavors = (
+        Gabi    B<< => >> 'Mint chocolate chip',
+        Annette B<< => >> 'French vanilla',
+    );
+
+=end programlisting
+
+……和：
+
+=begin programlisting
+
+    my %favorite_flavors = (
+        'Jacob', 'anything',
+        'Floyd', 'Pistachio',
+    );
+
+=end programlisting
+
+胖逗号操作符表现得和常规逗号一样，但是它使得 Perl 词法分析器将其前的裸字（L<barewords>）
+作加了引号般对待。编译命令 C<strict> 不会对这些裸字发出警告，并且如果你有一个和此哈希键
+同名的函数，胖逗号 I<不> 会调用此函数：
+
+=begin programlisting
+
+    sub name { 'Leonardo' }
+
+    my %address =
+    (
+        name => '1123 Fib Place',
+    );
+
+=end programlisting
+
+哈希的键是 C<name> 而不是 C<Leonardo>。如果你想调用该函数以得到键，请明确地使用函数调用
+来消除歧义：
+
+=begin programlisting
+
+    my %address =
+    (
+        B<name()> => '1123 Fib Place',
+    );
+
+=end programlisting
+
+=begin notetip
+
+哈希赋值发生于列表上下文中，如果你在这样的赋值中调用函数，你可以使用 C<scalar()> 
+对该上下文消歧。
+
+=end notetip
+
+要清空一个哈希，可以将空列表赋值给它 N<一元 C<undef> 也可以，但相对比较少用>：
+
+=begin programlisting
+
+    %favorite_flavors = ();
+
+=end programlisting
+
+=head2 哈希下标
+
+X<hashes; accessing values>
+X<hashes; values>
+
+由于哈希是一个集合，你可以通过下标操作访问其中独立的值。把键用作下标（I<按键访问> 操作）
+可以从一个哈希中取得对应的值：
+
+=begin programlisting
+
+    my $address = $addresses{$name};
+
+=end programlisting
+
+在这个例子中，C<$name> 包含用作哈希键的字符串。和访问数组中的单个元素一样，按照键访问一个
+标量值时哈希的印记也会从 C<%> 改为 C<$>。
+
+你也可以将字符串字面值用作哈希的键。Perl 会按胖逗号的规则自动为裸字加上引号：
+
+=begin programlisting
+
+    # 自动加引号
+    my $address = $addresses{Victor};
+
+    # 需要加引号，不是一个合法的裸字
+    my $address = $addresses{B<'>Sue-LinnB<'>};
+
+    # 函数调用需要消歧
+    my $address = $addresses{get_nameB<()>};
+
+=end programlisting
+
+你也许会发现加上引号的哈希字符串字面值键会比较清晰，但是自动加引号的行为已经在 
+Perl 5 文化中根深蒂固，因此最好将引号留给一些“词不达意”的特殊情况。
+
+甚至连 Perl 5 的关键字也会做自动加引号的处理：
+
+=begin programlisting
+
+    my %addresses =
+    (
+        Leonardo => '1123 Fib Place',
+        Utako    => 'Cantor Hotel, Room 1',
+    );
+
+    sub get_address_from_name
+    {
+        return $addresses{B<+>shift};
+    }
+
+=end programlisting
+
+一元加号（L<unary_coercions>、L<numeric_operators>）使得原本将成为裸字的 C<shift> 跳过自动加引号
+行为而变成表达式。隐含的意思是，你可以使用任意表达式────不仅是函数调用────作为哈希的键：
+
+=begin programlisting
+
+    # 虽然可以，不要真的这样 I<做>
+    my $address = $addresses{reverse 'odranoeL'};
+
+    # 可以使用字符串内插
+    my $address = $addresses{"$first_name $last_name"};
+
+    # 方法调用也可以
+    my $address = $addresses{ $user->name() };
+
+=end programlisting
+
+任何求值为字符串的事物都是一个可接受的哈希键。当然，哈希键只能是字符串，如果你使用
+某对象作为哈希键，你将得到对象字符串化后的版本而非对象本身：
+
+=begin programlisting
+
+    for my $isbn (@isbns)
+    {
+        my $book = Book->fetch_by_isbn( $isbn );
+
+        # 不太会是你想要的
+        $books{$book} = $book->price;
+    }
+
+=end programlisting
+
+=head2 哈希键的存在性
+
+X<exists>
+X<operators; exists>
+X<hashes; exists>
+
+C<exists> 操作符返回布尔值，指示某哈希是否含有给定的键：
+
+=begin programlisting
+
+    my %addresses =
+    (
+        Leonardo => '1123 Fib Place',
+        Utako    => 'Cantor Hotel, Room 1',
+    );
+
+    say "Have Leonardo's address" if exists $addresses{Leonardo};
+    say "Have Warnie's address"   if exists $addresses{Warnie};
+
+=end programlisting
+
+不直接访问哈希键而使用 C<exists> 避免了两个问题。第一，它不对哈希I<值>的布尔本质
+做检查：一个哈希键可能对应到一个求值得布尔假的值（包括 C<undef>）：
+
+=begin programlisting
+
+    my  %false_key_value = ( 0 => '' );
+    ok( %false_key_value,
+         'hash containing false key & value should evaluate to a true value' );
+
+=end programlisting
+
+第二，在处理嵌套数据结构时，C<exists> 避免值的自生现象（L<autovivification>）。
+
+X<defined>
+X<operators; defined>
+
+哈希键对应的操作是 C<defined>。如果一个哈希键存在，它对应是值可能是 C<undef>。
+你可以用 C<defined> 检查这个值：
+
+=begin programlisting
+
+    $addresses{Leibniz} = undef;
+
+    say "Gottfried lives at $addresses{Leibniz}"
+        if exists  $addresses{Leibniz}
+        && defined $addresses{Leibniz};
+
+=end programlisting
+
+=head2 访问哈希的键和值
+
+X<keys>
+X<hashes; keys>
+X<operators; keys>
+
+哈希是集合变量，但是它的行为和数组不太一样。尤其是，你可以迭代一个哈希的所有键和值
+或者是键值对。C<keys> 操作符返回由哈希键组成的列表：
+
+=begin programlisting
+
+    for my $addressee (keys %addresses)
+    {
+        say "Found an address for $addressee!";
+    }
+
+=end programlisting
+
+X<values>
+X<hashes; values>
+X<operators; values>
+
+C<values> 操作符返回由哈希的值组成的列表：
+
+=begin programlisting
+
+    for my $address (values %addresses)
+    {
+        say "Someone lives at $address";
+    }
+
+=end programlisting
+
+X<each>
+X<hashes; each>
+X<operators; each>
+
+C<each> 操作符返回一个列表，由一个个键值二元列表组成：
+
+=begin programlisting
+
+    while (my ($addressee, $address) = each %addresses)
+    {
+        say "$addressee lives at $address";
+    }
+
+=end programlisting
+
+不像数组，哈希没有明确的键值列表排序方式。其顺序依赖于哈希的内部实现，实现又依赖
+于你使用的特定 Perl 版本、哈希的尺寸以及一个随机的因素。遵循上述条件，哈希中元素
+的顺序对于 C<keys>、C<values> 和 C<each> 来说是一致的。修改哈希可能改变这个顺序，
+但只要哈希不改变，你可以依赖此顺序。
+
+每一个哈希对于 C<each> 操作符来说只有 I<单一> 的迭代器。通过 C<each> 对哈希进行多
+次迭代是不可靠的，如果你在一次迭代过程中开始另一次迭代，前者将过早地结束而后者将
+从半路开始。
+
+在空上下文中使用 C<keys> 或 C<values> 可以重置一个哈希的迭代器：
+
+=begin programlisting
+
+    # 重置哈希迭代器
+    keys %addresses;
+
+    while (my ($addressee, $address) = each %addresses)
+    {
+        ...
+    }
+
+=end programlisting
+
+你也应该确保不调用尝试使用 C<each> 来迭代哈希的函数。
+
+=begin sidebar
+
+单个哈希迭代器是一个众所周知的注意点，但是它不如你想象的那么常见。小心一些，
+但在你需要时，也请大胆地使用 C<each>。
+
+=end sidebar
+
+=head2 哈希分片
+
+X<hash slices>
+X<hashes; slicing>
+X<slices; hash>
+
+和数组一样，你也可以在一个操作内访问一列哈希元素。I<哈希分片> 就是一个由哈希键值对组成
+的列表。最简单的解释就是使用无序列表初始化多个哈希元素：
+
+=begin programlisting
+
+    my %cats;
+    @cats{qw( Jack Brad Mars Grumpy )} = (1) x 4;
+
+=end programlisting
+
+这和下列初始化是等价的：
+
+=begin programlisting
+
+    my %cats = map { $_ => 1 } qw( Jack Brad Mars Grumpy );
+
+=end programlisting
+
+……除了上例中的哈希分片初始化不会 I<替换> 哈希的原有内容。
+
+你可以用分片一次性从哈希中取出多个值：
+
+=begin programlisting
+
+    my @buyer_addresses = @addresses{ @buyers };
+
+=end programlisting
+
+正如数组分片，哈希印记的改变反映了列表上下文。通过使用大括号进行按键访问，
+你仍然可以得知 C<%addresses> 的哈希本质没有变。
+
+哈希分片可以使合并两个哈希变得容易：
+
+=begin programlisting
+
+    my %addresses        = ( ... );
+    my %canada_addresses = ( ... );
+
+    @addresses{ keys %canada_addresses } = values %canada_addresses;
+
+=end programlisting
+
+这样做和手动对 C<%canada_addresses> 的内容进行循环等价，但是更为短小。
+
+=begin sidebar
+
+对两种方式的选择取决于你的合并策略。如果两个哈希中出现相同的键怎么办？哈希分片
+方式总是覆盖已存在于 C<%addresses> 中的键值对.
+
+=end sidebar
+
+=head2 空哈希
+
+一个空哈希不包含键和值。它在布尔上下文中得假。含有至少一个键值对的哈希在布尔
+上下文得真，哪怕其所有的键或值或两者同时在布尔上下文中求值得假。
+
+=begin programlisting
+
+    use Test::More;
+
+    my %empty;
+    ok( ! %empty, 'empty hash should evaluate to false' );
+
+    my %false_key = ( 0 => 'true value' );
+    ok( %false_key, 'hash containing false key should evaluate to true' );
+
+    my %false_value = ( 'true key' => 0 );
+    ok( %false_value, 'hash containing false value should evaluate to true' );
+
+    ...
+
+    done_testing();
+
+=end programlisting
+
+在标量上下文中，对哈希求值得到的是一个字符串，表示已用哈希桶比上已分配哈希桶。
+这个字符串并不怎么有用，因为它仅仅表示有关哈希的内部细节且对于 Perl 程序来说
+基本没有意义。你可以安全地忽略它。
+
+在列表上下文中，对哈希求值得到类似从 C<each> 操作符取得的键值对列表。然而，你
+I<不能> 按迭代产生自 C<each> 的列表的方式迭代此列表，因为这将无限循环，除非此
+哈希为空。
+
+=head2 哈希惯用语
+
+X<hashes; finding uniques>
+
+哈希有若干用途，诸如查找列表或数组中唯一的元素。因为每个键只在哈希中存在一份，
+对哈希中相同的键赋值多次仅存储最近的值：
+
+=begin programlisting
+
+    my %uniq;
+    undef @uniq{ @items };
+    my @uniques = keys %uniq;
+
+=end programlisting
+
+对哈希分片使用 C<undef> 操作符可以将哈希的值设置为 C<undef>。这是判定某元素
+是否存在于集合中成本最低的方法。
+
+X<hashes; counting items>
+
+在对元素计数时哈希也很有用，比如在日志文件中的一列 IP 地址：
+
+=begin programlisting
+
+    my %ip_addresses;
+
+    while (my $line = <$logfile>)
+    {
+        my ($ip, $resource) = analyze_line( $line );
+        $ip_addresses{$ip}++;
+        ...
+    }
+
+=end programlisting
+
+哈希值初始为 C<undef>。后缀自增操作符（C<++>）将其作为零对待。这个对值即时修改
+增加某个键对应的值。如果该键对应的值不存在，它创建一个值（C<undef>）并立刻将其
+加一，因为数值化的 undef 产生值 0。
+
+X<hashes; caching>
+X<hashes; orcish maneuver>
+X<orcish maneuver>
+
+此策略的一个变种很适合缓存，即你愿意付出一点存取代价来存放某昂贵计算的结果：
+
+=begin programlisting
+
+    {
+        my %user_cache;
+
+        sub fetch_user
+        {
+            my $id = shift;
+            $user_cache{$id} ||= create_user($id);
+            return $user_cache{$id};
+        }
+    }
+
+=end programlisting
+
+X<defined-or>
+X<operators; //>
+X<operators; defined-or>
+
+如果已经存在，这个 I<Orcish Maneuver> N<“Or-cache”，如果你喜欢双关语的话> 会
+从哈希中返回值。否则，计算该值，存入缓存，再返回它。注意布尔或赋值操作符（C<||=>）
+作用于布尔值之上，如果你的缓存值在布尔上下文中求值得假，则可以使用“已定义-或”
+赋值操作符（C<//=>）来代替：
+
+=begin programlisting
+
+        sub fetch_user
+        {
+            my $id = shift;
+            $user_cache{$id} B<//=> create_user($id);
+            return $user_cache{$id};
+        }
+
+=end programlisting
+
+这个惰性 Orcish Maneuver 检查缓存值是否已被定义，而非其布尔真假。“已定义-或”赋值
+操作符是 Perl 5.10 中的新功能。
+
+X<hashes; named parameters>
+
+哈希也可以收集传递给函数的具名参数。如果你的函数接受若干参数，你可以使用吸入式哈
+希（L<parameter_slurping>）来把键值对收集在单个哈希中：
+
+=begin programlisting
+
+    sub make_sundae
+    {
+        my %parameters = @_;
+        ...
+    }
+
+    make_sundae( flavor => 'Lemon Burst', topping => 'cookie bits' );
+
+=end programlisting
+
+你甚至用如下方式设置默认参数：
+
+=begin programlisting
+
+    sub make_sundae
+    {
+        my %parameters = @_;
+        B<$parameters{flavor}    //= 'Vanilla';>
+        B<$parameters{topping}   //= 'fudge';>
+        B<$parameters{sprinkles} //= 100;>
+        ...
+    }
+
+=end programlisting
+
+……或者将它们包含在最初的声明和赋值中：
+
+=begin programlisting
+
+    sub make_sundae
+    {
+        my %parameters =
+        (
+            B<< flavor    => 'Vanilla', >>
+            B<< topping   => 'fudge', >>
+            B<< sprinkles => 100, >>
+            @_,
+        );
+        ...
+    }
+
+=end programlisting
+
+……因为后续对同一键的不同值声明会覆盖前面的值。
+
+=head2 哈希上锁
+
+Z<locked_hashes>
+X<locked hashes>
+
+X<hashes; locked>
+X<hashes; locking>
+
+哈希的一个缺点就是它们的键是几乎不提供打字错误保护的裸字（特别是将其和受 C<strict>
+编译命令保护的函数、变量名相比）。核心模块 C<Hash::Util> 提供了一些机制来对哈希的
+修改和允许的键做出限制。
+
+为避免他人向哈希添加你不想要的键（假设一个打字错误或是不受信任的输入），你可以使用
+C<lock_keys()> 函数将哈希键限制在当前集合中。任何添加不被允许的键值对的意图将引发
+一个异常。
+
+当然，其他想达到此目的的人总是可以使用 C<unlock_keys()> 函数来去掉保护，因此不要
+将此作为防止其他程序员误用的安全保障来信任。
+
+类似的你可以对哈希中给定的键对应已存在的值进行上锁和解锁（C<lock_value()> 和 C<unlock_value()>）
+以及利用 C<lock_hash()> 和 C<unlock_hash()> 使得或不使整个哈希变为只读。

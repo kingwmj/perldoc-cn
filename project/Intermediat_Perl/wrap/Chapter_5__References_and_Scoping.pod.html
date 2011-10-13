@@ -1,0 +1,756 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>D:\Git\perldoc-cn\project\Intermediat_Perl\wrap\Chapter_5__References_and_Scoping.pod.html</title>
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v6">
+<meta name="syntax" content="pod">
+<meta name="settings" content="use_css">
+<style type="text/css">
+<!--
+pre { font-family: monospace; color: #a0ffa0; background-color: #000000; }
+body { font-family: monospace; color: #a0ffa0; background-color: #000000; }
+.Statement { color: #ffff00; }
+.PreProc { color: #f5deb3; }
+.Comment { color: #ffa500; }
+.Constant { color: #ffffff; }
+-->
+</style>
+</head>
+<body>
+<pre>
+<span class="Constant">第五章. 引用和范围</span>
+
+我们可以像任何其它标量变量那样拷贝和传递引用. 在任何给定的时间,
+<span class="Comment">Perl</span> 会知道有多少引用指向一个特定的数据项。<span class="Comment">Perl</span> 也会为匿名
+数据结构（所谓没有名字的数据结构）创建引用, 以及在为了满足一定的
+操作自动的创建引用。让我们来看一下引用的拷贝以及其对范围和内存使
+用方面的影响。
+
+<span class="Constant">5. 1. 更多有关对数据进行引用的故事</span>
+
+在第四章里, 我们了解了如何取一个数组 <span class="Comment">@skipper</span> 的引用, 并把它
+放到一个新建的标量变量中:
+
+<span class="PreProc"> my @skipper = qw(blue_shirt hat jacket preserver sunscreen);</span>
+<span class="PreProc"> my $reference_to_skipper = \@skipper;</span>
+
+我们现在就可以拷贝这个引用或把它传给另外一些引用, 并且, 它们全
+都指向同一数据, 并且是互相可替换的：
+
+<span class="PreProc"> my $second_reference_to_skipper = $reference_to_skipper;</span>
+<span class="PreProc"> my $third_reference_to_skipper  = \@skipper;</span>
+
+现在, 我们有四种途径来访问保存在 <span class="Comment">@skipper</span> 中的数据：
+
+<span class="PreProc"> @skipper</span>
+<span class="PreProc"> @$reference_to_skipper</span>
+<span class="PreProc"> @$second_reference_to_skipper</span>
+<span class="PreProc"> @$third_reference_to_skipper</span>
+
+<span class="Comment">Perl</span> 跟踪有多少途径在访问数据的机制叫做 <span class="Statement">引用计数</span>. 原来
+的名字计数为 <span class="Statement">1</span>, 其它我们创建的每一个引用（包括对引用的拷贝）
+同样被计数. 就目前的例子, 装备清单数组的目前引用数是 <span class="Comment">4.</span>
+
+我们可以任意添加和删除引用, 并且, 只要引用计算不减到 <span class="Comment">0</span>, <span class="Comment">Perl</span>
+就会在内存中保留这个数组, 并且能通过任何其它的途径来访问这个数组.
+比如, 我们可能有一个临时引用：
+
+<span class="PreProc"> check_provisions_list(\@skipper)</span>
+
+当这个子程序执行的时候, <span class="Comment">Perl</span> 会创建指向这个数组的第五个引用,
+并将其拷贝到这个子程序的特殊变量 <span class="Comment">@_</span> 中.子程序可以很自由的为那
+个引用创建更多的拷贝, 而 <span class="Comment">Perl</span> 则会适时的关注.一般来说, 当子程
+序返回的时候, <span class="Comment">Perl</span> 会自动扔掉所有这些子程序创建的引用, 这样你又
+回到了 <span class="Comment">4</span> 个引用。
+
+我们用给引用赋任何一个与指向 <span class="Comment">@skipper</span> 引用无关的其它的变量就
+可以切断引用关系了. 比如, 我们可以给变量分配一个 <span class="Comment">undef</span> 给变量：
+
+<span class="PreProc"> $reference_to_skipper = undef;</span>
+
+或者, 我们可以仅仅让变量跑出范围就可以了：
+
+<span class="PreProc"> my @skipper =. . . ;</span>
+
+<span class="PreProc"> { # naked block . . .</span>
+<span class="PreProc">    my $ref = \@skipper; . . .  . . .</span>
+<span class="PreProc"> } # $ref goes out of scope at this point</span>
+
+要指出的是, 在一个子程序的私有（词法）变量保存的一个引用, 会在
+子程序结束时被释放。
+
+不管是我们改变变量的值, 或者变量跑出范围, <span class="Comment">Perl</span> 会注意到这些
+, 并且适当的减少对数据的引用计数。
+
+只有这个数组的所有引用（包括数组名）都没有了, <span class="Comment">Perl</span> 才会回收
+这个数组占用的内存. 在上例中, 只有在 <span class="Comment">@skipper</span> 数组及我们所有对
+它的引用全消失后, <span class="Comment">Perl</span> 才会回收内存.
+
+这些被释放的内存会被 <span class="Comment">Perl</span> 安排用在程序中之后的其它数据的调用
+, 一般来说 <span class="Comment">Perl</span> 不会把这些内存还给操作系统。
+
+<span class="Constant">5. 2. 假若它曾经有一个名字</span>
+
+一般来说, 引用总是比其指向的变量之前被释放.但是如果引用比其指向
+的变量活得长会发生什么情况？比如, 考虑下面的情况：
+
+<span class="PreProc"> my $ref;</span>
+<span class="PreProc"> {</span>
+<span class="PreProc">  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);</span>
+<span class="PreProc">  $ref        = \@skipper;</span>
+<span class="PreProc">  print &quot;$ref-&gt;[2]\n&quot;; # prints jacket\n</span>
+<span class="PreProc"> }</span>
+<span class="PreProc"> print &quot;$ref-&gt;[2]\n&quot;; # still prints jacket\n</span>
+
+在我们声明 <span class="Comment">@skipper</span> 数组之后, 我们有了一个指向这个五个元素的
+列表的引用。在 <span class="Comment">$ref</span> 被初始化后, 到块结束的地方, 我们会有两个
+引用。 到块结束, <span class="Comment">@skipper</span> 名子消失了。 然而, 这不过是仅仅访问数
+据的一个途径而已! 这样, 这个五个元素的列表依旧在内存里, 而且
+<span class="Comment">$ref</span> 变量仍然指向这块数据。
+
+这个时候, 这个五个元素的列表是个匿名数组－－为没有名字的数组起
+的一个漂亮名字。
+
+直到 <span class="Comment">$ref</span> 的值改变, 或者 <span class="Comment">$ref</span> 自己消失, 我们依旧可以使用
+任何我们在前面学到的还原方法, 尽管数组的名字已经不存在了.实际上,
+它仍然是一个不折不扣的数组, 我们可以像对待其它任何 <span class="Comment">Perl</span> 数组那
+样把它拉长和缩小：
+
+<span class="PreProc"> push @$ref, 'sextant'; # add a new provision</span>
+<span class="PreProc"> print &quot;$ref-&gt;[-1]\n&quot;; # prints sextant\n</span>
+
+此时我们甚至还可以增加引用计数：
+
+<span class="PreProc"> my $copy_of_ref = $ref;</span>
+
+下面也一样：
+
+<span class="PreProc"> my $copy_of_ref = \@$ref;</span>
+
+数据一直会存在, 直到我们销毀最后一个引用：
+
+<span class="PreProc"> $ref = undef; # not yet. . .</span>
+<span class="PreProc"> $copy_of_ref = undef; # poof!</span>
+
+<span class="Constant">5. 3. 引用计数和数据结构嵌套</span>
+
+只要最后一个引用没有被销毁, 数据就一直存在.甚至引用包含在一个大
+的数据结构时也是如此. 有可能数组本身的一个元素就是一个引用.
+我们回想一下第四章见到过的例子：
+
+<span class="PreProc"> my @skipper = qw(blue_shirt hat jacket preserver sunscreen);</span>
+<span class="PreProc"> my @skipper_with_name   = ('The Skipper', \@skipper);</span>
+
+<span class="PreProc"> my @professor = qw(sunscreen water_bottle slide_rule</span>
+<span class="PreProc">                    batteries radio);</span>
+<span class="PreProc"> my @professor_with_name = ('The Professor', \@professor);</span>
+
+<span class="PreProc"> my @gilligan = qw(red_shirt hat lucky_socks water_bottle);</span>
+<span class="PreProc"> my @gilligan_with_name  = ('Gilligan', \@gilligan);</span>
+
+<span class="PreProc"> my @all_with_names = (</span>
+<span class="PreProc">        \@skipper_with_name,</span>
+<span class="PreProc">        \@professor_with_name,</span>
+<span class="PreProc">        \@gilligan_with_name,</span>
+<span class="PreProc">        );</span>
+
+想像一下中间变量全是子程序一部份的情况：
+
+<span class="PreProc"> my @all_with_names;</span>
+
+<span class="PreProc"> sub initialize_provisions_list {</span>
+<span class="PreProc">  my @skipper = qw(blue_shirt hat jacket</span>
+<span class="PreProc">                   preserver sunscreen);</span>
+<span class="PreProc">  my @skipper_with_name = ('The Skipper', \@skipper);</span>
+
+<span class="PreProc">       my @professor = qw(sunscreen water_bottle</span>
+<span class="PreProc">                          slide_rule batteries radio);</span>
+<span class="PreProc">  my @professor_with_name = ('The Professor', \@professor);</span>
+
+<span class="PreProc">  my @gilligan = qw(red_shirt hat lucky_socks water_bottle);</span>
+<span class="PreProc">  my @gilligan_with_name = ('Gilligan', \@gilligan);</span>
+
+<span class="PreProc">  @all_with_names = ( # set global</span>
+<span class="PreProc">    \@skipper_with_name,</span>
+<span class="PreProc">    \@professor_with_name,</span>
+<span class="PreProc">    \@gilligan_with_name,</span>
+<span class="PreProc">  );</span>
+<span class="PreProc"> }</span>
+
+<span class="PreProc"> initialize_provisions_list();</span>
+
+我们用数组 <span class="Comment">@all_with_names</span> 的值来放三个引用。 在子程序里, 我
+们命名了一些数组, 而这些数组指向了事先命名的另外的数组。 最终, 这
+些值最后放到一个全局的数组 <span class="Comment">@all_with_names</span> 中.然而, 当子程序返
+回时, 这些六个数组的名字被锁毁。 正因为每个数组都有另外一个引用指
+向它, 所以导致引用计数临时是2, 但当数组名字销毁后, 计数又回到 <span class="Comment">1</span>.
+因为引用计数没有回到零, 数据仍然在, 尽管它向在仅仅被当做数组
+<span class="Comment">@all_with_names</span> 的元素。
+
+与分配一个全局变量不同, 我们还可以重写这个程序, 去掉全局变量
+<span class="Comment">@all_with_names</span> , 直接从程序中返回列表：
+
+<span class="PreProc"> sub get_provisions_list {</span>
+<span class="PreProc">  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);</span>
+<span class="PreProc">  my @skipper_with_name = ('The Skipper', \@skipper);</span>
+
+<span class="PreProc">  my @professor = qw(sunscreen water_bottle slide_rule</span>
+<span class="PreProc">                     batteries radio);</span>
+<span class="PreProc">  my @professor_with_name = ('The Professor', \@professor);</span>
+
+<span class="PreProc">  my @gilligan = qw(red_shirt hat lucky_socks water_bottle);</span>
+<span class="PreProc">  my @gilligan_with_name = ('Gilligan', \@gilligan);</span>
+
+<span class="PreProc">  return (</span>
+<span class="PreProc">    \@skipper_with_name,</span>
+<span class="PreProc">    \@professor_with_name,</span>
+<span class="PreProc">    \@gilligan_with_name,</span>
+<span class="PreProc">  );</span>
+<span class="PreProc"> }</span>
+
+<span class="PreProc"> my @all_with_names = get_provisions_list(  );</span>
+
+上例中, 我们创建的那个最终保存在 <span class="Comment">@all_with_names</span> 中的值是用
+子程序的最后一个表达式求值得到的.子程序返回一个三个元素的列表.只要
+子程序中的命名数组曾经至少有一个引用指向他们, 他们就仍旧是返回值
+的一部份, 数据仍旧存在。如果我们改变或者丢弃 <span class="Comment">@all_with_names</span>
+中的引用, <span class="Comment">Perl</span> 会减少相应的数组的引用计数.如果那意味着引用
+计数降为零（在例中）, <span class="Comment">Perl</span> 一样会把数组销毁.因为 <span class="Comment">@all_with_names</span>
+数组中包含的其它数组同样包含一个引用（如对 <span class="Comment">@skipper</span> 的引
+用）, <span class="Comment">Perl</span> 会把那个引用的计数降为 <span class="Comment">1.</span> 一样, 一旦引用计数降为
+零, <span class="Comment">Perl</span> 会连锁地释放内存。
+
+比较一下这与 <span class="Comment">C</span> 函数中必须返回一个数组.我们要么返回一个指向静
+态内存区域的指针, 使子程序非重入, 或者我们必需分配新内存, 需要调用
+程序知道释放内存. <span class="Comment">Perl</span> 正好做了对的事情。
+
+一般来说, 如果删除了一个复杂数据结构的根数据, 会把其包含的子数
+据全删除. 一个例外就是当我们对其嵌套数据进行了引用. 比如说, 如果
+我们拷贝了 <span class="Comment">Gilligan</span> 的装备：
+
+<span class="PreProc"> my $gilligan_stuff = $all_with_names[2][1];</span>
+
+然后我们删除了 <span class="Comment">@all_with_names</span> , 我们有一个活的引用指向之前
+的 <span class="Comment">@gilligan</span> , 其下的数据也依然在。
+
+底线很清楚：<span class="Comment">Perl</span> 总是做对的事情.如果我们依然有指向数据的引
+用, 我们就仍旧拿着数据。
+
+<span class="Constant">5. 4. 当引用计数出问题了</span>
+
+用引用计数的办法来管理内存长久以来一直很受欢迎.的确使用了很长一
+段时间.引用计数有一个缺点, 就是在数据结构不是单向引用的时候, 它会
+有问题.所谓非单向引用的数据结构就是：这个数据结构中的一些部份引用
+与其指向的数据存在循环引用.比如：这两块数据结构中都有互相指向对方
+的引用（参考图 <span class="Comment">5-1)</span>：
+
+<span class="PreProc"> my @data1 = qw(one won);</span>
+<span class="PreProc"> my @data2 = qw(two too to);</span>
+
+<span class="PreProc"> push @data2, \@data1;</span>
+<span class="PreProc"> push @data1, \@data2;</span>
+
+图 <span class="Comment">5-1.</span> 当一个数据结构中的引用出现循环调用的时候, <span class="Comment">Perl</span> 的
+引用计数系统可能不能识别出来, 从而不能回收不再需要的内存空间
+
+像这种情况, 我们会有两个名字为 <span class="Comment">@data1</span> 中的数据块命名： <span class="Comment">@data1</span>
+自身和 <span class="Comment">@{$data2[3]}</span> , 另外有两个名字为 <span class="Comment">@data2</span> 中的数据
+块命名： <span class="Comment">@data2</span> 自身和 <span class="Comment">@{$data1[2]}.</span> 我们创建了一个循环.实
+际上我们可以用可怕多的下标来访问这块数据：
+<span class="Comment">$data1[2][3][2][3][2][3][1]</span>.
+
+那这两个数组跑出范围会发生什么事？噢, 这两个数组的引用计数会从
+2 降为 1, 但不是 <span class="Comment">0</span>. 正因为没有归到零, <span class="Comment">Perl</span> 会认为仍有引用会指
+向这些数据, 尽管已经没有了. 所以, 我们已经创建了一个内存泄漏.
+一个程序有内存泄漏会导致消耗越来越多的内存, 噢！
+
+现在, 你会想例子总是有意设计出来的.当然, 我们不会在真实的程序中
+有意设计一个引用循环.而实际上, 程序员经常在用双向链表、循环列表或
+其它一些数据结构时创建这些引用循环.问题是 <span class="Comment">Perl</span> 的程序员罕有犯
+这种错误的, 重要的原因是 <span class="Comment">Perl</span> 不太会用到这些数据结构.大多数处理
+内存操作及连接内存碎片的操作已经被 <span class="Comment">Perl</span> 自动处理了.如果你曾使
+用过其它的语言, 你可能会注意到在 <span class="Comment">Perl</span> 中的编程相对比较容易. 比如
+, 对列表中的元素排序或（甚至在列表中间）添加、删除元素都很方便. 同
+样的任务在其它语言中会很困难, 而用循环数据结构是绕开这些语言限制
+的常用方法。
+
+那为什么要在这儿提这些呢？ 是这样的, 因为有些 <span class="Comment">Perl</span> 程序员有
+时也会从其它程序语言中把算法拷贝过来.这样做当然不会继承错误, 尽管
+考虑一下原来作者用&quot;循环&quot;数据结构是为什么, 然后用 <span class="Comment">Perl</span> 的强项来
+处理这什算法.可能你要用个散列, 或用数组, 然后以后进行排序。
+
+另外, 经后的 <span class="Comment">Perl</span> 可能会使用垃圾收集器来代替计数引用. 不过
+到现在, 我们必须注意不要建立循环引用, 或者, 如果我们做的话,
+在变量跑出范围时, 要去掉循环引用.比如, 下面的代码不会造成内存泄
+漏：
+
+不要问我们为什么, 在你有机会读到此书时, 相对我们写书的时间
+已经是很长久了.所以我能不能肯定。
+
+<span class="PreProc"> {</span>
+<span class="PreProc">  my @data1 = qw(one won);</span>
+<span class="PreProc">  my @data2 = qw(two too to);</span>
+<span class="PreProc">  push @data2, \@data1;</span>
+<span class="PreProc">  push @data1, \@data2; . . . use @data1, @data2. . .</span>
+<span class="PreProc">  # at the end:</span>
+<span class="PreProc">  @data1 = ();</span>
+<span class="PreProc">  @data2 = ();</span>
+<span class="PreProc"> }</span>
+
+我们在 <span class="Comment">@data1</span> 中对 <span class="Comment">@data2</span> 的引用, 相反也一样.现在两块数据
+只有一个引用, 在跑出块范围的时候, 引用计数会归零.实际上, 我们清除
+任何一个引用就可以了, 程序一样工作得很好.第 <span class="Comment">13</span> 章会展示如何建
+立弱引用, 可以对这些问题有些帮助。
+
+<span class="Constant">5. 5. 直接建立匿名数组</span>
+
+在早前的 <span class="Comment">get_provisions_list</span> 子程序中（参考 <span class="Comment">5.3</span> 节）, 我
+们建立了半打数组, 而且创建的目的仅仅是为了后面马上要给他们建立引用
+.当子程序退出的时候, 所有数组名将销毁, 但引用还留着。
+
+临时命名的数组, 在简单环境中还可以工作, 但这些名字在数据结构开
+始越来越复杂的情况下会变得比较繁琐.我们应该想到, 正确地处理这些数
+组的名字, 这样我们可以很快就忘掉它。
+
+我们可以用缩小不同数组名的范围的方法来降低命名空间的繁杂性.代替
+在子程序范围内声明变量, 我们可以建立一个临时块：
+
+<span class="PreProc"> my @skipper_with_name;</span>
+<span class="PreProc"> {</span>
+<span class="PreProc">  my @skipper = qw(blue_shirt hat jacket preserver sunscreen);</span>
+<span class="PreProc">  @skipper_with_name = ('The Skipper', \@skipper);</span>
+<span class="PreProc"> }</span>
+
+上例中, <span class="Comment">@skipper_with_name</span> 第二个元素是个指向先前命令的数组
+<span class="Comment">@skipper.</span> 然而, 那个名字现在与程序不再有关系了。
+
+为了仅仅说明&quot;第二个元素应该是个指向一个包括这些元素的引用&quot;, 而
+编上例中这些代码, 好像太麻烦了.我们可以创建一个直接使用匿名数组的
+结构, 即方括号的另一种用法：
+
+<span class="PreProc"> my $ref_to_skipper_provisions =</span>
+<span class="PreProc">  [ qw(blue_shirt hat jacket preserver sunscreen) ];</span>
+
+方括号把内中（相当一在一个列表环境）元素取出来;为这些元素建立一
+个新的, 匿名的数组;并且（这里很重要）返回一个对这个匿名数组的引用
+.就好像我们说过的：
+
+<span class="PreProc"> my $ref_to_skipper_provisions;</span>
+<span class="PreProc"> {</span>
+<span class="PreProc">  my @temporary_name =</span>
+<span class="PreProc">  ( qw(blue_shirt hat jacket preserver sunscreen) );</span>
+<span class="PreProc">  $ref_to_skipper_provisions = \@temporary_name;</span>
+<span class="PreProc"> }</span>
+
+这里, 我们不必需要提供临时变量名字, 也不要讨厌的临时代码块.用方
+括号返回的匿名数组结构就是一个对数组的引用, 并且用在任何标量环境
+中都合适。
+
+现在, 我们可以用它来构建一个更大的列表：
+
+<span class="PreProc"> my $ref_to_skipper_provisions =</span>
+<span class="PreProc">  [ qw(blue_shirt hat jacket preserver sunscreen) ];</span>
+<span class="PreProc"> my @skipper_with_name = ('The Skipper',</span>
+<span class="PreProc">                           $ref_to_skipper_provisions);</span>
+
+甚至, 我们也根本不要那个临时标量.我们可以直接把临时标量替换成数
+组引用, 作为一个更大列表的一部份：
+
+<span class="PreProc"> my @skipper_with_name = (</span>
+<span class="PreProc">  'The Skipper',</span>
+<span class="PreProc">  [ qw(blue_shirt hat jacket preserver sunscreen) ]</span>
+<span class="PreProc"> );</span>
+
+来, 我们回顾一下.我们已经声明了 <span class="Comment">@skipper_with_name</span> , 它的第
+一个元素是 <span class="Comment">Skipper</span> 的名字字串, 第二个元素是一个对数组的引用, 它
+是由把五个元素放到一个数组, 并且取其引用得到的. 所以,
+<span class="Comment">@skipper_with_name</span> 数组仅有两个元素长。
+
+别把这里的方括号和小括号搞混了.它们各有不同的目的.如果我们用小
+括号代替方括号, 我们结果会得到一个六个元素的列表.如果我们将外圈的
+（第一行和最后一行）的小括号用方括号代替, 我们就构建了一个两个元素
+长的匿名数组的引用, 并将其返回给 <span class="Comment">@skipper_with_name</span> 数组.
+这样, 总之, 如果我们有以下的代码：
+
+在教学中, 我们经常会看到在使用引用时犯的直接（或不那么直接）的错误。
+
+<span class="PreProc"> my $fruits;</span>
+<span class="PreProc"> {</span>
+<span class="PreProc">  my @secret_variable = ('pineapple', 'papaya', 'mango');</span>
+<span class="PreProc">  $fruits = \@secret_variable;</span>
+<span class="PreProc"> }</span>
+
+我们可以以此代替：
+
+<span class="PreProc"> my $fruits = ['pineapple', 'papaya', 'mango'];</span>
+
+那么在更复杂的结构中, 这个原则还工作吗？当然！只要是需要一个指
+向数组的引用, 我们就可以创建指向匿名数组的引用.实际上, 我们还可以
+嵌套使用：
+
+<span class="PreProc"> sub get_provisions_list {</span>
+<span class="PreProc">  return (</span>
+<span class="PreProc">    ['The Skipper', [qw(blue_shirt hat jacket </span>
+<span class="PreProc">                        preserver sunscreen)] ],</span>
+<span class="PreProc">    ['The Professor', [qw(sunscreen water_bottle</span>
+<span class="PreProc">                          slide_rule radio)] ],</span>
+<span class="PreProc">    ['Gilligan', [qw(red_shirt hat lucky_socks</span>
+<span class="PreProc">                     water_bottle) ] ],</span>
+<span class="PreProc">  );</span>
+<span class="PreProc"> }</span>
+
+<span class="PreProc"> my @all_with_names = get_provisions_list();</span>
+
+我们由外而内地看一下上面的代码, 我们返回了三个元素.每个元素是一
+个数组引用, 并且是指向有两个元素的匿名数组的引用.内中每个数组第一
+个元素是名字字串, 而第一个元素又是一个变长的匿名数组的引用.而且变
+长数组包括了所有的装备清单, 并且我们不必再提供临时名字作为中间变
+量。
+
+对于调用它的子程序来说, 现在的返回值对于前一个版本是一样的.然而
+, 从代码维护的角度来看, 去掉那些中间名字, 这样降低了复杂性也节省
+了代码占用屏幕空间。
+
+我们也可以将引用指现空的匿名数组.比如, 如果我们加一个 <span class="Comment">Mrs.Howell</span>
+到一个游客列表, 并且它没带多少装备, 我们可以简单的这样写：
+
+<span class="PreProc"> ['Mrs. Howell',</span>
+<span class="PreProc">   [  ]</span>
+<span class="PreProc"> ],</span>
+
+这是一个只有一个元素的大列表.这是一个指向一个具有两个元素的数组
+的引用, 第一个元素是名字字串, 第二个元素自身是个指向空的匿名数组
+的引用.这个数组是空的, 因为 <span class="Comment">Howell</span> 先生为他的旅程什么也没有带。
+
+<span class="Constant">5. 6. 创建匿名散列</span>
+
+同创建匿名数组类似, 你也可以建立一个匿名散列.考虑一下第四章的船
+员注册程序：
+
+<span class="PreProc"> my %gilligan_info = (</span>
+<span class="PreProc">  name     =&gt; 'Gilligan',</span>
+<span class="PreProc">  hat      =&gt; 'White',</span>
+<span class="PreProc">  shirt    =&gt; 'Red',</span>
+<span class="PreProc">  position =&gt; 'First Mate',</span>
+<span class="PreProc"> );</span>
+
+<span class="PreProc"> my %skipper_info = (</span>
+<span class="PreProc">  name     =&gt; 'Skipper',</span>
+<span class="PreProc">  hat      =&gt; 'Black',</span>
+<span class="PreProc">  shirt    =&gt; 'Blue',</span>
+<span class="PreProc">  position =&gt; 'Captain',</span>
+<span class="PreProc"> );</span>
+
+<span class="PreProc"> my @crew = (\%gilligan_info, \%skipper_info);</span>
+
+散列变量 <span class="Comment">%gilligan_info</span> 和 <span class="Comment">%skipper_info</span> 是为了最终数据结构而
+建立的临时变量.下面我们就构造一个对匿名散列的直接引用, 正像我
+们看到的, 花括号的另一项功能.替代代码如下：
+
+<span class="PreProc"> my $ref_to_gilligan_info;</span>
+
+<span class="PreProc"> {</span>
+<span class="PreProc">  my %gilligan_info = (</span>
+<span class="PreProc">    name     =&gt; 'Gilligan',</span>
+<span class="PreProc">    hat      =&gt; 'White',</span>
+<span class="PreProc">    shirt    =&gt; 'Red',</span>
+<span class="PreProc">    position =&gt; 'First Mate',</span>
+<span class="PreProc">  );</span>
+<span class="PreProc">  $ref_to_gilligan_info = \%gilligan_info;</span>
+<span class="PreProc"> }</span>
+
+如果用匿名散列的话：
+
+<span class="PreProc"> my $ref_to_gilligan_info = {</span>
+<span class="PreProc">  name     =&gt; 'Gilligan',</span>
+<span class="PreProc">  hat      =&gt; 'White',</span>
+<span class="PreProc">  shirt    =&gt; 'Red',</span>
+<span class="PreProc">  position =&gt; 'First Mate',</span>
+<span class="PreProc"> };</span>
+
+被花括号括起来的是八个元素的列表.八个元素的列表也就变成了四个元
+素的匿名数组（四个键／值对）。<span class="Comment">Perl</span> 会取这个散列的引用, 并返回
+一个标量值, 并送给一个标量变量.所以我们可以改写程序如下：
+
+<span class="PreProc"> my $ref_to_gilligan_info = {</span>
+<span class="PreProc">  name     =&gt; 'Gilligan',</span>
+<span class="PreProc">  hat      =&gt; 'White',</span>
+<span class="PreProc">  shirt    =&gt; 'Red',</span>
+<span class="PreProc">  position =&gt; 'First Mate',</span>
+<span class="PreProc"> };</span>
+
+<span class="PreProc"> my $ref_to_skipper_info = {</span>
+<span class="PreProc">  name     =&gt; 'Skipper',</span>
+<span class="PreProc">  hat      =&gt; 'Black',</span>
+<span class="PreProc">  shirt    =&gt; 'Blue',</span>
+<span class="PreProc">  position =&gt; 'Captain',</span>
+<span class="PreProc"> };</span>
+
+<span class="PreProc"> my @crew = ($ref_to_gilligan_info, $ref_to_skipper_info);</span>
+
+同前面一样, 我们还是可以避免使用临时变量, 把散列值直接放到列表
+里：
+
+<span class="PreProc"> my @crew = (</span>
+<span class="PreProc">  {</span>
+<span class="PreProc">    name     =&gt; 'Gilligan',</span>
+<span class="PreProc">    hat      =&gt; 'White',</span>
+<span class="PreProc">    shirt    =&gt; 'Red',</span>
+<span class="PreProc">    position =&gt; 'First Mate',</span>
+<span class="PreProc">  },</span>
+
+<span class="PreProc">  {</span>
+<span class="PreProc">    name     =&gt; 'Skipper',</span>
+<span class="PreProc">    hat      =&gt; 'Black',</span>
+<span class="PreProc">    shirt    =&gt; 'Blue',</span>
+<span class="PreProc">    position =&gt; 'Captain',</span>
+<span class="PreProc">  },</span>
+<span class="PreProc"> );</span>
+
+注意列表结束时的元素并非马上连着关闭的花括号, 方括号或小括号,
+而是以逗号结尾.这是很好的编程风格, 因为这样做有利于代码维护.
+我们可以很方便的添加或重排行, 或者不破坏列表完整性的情况下
+注释掉代码。
+
+现在 <span class="Comment">@crew</span> 里所包含的值同先前是一样的, 但不再需要为中间数据
+结构起名字了.就像上一个版本一样, <span class="Comment">@crew</span> 包含两个元素, 每个元素都
+是一个指向一个包含以键为基础的散列, 表示了船上成员的特殊信息。
+
+匿名散列构造器总是把内容放在列表环境, 并把他们以键／值对的形式
+输出, 就像我们分配那个列表给命名散列一样。<span class="Comment">Perl</span> 返回一个那个散列
+的引用, 并将其作为标量值, 并适合任何标量合适的地方。
+
+现在, 下面一些话是从我们的解释器那里来： 因为代码块和匿名散列构
+造器都用花括号, 在语法树中大致相同的位置, 编译器不得不即时判断你
+到底是要用哪一个。 如果编译器没法决定, 就需要你给个暗示, 你到底是
+用哪个。 如果你是要用匿名散列, 那你要在花括号前加一个正号：
++{… }. 如果你是用代码块, 则要在花括号后加上分号：{; … }.
+
+<span class="Constant">5. 7. 自生成</span>
+
+我们重顾一下装备清单.假定我们从一个文件中读取这些数据, 格式如下：
+
+<span class="PreProc"> The Skipper</span>
+<span class="PreProc">  blue_shirt</span>
+<span class="PreProc">  hat</span>
+<span class="PreProc">  jacket</span>
+<span class="PreProc">  preserver</span>
+<span class="PreProc">  sunscreen</span>
+<span class="PreProc"> Professor</span>
+<span class="PreProc">  sunscreen</span>
+<span class="PreProc">  water_bottle</span>
+<span class="PreProc">  slide_rule</span>
+<span class="PreProc"> Gilligan</span>
+<span class="PreProc">  red_shirt</span>
+<span class="PreProc">  hat</span>
+<span class="PreProc">  lucky_socks</span>
+<span class="PreProc">  water_bottle</span>
+
+我们把装备用空格缩进表示, 没有缩进的行是旅客名字.我们来建立一个
+装备清单.索引键是旅客名字, 其值是一个指向装备列表的引用。
+
+起先, 我们用一个简单的循环收集数据：
+
+<span class="PreProc"> my %provisions;</span>
+<span class="PreProc"> my $person;</span>
+
+<span class="PreProc"> while (&lt;&gt;) {</span>
+<span class="PreProc">  if (/^(\S. *)/) { # a person's name (no leading whitespace)</span>
+<span class="PreProc">    $person = $1;</span>
+<span class="PreProc">    $provisions{$person} = [] unless exists $provisions{$person};</span>
+<span class="PreProc">  } elsif (/^\s+(\S. *)/) { # a provision</span>
+<span class="PreProc">    die 'No person yet!' unless defined $person;</span>
+<span class="PreProc">    push @{ $provisions{$person} }, $1;</span>
+<span class="PreProc">  } else {</span>
+<span class="PreProc">    die &quot;I don't understand: $_&quot;;</span>
+<span class="PreProc">  }</span>
+<span class="PreProc"> }</span>
+
+首先, 我们定义一个变量来保存结果散列中的乘客及他们的清单.对于读
+出的每一行, 我们先判断它是乘客还是装备.如果是乘客, 我们记下姓名并
+为那个乘客创建散列元素。<span class="Comment">unless</span> <span class="Comment">exists</span> 测试来保证在一个乘客
+的装备在文件中分两块地方放的时候, 我们不会把他的装备清单删掉。
+
+例如, 假定 <span class="Comment">&quot;The</span> <span class="Comment">skipper&quot;</span> 和 <span class="Comment">&quot;sextant&quot;(</span> 注意前导空格)
+放在文件末尾, 作为增补的项目。
+
+如果把乘客的名字作为键, 值是指向一个空数组的引用.如果读入的行是
+装备, 则使用引用数组, 把它推入当前的数组。
+
+这样的代码运行得很好, 但实际上它不需要写那么多.为什么？ 因为我
+们可以把初始化指向数据的散列引用的地方去掉：
+
+<span class="PreProc"> my %provisions;</span>
+<span class="PreProc"> my $person;</span>
+
+<span class="PreProc"> while (&lt;&gt;) {</span>
+<span class="PreProc">  if (/^(\S. *)/) { # a person's name (no leading whitespace)</span>
+<span class="PreProc">    $person = $1;</span>
+<span class="PreProc">    ## $provisions{$person} = [] unless exists $provisions{$person};</span>
+<span class="PreProc">  } elsif (/^\s+(\S. *)/) { # a provision</span>
+<span class="PreProc">    die 'No person yet!' unless defined $person;</span>
+<span class="PreProc">    push @{ $provisions{$person} }, $1;</span>
+<span class="PreProc">  } else {</span>
+<span class="PreProc">    die &quot;I don't understand: $_&quot;;</span>
+<span class="PreProc">  }</span>
+<span class="PreProc"> }</span>
+
+那现在, 我们要把蓝衬衣放到 <span class="Comment">Skipper</span> 的装备清单时会发生什么呢
+？ 当查看第二项输入时, 我们结果可以看到如下的效果：
+
+<span class="PreProc"> push @{ $provisions{'The Skipper'} }, &quot;blue_shirt&quot;;</span>
+
+在这时候, <span class="Comment">$provisions{&quot;The</span> <span class="Comment">Skipper&quot;}</span> 并不存在, 但我们正在
+把它作为一个数组引用来处理.为了解决这种情况, <span class="Comment">Perl</span> 自动为我们创
+建一个指向家的匿名数组的引用来继续操作.在此例中, 新的指向空数组的
+引用被创建, 并被还原, 我们再把蓝衬衫放进去, 生成了一个装备清单。
+
+这样的处理叫做：自生成.任何一个不存在的变量, 或个存有 <span class="Comment">undef</span>
+的变量, 当被用来查找一个变量的时候（技术上被称为左值环境）, 会自
+动被适当的生成空项引用, <span class="Comment">Perl</span> 然后再让处理继续。
+
+实际上, 我们在使用 <span class="Comment">Perl</span> 时, 到处都会有相似的行为.只要有需要
+, <span class="Comment">Perl</span> 会自动创建变量.在这之前, <span class="Comment">$provisions{&quot;The</span> <span class="Comment">Skipper&quot;}</span>
+不存在, 所以 <span class="Comment">Perl</span> 就创建它.后来 <span class="Comment">@{$provisions{&quot;The Skipper&quot;}}</span>
+不存在, 所以 <span class="Comment">Perl</span> 故伎重演。
+
+比如, 下面在代码是工作的：
+
+<span class="PreProc"> my $not_yet;                # new undefined variable</span>
+<span class="PreProc"> @$not_yet = (1, 2, 3);</span>
+
+这儿, 我们还原了 <span class="Comment">$not_yet</span> 这个值, 好像它原先是一个指向数组的
+引用一样.但因为它初始化是 <span class="Comment">undef</span> , <span class="Comment">Perl</span> 的行为好像我们说过的
+：
+
+<span class="PreProc"> my $not_yet;</span>
+<span class="PreProc"> $not_yet = [  ]; # inserted through autovivification</span>
+<span class="PreProc"> @$not_yet = (1, 2, 3);</span>
+
+换句话说, 一个初始化的空的数组成为一个有三个元素的数组。
+
+在多层赋值时, 自生成也起作用：
+
+<span class="PreProc"> my $top;</span>
+<span class="PreProc"> $top-&gt;[2]-&gt;[4] = 'lee-lou';</span>
+
+初始时, <span class="Comment">$top</span> 含有一个 <span class="Comment">undef</span> , 但因为我们还原它, 就像它是
+一个数组引用一样, <span class="Comment">Perl</span> 往里插了一个空的匿名数组的引用 <span class="Comment">.Perl</span>
+然后访问第三个元素(索引为 <span class="Comment">2)</span> , 这导致 <span class="Comment">Perl</span> 撑大数组到三个元
+素长.那个元素同样是 <span class="Comment">undef</span> , 所以 <span class="Comment">Perl</span> 用另外一个指向空的匿
+名数组的引用放进去.我们然后分拆那个新建的数组, 把第五个元素放
+<span class="Comment">lee-lou</span> 这个字串。
+
+<span class="Constant">5. 8. 自生成功能与散列</span>
+
+在散列引用中, 自生成功能也起作用.如果我们还原一个含有 <span class="Comment">undef</span>
+的变量, 就好像它是一个散列引用一样, 那么一个指向空的匿名散列的引
+用就会被插入, 让操作继续下去。
+
+自生成功能一大用处是在那些典型的单向读取的任务（消防水带）。 比
+如说, 假设教授要建立一个岛间的网络.现在他要跟踪主机与主机之间的流
+量。 他现在开始把之间传输的字间记录到日志文件.记录源主机, 目标主
+机和传输的字节数:
+
+<span class="PreProc"> professor. hut gilligan. crew. hut 1250</span>
+<span class="PreProc"> professor. hut lovey. howell. hut 910</span>
+<span class="PreProc"> thurston. howell. hut lovey. howell. hut 1250</span>
+<span class="PreProc"> professor. hut lovey. howell. hut 450</span>
+<span class="PreProc"> professor. hut laser3. copyroom. hut 2924</span>
+<span class="PreProc"> ginger. girl. hut professor. hut 1218</span>
+<span class="PreProc"> ginger. girl. hut maryann. girl. hut 199 ...</span>
+
+现在, 教授要生成一个有关源主机,目标主机和总传输字节数的报表。
+把数据列表显示出来：
+
+<span class="PreProc"> my %total_bytes;</span>
+<span class="PreProc"> while (&lt;&gt;) {</span>
+<span class="PreProc">   my ($source, $destination, $bytes) = split;</span>
+<span class="PreProc">   $total_bytes{$source}{$destination} += $bytes;</span>
+<span class="PreProc"> }</span>
+
+让我们看第一行如何生成的：
+
+<span class="PreProc"> $total_bytes{'professor.hut'}{'gilligan.crew.hut'} += 1250;</span>
+
+因为散列 <span class="Comment">%total_bytes</span> 初始时是空的, <span class="Comment">Perl</span> 没有找到第一个以
+<span class="Comment">professor.hut</span> 命名的键, 但它会为了还原而建立一个未定义值作为
+散列引用.（记住, 这里在花括号间有隐含的箭头.） <span class="Comment">Perl</span> 会在那个元
+素里放个指向空值的匿名散列, 这样它可以立即扩展数组, 将把
+<span class="Comment">gilligan.crew.hut</span> 作为一个元素放入.它的初始值是未定义值, 与零等同,
+而当你把 <span class="Comment">1250</span> 与它相加的时候, 其相加的结果 <span class="Comment">1250</span> 也放回散列。
+
+任何后来的数据行, 如果有相同的源主机和目标主机, 都会重用原来的
+值, 并加上新读入的值, 再计算出总数.但是新的目标主机会扩展散列来包
+括一个新的初始未定义值, 重新计数, 每个新的源主机会用自生成功能建立
+目标主机散列.换句话说, <span class="Comment">Perl</span> 总是做对的事情, 就像它一直表现的那
+样。
+
+一旦我们处理完文件, 应该是显示总计的时候了.首先, 我们取源主机：
+
+<span class="PreProc"> for my $source (keys %total_bytes) { ...</span>
+
+好, 现在我们取所有的目标主机.这里的语法有些&quot;搞 <span class="Comment">&quot;.</span> 我们用散列
+元素还原出来的值作为键来取目标主机, 比如：
+
+<span class="PreProc"> for my $source (keys %total_bytes) {</span>
+<span class="PreProc">   for my $destination (keys %{ $total_bytes{$source} }) { ...</span>
+
+为了好的效率, 我们应该对列表进行排序, 以保持一致性：
+
+<span class="PreProc"> for my $source (sort keys %total_bytes) {</span>
+<span class="PreProc">  for my $destination (sort keys %{ $total_bytes{$source} }) {</span>
+<span class="PreProc">    print &quot;$source =&gt; $destination:&quot;,</span>
+<span class="PreProc">     &quot; $total_bytes{$source}{$destination} bytes\n&quot;;</span>
+<span class="PreProc">  }</span>
+<span class="PreProc">  print &quot;\n&quot;;</span>
+<span class="PreProc"> }</span>
+
+这是一个典型的 <span class="Comment">消防水带</span> 式的报表生成策略. 简单地建立一个散
+列引用的散列（还可以嵌套更深, 后面你就可以看到）, 运用自生成功能
+, 根据需要填充数据结构, 然后遍历结果数据, 打印输出结果。
+
+<span class="Constant">5. 9. 习题</span>
+
+附录部份可以找到答案
+
+<span class="Constant">5. 9. 1. 练习 1 </span><span class="Comment">[5</span><span class="Constant"> 分钟]</span>
+
+先不要运行程序, 看看你能否判断出这程序的哪部份出了问题？如果你
+看不出来, 就可以运行一相程序, 得到些暗示, 来看是否能修改好：
+
+<span class="PreProc"> my %passenger_1 = {</span>
+<span class="PreProc">  name       =&gt; 'Ginger',</span>
+<span class="PreProc">  age        =&gt; 22,</span>
+<span class="PreProc">  occupation =&gt; 'Movie Star',</span>
+<span class="PreProc">  real_age   =&gt; 35,</span>
+<span class="PreProc">  hat        =&gt; undef,</span>
+<span class="PreProc"> };</span>
+
+<span class="PreProc"> my %passenger_2 = {</span>
+<span class="PreProc">  name          =&gt; 'Mary Ann',</span>
+<span class="PreProc">  age           =&gt; 19,</span>
+<span class="PreProc">  hat           =&gt; 'bonnet',</span>
+<span class="PreProc">  favorite_food =&gt; 'corn',</span>
+<span class="PreProc"> };</span>
+
+<span class="PreProc"> my @passengers = (\%passenger_1, \%passenger_2);</span>
+
+<span class="Constant">5. 9. 2. 练习2 ［ </span><span class="Comment">40</span><span class="Constant"> 分钟］</span>
+
+教授的数据文件（注意早先这章提到的）叫 <span class="Comment">coconet.dat</span> , 保存在
+<span class="Comment">O'Reilly</span> 的网站上, 你可以下载.有些行可能被注释了一些行（用前导
+＃号）;跳过这些行.（就是说, 你的程序可以跳过他们, 不过你阅读这些
+行还有很有益的！）
+
+修改一下这章的那段程序, 使每个源主机显示所有从它那里输出的字节
+数.以字节数从大到小排.对于每一组中, 以所有目标主机, 也以传输到此目
+标主机的字节数以大到小排。
+
+其最终的结果就是列出传输最多的源主机, 然后以此源主机为组, 接收
+最多的目标主机排在最前。 教授可以以此报表来重新安排网络效率.
+</pre>
+</body>
+</html>

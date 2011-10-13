@@ -1,0 +1,60 @@
+=head0 Managing Real Programs
+
+Z<writing_real_programs>
+
+Writing simple example programs to solve example problems in a book helps you
+learn a language in the small.  Yet writing real programs requires more than
+learning the syntax of a language, or its design principles, or even how to
+find and use its libraries.
+
+Practical programming requires you to manage code: to organize it, to know that
+it works, to make it robust in the face of errors of logic or intent, and to do
+all of this in a concise, clear, and maintainable fashion.  Fortunately, modern
+Perl provides many tools and techniques to write real programs--from testing to
+the organization of your source code.
+
+L<testing>
+
+L<handling_warnings>
+
+L<files>
+
+L<modules>
+
+L<distributions>
+
+L<universal>
+
+L<code_generation>
+
+L<overloading>
+
+L<taint>
+=encoding utf8
+
+=head0 管理现实世界中的程序
+
+Z<writing_real_programs>
+
+编写简单的示例程序来解决本书中的示例问题有助你从小处学习一门语言。编写现实世界
+中的程序则提出了比学习语言语法、或其设计原理，甚至是查找并使用语言库更高的要求。
+
+实际编程要求你管理自己的代码：组织代码、了解其如何运作、让它在错误的意图和逻辑面
+前更为健壮、并以一种理性、清晰、可维护的方式完成以上目的。所幸的是，现代化的 Perl
+为编写实际应用────从测试到组织源码────提供了许多工具和技巧。
+
+L<testing>
+
+L<handling_warnings>
+
+L<modules>
+
+L<distributions>
+
+L<universal>
+
+L<code_generation>
+
+L<overloading>
+
+L<taint>

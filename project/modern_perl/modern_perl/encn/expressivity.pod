@@ -1,0 +1,220 @@
+=head1 Expressivity
+
+Z<expressivity>
+
+X<Wall, Larry>
+X<Larry Wall>
+
+When Larry Wall created Perl, his studies of linguistics and human languages
+influenced his design. Notably, Perl allows you tremendous freedom to solve
+problem, depending on your group style, the available time, the expected
+lifespan of the program, or even how creative you feel. You may write simple,
+straightforward code or integrate into larger, well-defined programs. You may
+select from multiple design paradigms, and you may eschew or embrace advanced
+features.
+
+Where other languages might suggest that one enforced way to write any
+operation is the right solution, Perl allows you to optimize for your most
+important criteria.
+
+X<TIMTOWTDI>
+X<Tim Toady>
+
+Perl hackers have a slogan for this: I<TIMTOWTDI>, pronounced "Tim Toady", or
+"There's more than one way to do it!"
+
+Though this expressivity allows master craftworkers to create amazing programs,
+it allows the unwise or uncautious to make messes. Experience and good taste
+will guide you to write great code. The choice is yours--but be mindful of
+readability and maintainability, especially for those who come after you.
+
+Perl novices often may find certain constructs opaque. Many of the these idioms
+(L<idioms>) offer great (if subtle) power. It's okay to avoid them until you're
+comfortable with them.
+
+=begin sidebar
+
+Learning Perl is like learning a new spoken language. You'll learn a few words,
+string together sentences, and soon will enjoy simple conversations.  Mastery
+comes with practice of reading and writing. You don't have to understand every
+details of Perl to be productive, but the principles in this chapter are vital
+to your growth as a programmer.
+
+=end sidebar
+
+As another design goal, Perl tries to avoid surprising experienced (Perl)
+programmers.  For example, adding two variables (C<$first_num + $second_num>)
+is obviously a numeric operation (L<numeric_operators>); the addition operator
+must treat both as numeric values to produce a numeric result. No matter the
+contents of C<$first_num> and C<$second_num>, Perl will coerce them to numeric
+values (L<numeric_coercion>). You've expressed your intent to treat them as
+numbers by using a numeric operator. Perl happily does so.
+
+X<DWIM>
+X<principle of least astonishment>
+
+Perl adepts often call this principle I<DWIM>, or I<do what I mean>.  Another
+phrasing is that Perl follows the I<principle of least astonishment>.  Given a
+cursory understanding of Perl (especially context; L<context_philosophy>), it
+should be possible to understand the intent of an unfamiliar Perl expression.
+You will develop this skill.
+
+X<baby Perl>
+
+Perl's expressivity also allows novices to write useful programs without having
+to understand everything. The resulting code is often called I<baby Perl>, in
+the sense that most everyone wants to help babies learn to communicate well.
+Everyone begins as a novice. Through practice and leaning from more experienced
+programmers, you will understand and adopt more powerful idioms and techniques.
+
+For example, a Perl novice might triple a list of numbers by writing:
+
+=begin programlisting
+
+    my @tripled;
+    my $count = @numbers;
+
+    for (my $i = 0; $i < $count; $i++)
+    {
+        $tripled[$i] = $numbers[$i] * 3;
+    }
+
+=end programlisting
+
+A Perl adept might write:
+
+=begin programlisting
+
+    my @tripled;
+
+    for my $num (@numbers)
+    {
+        push @tripled, $num * 3;
+    }
+
+=end programlisting
+
+An experienced Perl hacker might write:
+
+=begin programlisting
+
+    my @tripled = map { $_ * 3 } @numbers;
+
+=end programlisting
+
+Experience writing Perl will help you to focus on I<what> you want to do rather
+than I<how> to do it. Even so, Perl will happily run simple programs. You can
+design and refine your programs for clarity, expressivity, reuse, and
+maintainability, in part or in whole. Take advantage of this flexibility and
+pragmatism: far better to accomplish your task effectively now than to write a
+conceptually pure and beautiful program next year.
+=encoding utf8
+
+=head1 表达力
+
+Z<expressivity>
+
+X<Wall, Larry>
+X<Larry Wall>
+
+在 Larry Wall 创造 Perl 之前，他研究的是语言学和人类语言。他的经历持续地影响着 
+Perl 的设计。因项目的风格、编写程序的可用时间、所期望的维护代价，甚至是你
+个人的表达能力的不同，编写一个 Perl 程序的方法是多种多样的。你可以采用直截了当
+、自顶而下的风格。你可能编写很多小而独立的函数。你可能会用类和对象对你的问题建模。
+你也可以避让或拥抱 Perl 的高级功能。
+
+X<TIMTOWTDI>
+X<Tim Toady>
+
+Perl 黑客们对此有句口号，I<TIMTOWTDI>，发音为“Tim Toady”, 或作 "There's more 
+than one way to do it!"
+
+这种表达力提供了一个大型调色盘，用它巨匠可以创造出惊人的、宏大的建筑物，仅将各
+式技巧不明智地堆砌起来只能阻碍代码的可维护性和易读性。你可以写出优秀或者一塌糊
+涂的代码。选择权在你这里。N<……但是如果你必须弄得一塌糊涂，那么对其他人好一点>。
+
+其他语言也许会建议说，按一条强制的指导思想走每一步路才是解决问题的正途。Perl 允许
+你针对最重要的标准进行优化。在问题的范围之内，你可以选择若干合适的方法────但是注
+意一下可读性和未来的可维护性。
+
+作为一个 Perl 的新手，你可能会觉得某些结构难易理解。Perl 社区已经总结并推出了
+不少强大的惯用语 (L<idioms>)。别指望一下就能理解它们。Perl 的一些特性以微妙的方
+式互相联系着。
+
+=begin sidebar
+
+学习 Perl 就好像在学习一门第二或第三口语。你会学到一些单词，然后将它们串起来构
+成句子，最终能够进行一小段简单的对话。熟能生巧，读也一样，写也一样。你不用一次性
+理解本章的所有细节就能够写出卓有成效的 Perl 程序。当你阅读本书余下部分时，请记住
+这些原则。
+
+=end sidebar
+
+另一个 Perl 的设计目标是，尽可能不使有经验的 (Perl) 程序员吃惊。举例来说，用一个
+数值操作符将两个标量相加(C<$first_num + $second_num>) 很显然是一次数值的操作，该
+操作符必须按数值对待这两个标量来产生数值结果。无论 C<$first_num> 和 C<$second_num>
+中的内容是什么，也不必用户或程序员手动操作，Perl 会将它们强制转为数值(L<numeric_coercion>) 。
+你已经通过选择数值操作符 (L<numeric_operators>)表达了你想将它们用作数值的意图，因
+此 Perl 很高兴地替你处理后续工作。
+
+X<DWIM>
+X<principle of least astonishment>
+
+一般而言，Perl 程序员可以期望 Perl 能完成他们想要 Perl 完成的事，这便是 I<DWIM>--
+I<do what I mean> 的意思。你也能见到另一种提法 I<最小惊奇原则>。对 Perl 有个粗略的
+了解之后（特别是它的 L<context_philosophy> ），在读到一个不熟悉的 Perl 表达式时，就
+有可能猜出它的意图。
+
+X<baby Perl>
+
+如果你刚接触 Perl，你将渐渐培养出这种技能。Perl 表达力的反面就是，新手在学全 Perl 
+强大功能之前就可以写出有用的程序。Perl 社区通常将此称作 I<baby Perl>。虽然它可能听
+上去有些轻蔑，但请千万别生气，每个人都是这样过来的。抓住向更有经验程序员学习的机会，
+并对你不理解的惯用语和结构（向他们）索求解释。
+
+=begin sidebar
+
+一个 Perl 新手可能会按下面的方法把列表中所有的元素乘以三：
+
+=begin programlisting
+
+    my @tripled;
+    my $count = @numbers;
+
+    for (my $i = 0; $i < $count; $i++)
+    {
+        $tripled[$i] = $numbers[$i] * 3;
+    }
+
+=end programlisting
+
+一个 Perl 内行可能会这样写：
+
+=begin programlisting
+
+    my @tripled;
+
+    for my $num (@numbers)
+    {
+        push @tripled, $num * 3;
+    }
+
+=end programlisting
+
+一个经验丰富的 Perl 黑客可能会这样写：
+
+=begin programlisting
+
+    my @tripled = map { $_ * 3 } @numbers;
+
+=end programlisting
+
+编写 Perl 程序的经验将会帮助你专注于要做什么而非怎么做。
+
+=end sidebar
+
+Perl 是一门有意随着你对编程理解程度的增长而成长的语言。它不会因写出简单的程序而惩罚你。
+它允许你为了直接明了、富表达力、代码重用和可维护性来完善、扩展你的程序。好好利用这条哲学。
+出色地完成你的任务比写出概念上纯美的程序更为重要。
+
+本书余下部分展示如何按对你有利的方式使用 Perl。

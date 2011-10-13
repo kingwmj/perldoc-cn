@@ -1,0 +1,236 @@
+=head0 *Preface
+
+I<Modern Perl> is one way to describe the way the world's most effective Perl 5
+programmers work. They use language idioms. They take advantage of the CPAN.
+They show good taste and craft to write powerful, maintainable, scalable,
+concise, and effective code. You can learn these skills too!
+
+Perl first appeared in 1987 as a simple tool for system administration. Though
+it began by declaring and occupying a comfortable niche between shell scripting
+and C programming, it's become a powerful, general-purpose language family.
+Perl 5 has a solid history of pragmatism and a bright future of polish and
+enhancementN<Perl 6 is a reinvention of programming based on the solid
+principles of Perl, but it's a subject of another book.>.
+
+Over Perl's long history--especially the 17 years of Perl 5--our understanding
+of what makes great Perl programs has changed. While you can write productive
+programs which never take advantage of all the language has to offer, the
+global Perl community has invented, borrowed, enhanced, and polished ideas and
+made them available to anyone willing to learn them.
+
+the worldwide Perl 5 community has invented, polished, and discovered are
+shorter, faster, more powerful, and easier to maintain than their alternatives.
+
+=head1 Running Modern Perl
+
+=begin sidebar
+
+The Modern::Perl module from the CPAN (L<cpan>) asks Perl to warn of dubious
+constructs and typos and will enable new features introduced in modern releases
+of Perl 5. Assume every example in this book begins with:
+
+=begin programlisting
+
+    use Modern::Perl;
+
+=end programlisting
+
+If you cannot yet install this module, you may start your programs with the
+rough equivalent:
+
+=begin programlisting
+
+    use 5.012;
+    use strict;
+    use warnings;
+    use autodie;
+
+=end programlisting
+
+=end sidebar
+
+Unless otherwise mentioned, code snippets always assume the basic skeleton of a
+program:
+
+=begin programlisting
+
+    #!/usr/bin/perl
+
+    use Modern::Perl;
+
+    # example code here
+    ...
+
+=end programlisting
+
+Other code snippets use testing functions such as C<ok()>, C<like()>, and
+C<is()> (L<testing>).  That skeleton program is:
+
+=begin programlisting
+
+    #!/usr/bin/perl
+
+    use Modern::Perl;
+    B<use Test::More;>
+
+    # example code here
+    ...
+    done_testing();
+
+=end programlisting
+
+At the time of writing, the current stable Perl 5 release family is Perl 5.14.
+The examples in this book work best with Perl 5.12.0 or newer. Many examples
+will work on older versions of Perl 5 with modest changes, but you will have
+more difficulty with anything older than 5.10.0.
+
+X<Strawberry Perl>
+X<ActivePerl>
+X<perlbrew>
+X<CPAN; C<App::perlbrew>>
+
+If you have no Perl 5 installed (or if you have an old version installed), you
+can install a newer release yourself. Windows users, download Strawberry Perl
+from U<http://www.strawberryperl.com/> or ActivePerl from
+U<http://www.activestate.com/activeperl>. Users of other operating systems with
+Perl 5 already installed (and a C compiler and the other development tools),
+start by installing the CPAN module C<App::perlbrew>N<See
+U<http://search.cpan.org/perldoc?App::perlbrew> for installation
+instructions.>.
+
+C<perlbrew> allows you to install and manage multiple versions of Perl 5. This
+allows you to switch between versions of Perl 5 as well as to install Perl 5
+and CPAN modules in your home directory without affecting the system's version.
+If you've ever had to beg your system administrator for permission to install
+software, you know how much easier your life can be now.
+
+=head1 Credits
+
+This book would not have been possible without questions, comments,
+suggestions, advice, wisdom, and encouragement from many, many people. In
+particular, the author and editor thank:
+
+John SJ Anderson, Peter Aronoff, Lee Aylward, Alex Balhatchet, Ævar Arnfjörð
+Bjarmason, Matthias Bloch, John Bokma, Vasily Chekalkin, Dmitry Chestnykh, E.
+Choroba, Paulo Custodio, Felipe, Shlomi Fish, Jeremiah Foster, Mark Fowler,
+John Gabriele, Andrew Grangaard, Bruce Gray, Ask Bjørn Hansen, Tim Heaney,
+Robert Hicks, Michael Hind, Mark Hindess, Yary Hluchan, Mike Huffman, Curtis
+Jewell, Mohammed Arafat Kamaal, James E Keenan, Yuval Kogman, Jan Krynicky,
+Jeff Lavallee, Moritz Lenz, Jean-Baptiste Mazon, Josh McAdams, Gareth
+McCaughan, John McNamara, Shawn M Moore, Alex Muntada, Carl Mäsak, Chris
+Niswander, Nelo Onyiah, Chas. Owens, ww from PerlMonks, Jess Robinson, Dave
+Rolsky, Gabrielle Roth, Andrew Savige, Lorne Schachter, Dan Scott, Alexander
+Scott-Johns, Phillip Smith, Christopher E. Stith, Mark A. Stratman, Bryan
+Summersett, Audrey Tang, Scott Thomson, Ben Tilly, Sam Vilain, Larry Wall,
+Colin Wetherbee, Frank Wiegand, Doug Wilson, Sawyer X, David Yingling, Marko
+Zagozen, harleypig, hbm, and sunnavy.
+
+Any remaining errors are the fault of the stubborn author.
+=encoding utf8
+
+=head0 Preface
+
+今年晚些时候，Perl 就 23 岁了。 这门语言已经由介于 Shell 脚本和 C 程序之间(Perl 1)的
+简易系统管理工具，转变成为一种强大的通用编程语言。他承接着丰富的代码资产(Perl 5)，并在
+对通用编程的不断反思中，续写又一个 25 年的辉煌(Perl 6)。
+
+尽管如此，Perl 语言提供的强大特性还是未能得到现存大部分 Perl 5 程序的充分利用。你 I<可以> 
+写出与Perl 4（或Perl 3或Perl 2或Perl 1）相仿的 Perl 5 程序，但用到整个 Perl 5 社区已经
+发明、发扬、发现的神奇特性的程序，会更短、更快、更强大，相比其它版本，也更易维护。 
+
+I<Modern Perl> 仅是对老练而高效的Perl 5程序员的工作方式的一种粗略描述。他们使用惯用语。
+他们充分利用CPAN。他们的程序带有明显的 “Perl 的味道”，他们展现出对事物的良好品味、独到的匠心
+以及对 Perl 通透的理解。
+
+你也可以学着成为这样的Perl程序员。
+
+=head0 运行 Modern Perl
+
+除非另作说明，每一处代码片段总是假设如下基本程序框架：
+
+=begin programlisting
+
+    #!/usr/bin/perl
+
+    use Modern::Perl;
+
+    # 这里是示例代码
+    ...
+
+=end programlisting
+
+=begin sidebar
+
+Modern::Perl 模块可以从 CPAN 获取。你可以自行安装它，或用如下代码代替：
+
+=begin programlisting
+
+    use strict;
+    use warnings;
+    use 5.010;
+
+=end programlisting
+
+其余用到诸如 C<ok()>, C<like()>, 及 C<is()> (L<testing>) 等测试函数的代码片段，该框架则为：
+
+=begin programlisting
+
+    #!/usr/bin/perl
+
+    use Modern::Perl;
+    B<use Test::More;>
+
+    # 这里是示例代码
+    ...
+    done_testing();
+
+=end programlisting
+
+书中给出的例子假设你正使用 Perl 5.10 或更新版本，理想的话至少是 Perl 5.10.1。许多例子经适当
+修改就可以在 Perl 5 的早期版本上运行，但是早于 Perl 5.10.0 的版本会给你带来更多的困难。本书
+同样描述（但不 I<要求> 使用）Perl 5.12 中新引入的功能。
+
+你通常可以自行安装一份最新的 Perl。Windows 用户可以从 U<http://www.strawberryperl.com/> 下载
+Strawberry Perl。操作系统自带 Perl 5（以及 C 编译器还有其他一些开发工具）的用户，可以以安装 CPAN 
+模块 C<App::perlbrew> N<安装指南参见 U<http://search.cpan.org/perldoc?App::perlbrew>> 作为开始.
+
+C<perlbrew> 允许你安装并管理多个版本的 Perl 5。默认地。它将它们安装在你的家目录下。你不仅可以
+在不影响系统自带 Perl 的情况下拥有多个版本的 Perl 5，而且不用劳烦系统管理员给你特定权限，就
+可以把你喜欢的任何模块安装到这些目录中。
+
+=head1 Perl 5 和 Perl 6
+
+你应该学习 Perl 5 还是 Perl 6？它们有着同样的哲学和语法以及库和社区，它们有各自合适的位置。如果：
+
+=over 4
+
+=item * 你有现成的 Perl 5 代码要维护
+
+=item * 你需要利用 CPAN 模块
+
+=item * 你的部署策略要求严格的稳定性
+
+=back
+
+那么学 Perl 5 吧。如果：
+
+=over 4
+
+=item * 你对频繁升级习以为常
+
+=item * 你能够承受试验新语法和新功能
+
+=item * 你需要的功能仅由 Perl 6 提供
+
+=item * 你可以为它的开发做出贡献（无论是补丁、缺陷报告、文档、赞助或其他资源）
+
+=back
+
+那么学 Perl 6 吧。
+
+一般说来，Perl 5 的开发会保持有关核心语言的部分。有好有坏，变化产生得相当缓慢。Perl 6 更
+具实验性质，它更注重找到最合理的设计而非保证旧的代码可以工作。所幸的是，你可以学习并使用
+两者（并且它们影响着互相进步）。
+
+本书讨论 Perl 5。如要学习 Perl 6，请浏览 U<http://perl6.org/>，试用 Rakudo（U<http://www.rakudo.org/>），
+并参考同样由 Onyx Neon Press 出版的 I<Using Perl 6> 一书。

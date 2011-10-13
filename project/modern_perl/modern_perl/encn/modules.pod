@@ -1,0 +1,556 @@
+=head1 Modules
+
+Z<modules>
+
+X<modules>
+
+A I<module> is a package contained in its own file and loadable with C<use> or
+C<require>.  A module must be valid Perl 5 code.  It must end with an
+expression which evaluates to a true value so that the Perl 5 parser knows it
+has loaded and compiled the module successfully.
+
+There are no other requirements, only strong conventions.
+
+X<C<::>; package name separator>
+
+Packages correspond to files on disk in that when you load a module with C<use>
+or C<require>'s bareword form, Perl splits the package name on double-colons
+(C<::>) and turns the components of the package name into a file path.  Thus:
+
+=begin programlisting
+
+    use StrangeMonkey;
+
+=end programlisting
+
+... causes Perl to search for a file named F<StrangeMonkey.pm> in every
+directory in C<@INC>, in order, until it finds one or exhausts the list.  As
+well:
+
+=begin programlisting
+
+    use StrangeMonkey::Persistence;
+
+=end programlisting
+
+... causes Perl to search for a file named C<Persistence.pm> in every directory
+named F<StrangeMonkey/> present in every directory in C<@INC>, and so on.
+Finally:
+
+=begin programlisting
+
+    use StrangeMonkey::UI::Mobile;
+
+=end programlisting
+
+... causes Perl to search for a relative file path of
+F<StrangeMonkey/UI/Mobile.pm> in every directory in C<@INC>.  There is no
+I<technical> requirement that the file at that location contain any C<package>
+declaration, let alone a C<package> declaration of
+C<StrangeMonkey::UI::Mobile>.  Maintenance concerns highly recommend that
+convention, however.
+
+=begin sidebar
+
+C<perldoc -l Module::Name> will print the full path to the relevant F<.pm>
+file, provided that the I<documentation> for that module exists in the F<.pm>
+file.
+
+=end sidebar
+
+=head2 Using and Importing
+
+Z<import>
+
+X<builtins; C<use>>
+X<C<import()>>
+X<C<CGI>>
+X<C<feature> pragma>
+X<pragmas; C<feature>>
+
+When you load a module with the C<use> builtin, Perl loads it from disk, then
+calls its C<import()> method, passing any arguments you provided.  This occurs
+at compilation time:
+
+=begin programlisting
+
+    use strict;                  # calls strict->import()
+    use CGI ':standard';         # calls CGI->import( ':standard' )
+    use feature qw( say switch ) # calls feature->import( qw( say switch ) )
+
+=end programlisting
+
+You do not have to provide an C<import()> method, and you may use it to do
+anything you wish, but the standard API expectation is that it takes a list of
+arguments of symbols (usually functions) to make available in the calling
+namespace.  This is not a strong requirement; pragmas (L<pragmas>) such as
+C<strict> use arguments to change their behavior instead of exporting symbols.
+
+X<builtins; C<no>>
+X<unimporting>
+
+The C<no> builtin calls a module's C<unimport()> method, if it exists, passing
+any arguments.  While it's possible to remove exported symbols, it's more
+common to disable specific features of pragmas and other modules which
+introduce new behaviors through C<import()>:
+
+=begin programlisting
+
+    use strict;
+
+    # no symbolic references, variable declaration required, no barewords
+    ...
+
+    {
+        no strict 'refs';
+
+        # symbolic references allowed
+        # variable declaration still required; barewords prohibited
+    }
+
+=end programlisting
+
+Like C<use> and C<import()>, C<no> calls C<unimport()> during compilation time.
+Effectively:
+
+=begin programlisting
+
+    use Module::Name qw( list of arguments );
+
+=end programlisting
+
+... is the same as:
+
+=begin programlisting
+
+    BEGIN
+    {
+        require 'Module/Name.pm';
+        Module::Name->import( qw( list of arguments ) );
+    }
+
+=end programlisting
+
+Similarly:
+
+=begin programlisting
+
+    no Module::Name qw( list of arguments );
+
+=end programlisting
+
+... is the same as:
+
+=begin programlisting
+
+    BEGIN
+    {
+        require 'Module/Name.pm';
+        Module::Name->unimport( qw( list of arguments ) );
+    }
+
+=end programlisting
+
+... including the C<require> of the module.
+
+You may call C<import()> and C<unimport()> directly, though it makes little
+sense to unimport a pragma outside of a C<BEGIN> block, as they often have
+compilation-time effects.
+
+=begin sidebar
+
+If C<import()> or C<unimport()> does not exist in the module, Perl will not
+give an error message.  They are truly optional.
+
+=end sidebar
+
+X<modules; case-sensitivity>
+X<case-sensitivity>
+
+Perl 5's C<use> and C<require> are case-sensitive, even if the underlying
+filesystem is not.  While Perl knows the difference between C<strict> and
+C<Strict>, your combination of operating system and file system may not.  If
+you were to write C<use Strict;>, Perl would not find F<strict.pm> on a
+case-sensitive filesystem.  With a case-insensitive filesystem, Perl will
+happily load F<Strict.pm>, but will try to call C<< Strict->import() >>.
+Nothing will happen, because F<strict.pm> declares a package named C<strict>.
+
+Portable programs are strict about case even if they don't have to be.
+
+=head2 Exporting
+
+Z<exporting>
+X<exporting>
+
+A module can make certain global symbols available to other packages through a
+process known as I<exporting>.  This is the flip side of passing arguments to
+C<import()> through a C<use> statement.
+
+The standard way of exporting functions or variables to other modules is
+through the core module C<Exporter>.  C<Exporter> relies on the presence of
+package global variables--C<@EXPORT_OK> and C<@EXPORT> in particular--which
+contain a list of symbols to export when requested.
+
+Consider a C<StrangeMonkey::Utilities> module which provides several standalone
+functions usable throughout the system:
+
+=begin programlisting
+
+    package StrangeMonkey::Utilities;
+
+    use Exporter 'import';
+
+    our @EXPORT_OK = qw( round_number translate screech );
+
+    ...
+
+    1;
+
+=end programlisting
+
+Any other code now can use this module and, optionally, import any or all of
+the three exported functionsN<... though I<using> the module in any code is
+sufficient to allow any other code to invoke its functions by their
+fully-qualified names.>.  You may also export variables:
+
+=begin programlisting
+
+    push @EXPORT_OK, qw( $spider $saki $squirrel );
+
+=end programlisting
+
+=begin sidebar
+
+X<C<Sub::Exporter>>
+
+The CPAN module C<Sub::Exporter> provides a nicer interface to export functions
+without using package globals.  It also offers more powerful options.  However,
+C<Exporter> can export variables, while C<Sub::Exporter> only exports
+functions.
+
+=end sidebar
+
+You I<can> export symbols by default by listing them in C<@EXPORT> instead of
+C<@EXPORT_OK>:
+
+=begin programlisting
+
+    our @EXPORT = qw( monkey_dance monkey_sleep );
+
+=end programlisting
+
+... so that any C<use StrangeMonkey::Utilities;> will import both functions.
+Be aware that specifying symbols to import will I<not> import default symbols.
+You can also load a module without importing any symbols by providing an
+explicit empty list:
+
+=begin programlisting
+
+    # make the module available, but import() nothing
+    use StrangeMonkey::Utilities ();
+
+=end programlisting
+
+Regardless of any import lists, you can always call functions in another
+package with their fully-qualified names:
+
+=begin programlisting
+
+    StrangeMonkey::Utilities::screech();
+
+=end programlisting
+
+=head2 Organizing Code with Modules
+
+Perl 5 does not require you to use modules, nor packages, nor namespaces.  You
+may put all of your code in a single F<.pl> file, or in multiple F<.pl> files
+you C<require> as necessary.  You have the flexibility to manage your
+code in the most appropriate way, given your development style, the formality
+and risk and reward of the project, your experience, and your comfort with Perl
+5 deployment.
+
+Even so, a project with more than a couple of hundred lines of code receives
+multiple benefits from module organization:
+
+=over 4
+
+=item * Modules help to enforce a logical separation between distinct entities
+in the system.
+
+=item * Modules provide an API boundary, whether procedural or OO.
+
+=item * Modules suggest a natural organization of source code.
+
+=item * The Perl 5 ecosystem has many tools devoted to creating, maintaining,
+organizing, and deploying modules and distributions.
+
+=item * Modules provide a mechanism of code reuse.
+
+=back
+
+Even if you do not use an object-oriented approach, modeling every distinct
+entity or responsibility in your system with its own module keeps related code
+together and separate code separate.
+=encoding utf8
+
+=head1 模块
+
+Z<modules>
+
+X<module>
+
+I<模块> 就是一个包含于自身文件中、可用 C<use> 或 C<require> 加载的包。一个模块必须是
+合法的 Perl 5 代码。它必须以一个求值得真的表达式结束，使 Perl 5 语法分析器知道它已成
+功地加载并编译了该模块。
+
+除一些普遍使用的惯例外，没有其他要求。
+
+包通常对应于磁盘上的文件，当你使用 C<use> 或 C<require> 的裸字形式加载一个模块时，Perl
+根据双冒号（C<::>）分割包名，并将包名的组成部分转换成路径。因此：
+
+=begin programlisting
+
+    use StrangeMonkey;
+
+=end programlisting
+
+……使得 Perl 在 C<@INC> 的每一个目录中依次搜索名为 F<StrangeMonkey.pm> 的文件，直到找到
+该文件或完成对列表的遍历。同样地：
+
+=begin programlisting
+
+    use StrangeMonkey::Persistence;
+
+=end programlisting
+
+……使得 Perl 在 C<@INC> 中所有目录下存在的 F<StrangeMonkey/> 子目录中查找名为 C<Persistence.pm>
+的文件，如此等等。最后：
+
+=begin programlisting
+
+    use StrangeMonkey::UI::Mobile;
+
+=end programlisting
+
+……使得 Perl 在相对每个 C<@INC> 中目录的 F<StrangeMonkey/UI/Mobile.pm> 路径处寻找文件。
+换句话说，如果你想加载你的 C<StrangeMonkey::Test::Stress> 模块，你必须拥有一个名为
+F<StrangeMonkey/Test/Stress.pm>，且它可以顺着 C<@INC> 所列出的目录找到。
+
+C<perldoc -l Module::Name> 会打印出相关 F<.pm> 文件的完整路径，并提供存在于 F<.pm> 文
+件中该模块的 I<文档>。
+
+=begin sidebar
+
+I<技术上> 不要求此位置下的文件必须包含 C<package> 声明，更不用说匹配文件名的 C<package>
+声明了。然而，出于维护上的考虑，高度推荐此惯例。
+
+=end sidebar
+
+=head2 使用（“use”）和导入（“import”）
+
+X<use>
+X<keywords; use>
+X<import()>
+
+Z<import>
+
+当你用 C<use> 关键字加载模块时，Perl 从磁盘上加载它，接着调用它的 C<import()> 方法，将
+你提供的参数传递进去。这发生在编译期：
+
+=begin programlisting
+
+    use strict;                  # 调用 strict->import()
+    use CGI ':standard';         # 调用 CGI->import( ':standard' )
+    use feature qw( say switch ) # 调用 feature->import( qw( say switch ) )
+
+=end programlisting
+
+你不必要提供一个 C<import()> 方法，你也可以将其用于任何目的，但标准 API 期望
+它接受一个由符号组成的参数列表（通常是函数）使其在调用方名称空间内可用。这不
+是一个强制的要求，诸如 C<strict> 等编译命令（L<pragmas>）改变了它们的行为而非
+导入符号。
+
+X<no>
+X<unimporting>
+
+C<no> 关键字调用一个模块的 C<unimport()> 方法，如果它存在，则传入参数。虽然可能
+移除已经导入的符号，但通常它用于禁用特定编译命令特性以及其他通过 C<import()> 引
+入新特性的模块：
+
+=begin programlisting
+
+    use strict;
+
+    # 禁用符号引用，要求变量声明，不允许裸字
+    ...
+
+    {
+        no strict 'refs';
+
+        # 允许符号引用
+        # 仍要求变量声明，禁止裸字
+    }
+
+=end programlisting
+
+就像 C<use> 和 C<import()>，C<no> 在编译期调用 C<unimport()>。在效果上：
+
+=begin programlisting
+
+    use Module::Name qw( list of arguments );
+
+=end programlisting
+
+……和下面的代码效果一样：
+
+=begin programlisting
+
+    BEGIN
+    {
+        require 'Module/Name.pm';
+        Module::Name->import( qw( list of arguments ) );
+    }
+
+=end programlisting
+
+类似的：
+
+=begin programlisting
+
+    no Module::Name qw( list of arguments );
+
+=end programlisting
+
+……和下面的代码等效：
+
+=begin programlisting
+
+    BEGIN
+    {
+        require 'Module/Name.pm';
+        Module::Name->unimport( qw( list of arguments ) );
+    }
+
+=end programlisting
+
+……包括对模块的 C<require>。
+
+你可以直接调用 C<import()> 和 C<unimport()>，虽然在 C<BEGIN> 块之外反导入（“unimport”）
+一个编译命令有些说不通，通常它们对编译期另有影响。
+
+=begin sidebar
+
+如果 C<import()> 或 C<unimport()> 不存在于模块中，Perl 不会给出错误消息。它们事实上
+是可选的。
+
+=end sidebar
+
+X<modules; case-sensitivity>
+X<importing; case-sensitivity>
+X<namespaces; case-sensitivity>
+X<case-sensitivity>
+
+Perl 5 的 C<use> 和 C<require> 是大小写敏感的，然而底层的文件系统不是。虽然 Perl
+知道 C<strict> 和 C<Strict> 之间的区别，你使用的操作系统和文件系统也许并不知道。如
+果你写的是 C<use Strict;>，一个大小写敏感的文件系统不会去查找 F<strict.pm>。一个大
+小写不敏感文件系统则将找到 F<Strict.pm>。然而，当 Perl 尝试在已加载的模块上调用 
+C<< Strict->import() >> 时，不会产生任何效果，因为包名是 C<strict>。
+
+可移植的程序在虽然不必的情况下也会严格对待大小写。
+
+=head2 导出（“export”）
+
+Z<exporting>
+X<exporting>
+
+模块可以通过一个名为 I<导出> 的过程使全局符号在其它包中可用。这是通过 C<use> 语句
+向 C<import()> 传递参数的反面。
+
+向其它模块导出函数或变量的标准方式是通过核心模块 C<Exporter>。C<Exporter> 依赖于包
+全局变量────特别是 C<@EXPORT_OK> 和 C<@EXPORT>────它们包含了一个在请求时导出的符号
+列表。
+
+考虑一个提供若干全系统可用的独立函数的 C<StrangeMonkey::Utilities> 模块：
+
+=begin programlisting
+
+    package StrangeMonkey::Utilities;
+
+    use Exporter 'import';
+
+    our @EXPORT_OK = qw( round_number translate screech );
+
+    ...
+
+    1;
+
+=end programlisting
+
+任何人都可以使用这个模块，并且，可选地，导入任一或全部三个导出函数。你也可以导出变量：
+
+=begin programlisting
+
+    push @EXPORT_OK, qw( $spider $saki $squirrel );
+
+=end programlisting
+
+=begin sidebar
+
+CPAN 模块 C<Sub::Exporter> 为不使用包全局变量导出函数提供了一个更好的接口。它同时提供
+了更多强大的选项。然而，C<Exporter> 可以导出变量，而 C<Sub::Exporter> 只可以导出函数。
+
+=end sidebar
+
+你 I<可以> 通过将符号列在 C<@EXPORT> 而非 C<@EXPORT_OK> 中来默认地导出它们：
+
+=begin programlisting
+
+    our @EXPORT = qw( monkey_dance monkey_sleep );
+
+=end programlisting
+
+……因此，任何 C<use StrangeMonkey::Utilities;> 语句将导入两个函数。注意指定要导入
+的符号并 I<不> 导入默认的符号。同时，你可以通过显式地提供一个空列表来加载一个模
+块而不导入任何符号：
+
+=begin programlisting
+
+    # 是模块可用，但不用 import() 导入符号
+    use StrangeMonkey::Utilities ();
+
+=end programlisting
+
+不理会任何导入列表，你总是可以通过完全限定名称来调用其它包中的函数：
+
+=begin programlisting
+
+    StrangeMonkey::Utilities::screech();
+
+=end programlisting
+
+=head2 使用模块来组织代码
+
+Perl 5 并不要求你使用模块，也不要求你使用包或是名称空间。你可以将所有代码放在单
+个 F<.pl> 文件中，或多个 F<.pl> 文件，随后你可以按需通过 C<do> 或 C<require> 加
+载。你拥有灵活性来按合适的方式管理代码，给出开发风格，控制项目的条框、风险和回报、
+增加经验，以及 Perl 5 部署的舒适程度。
+
+还有一条经验之谈来自有经验的 Perl 5 程序员，就是，一个上百行代码的项目可从创建模
+块中获得多重益处。
+
+=over 4
+
+=item * 模块有助于强制对系统中不同实体进行逻辑上的隔离；
+
+=item * 模块提供 API 边界，无论是过程式还是面向对象；
+
+=item * 模块使源代码自然组织；
+
+=item * Perl 5 生态系统有许多工具专门创建、维护、组织、部署模块和发行版；
+
+=item * 模块提供了一种代码重用机制。
+
+=back
+
+即便你不采用面向对象的手法，为系统中不同实体或职责建立模块保持相关代码内聚、不相关
+代码隔离。

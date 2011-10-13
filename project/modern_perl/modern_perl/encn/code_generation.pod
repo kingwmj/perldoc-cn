@@ -1,0 +1,705 @@
+=head1 Code Generation
+
+Z<code_generation>
+
+Improving as a programmer requires you to search for better abstractions.  The
+less code you have to write, the better.  The more general your solutions, the
+better.  When you can delete code and add features, you've achieved something
+great.
+
+Novice programmers write more code than they need to write, partly from
+unfamiliarity with their languages, libraries, and idioms, but also due to
+inexperience creating and maintaining good abstractions.  They start by writing
+long lists of procedural code, then discover functions, then parameters, then
+objects, and--perhaps--higher-order functions and closures.
+
+X<metaprogramming>
+X<code generation>
+
+Writing programs to write programs for you--I<metaprogramming> or I<code
+generation>)--offers greater possibilities for abstraction.  This can be as
+clear as exploiting higher-order programming capabilities or a rat hole down
+which you find yourself confused and frightened.  The techniques are powerful
+and useful.  For example, they form the basis of Moose (L<moose>).
+
+The C<AUTOLOAD> technique (L<autoload>) for missing functions and methods
+demonstrates this technique in a constrained form; Perl 5's function and method
+dispatch system allows you to customize what happens when normal lookup fails.
+
+=head2 eval
+
+X<C<eval>; string>
+X<builtins; C<eval>>
+
+The simplest code generation technique is to build a string containing a
+snippet of valid Perl and compile it with the string C<eval> operator.  Unlike
+the exception-catching block C<eval> operator, string C<eval> compiles the
+contents of the string within the current scope, including the current package
+and lexical bindings.
+
+A common use for this technique is providing a fallback if you can't (or don't
+want to) load an optional dependency:
+
+=begin programlisting
+
+    eval { require Monkey::Tracer }
+        or eval 'sub Monkey::Tracer::log {}';
+
+=end programlisting
+
+If C<Monkey::Tracer> is not available, its C<log()> function will exist, but
+will do nothing.
+
+=begin sidebar
+
+This isn't necessarily the I<best> way to handle this feature, as the Null
+Object pattern offers more encapsulation, but it is I<a> way to do things.
+
+=end sidebar
+
+This simple example is deceptive.  You must handle quoting issues to include
+variables within your C<eval>d code.  Add more complexity to interpolate some
+but not others:
+
+=begin programlisting
+
+    sub generate_accessors
+    {
+        my ($methname, $attrname) = @_;
+
+        eval <<"END_ACCESSOR";
+        sub get_$methname
+        {
+            my \$self = shift;
+
+            return \$self->{$attrname};
+        }
+
+        sub set_$methname
+        {
+            my (\$self, \$value) = \@_;
+
+            \$self->{$attrname} = \$value;
+        }
+    END_ACCESSOR
+    }
+
+=end programlisting
+
+Woe to those who forget a backslash!  Good luck convincing your syntax
+highlighter what's happening!  Worse yet, each invocation of string C<eval>
+builds a new data structure representing the entire code.  Compiling code isn't
+free, either--cheaper than performing IO, perhaps, but not free.
+
+Even so, this technique is simple and reasonably easy to understand.
+
+=head2 Parametric Closures
+
+X<closures; parametric>
+
+While building accessors and mutators with C<eval> is straightforward, closures
+(L<closures>) allow you to add parameters to generated code at compilation time
+without requiring additional evaluation:
+
+=begin programlisting
+
+    sub generate_accessors
+    {
+        my $attrname = shift;
+
+        my $getter = sub
+        {
+            my $self = shift;
+            return $self->{$attrname};
+        };
+
+        my $setter = sub
+        {
+            my ($self, $value) = @_;
+
+            $self->{$attrname} = $value;
+        };
+
+        return $getter, $setter;
+    }
+
+=end programlisting
+
+This code avoids unpleasant quoting issues and runs more quickly, as there's
+only one compilation stage, no matter how many accessors you create.  It even
+uses less memory by sharing the compiled code between all instances of the
+closure.  All that differs is the binding to the C<$attrname> lexical.  In a
+long-running process, or with a lot of accessors, this technique can be very
+useful.
+
+X<closures; installing into symbol table>
+X<symbol tables>
+
+Installing into symbol tables is reasonably easy, if ugly:
+
+=begin programlisting
+
+    {
+        my ($getter, $setter) = generate_accessors( 'homecourt' );
+
+        no strict 'refs';
+        *{ 'get_homecourt' } = $getter;
+        *{ 'set_homecourt' } = $setter;
+    }
+
+=end programlisting
+
+X<C<*>; sigil>
+X<sigils; C<*>>
+X<typeglobs>
+
+The odd syntax of an asteriskN<Think of it as a I<typeglob sigil>, where a
+I<typeglob> is Perl jargon for "symbol table".> deferencing a hash refers to a
+symbol in the current I<symbol table>, which is the place in the current
+namespace which contains globally-accessible symbols such as package globals,
+functions, and methods.  Assigning a reference to a symbol table entry installs
+or replaces the appropriate entry.  To promote an anonymous function to a
+method, assign that function reference to the appropriate entry in the symbol
+table.
+
+X<C<strict> pragma>
+X<pragmas; C<strict>>
+
+This operation refers to a symbol with a string, not a literal variable name,
+so it's a symbolic reference and it's necessary to disable C<strict> reference
+checking for the operation.  Many programs have a subtle bug in similar code,
+as they assign and generate in a single line:
+
+=begin programlisting
+
+    {
+        no strict 'refs';
+
+        *{ $methname } = sub {
+            # subtle bug: strict refs
+            # are disabled in here too
+        };
+    }
+
+=end programlisting
+
+This example disables strictures for the outer block as well as the inner
+block, the body of the function itself.  Only the assignment violates strict
+reference checking, so disable strictures for that operation alone.
+
+If the name of the method is a string literal in your source code, rather than
+the contents of a variable, you can assign to the relevant symbol directly
+rather than through a symbolic reference:
+
+=begin programlisting
+
+    {
+        no warnings 'once';
+        (*get_homecourt, *set_homecourt) = generate_accessors( 'homecourt' );
+    }
+
+=end programlisting
+
+Assigning directly to the glob does not violate strictures, but mentioning each
+glob only once I<does> produce a "used only once" warning unless you explicitly
+suppress it within the scope.
+
+=head2 Compile-time Manipulation
+
+X<builtins; C<eval>>
+
+Unlike code written explicitly as code, code generated through string C<eval>
+gets compiled at runtime.  Where you might expect a normal function to be
+available throughout the lifetime of your program, a generated function might
+not be available when you expect it.
+
+X<C<BEGIN>>
+
+Force Perl to run code--to generate other code--during the compilation stage by
+wrapping it in a C<BEGIN> block.  When the Perl 5 parser encounters a block
+labeled C<BEGIN>, it parses the entire block.  Provided it contains no syntax
+errors, the block will run immediately.  When it finishes, parsing will
+continue as if there were no interruption.
+
+In practical terms, the difference between writing:
+
+=begin programlisting
+
+    sub get_age    { ... }
+    sub set_age    { ... }
+
+    sub get_name   { ... }
+    sub set_name   { ... }
+
+    sub get_weight { ... }
+    sub set_weight { ... }
+
+=end programlisting
+
+... and:
+
+=begin programlisting
+
+    sub make_accessors { ... }
+
+    BEGIN
+    {
+        for my $accessor (qw( age name weight ))
+        {
+            my ($get, $set) = make_accessors( $accessor );
+
+            no strict 'refs';
+            *{ 'get_' . $accessor } = $get;
+            *{ 'set_' . $accessor } = $set;
+        }
+    }
+
+=end programlisting
+
+... is primarily one of maintainability.
+
+X<C<BEGIN>; implicit>
+X<modules; implicit C<BEGIN>>
+
+Within a module, any code outside of functions executes when you C<use> it,
+because of the implicit C<BEGIN> Perl adds around the C<require> and C<import>
+(L<importing>).  Any code outside of a function but inside the module will
+execute I<before> the C<import()> call occurs.  If you C<require> the module,
+there is no implicit C<BEGIN> block.  The execution of code outside of
+functions will happen at the I<end> of parsing.
+
+Also beware of the interaction between lexical I<declaration> (the association
+of a name with a scope) and lexical I<assignment>.  The former happens during
+compilation, while the latter occurs at the point of execution.  This code has
+a subtle bug:
+
+=begin programlisting
+
+    use UNIVERSAL::require;
+
+    # buggy; do not use
+    my $wanted_package = 'Monkey::Jetpack';
+
+    BEGIN
+    {
+        $wanted_package->require();
+        $wanted_package->import();
+    }
+
+=end programlisting
+
+... because the C<BEGIN> block will execute I<before> the assignment of the
+string value to C<$wanted_package> occurs.  The result will be an exception
+from attempting to invoke the C<require()> method on the undefined value.
+
+=head2 Class::MOP
+
+Z<class_mop>
+
+X<C<Class::MOP>>
+X<Moose>
+X<objects; meta object protocol>
+X<meta object protocol>
+
+Unlike installing function references to populate namespaces and to create
+methods, there's no simple default way to create classes in Perl 5.
+Fortunately, a mature and powerful distribution is available from the CPAN to
+do just this.  C<Class::MOP> is the library which makes Moose (L<moose>)
+possible.  It provides a I<meta object protocol>--a mechanism for creating and
+manipulating an object system in terms of itself.
+
+Rather than writing your own fragile string C<eval> code or trying to poke into
+symbol tables manually, you can manipulate the entities and abstractions of
+your program with objects and methods.
+
+To create a class:
+
+=begin programlisting
+
+    use Class::MOP;
+
+    my $class = Class::MOP::Class->create( 'Monkey::Wrench' );
+
+=end programlisting
+
+X<metaclass>
+X<OO; metaclass>
+
+You can add attributes and methods to this class when you create it:
+
+=begin programlisting
+
+    use Class::MOP;
+
+    my $class = Class::MOP::Class->create(
+        'Monkey::Wrench' =>
+        (
+            attributes =>
+            [
+                Class::MOP::Attribute->new( '$material' ),
+                Class::MOP::Attribute->new( '$color' ),
+            ]
+            methods =>
+            {
+                tighten => sub { ... },
+                loosen  => sub { ... },
+            }
+        ),
+    );
+
+=end programlisting
+
+... or add them to the I<metaclass> (the object which represents that class)
+after you've created it:
+
+=begin programlisting
+
+    $class->add_attribute( experience  => Class::MOP::Attribute->new( '$xp' ) );
+    $class->add_method(    bash_zombie => sub { ... } );
+
+=end programlisting
+
+... and you can inspect the metaclass:
+
+=begin programlisting
+
+    my @attrs = $class->get_all_attributes();
+    my @meths = $class->get_all_methods();
+
+=end programlisting
+
+You can similarly create and manipulate and introspect attributes and methods
+with C<Class::MOP::Attribute> and C<Class::MOP::Method>.
+=encoding utf8
+
+=head1 代码生成
+
+Z<code_generation>
+
+程序员的进步需要你去找寻更好的抽象。越少代码要写越好。解决方案越通用越好。当你
+可以删代码加功能的时候，你已经达成了某种完美的目标。
+
+新手程序员常会写出多于要求的代码，其原因部分基于对语言、库、惯用语的不熟悉，同
+时也归咎于无法熟练地创建和维护良好的抽象。他们以编写长篇的过程式代码起步，接着
+发现函数，再是参数，然后是对象，还有────可能的话────高阶函数和闭包。
+
+X<metaprogramming>
+X<code generation>
+
+I<元编程>（或 I<代码生成>）────编写编写程序的程序────是另一种抽象技巧。它可以如
+发掘高阶函数能力般清晰，也可能如鼠洞一般让你身陷其中，困惑而恐惧。然而，这种技巧
+强大、实用────其中一些还是 Moose（L<moose>）这类强大工具的基础。
+
+处理缺少函数和方法的 C<AUTOLOAD>（L<autoload>）技巧展示了此技巧勉强的一面；Perl 5
+的函数和方法分派系统允许你定制常规查找失败后的行为。
+
+=head2 eval
+
+X<eval string>
+X<operators; eval>
+
+生成代码最简单的 N<至少是 I<概念上>....> 技巧莫过于创建一个包含合法 Perl 代码片段
+的字符串并通过 C<eval> 字符串操作符编译。不像捕获异常的 C<eval> 代码块操作符，C<eval>
+字符串在当前作用域内编译其中内容，包括当前包和词法绑定。
+
+此技巧的常用于提供后备，如果你不能（或不想）加载某个可选的依赖：
+
+=begin programlisting
+
+    eval { require Monkey::Tracer }
+        or eval 'sub Monkey::Tracer::log {}';
+
+=end programlisting
+
+如果 C<Monkey::Tracer> 不可用，其中的 C<log()> 函数仍将存在，只是不做任何事。
+
+=begin sidebar
+
+这不一定是处理这种特性的 I<最佳> 途径，空对象（Null Object）模式通常提供更好的封装，
+但这是完成任务的 I<一种> 方法。
+
+=end sidebar
+
+这个简单的例子可能有点靠不住。为在 C<eval> 代码中包含变量，你必须处理引号问题。
+这增加了内插的复杂度：
+
+=begin programlisting
+
+    sub generate_accessors
+    {
+        my ($methname, $attrname) = @_;
+
+        eval <<"END_ACCESSOR";
+        sub get_$methname
+        {
+            my \$self = shift;
+
+            return \$self->{$attrname};
+        }
+
+        sub set_$methname
+        {
+            my (\$self, \$value) = \@_;
+
+            \$self->{$attrname} = \$value;
+        }
+    END_ACCESSOR
+    }
+
+=end programlisting
+
+对忘记加反斜杠的你表示悲哀！祝你调教语法高亮器好运！更糟糕的是，每次对 C<eval>
+字符串的调用都将创建一个代表整段代码的全新数据结构。编译代码也不是免费的────也许，
+比IO操作便宜些，但并非免费。
+
+即便如此，此技巧简单合理、易于理解。
+
+=head2 参数闭包
+
+X<closures; parametric>
+
+虽然使用 C<eval> 构建访问器和增变器时很直接，但闭包（L<closures>）允许你在编译期
+向已生成的代码添加参数而无需进行额外的求值：
+
+=begin programlisting
+
+    sub generate_accessors
+    {
+        my $attrname = shift;
+
+        my $getter = sub
+        {
+            my $self = shift;
+            return $self->{$attrname};
+        };
+
+        my $setter = sub
+        {
+            my ($self, $value) = @_;
+
+            $self->{$attrname} = $value;
+        };
+
+        return $getter, $setter;
+    }
+
+=end programlisting
+
+这段代码避免了不愉快的引号问题。由于只有一道编译过程，性能也更好，无论你有多少要
+创建的访问器。通过重用 I<相同的> 已编译代码作为两个函数的主体，它甚至使用更少的内
+存。所有的区别来自对词法变量 C<$attrname> 的绑定。对于长期运行的进程或是包含大量访
+问器的程序中，此技巧非常有用。
+
+X<closures; installing into symbol table>
+X<symbol tables>
+
+向符号表安装比较容易，但很丑陋：
+
+=begin programlisting
+
+    {
+        my ($getter, $setter) = generate_accessors( 'homecourt' );
+
+        no strict 'refs';
+        *{ 'get_homecourt' } = $getter;
+        *{ 'set_homecourt' } = $setter;
+    }
+
+=end programlisting
+
+这一古怪的、哈希那样的语法指向当前 I<符号表> 中的一个符号，它是当前名称空间内存
+放诸如包全局变量、函数、方法等全局可见符号的地方。将引用赋值给符号表某项将安装或
+替换对应的条目。要将一个匿名函数提升为方法，可把函数引用赋值到符号表中的对应条目。
+
+这个操作是一个符号引用，因此应该禁用 C<strict> 对此操作的引用检查。许多程序在类似
+的代码中有不少隐晦的缺陷，它们在单个步骤内进行赋值和生成：
+
+=begin programlisting
+
+    {
+        no strict 'refs';
+
+        *{ $methname } = sub {
+            # 隐晦的缺陷：strict refs
+            # 在此处也被禁用
+        };
+    }
+
+=end programlisting
+
+这个例子在外部块、内部块和函数体中都禁用严格检查。只有赋值违反了严格的引用检查，
+因此只要对该操作禁用即可。
+
+=begin sidebar
+
+如果在你编写的代码中，方法名称是一个字符串字面值，而非变量的内容，你可以不用通过
+符号引用而直接向相关符号赋值：
+
+=begin programlisting
+
+    {
+        no warnings 'once';
+        (*get_homecourt, *set_homecourt) = generate_accessors( 'homecourt' );
+    }
+
+=end programlisting
+
+这没有违反严格检查，但是会引发一条“used only once”警告，除非你已经在作用域内部
+显式地抑制它的产生。
+
+=end sidebar
+
+=head2 编译期操控
+
+不同于显式编写的代码，通过 C<eval> 字符串生成的代码于运行时生成。虽然你预计一个
+常规函数在你程序的生命周期内都是可用的，但（运行时）生成的函数也许直到你要求时才
+是可用的。
+
+X<BEGIN>
+
+在编译期强制 Perl 运行代码────生成其他代码────的方法是将其包装于 C<BEGIN> 块内。
+当 Perl 5 语法分析器遇到标有 C<BEGIN> 的代码块时，它将对整个代码块进行语法分析。
+证实其不含任何语法错误后，代码块将立即执行。执行完毕，语法分析过程就好像未曾中断
+一般继续。
+
+实际点说，编写：
+
+=begin programlisting
+
+    sub get_age    { ... }
+    sub set_age    { ... }
+
+    sub get_name   { ... }
+    sub set_name   { ... }
+
+    sub get_weight { ... }
+    sub set_weight { ... }
+
+=end programlisting
+
+……和：
+
+=begin programlisting
+
+    sub make_accessors { ... }
+
+    BEGIN
+    {
+        for my $accessor (qw( age name weight ))
+        {
+            my ($get, $set) = make_accessors( $accessor );
+
+            no strict 'refs';
+            *{ 'get_' . $accessor } = $get;
+            *{ 'set_' . $accessor } = $set;
+        }
+    }
+
+=end programlisting
+
+……之间的区别主要是可维护性。
+
+X<BEGIN; implicit>
+X<modules; implicit BEGIN>
+
+由于 Perl 隐式地将 C<require> 和 C<import>（L<importing>）用 C<BEGIN> 包装起来，
+在模块内，任何函数外部的代码都会在你 C<use> 它时执行。任何处于函数外、模块内的代
+码会在 C<import()> 调用发生 I<之前> 执行。如果你 C<require> 该模块，则不含隐式的
+C<BEGIN> 代码块。函数外部代码的执行将放在语法分析的 I<结尾>。
+
+同时也请注意词法 I<声明>（名称和作用域间的联系）和词法 I<赋值> 之间的交互。前者
+发生于编译期，而后者发生于执行点处。如下代码隐含一处缺陷：
+
+=begin programlisting
+
+    use UNIVERSAL::require;
+
+    # 有缺陷；不要使用
+    my $wanted_package = 'Monkey::Jetpack';
+
+    BEGIN
+    {
+        $wanted_package->require();
+        $wanted_package->import();
+    }
+
+=end programlisting
+
+……因为 C<BEGIN> 块在对 C<$wanted_package> 的字符串值赋值 I<前> 执行。结果将是
+意图在未定义值上调用 C<require()> 方法而引发的异常。
+
+=head2 Class::MOP
+
+Z<class_mop>
+
+X<Class::MOP>
+X<Moose>
+X<objects; meta object protocol>
+X<MOP>
+X<meta object protocol>
+
+不像安装函数引用来填充名称空间及创建方法，目前没有简易的内置途径在 Perl 5 中创建
+类。所幸的是，一个成熟且强大的 CPAN 发行模块恰好可以完成此项工作。C<Clas::MOP> 是
+C<Moose>（L<moose>）的支柱库。它提供了 I<元对象协议（Meta Object Protocol）>────一
+种用于对象系统创建操控自身的机制。
+
+相比自行编写脆弱的 C<eval> 字符串代码或是尝试手动干涉符号表，你可以通过对象和方法操
+控程序中的实体和抽象。
+
+要创建一个类：
+
+=begin programlisting
+
+    use Class::MOP;
+
+    my $class = Class::MOP::Class->create( 'Monkey::Wrench' );
+
+=end programlisting
+
+X<metaclass>
+X<OO; metaclass>
+
+在你创建它时，你可以添加属性和方法到该类中：
+
+=begin programlisting
+
+    use Class::MOP;
+
+    my $class = Class::MOP::Class->create(
+        'Monkey::Wrench' =>
+        (
+            attributes =>
+            [
+                Class::MOP::Attribute->new( '$material' ),
+                Class::MOP::Attribute->new( '$color' ),
+            ]
+            methods =>
+            {
+                tighten => sub { ... },
+                loosen  => sub { ... },
+            }
+        ),
+    );
+
+=end programlisting
+
+……或在创建后，把它们添加到 I<元类（Metaclass）>（代表类的对象）中：
+
+=begin programlisting
+
+    $class->add_attribute( experience  => Class::MOP::Attribute->new( '$xp' ) );
+    $class->add_method(    bash_zombie => sub { ... } );
+
+=end programlisting
+
+……你可以对元类进行内省：
+
+=begin programlisting
+
+    my @attrs = $class->get_all_attributes();
+    my @meths = $class->get_all_methods();
+
+=end programlisting
+
+使用 C<Class::MOP::Attribute> 和 C<Class::MOP::Method>，你可以类似地创建、操作
+并内省属性和方法。此元对象协议及其带来的灵活性是 Moose（L<moose>）强大的根源。

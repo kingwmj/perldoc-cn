@@ -1,0 +1,490 @@
+=head1 Prototypes
+
+Z<prototypes>
+
+X<prototypes>
+
+A I<prototype> is a piece of optional metadata attached to a function
+declaration.  Novices commonly assume that these prototypes serve as function
+signatures;  they do not.  Instead they serve two separate purposes:  they offer
+hints to the parser to change the way it parses functions and their arguments,
+and they modify the way Perl 5 handles arguments to those functions.
+
+To declare a function prototype, add it after the name:
+
+=begin programlisting
+
+    sub foo        (&@);
+    sub bar        ($$) { ... }
+    my  $baz = sub (&&) { ... };
+
+=end programlisting
+
+You may add prototypes to function forward declarations.  You may also omit
+them from forward declarations.  If you use a forward declaration with a
+prototype, that prototype must be present in the full function declaration;
+Perl will give a prototype mismatch warning if not.  The converse is not true:
+you may omit the prototype from a forward declaration and include it for the
+full declaration.
+
+=begin sidebar
+
+There's little reason to omit the prototype from a forward declaration except
+for the desire to write too-clever code.
+
+=end sidebar
+
+The original intent of prototypes was to allow users to define their own
+functions which behaved like (certain) builtin operators.  Consider the
+behavior of the C<push> operator, which takes an array and a list.  While Perl
+5 would normally flatten the array and list into a single list at the call
+site, the Perl 5 parser knows that a call to C<push> must effectively pass the
+array as a single unit so that C<push> can operate on the array in place.
+
+X<builtins; C<prototype>>
+
+The builtin C<prototype> takes the name of a function and returns a string
+representing its prototype.  To see the prototype of a builtin, use the
+C<CORE::> form:
+
+=begin programlisting
+
+    $ B<perl -E "say prototype 'CORE::push';">
+    \@@
+    $ B<perl -E "say prototype 'CORE::keys';">
+    \%
+    $ B<perl -E "say prototype 'CORE::open';">
+    *;$@
+
+=end programlisting
+
+Some builtins have prototypes you cannot emulate.  In these cases,
+C<prototype> will return C<undef>:
+
+=begin programlisting
+
+    $ B<perl -E "say prototype 'CORE::system' // 'undef' ">
+    undef
+    # You can't emulate builtin function C<system>'s calling convention.
+
+    $ B<perl -E "say prototype 'CORE::prototype' // 'undef' ">
+    undef
+    # Builtin function C<prototype> has no prototype.
+
+=end programlisting
+
+Look at C<push> again:
+
+=begin programlisting
+
+    $ B<perl -E "say prototype 'CORE::push';">
+    \@@
+
+=end programlisting
+
+The C<@> character represents a list.  The backslash forces the use of a
+I<reference> to the corresponding argument.  Thus this function takes a
+reference to an array (because you can't take a reference to a list) and a list
+of values.  C<mypush> might be:
+
+=begin programlisting
+
+    sub mypush (\@@)
+    {
+        my ($array, @rest) = @_;
+        push @$array, @rest;
+    }
+
+=end programlisting
+
+Valid prototype characters include C<$> to force a scalar argument, C<%> to
+mark a hash (most often used as a reference), and C<&> which marks a code
+block.  See C<perldoc perlsub> for full documentation.
+
+=head2 The Problem with Prototypes
+
+Prototypes can change the parsing of subsequent code and they can coerce the
+types of arguments.  They don't serve as documentation to the number or types
+of arguments functions expect, nor do they map arguments to named parameters.
+
+Prototype coercions work in subtle ways, such as enforcing scalar context on
+incoming arguments:
+
+=begin programlisting
+
+    sub numeric_equality($$)
+    {
+        my ($left, $right) = @_;
+        return $left == $right;
+    }
+
+    my @nums = 1 .. 10;
+
+    say "They're equal, whatever that means!" if numeric_equality @nums, 10;
+
+=end programlisting
+
+... but do I<not> work on anything more complex than a simple expression:
+
+=begin programlisting
+
+    sub mypush(\@@);
+
+    # compilation error: prototype mismatch
+    # (expected array, got scalar assignment)
+    mypush( my $elems = [], 1 .. 20 );
+
+=end programlisting
+
+Those aren't even the I<subtler> kinds of confusion you can get from
+prototypes.
+
+=head2 Good Uses of Prototypes
+
+As long as code maintainers do not confuse them for full function signatures,
+prototypes have a few valid uses.
+
+X<builtins; overriding>
+X<pragmas; C<subs>>
+X<C<subs> pragma>
+
+First, they are often necessary to emulate and override builtins with
+user-defined functions.  You must first check that you I<can> override the
+builtin by checking that C<prototype> does not return C<undef>.  Once you know
+the prototype of the builtin, use a forward declaration of a function with the
+same name as the core builtin:
+
+=begin programlisting
+
+    use subs 'push';
+
+    sub push (\@@) { ... }
+
+=end programlisting
+
+Beware that the C<subs> pragma is in effect for the remainder of the I<file>,
+regardless of any lexical scoping.
+
+X<constants>
+
+The second reason to use prototypes is to define compile-time constants.  A
+function declared with an empty prototype (as opposed to I<no> prototype)
+which evaluates to a single expression becomes a constant rather than a function
+call:
+
+=begin programlisting
+
+    sub PI () { 4 * atan2(1, 1) }
+
+=end programlisting
+
+After it processed that prototype declaration, the Perl 5 optimizer
+knows it should substitute the calculated value of pi whenever it
+encounters a bareword or parenthesized call to C<PI> in the rest of the source
+code (with respect to scoping and visibility).
+
+X<C<constant> pragma>
+X<pragmas; C<constant>>
+X<C<Readonly>>
+
+Rather than defining constants directly, the core C<constant> pragma handles
+the details for you and may be clearer to read.  If you want to interpolate
+constants into strings, the C<Readonly> module from the CPAN may be more
+useful.
+
+X<C<Test::Exception>>
+X<C<Test::Fatal>>
+
+The final reason to use a prototype is to extend Perl's syntax to operate on
+anonymous functions as blocks.  The CPAN module C<Test::Exception> uses this to
+good effect to provide a nice API with delayed computationN<C<Test::Fatal> is a
+newer alternative which may prove more popular in the future.>.  Its
+C<throws_ok()> function takes three arguments: a block of code to run, a
+regular expression to match against the string of the exception, and an
+optional description of the test.  Suppose that you want to test Perl 5's
+exception message when attempting to invoke a method on an undefined value:
+
+=begin programlisting
+
+    use Test::More tests => 1;
+    use Test::Exception;
+
+    throws_ok
+        { my $not_an_object; $not_an_object->some_method() }
+        qr/Can't call method "some_method" on an undefined value/,
+        'Calling a method on an undefined invocant should throw exception';
+
+=end programlisting
+
+The exported C<throws_ok()> function has a prototype of C<&$;$>.  Its first
+argument is a block, which Perl upgrades to a full-fledged anonymous function.
+The second requirement is a scalar.  The third argument is optional.
+
+The most careful readers may have spotted a syntax oddity notable in its
+absence: there is no trailing comma after the end of the anonymous function
+passed as the first argument to C<throws_ok()>.  This is a quirk of the Perl 5
+parser.  Adding the comma causes a syntax error.  The parser expects
+whitespace, not the comma operator.
+
+=begin sidebar
+
+The "no commas here" rule is a drawback of the prototype syntax.
+
+=end sidebar
+
+You can use this API without the prototype.  It's slightly less attractive:
+
+=begin programlisting
+
+    use Test::More tests => 1;
+    use Test::Exception;
+
+    throws_okB<(>
+        B<sub> { my $not_an_object; $not_an_object->some_method() }B<,>
+        qr/Can't call method "some_method" on an undefined value/,
+        'Calling a method on an undefined invocant should throw exception'B<)>;
+
+=end programlisting
+
+X<builtins; C<sort>>
+
+A sparing use of function prototypes to remove the need for the C<sub> builtin
+is reasonable.  Another is when defining a custom function to use with
+C<sort>N<Ben Tilly suggested this example.>.  Declare this function with a
+prototype of C<($$)> and Perl will pass its arguments in C<@_> rather than the
+package globals C<$a> and C<$b>.  This is a rare case, but it can save you time
+debugging.
+
+Few other uses of prototypes are compelling enough to overcome their drawbacks.
+=encoding utf8
+
+=head1 原型
+
+Z<prototypes>
+
+X<prototypes>
+
+I<原型（prototype）> 是一小块附加在函数生命上的可选元数据。新手通常假设这些原型可
+以作为函数签名使用；但它们不是。相反它们服务于两个不同的目的：它们给予语法分析器
+提示来改变对函数及其参数的语法分析，并且它们还修改了 Perl 5 处理函数参数的方式。
+
+声明函数原型，只要在名称后加上它：
+
+=begin programlisting
+
+    sub foo        (&@);
+    sub bar        ($$) { ... }
+    my  $baz = sub (&&) { ... };
+
+=end programlisting
+
+你可以向函数前置声明（forward declaration）添加原型。你也可以在前置声明中忽
+略它们。如果你使用带原型的前置声明，该原型必须完整地在函数声明中出现；如果不
+这样做，Perl 将给出原型不匹配的警告。其逆命题不为真：你可以在前置声明中忽略
+原型而在完整声明中包含它。
+
+=begin sidebar
+
+在前置声明中忽略原型没有什么理由，除非你有想法编写太过聪明的代码。
+
+=end sidebar
+
+原型最初的目的是允许用户定义它们自己的函数，这些函数的行为和（一些）内置操作
+符一样。考虑 C<push> 操作符的行为，它接受一个数组和列表。虽然 Perl 5 正常情况
+下在调用方将数组和列表展开为单个列表，Perl 5 语法分析器知道调用 C<push> 必须
+有效地将数组作为一个单元传入，以使 C<push> 能够就地操作数组。
+
+X<prototype>
+X<keywords; prototype>
+
+内置操作符 C<prototype> 接受一个函数名称并返回代表其原型的字符串。要参考内置关
+键字的原型，使用 C<CORE::> 形式：
+
+=begin programlisting
+
+    $ B<perl -E "say prototype 'CORE::push';">
+    \@@
+    $ B<perl -E "say prototype 'CORE::keys';">
+    \%
+    $ B<perl -E "say prototype 'CORE::open';">
+    *;$@
+
+=end programlisting
+
+一些内置操作符拥有你无法模拟的原型。在这些情况下，C<prototype> 将返回 C<undef>：
+
+=begin programlisting
+
+    $ B<perl -E "say prototype 'CORE::system' // 'undef' ">
+    undef
+    # 你无法模拟内置函数 C<system> 的调用惯例
+
+    $ B<perl -E "say prototype 'CORE::prototype' // 'undef' ">
+    undef
+    # 内置函数 C<prototype> 没有原型
+
+=end programlisting
+
+再看看 C<push>：
+
+=begin programlisting
+
+    $ B<perl -E "say prototype 'CORE::push';">
+    \@@
+
+=end programlisting
+
+C<@> 字符代表一个列表。反斜杠强制对对应的参数进行 I<引用>。因此这个函数接受一个
+数组引用（因为你无法得到列表的引用）和一列值。C<mypush> 可能为：
+
+=begin programlisting
+
+    sub mypush (\@@)
+    {
+        my ($array, @rest) = @_;
+        push @$array, @rest;
+    }
+
+=end programlisting
+
+合法的原型字符包括强制标量参数的 C<$>，对应哈希的 C<%> （通常用作引用），以及标记
+代码块的 C<&>。完整文档参考 C<perldoc perlsub>。
+
+=head2 原型的问题
+
+原型可以改变后续代码的语法分析过程而且它们会对参数进行强制类型转换。它们不是
+函数参数类型和个数的文档，它们也不对应具名参数。
+
+原型对参数的强制类型转换以一种隐晦的方式发生，诸如在传入参数上强制标量上下文：
+
+=begin programlisting
+
+    sub numeric_equality($$)
+    {
+        my ($left, $right) = @_;
+        return $left == $right;
+    }
+
+    my @nums = 1 .. 10;
+
+    say "They're equal, whatever that means!" if numeric_equality @nums, 10;
+
+=end programlisting
+
+……但请 I<不要> 进行比一个简单表达式还复杂的操作：
+
+=begin programlisting
+
+    sub mypush(\@@);
+
+    # 编译错误：原型不匹配
+    # （期待数组；得到标量赋值）
+    mypush( my $elems = [], 1 .. 20 );
+
+=end programlisting
+
+这些还不算是来自原型的 I<最隐晦> 的误导。
+
+=head2 原型的正当使用
+
+只要代码维护者不将其作为完整的函数签名，原型还是有一些合法的用途的。
+
+X<overriding core keywords>
+X<overriding; keywords>
+X<pragmas; subs>
+X<subs pragma>
+
+第一，它们在用用户定义函数模拟并覆盖内置关键字时是必须的。你必须先通过确认 C<prototype>
+没有返回 C<undef> 来检查你是否 I<可以> 覆盖内置关键字。一旦知道了关键字的原型，你就
+可以声明和核心关键字同名的前置定义：
+
+=begin programlisting
+
+    use subs 'push';
+
+    sub push (\@@) { ... }
+
+=end programlisting
+
+注意，不管词法作用域与否，C<subs> 编译命令对 I<文件> 余下的部分都有效。
+
+X<constants>
+
+使用原型的第二个理由就是定义编译期常数。一个由空原型（作为 I<无> 原型的反面）声明
+且求值得单个表达式的函数将成为常数而非函数调用：
+
+=begin programlisting
+
+    sub PI () { 4 * atan2(1, 1) }
+
+=end programlisting
+
+在处理该原型声明以后，Perl 5 优化器知道在余下的源代码中，它应该在碰到裸字或对 C<PI> 
+带括号的调用时用计算得到的π值进行替换（同时遵循作用域和可见性）。
+
+X<constant pragma>
+X<pragmas; constant>
+X<Readonly module>
+X<modules; Readonly>
+
+相对于直接定义常量，C<constant> 核心编译命令会为你处理这些细节并且更加易读。如果你
+想将这些常量内插入字符串中，来自 CPAN 的 C<Readonly> 模块或许更加有用。
+
+X<Test::Exception module>
+X<modules; Test::Exception>
+
+最后一个使用原型的理由是，它将 Perl 的语法扩展以便将匿名函数操作为代码块。CPAN 模块
+C<Test::Exception> 很好地利用这一点提供了带延迟计算（delayed computation）的良好 API。
+其中 C<throws_ok()> 函数接受三个参数：要运行的代码块、一个匹配异常字符串的正则表达式
+以及一个对此测试可选的描述。假设你想测试 Perl 5 在意图在未定义值上调用方法时产生的异
+常消息：
+
+=begin programlisting
+
+    use Test::More tests => 1;
+    use Test::Exception;
+
+    throws_ok
+        { my $not_an_object; $not_an_object->some_method() }
+        qr/Can't call method "some_method" on an undefined value/,
+        'Calling a method on an undefined invocant should throw exception';
+
+=end programlisting
+
+此导出函数 C<throws_ok()> 拥有原型 C<&$;$>。它的第一个参数是代码块，Perl 会将其升级为
+全功能匿名函数。第二个要求的参数是一个标量。第三个参数则是可选的。
+
+最最细心的读者可能发现一个语法上奇怪的缺失：在作为第一参数传递给 C<throws_ok()> 的匿名
+函数的结尾没有逗号。这是 Perl 5 语法分析器的古怪之处。加上逗号会引发语法错误。语法分析
+器期待的是空白，而非逗号操作符。
+
+=begin sidebar
+
+“此处没有逗号”这一规则是原型语法的缺点。
+
+=end sidebar
+
+不带原型你也可以使用这一 API。这可不那么吸引人：
+
+=begin programlisting
+
+    use Test::More tests => 1;
+    use Test::Exception;
+
+    throws_okB<(>
+        B<sub> { my $not_an_object; $not_an_object->some_method() }B<,>
+        qr/Can't call method "some_method" on an undefined value/,
+        'Calling a method on an undefined invocant should throw exception'B<)>;
+
+=end programlisting
+
+对函数原型的稍稍使用来替代对 C<sub> 的需要还是合理的。原型其他用法很少能足够令
+人信服地胜过它们的缺点。
+
+=begin sidebar
+
+Ben Tilly 提出了第四条理由：在使用 C<sort> 时定义自定义函数。定义原型为 C<($$)> 的
+函数将会使参数传入 C<@_> 而非包全局变量 C<$a> 和 C<$b>。这是一个罕见的情况，但可以
+节省你的调试时间。
+
+=end sidebar
