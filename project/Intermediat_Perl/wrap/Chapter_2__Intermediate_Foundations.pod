@@ -1,4 +1,4 @@
-=head2 Chapter 2. 进阶基础
+=head2 第二章. 进阶基础
 
 在开始深入学习这本书之前, 我们要介绍一些中阶 I<Perl> 语言
 的 I<B<"> 习惯用语 I<">> ，我们会在整本书里都用到这些 I<B<">
@@ -121,7 +121,7 @@ I<$_> 变量（显式或隐式的）.比如找出大于 I<10> 的数, I<EXPR>
 
   my @odd_digit_sum = grep {
     my $input = $_;
-    my @digits = split //, $input;   # Assume no nondigit characters
+    my @digits = split //, $input; # Assume no nondigit characters
     my $sum;
     $sum += $_ for @digits;
     $sum % 2;
