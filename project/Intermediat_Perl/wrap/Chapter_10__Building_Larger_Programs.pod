@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head2 第十章. 构建更大的程序
 
 这一章我们来看看如何把程序分成一些小的部份, 并且包括那些把小程
@@ -429,8 +431,7 @@ I<navigation.pm> 文件。这对 I<Gilligan> 是不错, 不过让 I<Skipper> 很
  1;
 
 现在 I<Gilligan> 导入这个文件, 他只要简单的把在库里引用的子例程
-前加上 I<Navigation::> 前缀即可, 而在他自己的同名程序前面不加前缀
-。
+前加上 I<Navigation::> 前缀即可, 而在他自己的同名程序前面不加前缀。
 
  #!/usr/bin/perl
 
@@ -583,3 +584,5 @@ I<dip>, I<sen> I<15>, I<2011>, 表示今天是八月的周一.（暗示： I<loc
 返回的年月数字可能并不一定是你想要的, 所以你要查一下文档.）
 
  my($sec, $min, $hour, $mday, $mon, $year, $wday) = localtime;
+
+=cut

@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head2 第一章. 引言
 
 欢迎来到认识 I<Perl> 的下一台阶。 你来到这里的原因可能是你
@@ -93,3 +95,4 @@ I<Perl> 的操作符： I<grep> , I<map> , I<sort> 和 I<print>
 
 好吧, 开始喽。 翻过此页, 我们的课就马上开始. . . .
 
+=cut
